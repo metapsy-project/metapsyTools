@@ -1,0 +1,14 @@
+Package: metapsyTools
+Type: Package
+Title: Several R helper functions for the "Metapsy" database.
+Version: 0.1.0
+Author: Mathias Harrer, Paula Kuper, Pim Cuijpers
+Authors@R: c(
+    person("Mathias", "Harrer", email = "mathias.h.harrer@gmail.com", role = "cre", comment = c(ORCID = "0000-0001-7016-2687")),
+    person("Kuper", "Paula", email = "INSERT", role = "cre"))
+    person("Pim", "Cuijpers", email = "p.cuijpers@vu.nl", role = "aut", comment = c(ORCID = "0000-0001-5497-2743")))
+Description: More about what it does (maybe more than one line)
+    Use four spaces when indenting paragraphs within the Description.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
