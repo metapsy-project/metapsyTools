@@ -9,7 +9,7 @@
 # group.indicator: character, column name of the variable storing the study name
 # group.names: list, storing the name of the value corresponding to the intervention group ("ig") and control group ("cg").
 
-# dplyr `%>%` filter arange pull
+# dplyr `%>%` filter arrange pull
 # stringr str_replace_all str_remove_all
 # magrittr set_rownames
 
