@@ -22,6 +22,7 @@ Imports:
     esc,
     magrittr (>= 1.5),
     purrr,
+    rmarkdown,
     stringr (>= 1.4.0),
     graphics (>= 3.5.2), 
     stats (>= 3.5.2),
