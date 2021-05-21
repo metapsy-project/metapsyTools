@@ -18,9 +18,9 @@ Suggests:
     meta
 VignetteBuilder: knitr
 Imports: 
-    dplyr,
+    dplyr (>= 0.8.0.1),
     esc,
-    magrittr,
+    magrittr (>= 1.5),
     purrr,
     stringr (>= 1.4.0),
     graphics (>= 3.5.2), 
