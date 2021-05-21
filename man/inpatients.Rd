@@ -7,24 +7,21 @@
 \format{
 A \code{data.frame} with 179 rows and 45 variables:
 \describe{
-  \item{study}{\code{Character}, The study label containing the author(s) and year of the study.}
-  \item{condition}{\code{Character}, The condition of the groups, either "intervention group" or "control group".}
-  \item{Cond_spec}{\code{Character}, The specific intervention in conditions.}
-  \item{is.multiarm}{\code{Numeric}, The dichotomized indication if a study has multiple arms or not.}
-  \item{no.arms}{\code{Numeric}, The number of arms of a study.}
-  \item{multiple.arms}{\code{Character}, The specification of arms in multiarm studies.}
-  \item{Outc_type}{\code{Character}, The type of outcome.}
-  \item{primary}{\code{Numeric}, The indication if a outcome is primary or not.}
-  \item{Outc_measure}{\code{Character}, The outcome measure used.}
-  \item{Time}{\code{Character}, The dichotomized time of assessment, either "post" or "FU".}
-  \item{Time_weeks}{\code{Character}, The assessment time of FU in weeks.}
-  \item{year}{\code{Numeric}, The year of the study.}
-  \item{country}{\code{Character}, The country of the study.}
+  \item{study}{\code{character}, The study label containing the author(s) and year of the study.}
+  \item{condition}{\code{character}, The condition of the groups, either "intervention group" or "control group".}
+  \item{Cond_spec}{\code{character}, The specific intervention in conditions.}
+  \item{is.multiarm}{\code{numeric}, The dichotomized indication if a study has multiple arms or not.}
+  \item{no.arms}{\code{numeric}, The number of arms of a study.}
+  \item{multiple.arms}{\code{character}, The specification of arms in multiarm studies.}
+  \item{Outc_type}{\code{character}, The type of outcome.}
+  \item{primary}{\code{numeric}, The indication if a outcome is primary or not.}
+  \item{Outc_measure}{\code{character}, The outcome measure used.}
+  \item{Time}{\code{character}, The dichotomized time of assessment, either "post" or "FU".}
+  \item{Time_weeks}{\code{character}, The assessment time of FU in weeks.}
+  \item{year}{\code{numeric}, The year of the study.}
+  \item{country}{\code{character}, The country of the study.}
   \item{...}{}
 }
-}
-\source{
-
 }
 \usage{
 data(inpatients)

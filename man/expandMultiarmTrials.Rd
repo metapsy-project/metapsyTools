@@ -4,52 +4,57 @@
 \alias{expandMultiarmTrials}
 \title{Expand multiarm trials}
 \usage{
-expandMultiarmTrials(
-  data,
-  vars.for.id = c("study", "primary", "Outc_measure", "Time", "Time_weeks"),
-  study.indicator = "study",
-  multiarm.indicator = "is.multiarm",
-  multiarm.group.indicator = "multiple_arms",
-  no.arms.indicator = "no.arms",
-  group.indicator = "condition",
-  group.names = list(ig = "ig", cg = "cg")
-)
+expandMultiarmTrials(data,
+                     vars.for.id = c("study", "primary",
+                                     "Outc_measure",
+                                     "Time", "Time_weeks"),
+                     study.indicator = "study",
+                     multiarm.indicator = "is.multiarm",
+                     multiarm.group.indicator = "multiple_arms",
+                     no.arms.indicator = "no.arms",
+                     group.indicator = "condition",
+                     group.names = list("ig" = "ig",
+                                        "cg" = "cg"))
 }
 \arguments{
-\item{data}{Meta-analysis data stored as a data.frame.}
+\item{data}{Meta-analysis data stored as a \code{data.frame}.}
 
-\item{vars.for.id}{Character vector, containing column names of all variables used to construct unique comparison IDs.}
+\item{vars.for.id}{\code{character} vector, containing column names of all variables used to construct unique comparison IDs.}
 
-\item{study.indicator}{Character, signifying the name of the variable containing the study name.}
+\item{study.indicator}{\code{character}, signifying the name of the variable containing the study name.}
 
-\item{multiarm.indicator}{Numeric, signifying if a row is part of a multiarm study (1) or not (0).}
+\item{multiarm.indicator}{\code{numeric}, signifying if a row is part of a multiarm study (1) or not (0).}
 
-\item{multiarm.group.indicator}{Character, signifying the name of the variable containing the name of the (active) treatment arm. Should be NA when study is not a multiarm trial/the row is part of the control group.}
+\item{multiarm.group.indicator}{\code{character}, signifying the name of the variable containing the name of the (active) treatment arm. Should be NA when study is not a multiarm trial/the row is part of the control group.}
 
-\item{no.arms.indicator}{Character, signifying the name of the variable containing the number of arms included in a study (typically 2).}
+\item{no.arms.indicator}{\code{character}, signifying the name of the variable containing the number of arms included in a study (typically 2).}
 
-\item{group.indicator}{Character, column name of the variable storing the study name.}
+\item{group.indicator}{\code{character}, column name of the variable storing the study name.}
 
-\item{group.names}{List, storing the name of the value corresponding to the intervention group ("ig") and control group ("cg").}
+\item{group.names}{\code{list}, storing the name of the value corresponding to the intervention group (\code{"ig"}) and control group (\code{"cg"}).}
 }
 \value{
-\code{expandMultiarmTrials} returns the meta-analysis dataset as class \code{data.frame} (if results are saved to a variable). The rows of multiarm studies are expanded so that each intervention group has an unambiguously assigned control group. It generates also the following columns:
+\code{expandMultiarmTrials} returns the meta-analysis data set as class \code{data.frame} (if results are saved to a variable). The rows of multiarm studies are expanded so that each intervention group has an unambiguously assigned control group. It also generates the following columns:
 \itemize{
-\item{\code{id} a comparison specific ID variable}
-\item{\code{study.id} a study specific ID variable}
-\item{\code{study} a study specific variable containing its name. For multiarm studies it specifies the active treatment indicated by \code{multiarm.group.indicator} behind the name of the study.}
+\item{\code{id} a \emph{comparison}-specific ID variable.}
+\item{\code{study.id} a \emph{study}-specific ID variable.}
+\item{\code{study} a study-specific variable containing the study name. For multiarm studies, this variable also specifies the active treatment indicated by \code{multiarm.group.indicator} behind the name of the study (e.g. \code{"Hauksson, 2017 -grp"}).}
 }
 }
 \description{
 This is a function to expand the format of meta-analysis data for its applicability to the \code{calculateEffectSizes} function of the \code{metapsyTools}-package.
 }
 \details{
-This function expands multiarm studies in meta-analysis data in a way that each comparison (intervention group vs. control group in \code{condition}) can be done unique for a specific outcome and thus has two rows. For this purpose, it duplicates the corresponding row of the control group condition if required. A specific study indicator variable is created that enables further use e.g. in 3 level models.
- For more details see the help vignette: \code{vignette("help", package = "metapsyTools")}
+This function expands multiarm studies in a meta-analysis data set, thereby ensuring that each comparison (intervention group vs. control group in \code{condition}) is unique for a specific outcome, and thus has two rows. For this purpose, it duplicates the corresponding row of the control group condition if required. A specific study indicator variable is created that enables further use, e.g. in 3-level models.
+ For more details see the help vignette: \code{vignette("metapsyTools")}.
 }
 \examples{
-# Example 1: define unique comparison IDs
-expandMultiarmTrials(inpatients, vars.for.id= c("study", "condition", "Time", "primary"))
+data("inpatients")
+
+# Example 1: define variables included in unique comparison IDs
+expandMultiarmTrials(inpatients,
+                     vars.for.id= c("study", "condition",
+                                    "Time", "primary"))
 
 }
 \seealso{

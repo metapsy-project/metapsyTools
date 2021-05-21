@@ -1,0 +1,139 @@
+---
+title: "metapsyTools"
+output: rmarkdown::html_vignette
+author: Paula Kuper
+vignette: >
+  %\VignetteIndexEntry{metapsyTools}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+## Introducing `metapsyTools`
+
+The `metapsyTools` package aims to facilitate the calculation of effect size data based on the  [Metapsy](https://evidencebasedpsychotherapies.shinyapps.io/metapsy/) database. Optimally, all included functions are used in combination. The three core functions in `metapsyTools` are intended to transform the imported data so that effect sizes can be calculated in R, for all trials and comparisons. 
+
+Then, the calculated effect size data can be pooled to get one overall estimate of the effect size. For this step, any meta-analysis R package of your choice (e.g. `meta` or `metafor`) can be used.
+
+
+## Characteristics of the Metapsy data format
+
+When working with imported data of the Metapsy database in R, there are a few points to keep in mind:
+
+* **The data is organized in a specific way**: study-specific data span multiple rows that can differ in their outcomes (e.g. primary or not), their conditions, arms and so on (similar to the _"longer" format_ in R). 
+
+* However, in its original form, the data differs from the long format in one point that is needed for effect size calculation using R: In multiarm studies, **not all intervention groups have a clearly assignable control group**, which is required to calculate effect sizes using R.
+
+We can see this, for example, in the study of Hauksson (2017): This is a three-arm study that compares two interventions ("grp" and "ind") against a control group (resulting in three rows for the primary outcome). In R, this format is too ambiguous to calculate effect sizes directly.
+
+```{r, echo=FALSE, message=F}
+library(metapsyTools)
+library(dplyr)
+
+inpatients %>% 
+  dplyr::filter(study=="Hauksson, 2017" & primary==1) %>% 
+  dplyr::select(c(1:6,8),) -> x
+
+class(x) = "data.frame"
+x
+```
+
+
+## Workflow
+
+It is important to keep this data structure in mind in order to understand the functioning of the `metapsyTools` package. The package provides tools to:
+
+1. **check the data format** (`checkDataFormat`), 
+2. **convert multiarm trials** to a format that allows effect size calculation for all comparisons (`expandMultiarmTrials`), and 
+3. **calculate effect sizes** (i.e. Hedges' $g$), so that meta-analytic techniques can be applied (`calculateEffectSizes`).
+
+
+### Introducing the "pipe"
+
+For this purpose, it is highly recommended to combine all three functions using a **pipe** operator (`%>%`). This is a helpful tool which allows users to chain several R functions together.
+
+Instead of nesting functions, a pipe processes an object using a sequence of operations by passing the result of one step as input for the next step. For the `metapsyTools` package, this means that each function can be applied on a meta-analysis data set in one run, and we do not have to create intermediate objects, or go through the process step by step, to get the required effect size data:
+
+```{r, eval=FALSE}
+inpatients %>% 
+  checkDataFormat() %>% 
+  expandMultiarmTrials() %>% 
+  calculateEffectSizes()
+```
+
+This code uses the `inpatients` example data set. First, the data set is checked, then the multiarm study rows are expanded, and finally, the effect sizes are calculated for each comparison. 
+
+**_NOTE:_** The use of pipes is just a suggestion to save time; each of the functions can be applied separately as well.
+
+We can now filter, for example, a specific study and outcome, and inspect the effect sizes:
+
+```{r }
+# Show primary outcome of 'Hauksson, 2017'
+inpatients %>% 
+  checkDataFormat() %>% 
+  expandMultiarmTrials() %>% 
+  calculateEffectSizes() %>% 
+  dplyr::filter(study.id == "Hauksson, 2017" & primary==1) %>% 
+  dplyr::select(study, es, se, condition, 
+                multiple_arms, primary)
+```
+
+
+Inspecting the effect sizes for the primary outcome in Hauksson (2017), we see that `expandMultiarmTrials` duplicated the control group row to obtain pairwise comparisons for both intervention arms. 
+
+## Pooling effect sizes
+
+After the effect sizes have been calculated using `calculateEffectSizes`, the data set can be used for meta-analyses. We simply have to add a new step to the pipe, in which the generated variables `es` (the effect size) and `se` (the standard error) are used for pooling. One option is to use the `metagen` function in the `meta` package to pool the effects. 
+
+In the example below, only the **primary outcome** data is pooled. This is achieved by including `primary == 1` into the the call to `dplyr::filter`. Other types of meta-analyses can be conducted by changing the filtering logic in this step (e.g. adding ` & country == 4` to only use studies from a specific location).
+
+```{r, message=F}
+library(meta)
+
+inpatients %>% 
+  checkDataFormat %>% 
+  expandMultiarmTrials %>% 
+  calculateEffectSizes %>% 
+  dplyr::filter(!is.na(es) & primary==1) %>% 
+  meta::metagen(es, se, studl = study, comb.f = FALSE, data=.)
+```
+
+As we can see, the functions of the `metapsyTools` package, combined with the pipe operator, allow to (1) check and transform the data, (2) calculate the effect sizes, and (3) pool selected comparisons, using just 6 lines of code.
+
+Three-level meta-analyses can also be conducted using this logic:
+
+```{r, message=F, eval=F}
+library(metafor)
+
+inpatients %>%
+  checkDataFormat ()%>%
+  expandMultiarmTrials() %>%
+  calculateEffectSizes() %>%
+  dplyr::filter(!is.na(es)) %>%
+  dplyr::mutate(es.id = 1:nrow(.)) %>%
+  metafor::rma.mv(es, se^2, data = ., slab = study.id,
+                  random = ~ 1 | study.id/es.id, test = "t")
+```
+
+```
+Multivariate Meta-Analysis Model (k = 100; method: REML)
+
+Variance Components:
+
+            estim    sqrt  nlvls  fixed          factor 
+sigma^2.1  0.0715  0.2673     32     no        study.id 
+sigma^2.2  0.0000  0.0000    100     no  study.id/es.id 
+
+Test for Heterogeneity:
+Q(df = 99) = 135.0773, p-val = 0.0093
+
+Model Results:
+
+estimate      se     tval    pval    ci.lb    ci.ub 
+ -0.3876  0.0644  -6.0193  <.0001  -0.5154  -0.2598  *** 
+
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+```
+
+

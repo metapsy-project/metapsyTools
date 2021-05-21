@@ -22,6 +22,10 @@ Imports:
     esc,
     magrittr,
     purrr,
-    stringr,
+    stringr (>= 1.4.0),
+    graphics (>= 3.5.2), 
+    stats (>= 3.5.2),
+    utils (>= 3.5.2),
+    methods (>= 3.5.2),
     tidyr
 Depends: R (>= 3.5.0) 

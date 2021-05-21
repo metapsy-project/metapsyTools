@@ -4,82 +4,114 @@
 \alias{calculateEffectSizes}
 \title{Calculate effect sizes}
 \usage{
-calculateEffectSizes(
-  data,
-  comp.id.indicator = "id",
-  study.indicator = "study",
-  group.indicator = "condition",
-  pivot.vars = c("id", "condition", "Post_M", "Post_SD", "Post_N", "Rand_N",
-    "Improved_N", "Change_m", "Change_SD", "Change_N"),
-  funcs = list(mean.sd = function(x, ...) {     x \%>\%
-    purrr::pmap_dfr(function(Post_M_ig, Post_M_cg, Post_SD_ig, Post_SD_cg, Post_N_ig,
-    Post_N_cg, ...) {         esc::esc_mean_sd(Post_M_ig, Post_SD_ig, Post_N_ig,
-    Post_M_cg, Post_SD_cg, Post_N_cg, es.type = "g") \%>\% as.data.frame() \%>\%
-    dplyr::select(es, se) \%>\% suppressWarnings()     }) }, binary = function(x, ...) { 
-       x \%>\% purrr::pmap_dfr(function(Improved_N_ig, Improved_N_cg, Rand_N_ig,
-    Rand_N_cg, ...) {         esc::esc_2x2(Improved_N_ig, Rand_N_ig - Improved_N_ig,
-    Improved_N_cg, Rand_N_cg - Improved_N_cg, es.type = "g") \%>\% as.data.frame() \%>\%
-    dplyr::select(es, se) \%>\% suppressWarnings() \%>\% mutate(es = es * -1)     }) },
-    change = function(x, ...) {     x \%>\% purrr::pmap_dfr(function(Change_m_ig,
-    Change_m_cg, Change_SD_ig, Change_SD_cg, Change_N_ig, Change_N_cg, ...) {        
-    esc::esc_mean_sd(Change_m_ig, Change_SD_ig, Change_N_ig, Change_m_cg, Change_SD_cg,
-    Change_N_cg, es.type = "g") \%>\% as.data.frame() \%>\% dplyr::select(es, se) \%>\%
-    suppressWarnings()     }) })
-)
+calculateEffectSizes(data,
+       comp.id.indicator = "id",
+       study.indicator = "study",
+       group.indicator = "condition",
+       pivot.vars = c("id", "condition", "Post_M", "Post_SD",
+                     "Post_N", "Rand_N", "Improved_N", "Change_m",
+                     "Change_SD", "Change_N"),
+       funcs = list(
+                 mean.sd = function(x, ...){
+                   x \%>\%
+                     purrr::pmap_dfr(function(Post_M_ig, Post_M_cg, Post_SD_ig,
+                                              Post_SD_cg, Post_N_ig, Post_N_cg, ...)
+                     {esc::esc_mean_sd(Post_M_ig, Post_SD_ig, Post_N_ig,
+                                       Post_M_cg, Post_SD_cg, Post_N_cg,
+                                       es.type = "g") \%>\%
+                         as.data.frame() \%>\% dplyr::select(es, se) \%>\%
+                         suppressWarnings()})},
+                 binary = function(x, ...){
+                   x \%>\%
+                     purrr::pmap_dfr(function(Improved_N_ig, Improved_N_cg,
+                                              Rand_N_ig, Rand_N_cg, ...)
+                     {esc::esc_2x2(Improved_N_ig,
+                                   Rand_N_ig - Improved_N_ig,
+                                   Improved_N_cg,
+                                   Rand_N_cg - Improved_N_cg,
+                                   es.type = "g") \%>\%
+                         as.data.frame() \%>\% dplyr::select(es, se) \%>\%
+                         suppressWarnings() \%>\%
+                         mutate(es = es*-1)})},
+                 change = function(x, ...){
+                   x \%>\%
+                     purrr::pmap_dfr(function(Change_m_ig, Change_m_cg, Change_SD_ig,
+                                              Change_SD_cg, Change_N_ig, Change_N_cg, ...)
+                     {esc::esc_mean_sd(Change_m_ig, Change_SD_ig, Change_N_ig,
+                                       Change_m_cg, Change_SD_cg, Change_N_cg,
+                                       es.type = "g") \%>\%
+                         as.data.frame() \%>\% dplyr::select(es, se) \%>\%
+                         suppressWarnings()})}))
 }
 \arguments{
-\item{data}{Meta-analysis dataset of \code{expandMultiarmTrials}, created using \code{expandMultiarmTrials}.}
+\item{data}{Meta-analysis data set of class \code{expandMultiarmTrials}, created using \code{expandMultiarmTrials}.}
 
-\item{comp.id.indicator}{Character, column name of the variable storing the comparison ID.}
+\item{comp.id.indicator}{\code{character}, column name of the variable storing the comparison ID.}
 
-\item{study.indicator}{Character, column name of the variable storing the study name.}
+\item{study.indicator}{\code{character}, column name of the variable storing the study name.}
 
-\item{group.indicator}{Character, column name of the variable storing the condition (intervention or control group).}
+\item{group.indicator}{\code{character}, column name of the variable storing the condition (intervention or control group).}
 
-\item{pivot.vars}{Character vector, contains the name of the comparison ID variable, the condition variable, and all raw effect size data variables from which effect sizes should be calculated.}
+\item{pivot.vars}{\code{character} vector, contains the name of the comparison ID variable, the condition variable, and all raw effect size data variables from which effect sizes should be calculated.}
 
-\item{funcs}{List of functions. These functions will be used to calculate the effect sizes (Hedges' g) based on the raw data.}
+\item{funcs}{\code{list} of functions. These functions will be used to calculate the effect sizes (Hedges' \emph{g}) based on the raw data (see Details).}
 }
 \value{
-\code{calculateEffectSizes} returns the meta-analysis dataset as class \code{data.frame} (if results are saved to a variable). It generates also the following columns:
+\code{calculateEffectSizes} returns the meta-analysis data set as class \code{data.frame} (if results are saved to a variable). It also generates the following columns, wich are added to the data:
 \itemize{
-\item{\code{es} calculated effect sizes for each comparison}
-\item{\code{se} calculated standard error of the effect size}
-\item{\code{study.id} a study specific ID variable}
-\item{\code{study} a study specific variable containing its name. For multiarm studies it specifies the active treatment behind the name of the study.}
+\item{\code{es} calculated effect sizes for each comparison.}
+\item{\code{se} calculated standard error of the effect size.}
+\item{\code{study.id} a study-specific ID variable.}
+\item{\code{study} a study-specific variable containing its name. For multiarm studies, this variable specifies the active treatment arm used to calculate the effect.}
 }
 }
 \description{
 This is a function to calculate effect sizes of meta-analysis data created by \code{expandMultiarmTrials}.
 }
 \details{
-By default, g is calculated from:
+By default, the small-sample bias corrected standardized mean difference (Hedges' \emph{g}) is calculated from:
 \itemize{
  \item {the mean, SD and N}
  \item {binary outcome data (i.e. response counts) and}
  \item {change scores}
 }
-Other functions can be added to the list. Results of the function must result in a data.frame
-with the same number of rows as in data, and two columns: one for the calculated g value (named es) and its standard error (named se).
-In rows for which no fitting raw data was supplied, the resulting data.frame should contain NA.
+Other functions can be added to the list provided to \code{funcs}. However, results of the function must result in a \code{data.frame}
+with the same number of rows as in \code{data}, and two columns: one for the calculated \emph{g} value (named \code{es}) and its standard error (named \code{se}).
+In rows for which no fitting raw data was supplied, the resulting \code{data.frame} should contain \code{NA}.
 
-For more details see the help vignette: \code{vignette("help", package = "metapsyTools")}
+For more details see the help vignette: \code{vignette("metapsyTools")}
 }
 \examples{
+\dontrun{
 #Example 1: use function in default mode; requires data created by expandMultiarmTrials
+data("inpatients")
 inpatients \%>\%
-expandMultiarmTrials() \%>\%
-calculateEffectSizes()
+    expandMultiarmTrials() \%>\%
+    calculateEffectSizes()
 
-#Example 2: further use: pool effect sizes
+#Example 2: further use to pool effect sizes
 library(meta)
-
+library(dplyr)
 inpatients \%>\%
-checkDataFormat ()\%>\%
-expandMultiarmTrials() \%>\%
-calculateEffectSizes() \%>\%
-dplyr::filter(!is.na(es) & primary==1) \%>\%
-metagen(es, se, studlab=study, comb.fixed=FALSE, data=.)
+    checkDataFormat ()\%>\%
+    expandMultiarmTrials() \%>\%
+    calculateEffectSizes() \%>\%
+    dplyr::filter(!is.na(es) & primary==1) \%>\%
+    metagen(es, se, studlab=study, comb.fixed=FALSE, data=.)
+
+
+# Example 3: use for 3-level model
+library(metafor)
+inpatients \%>\%
+  checkDataFormat ()\%>\%
+  expandMultiarmTrials() \%>\%
+  calculateEffectSizes() \%>\%
+  dplyr::filter(!is.na(es)) \%>\%
+  dplyr::mutate(es.id = 1:nrow(.)) \%>\%
+  metafor::rma.mv(es, se^2, data = ., slab = study.id,
+                  random = ~ 1 | study.id/es.id, test = "t")
+}
+
 
 }
 \seealso{
