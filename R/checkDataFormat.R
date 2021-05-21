@@ -1,9 +1,36 @@
-# data: meta-analysis data stored as a data.frame
-# must.contain: character vector, containing all the variable names the
-# data set should contain.
-# variable.contains: list, defining which values should only be contained in a variable.
-# variable.class: list, defining the required data class for some or all variables. If the
-# class differs, the function will try to convert the variable to the desired class.
+#' Check data format
+#'
+#'
+#' This is a function to check the format of meta- analysis data of class \code{data.frame} for its further applicability to the \code{expandMultiarmTrials} function.
+#'
+#' @param data Meta-analysis data stored as a data.frame.
+#' @param must.contain Character vector, containing all the variable names the data set should contain.
+#' @param variable.contains List, defining which values should only be contained in a variable.
+#' @param variable.class List, defining the required data class for some or all variables. If the class differs, the function will try to convert the variable to the desired class.
+#'
+#' @return \code{checkDataFormat} returns messages that specify if input variables, values and classes of the variables are as defined.
+#' @details The function ckecks if:
+#'  \itemize{
+#'  \item{the data set contains all relevant variables}
+#'  \item{variables contain desired values only and}
+#'  \item{variables are of desired type (if not, it tries to convert them).}
+#'  }
+#' @examples
+#' # Example 1: Check data with default arguments
+#' checkDataFormat(inpatients)
+#'
+#' #Example 2: Check for specified variables and corresponding values and classes
+#' checkDataFormat(inpatients, must.contain=c("study", "condition", "primary", "year"), variable.contains=list("condition"=c("ig","cg")), variable.class=list(study="character", no.arms="numeric"))
+#'
+#' #Example 3: Convert variable class as predefined
+#' \dontrun{
+#' checkDataFormat(inpatients, must.contain= c("primary", "study"), variable.class= list(primary="integer"))}
+#'
+#'
+#' @author Mathias Harrer \email{mathias.h.harrer@@gmail.com}, Paula Kuper \email{paula.r.kuper@@gmail.com}, Pim Cuijpers \email{p.cuijpers@@vu.nl}
+#'
+#' @seealso \link{expandMultiarmTrials}
+#' @export
 
 checkDataFormat = function(data,
                            must.contain = c("study", "condition",

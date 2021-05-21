@@ -1,17 +1,37 @@
-# data: meta-analysis data stored as a data.frame
-# vars.for.id: character vector, containing column names of all variables used to
-# construct unique comparison IDs.
-# study.indicator: character, signifying the name of the variable containing the study name.
-# multiarm.indicator: numeric, signifying if a row is part of a multiarm study (1) or not (0).
-# multiarm.group.indicator: character, signifying the name of the variable containing the name of the (active) treatment arm.
-# should be NA when study is not a multiarm trial/the row is part of the control group.
-# no.arms.indicator: character, signifying the name of the variable containing the number of arms included in a study (typically 2).
-# group.indicator: character, column name of the variable storing the study name
-# group.names: list, storing the name of the value corresponding to the intervention group ("ig") and control group ("cg").
-
-# dplyr `%>%` filter arrange pull
-# stringr str_replace_all str_remove_all
-# magrittr set_rownames
+#' Expand multiarm trials
+#'
+#'
+#' This is a function to expand the format of meta-analysis data for its applicability to the \code{calculateEffectSizes} function of the \code{metapsyTools}-package.
+#'
+#' @param data Meta-analysis data stored as a data.frame.
+#' @param vars.for.id Character vector, containing column names of all variables used to construct unique comparison IDs.
+#' @param study.indicator Character, signifying the name of the variable containing the study name.
+#' @param multiarm.indicator Numeric, signifying if a row is part of a multiarm study (1) or not (0).
+#' @param multiarm.group.indicator Character, signifying the name of the variable containing the name of the (active) treatment arm. Should be NA when study is not a multiarm trial/the row is part of the control group.
+#' @param no.arms.indicator Character, signifying the name of the variable containing the number of arms included in a study (typically 2).
+#' @param group.indicator Character, column name of the variable storing the study name.
+#' @param group.names List, storing the name of the value corresponding to the intervention group ("ig") and control group ("cg").
+#'
+#' @return \code{expandMultiarmTrials} returns the meta-analysis dataset as class \code{data.frame} (if results are saved to a variable). The rows of multiarm studies are expanded so that each intervention group has an unambiguously assigned control group. It generates also the following columns:
+#' \itemize{
+#' \item{\code{id} a comparison specific ID variable}
+#' \item{\code{study.id} a study specific ID variable}
+#' \item{\code{study} a study specific variable containing its name. For multiarm studies it specifies the active treatment indicated by \code{multiarm.group.indicator} behind the name of the study.}
+#' }
+#' @details This function expands multiarm studies in meta-analysis data in a way that each comparison (intervention group vs. control group in \code{condition}) can be done unique for a specific outcome and thus has two rows. For this purpose, it duplicates the corresponding row of the control group condition if required. A specific study indicator variable is created that enables further use e.g. in 3 level models.
+#'  For more details see the help vignette: \code{vignette("help", package = "metapsyTools")}
+#' @examples
+#' # Example 1: define unique comparison IDs
+#' expandMultiarmTrials(inpatients, vars.for.id= c("study", "condition", "Time", "primary"))
+#'
+#' @author Mathias Harrer \email{mathias.h.harrer@@gmail.com}, Paula Kuper \email{paula.r.kuper@gmail.com}, Pim Cuijpers \email{p.cuijpers@@vu.nl}
+#'
+#' @seealso \code{\link{calculateEffectSizes}}
+#' @importFrom dplyr filter arrange pull
+#' @importFrom stringr str_replace_all str_remove_all
+#' @importFrom magrittr set_rownames
+#' @import magrittr
+#' @export
 
 expandMultiarmTrials = function(data,
                                 vars.for.id = c("study", "primary",

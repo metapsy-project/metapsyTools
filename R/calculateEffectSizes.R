@@ -1,20 +1,61 @@
-# data: meta-analysis dataset of class expandMultiarmTrials, created using expanMultiarmTrials
-# comp.id.indicator: character, column name of the variable storing the comparison ID
-# group.indicator: character, column name of the variable storing the study name
-# group.indicator: character, column name of the variable storing the condition
-# (intervention or control group)
-# pivot.vars: character vector, contains the name of the comparison ID variable, the condition variable,
-# and all raw effect size data variables from which effect sizes should be calculated
-# funcs: list of functions. These functions will be used to calculate the effect sizes (Hedges' g) based on the raw data.
-# By default, g is calculated from (i) the mean, SD and N; (ii) binary outcome data (i.e. response counts),
-# and (iii) change scores. Other functions can be added to the list. Results of the function must result in a data.frame
-# with the same number of rows as in data, and two columns: one for the calculated g value (named es) and its standard error (named se).
-# In rows for which no fitting raw data was supplied, the resulting data.frame should contain NA.
-
-# tidyr pivot_wider pivot_longer
-# dplyr `%>%` all_of select filter mutate arrange
-# purrr pmap_dfr
-# esc esc_mean_sd
+#' Calculate effect sizes
+#'
+#'
+#' This is a function to calculate effect sizes of meta-analysis data created by \code{expandMultiarmTrials}.
+#'
+#' @param data Meta-analysis dataset of \code{expandMultiarmTrials}, created using \code{expandMultiarmTrials}.
+#' @param comp.id.indicator Character, column name of the variable storing the comparison ID.
+#' @param study.indicator Character, column name of the variable storing the study name.
+#' @param group.indicator Character, column name of the variable storing the condition (intervention or control group).
+#' @param pivot.vars Character vector, contains the name of the comparison ID variable, the condition variable, and all raw effect size data variables from which effect sizes should be calculated.
+#' @param funcs List of functions. These functions will be used to calculate the effect sizes (Hedges' g) based on the raw data.
+#'
+#'
+#' @return \code{calculateEffectSizes} returns the meta-analysis dataset as class \code{data.frame} (if results are saved to a variable). It generates also the following columns:
+#' \itemize{
+#' \item{\code{es} calculated effect sizes for each comparison}
+#' \item{\code{se} calculated standard error of the effect size}
+#' \item{\code{study.id} a study specific ID variable}
+#' \item{\code{study} a study specific variable containing its name. For multiarm studies it specifies the active treatment behind the name of the study.}
+#' }
+#' @examples
+#' #Example 1: use function in default mode; requires data created by expandMultiarmTrials
+#' inpatients %>%
+#' expandMultiarmTrials() %>%
+#' calculateEffectSizes()
+#'
+#' #Example 2: further use: pool effect sizes
+#' library(meta)
+#'
+#' inpatients %>%
+#' checkDataFormat ()%>%
+#' expandMultiarmTrials() %>%
+#' calculateEffectSizes() %>%
+#' dplyr::filter(!is.na(es) & primary==1) %>%
+#' metagen(es, se, studlab=study, comb.fixed=FALSE, data=.)
+#'
+#' @author Mathias Harrer \email{mathias.h.harrer@@gmail.com}, Paula Kuper \email{paula.r.kuper@@gmail.com}, Pim Cuijpers \email{p.cuijpers@@vu.nl}
+#'
+#' @seealso \code{\link{expandMultiarmTrials}}
+#' @details  By default, g is calculated from:
+#' \itemize{
+#'  \item {the mean, SD and N}
+#'  \item {binary outcome data (i.e. response counts) and}
+#'  \item {change scores}
+#' }
+#' Other functions can be added to the list. Results of the function must result in a data.frame
+#' with the same number of rows as in data, and two columns: one for the calculated g value (named es) and its standard error (named se).
+#' In rows for which no fitting raw data was supplied, the resulting data.frame should contain NA.
+#'
+#' For more details see the help vignette: \code{vignette("help", package = "metapsyTools")}
+#'
+#' @importFrom tidyr pivot_longer pivot_wider
+#' @importFrom dplyr all_of select filter mutate arrange
+#' @importFrom purrr pmap_dfr
+#' @importFrom esc esc_mean_sd
+#' @import magrittr
+#' @import dplyr
+#' @export
 
 calculateEffectSizes = function(data,
                                 comp.id.indicator = "id",
