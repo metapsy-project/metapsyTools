@@ -21,7 +21,7 @@ fitOverallModel(
   dots,
   es.binary.raw.vars,
   round.digits,
-  nnt.cer,
+  nntCer,
   which.run,
   rob.data
 )

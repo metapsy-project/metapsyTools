@@ -20,10 +20,10 @@ exploreStudies(data,
 }
 \arguments{
 \item{data}{\code{data.frame}. Effect size data in the wide format, as
-created by \code{\link{calculateEffectSizes}}. For the other default settings to be
+created by \code{\link[metapsyTools]{calculateEffectSizes}}. For the other default settings to be
 applicable, the data set should follow the \href{https://docs.metapsy.org/data-preparation/format/}{Metapsy data standard}.
 Alternatively, one can also provide an \code{metapsyDatabase} object as returned by \code{\link[metapsyData:getData]{metapsyData::getData()}},
-or a meta-analysis object returned by \code{\link[=runMetaAnalysis]{runMetaAnalysis()}}.}
+or a meta-analysis object returned by \code{\link[metapsyTools]{runMetaAnalysis}}.}
 
 \item{which}{Should the data set be summarized with respect to the included
 treatments (\code{"treatments"}) or treatment comparisons (\code{"comparisons"})? Defaults to
@@ -89,7 +89,7 @@ exploreStudies(res, "comparisons")
 }
 \seealso{
 \code{\link{createStudyTable}}, \code{\link{calculateEffectSizes}},
-\code{\link{subgroupAnalysis}}, \code{\link{correctPublicationBias}},
+\code{\link[metapsyTools]{subgroupAnalysis}}, \code{\link[metapsyTools]{correctPublicationBias}},
 \code{\link{metaRegression}}, \code{\link{runMetaAnalysis}}.
 }
 \author{

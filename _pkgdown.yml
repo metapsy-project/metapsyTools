@@ -3,6 +3,7 @@ template:
     in_header: 
       - <script src="extra_script_header.js"></script>
       - <link rel="stylesheet" href="extra.css">
+      - <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
     after_body: <script src="extra_script.js"></script>
   bootstrap: 5
   bootswatch: flatly
@@ -89,5 +90,10 @@ reference:
 - title: "Datasets"
   contents:
   - depressionPsyCtr
+
+# Exclude internal functions that cause rJava issues
+exclude:
+  - createRobRatings
+  - checkRobDiscrepancies
 
 

@@ -1,6 +1,6 @@
 #' Calculate the proportion of true effect sizes above a meaningful threshold
 #'
-#' Based on results of the [runMetaAnalysis()], this function allows to
+#' Based on results of the \code{\link[metapsyTools]{runMetaAnalysis}} function, this function allows to
 #' estimate the proportion of true effect sizes that exceed a user-defined
 #' meaningful (e.g. clinically relevant) threshold.
 #'
@@ -10,7 +10,7 @@
 #'               test = "smaller", 
 #'               plot = FALSE)
 #'
-#' @param model A class \code{runMetaAnalysis} object, created by the [runMetaAnalysis()] function.
+#' @param model A class \code{runMetaAnalysis} object, created by the \code{\link[metapsyTools]{runMetaAnalysis}} function.
 #' @param mid A `numeric` value, indicating a clinically relevant effect threshold (e.g. a minimally
 #' important difference; \mjeqn{MID}{MID}; Cuijpers et al., [2014](https://onlinelibrary.wiley.com/doi/full/10.1002/da.22249)) 
 #' that should be used to estimate the
@@ -23,7 +23,7 @@
 #' Alternatively, possible values are \code{"overall"}, \code{"combined"}, \code{"lowest"}, 
 #' \code{"highest"}, \code{"outliers"}, \code{"influence"} and \code{"rob"}, if these
 #' models are available in the `model` object. If 
-#' [correctPublicationBias()] has been run, `"trimfill"`, `limitmeta` and `selection`
+#' \code{\link[metapsyTools]{correctPublicationBias}} has been run, `"trimfill"`, `limitmeta` and `selection`
 #' are also possible options. It is also possible to concatenate model names, meaning
 #' that proportions are calculated for all the supplied models.  
 #' @param test By default, the function estimates the proportion of true effects _below_
@@ -74,7 +74,7 @@
 #' @author Mathias Harrer \email{mathias.h.harrer@@gmail.com},
 #' Paula Kuper \email{paula.r.kuper@@gmail.com}, Pim Cuijpers \email{p.cuijpers@@vu.nl}
 #'
-#' @seealso \code{\link{runMetaAnalysis}}, \code{\link{correctPublicationBias}}
+#' @seealso \code{\link[metapsyTools]{runMetaAnalysis}}, \code{\link[metapsyTools]{correctPublicationBias}}
 #'
 #' @details The `proportionMID` function implements an approach to estimate
 #' the proportion of true effect sizes exceeding a (scientifically or clinically)

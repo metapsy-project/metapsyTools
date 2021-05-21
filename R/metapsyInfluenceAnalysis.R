@@ -154,7 +154,7 @@ metapsyInfluenceAnalysis = function(x, random = FALSE, subplot.heights = c(30, 1
   
   forest.lims = forest.lims
   
-  if (forest.lims[1] == "default" | (class(forest.lims[1]) == "numeric" & class(forest.lims[2]) == "numeric")) {
+  if (forest.lims[1] == "default" | (inherits(forest.lims[1], "numeric") & inherits(forest.lims[2], "numeric"))) {
     
   } else {
     stop("'forest.lims' must either be 'default' or two concatenated numerics for ymin and ymax.")
@@ -168,13 +168,13 @@ metapsyInfluenceAnalysis = function(x, random = FALSE, subplot.heights = c(30, 1
   
   
   heights = subplot.heights
-  if (class(heights[1]) == "numeric" & class(heights[2]) == "numeric") {
+  if (inherits(heights[1], "numeric") & inherits(heights[2], "numeric")) {
   } else {
     stop("'subplot.heights' must be two concatenated numerics.")
   }
   
   widths = subplot.widths
-  if (class(widths[1]) == "numeric" & class(widths[2]) == "numeric") {
+  if (inherits(widths[1], "numeric") & inherits(widths[2], "numeric")) {
   } else {
     stop("'widths' must be two concatenated numerics.")
   }

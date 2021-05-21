@@ -18,7 +18,7 @@ fitCombinedHACEModel(
   round.digits,
   hakn,
   .raw.bin.es,
-  nnt.cer,
+  nntCer,
   rho.within.study,
   method.tau,
   method.tau.ci,

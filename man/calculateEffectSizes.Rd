@@ -49,7 +49,7 @@ sign of a calculated effect size should be reversed (\code{TRUE}) or not (\code{
 no changes should be made.}
 
 \item{impute.response}{\code{logical}. When calculating the (log)-risk ratios, should response rates be computed
-using the \code{\link[=imputeResponse]{imputeResponse()}} function? \code{FALSE} by default. If defined, the column specified in \code{change.sign}
+using the \code{\link[metapsyTools]{imputeResponse}} function? \code{FALSE} by default. If defined, the column specified in \code{change.sign}
 will also be considered when calculating the response.}
 
 \item{vars.for.id}{\code{character} vector, containing column names of all variables
@@ -67,7 +67,7 @@ representing the suffix used to differentiate between the first and second arm i
 \item{.trt.indicator}{\code{character}. A character specifying the name used to indicate the treatment arm.}
 
 \item{.impute.response.vars}{\code{list}. Named list with the names of columns in \code{data} and the specific argument in
-\code{\link[=imputeResponse]{imputeResponse()}} they should be used for.}
+\code{\link[metapsyTools]{imputeResponse}} they should be used for.}
 }
 \value{
 \code{calculateEffectSizes} returns the meta-analysis data set as

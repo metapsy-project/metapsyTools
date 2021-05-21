@@ -1,0 +1,104 @@
+# Installation Guide
+
+![](https://tools.metapsy.org/figures/installation.jpg)
+
+  
+
+## Installation
+
+------------------------------------------------------------------------
+
+The `metapsyTools` package has not been submitted to
+[CRAN](https://cran.r-project.org/), which means that an installation
+using the
+[`install.packages()`](https://rdrr.io/r/utils/install.packages.html)
+function will not work.
+
+To install the package, you have to download the latest version of the
+package from the `metapsyTools` [Github
+repository](https://github.com/MathiasHarrer/metapsyTools). This is
+fairly easy to achieve using the `install_github` function in the
+[`devtools`](https://devtools.r-lib.org/index.html) package. If you run
+the following code in R:
+
+``` r
+if (!require("devtools"))
+  install.packages("devtools")
+
+devtools::install_github(
+    "metapsy-project/metapsyTools",
+    build_vignettes = TRUE)
+```
+
+R will automatically check if `devtools` is installed on your computer,
+and install it for you if necessary; download the `metapsyTools` package
+from Github; and install the package. Following a succesfull
+installation, the package can be loaded from your library and is then
+ready to be used.
+
+``` r
+library(metapsyTools)
+```
+
+During the installation process, you may receive the following
+**prompts**:
+
+    ## These packages have more recent versions available.
+    ## Which would you like to update?
+    ##
+    ## 1: All
+    ## 2: CRAN packages only
+    ## 3: None
+    ## 4: ggpubr (0.2.2 -> 0.2.3) [CRAN]
+    ## 5: zip    (2.0.3 -> 2.0.4) [CRAN]
+    ##
+    ## Enter one or more numbers, or an empty line to skip updates:
+
+When you get this message, it is best to tell the installation manager
+that no packages should be updated. In our example, this means pasting
+`3` into the console and then hitting Enter. In the same vein, when the
+installation manager asks this question:
+
+    ## There are binary versions available but the source versions are later:
+    ##
+    ##  [...]
+    ##
+    ##   Do you want to install from sources the package which needs compilation?
+    ##   y/n:
+
+It is best to choose `n` (no). If the installation fails with this
+strategy (meaning that you get an Error), run the installation again,
+but update all packages this time.
+
+  
+
+## Updating the Package
+
+------------------------------------------------------------------------
+
+The `metapsyTools` package is under active development and after some
+time, a new version may be available. You can check the current version
+of of `metapsyTools` installed on your computer using this code:
+
+``` r
+packageVersion("metapsyTools")
+```
+
+The header of this website displays the most recent version of the
+package available for users. To use novel functionalities integrated
+into the package since your last installation, you have to update the
+package version that you have locally on your computer.
+
+To update the package, you first have to **de-install** the current
+version on your computer. You can do this using the following code:
+
+``` r
+# Note: this code assumes you are working with RStudio
+remove.packages("metapsyTools")
+.rs.restartR()
+```
+
+You can then use the same code as used above to (re-)install the latest
+package version.
+
+  

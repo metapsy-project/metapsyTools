@@ -85,7 +85,7 @@ addTrialArmInfo = function(.data, ...,
   
   warning("This function is deprecated as of version 1.0.0.")
 
-  if (class(.data) != "data.frame"){
+  if (!inherits(.data, "data.frame")){
     stop("object provided in '.data' must be of class 'data.frame'.")
   }
 

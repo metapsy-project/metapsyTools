@@ -1,0 +1,33 @@
+# Fit 'ccrem' model
+
+Fit 'ccrem' model
+
+## Usage
+
+``` r
+fitCcremModel(
+  data,
+  es.var,
+  se.var,
+  arm.var.1,
+  arm.var.2,
+  measure.var,
+  study.var,
+  .raw.bin.es,
+  .type.es,
+  hakn,
+  method.tau.meta,
+  method.tau.ci,
+  method.tau,
+  dots,
+  es.binary.raw.vars,
+  round.digits,
+  nnt.cer,
+  which.run,
+  mGeneral,
+  mCombined,
+  use.rve,
+  i2.ci.boot,
+  nsim.boot
+)
+```

@@ -1,411 +1,140 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>/404.html</loc>
-  </url>
-  <url>
-    <loc>/LICENSE-text.html</loc>
-  </url>
-  <url>
-    <loc>/analysis.html</loc>
-  </url>
-  <url>
-    <loc>/articles/app/data-validator.html</loc>
-  </url>
-  <url>
-    <loc>/articles/index.html</loc>
-  </url>
-  <url>
-    <loc>/articles/metapsyTools.html</loc>
-  </url>
-  <url>
-    <loc>/articles/web/data-validator.html</loc>
-  </url>
-  <url>
-    <loc>/articles/web/get-started.html</loc>
-  </url>
-  <url>
-    <loc>/articles/web/installation.html</loc>
-  </url>
-  <url>
-    <loc>/articles/web/look_inside.html</loc>
-  </url>
-  <url>
-    <loc>/authors.html</loc>
-  </url>
-  <url>
-    <loc>/data-validator.html</loc>
-  </url>
-  <url>
-    <loc>/figures/tbl.html</loc>
-  </url>
-  <url>
-    <loc>/figures/tbl2.html</loc>
-  </url>
-  <url>
-    <loc>/footer.html</loc>
-  </url>
-  <url>
-    <loc>/get-started.html</loc>
-  </url>
-  <url>
-    <loc>/in_footer.html</loc>
-  </url>
-  <url>
-    <loc>/index.html</loc>
-  </url>
-  <url>
-    <loc>/reference/Detect.html</loc>
-  </url>
-  <url>
-    <loc>/reference/Replacement-functions.html</loc>
-  </url>
-  <url>
-    <loc>/reference/adaptPlogit.html</loc>
-  </url>
-  <url>
-    <loc>/reference/addAllCombinations.html</loc>
-  </url>
-  <url>
-    <loc>/reference/addRobData.html</loc>
-  </url>
-  <url>
-    <loc>/reference/addTrialArmInfo.html</loc>
-  </url>
-  <url>
-    <loc>/reference/aggregateSD.html</loc>
-  </url>
-  <url>
-    <loc>/reference/binaryES.html</loc>
-  </url>
-  <url>
-    <loc>/reference/binaryRR.html</loc>
-  </url>
-  <url>
-    <loc>/reference/blup.html</loc>
-  </url>
-  <url>
-    <loc>/reference/blup.runMetaAnalysis.html</loc>
-  </url>
-  <url>
-    <loc>/reference/calculateEffectSizes.html</loc>
-  </url>
-  <url>
-    <loc>/reference/catch.html</loc>
-  </url>
-  <url>
-    <loc>/reference/catchName.html</loc>
-  </url>
-  <url>
-    <loc>/reference/changeES.html</loc>
-  </url>
-  <url>
-    <loc>/reference/checkConflicts.html</loc>
-  </url>
-  <url>
-    <loc>/reference/checkDataFormat.html</loc>
-  </url>
-  <url>
-    <loc>/reference/checkProblemsNMA.html</loc>
-  </url>
-  <url>
-    <loc>/reference/checkRobDiscrepancies.html</loc>
-  </url>
-  <url>
-    <loc>/reference/collapseDomainRatings.html</loc>
-  </url>
-  <url>
-    <loc>/reference/collapseRatings.html</loc>
-  </url>
-  <url>
-    <loc>/reference/convertNetmeta.html</loc>
-  </url>
-  <url>
-    <loc>/reference/correctPublicationBias.html</loc>
-  </url>
-  <url>
-    <loc>/reference/createRobRatings.html</loc>
-  </url>
-  <url>
-    <loc>/reference/createRobSummary.html</loc>
-  </url>
-  <url>
-    <loc>/reference/createStudyTable.html</loc>
-  </url>
-  <url>
-    <loc>/reference/database2021Subset.html</loc>
-  </url>
-  <url>
-    <loc>/reference/depressionPsyCtr.html</loc>
-  </url>
-  <url>
-    <loc>/reference/domain1Algorithm.html</loc>
-  </url>
-  <url>
-    <loc>/reference/domain2Algorithm.html</loc>
-  </url>
-  <url>
-    <loc>/reference/domain3Algorithm.html</loc>
-  </url>
-  <url>
-    <loc>/reference/domain4Algorithm.html</loc>
-  </url>
-  <url>
-    <loc>/reference/domain5Algorithm.html</loc>
-  </url>
-  <url>
-    <loc>/reference/eb.html</loc>
-  </url>
-  <url>
-    <loc>/reference/eb.runMetaAnalysis.html</loc>
-  </url>
-  <url>
-    <loc>/reference/expandMultiarmTrials.html</loc>
-  </url>
-  <url>
-    <loc>/reference/exploreStudies.html</loc>
-  </url>
-  <url>
-    <loc>/reference/extractG.html</loc>
-  </url>
-  <url>
-    <loc>/reference/filterPoolingData.html</loc>
-  </url>
-  <url>
-    <loc>/reference/filterPriorityRule.html</loc>
-  </url>
-  <url>
-    <loc>/reference/fitCcremCHEModel.html</loc>
-  </url>
-  <url>
-    <loc>/reference/fitCcremHACEModel.html</loc>
-  </url>
-  <url>
-    <loc>/reference/fitCcremModel.html</loc>
-  </url>
-  <url>
-    <loc>/reference/fitCombinedHACEModel.html</loc>
-  </url>
-  <url>
-    <loc>/reference/fitCombinedModel.html</loc>
-  </url>
-  <url>
-    <loc>/reference/fitHighestModel.html</loc>
-  </url>
-  <url>
-    <loc>/reference/fitInfluenceModel.html</loc>
-  </url>
-  <url>
-    <loc>/reference/fitLowestModel.html</loc>
-  </url>
-  <url>
-    <loc>/reference/fitOutliersModel.html</loc>
-  </url>
-  <url>
-    <loc>/reference/fitOverallModel.html</loc>
-  </url>
-  <url>
-    <loc>/reference/fitRobModel.html</loc>
-  </url>
-  <url>
-    <loc>/reference/fitThreeLevelCHEModel.html</loc>
-  </url>
-  <url>
-    <loc>/reference/fitThreeLevelHACEModel.html</loc>
-  </url>
-  <url>
-    <loc>/reference/fitThreeLevelModel.html</loc>
-  </url>
-  <url>
-    <loc>/reference/fitWaapWlsModel.html</loc>
-  </url>
-  <url>
-    <loc>/reference/flagEffectSizes.html</loc>
-  </url>
-  <url>
-    <loc>/reference/flagStudy.html</loc>
-  </url>
-  <url>
-    <loc>/reference/forestBlup.html</loc>
-  </url>
-  <url>
-    <loc>/reference/forestBlupPlotter.html</loc>
-  </url>
-  <url>
-    <loc>/reference/g.binary.html</loc>
-  </url>
-  <url>
-    <loc>/reference/g.change.m.sd.html</loc>
-  </url>
-  <url>
-    <loc>/reference/g.m.sd.html</loc>
-  </url>
-  <url>
-    <loc>/reference/g.precalc.html</loc>
-  </url>
-  <url>
-    <loc>/reference/i2.gen.html</loc>
-  </url>
-  <url>
-    <loc>/reference/imputeResponse.html</loc>
-  </url>
-  <url>
-    <loc>/reference/includeSwitchedArms.html</loc>
-  </url>
-  <url>
-    <loc>/reference/index.html</loc>
-  </url>
-  <url>
-    <loc>/reference/inpatients.html</loc>
-  </url>
-  <url>
-    <loc>/reference/isNAorNaN.html</loc>
-  </url>
-  <url>
-    <loc>/reference/meanSD.html</loc>
-  </url>
-  <url>
-    <loc>/reference/metaRegression.html</loc>
-  </url>
-  <url>
-    <loc>/reference/metaRegression.meta.html</loc>
-  </url>
-  <url>
-    <loc>/reference/metaRegression.rma.html</loc>
-  </url>
-  <url>
-    <loc>/reference/metaRegression.runMetaAnalysis.html</loc>
-  </url>
-  <url>
-    <loc>/reference/metapsyFindOutliers.html</loc>
-  </url>
-  <url>
-    <loc>/reference/metapsyInfluenceAnalysis.html</loc>
-  </url>
-  <url>
-    <loc>/reference/metapsyNNT.html</loc>
-  </url>
-  <url>
-    <loc>/reference/metapsyTools.html</loc>
-  </url>
-  <url>
-    <loc>/reference/minimumSNR.html</loc>
-  </url>
-  <url>
-    <loc>/reference/multiarmExpander.html</loc>
-  </url>
-  <url>
-    <loc>/reference/overallAlgorithm.html</loc>
-  </url>
-  <url>
-    <loc>/reference/pipe.html</loc>
-  </url>
-  <url>
-    <loc>/reference/plot.flagEffectSizes.html</loc>
-  </url>
-  <url>
-    <loc>/reference/plot.flagStudy.html</loc>
-  </url>
-  <url>
-    <loc>/reference/plot.proportionMID.html</loc>
-  </url>
-  <url>
-    <loc>/reference/plot.runMetaAnalysis.html</loc>
-  </url>
-  <url>
-    <loc>/reference/plot.simulateTreatmentCycles.html</loc>
-  </url>
-  <url>
-    <loc>/reference/plot.subgroupAnalysis.html</loc>
-  </url>
-  <url>
-    <loc>/reference/print.checkConflicts.html</loc>
-  </url>
-  <url>
-    <loc>/reference/print.createRobRatings.html</loc>
-  </url>
-  <url>
-    <loc>/reference/print.exploreStudies.html</loc>
-  </url>
-  <url>
-    <loc>/reference/print.flagEffectSizes.html</loc>
-  </url>
-  <url>
-    <loc>/reference/print.flagStudy.html</loc>
-  </url>
-  <url>
-    <loc>/reference/print.proportionMID.html</loc>
-  </url>
-  <url>
-    <loc>/reference/print.runMetaAnalysis.html</loc>
-  </url>
-  <url>
-    <loc>/reference/print.simulateTreatmentCycles.html</loc>
-  </url>
-  <url>
-    <loc>/reference/print.subgroupAnalysis.html</loc>
-  </url>
-  <url>
-    <loc>/reference/profile.runMetaAnalysis.html</loc>
-  </url>
-  <url>
-    <loc>/reference/proportionMID.html</loc>
-  </url>
-  <url>
-    <loc>/reference/psyCtrSubset.html</loc>
-  </url>
-  <url>
-    <loc>/reference/psyCtrSubsetWide.html</loc>
-  </url>
-  <url>
-    <loc>/reference/robSummary.html</loc>
-  </url>
-  <url>
-    <loc>/reference/robustCI.html</loc>
-  </url>
-  <url>
-    <loc>/reference/robustPval.html</loc>
-  </url>
-  <url>
-    <loc>/reference/rr.binary.html</loc>
-  </url>
-  <url>
-    <loc>/reference/rr.precalc.html</loc>
-  </url>
-  <url>
-    <loc>/reference/runMetaAnalysis.html</loc>
-  </url>
-  <url>
-    <loc>/reference/selectArguments.html</loc>
-  </url>
-  <url>
-    <loc>/reference/selectOutlierModel.html</loc>
-  </url>
-  <url>
-    <loc>/reference/sendMessage.html</loc>
-  </url>
-  <url>
-    <loc>/reference/setColnames.html</loc>
-  </url>
-  <url>
-    <loc>/reference/simulateTreatmentCycles.html</loc>
-  </url>
-  <url>
-    <loc>/reference/subgroupAnalysis.html</loc>
-  </url>
-  <url>
-    <loc>/reference/summary.runMetaAnalysis.html</loc>
-  </url>
-  <url>
-    <loc>/reference/testBaselineImbalance.html</loc>
-  </url>
-  <url>
-    <loc>/reference/testRandomizedProportion.html</loc>
-  </url>
-  <url>
-    <loc>/reference/tryCatch2.html</loc>
-  </url>
-  <url>
-    <loc>/reference/updateMeta.html</loc>
-  </url>
+<urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
+<url><loc>/404.html</loc></url>
+<url><loc>/CODCOV_SETUP.html</loc></url>
+<url><loc>/LICENSE-text.html</loc></url>
+<url><loc>/analysis.html</loc></url>
+<url><loc>/articles/app/data-validator.html</loc></url>
+<url><loc>/articles/index.html</loc></url>
+<url><loc>/articles/metapsyTools.html</loc></url>
+<url><loc>/articles/web/data-validator.html</loc></url>
+<url><loc>/articles/web/get-started.html</loc></url>
+<url><loc>/articles/web/installation.html</loc></url>
+<url><loc>/articles/web/look_inside.html</loc></url>
+<url><loc>/authors.html</loc></url>
+<url><loc>/data-validator.html</loc></url>
+<url><loc>/figures/tbl.html</loc></url>
+<url><loc>/figures/tbl2.html</loc></url>
+<url><loc>/footer.html</loc></url>
+<url><loc>/get-started.html</loc></url>
+<url><loc>/in_footer.html</loc></url>
+<url><loc>/index.html</loc></url>
+<url><loc>/reference/Detect.html</loc></url>
+<url><loc>/reference/Replacement-functions.html</loc></url>
+<url><loc>/reference/adaptPlogit.html</loc></url>
+<url><loc>/reference/addAllCombinations.html</loc></url>
+<url><loc>/reference/addRobData.html</loc></url>
+<url><loc>/reference/addTrialArmInfo.html</loc></url>
+<url><loc>/reference/aggregateSD.html</loc></url>
+<url><loc>/reference/binaryES.html</loc></url>
+<url><loc>/reference/binaryRR.html</loc></url>
+<url><loc>/reference/blup.html</loc></url>
+<url><loc>/reference/blup.runMetaAnalysis.html</loc></url>
+<url><loc>/reference/calculateEffectSizes.html</loc></url>
+<url><loc>/reference/catch.html</loc></url>
+<url><loc>/reference/catchName.html</loc></url>
+<url><loc>/reference/changeES.html</loc></url>
+<url><loc>/reference/checkConflicts.html</loc></url>
+<url><loc>/reference/checkDataFormat.html</loc></url>
+<url><loc>/reference/checkProblemsNMA.html</loc></url>
+<url><loc>/reference/checkRobDiscrepancies.html</loc></url>
+<url><loc>/reference/collapseDomainRatings.html</loc></url>
+<url><loc>/reference/collapseRatings.html</loc></url>
+<url><loc>/reference/convertNetmeta.html</loc></url>
+<url><loc>/reference/correctPublicationBias.html</loc></url>
+<url><loc>/reference/createRobRatings.html</loc></url>
+<url><loc>/reference/createRobSummary.html</loc></url>
+<url><loc>/reference/createStudyTable.html</loc></url>
+<url><loc>/reference/database2021Subset.html</loc></url>
+<url><loc>/reference/depressionPsyCtr.html</loc></url>
+<url><loc>/reference/domain1Algorithm.html</loc></url>
+<url><loc>/reference/domain2Algorithm.html</loc></url>
+<url><loc>/reference/domain3Algorithm.html</loc></url>
+<url><loc>/reference/domain4Algorithm.html</loc></url>
+<url><loc>/reference/domain5Algorithm.html</loc></url>
+<url><loc>/reference/eb.html</loc></url>
+<url><loc>/reference/eb.runMetaAnalysis.html</loc></url>
+<url><loc>/reference/expandMultiarmTrials.html</loc></url>
+<url><loc>/reference/exploreStudies.html</loc></url>
+<url><loc>/reference/extractG.html</loc></url>
+<url><loc>/reference/filterPoolingData.html</loc></url>
+<url><loc>/reference/filterPriorityRule.html</loc></url>
+<url><loc>/reference/fitCcremCHEModel.html</loc></url>
+<url><loc>/reference/fitCcremHACEModel.html</loc></url>
+<url><loc>/reference/fitCcremModel.html</loc></url>
+<url><loc>/reference/fitCombinedHACEModel.html</loc></url>
+<url><loc>/reference/fitCombinedModel.html</loc></url>
+<url><loc>/reference/fitHighestModel.html</loc></url>
+<url><loc>/reference/fitInfluenceModel.html</loc></url>
+<url><loc>/reference/fitLowestModel.html</loc></url>
+<url><loc>/reference/fitOutliersModel.html</loc></url>
+<url><loc>/reference/fitOverallModel.html</loc></url>
+<url><loc>/reference/fitRobModel.html</loc></url>
+<url><loc>/reference/fitThreeLevelCHEModel.html</loc></url>
+<url><loc>/reference/fitThreeLevelHACEModel.html</loc></url>
+<url><loc>/reference/fitThreeLevelModel.html</loc></url>
+<url><loc>/reference/fitWaapWlsModel.html</loc></url>
+<url><loc>/reference/flagEffectSizes.html</loc></url>
+<url><loc>/reference/flagStudy.html</loc></url>
+<url><loc>/reference/forestBlup.html</loc></url>
+<url><loc>/reference/forestBlupPlotter.html</loc></url>
+<url><loc>/reference/g.binary.html</loc></url>
+<url><loc>/reference/g.change.m.sd.html</loc></url>
+<url><loc>/reference/g.m.sd.html</loc></url>
+<url><loc>/reference/g.precalc.html</loc></url>
+<url><loc>/reference/i2.gen.html</loc></url>
+<url><loc>/reference/imputeResponse.html</loc></url>
+<url><loc>/reference/includeSwitchedArms.html</loc></url>
+<url><loc>/reference/index.html</loc></url>
+<url><loc>/reference/inpatients.html</loc></url>
+<url><loc>/reference/isNAorNaN.html</loc></url>
+<url><loc>/reference/meanSD.html</loc></url>
+<url><loc>/reference/metaRegression.html</loc></url>
+<url><loc>/reference/metaRegression.meta.html</loc></url>
+<url><loc>/reference/metaRegression.rma.html</loc></url>
+<url><loc>/reference/metaRegression.runMetaAnalysis.html</loc></url>
+<url><loc>/reference/metapsyFindOutliers.html</loc></url>
+<url><loc>/reference/metapsyInfluenceAnalysis.html</loc></url>
+<url><loc>/reference/metapsyNNT.html</loc></url>
+<url><loc>/reference/metapsyTools.html</loc></url>
+<url><loc>/reference/minimumSNR.html</loc></url>
+<url><loc>/reference/multiarmExpander.html</loc></url>
+<url><loc>/reference/overallAlgorithm.html</loc></url>
+<url><loc>/reference/pipe.html</loc></url>
+<url><loc>/reference/plot.flagEffectSizes.html</loc></url>
+<url><loc>/reference/plot.flagStudy.html</loc></url>
+<url><loc>/reference/plot.proportionMID.html</loc></url>
+<url><loc>/reference/plot.runMetaAnalysis.html</loc></url>
+<url><loc>/reference/plot.simulateTreatmentCycles.html</loc></url>
+<url><loc>/reference/plot.subgroupAnalysis.html</loc></url>
+<url><loc>/reference/print.checkConflicts.html</loc></url>
+<url><loc>/reference/print.createRobRatings.html</loc></url>
+<url><loc>/reference/print.exploreStudies.html</loc></url>
+<url><loc>/reference/print.flagEffectSizes.html</loc></url>
+<url><loc>/reference/print.flagStudy.html</loc></url>
+<url><loc>/reference/print.proportionMID.html</loc></url>
+<url><loc>/reference/print.runMetaAnalysis.html</loc></url>
+<url><loc>/reference/print.simulateTreatmentCycles.html</loc></url>
+<url><loc>/reference/print.subgroupAnalysis.html</loc></url>
+<url><loc>/reference/profile.runMetaAnalysis.html</loc></url>
+<url><loc>/reference/proportionMID.html</loc></url>
+<url><loc>/reference/psyCtrSubset.html</loc></url>
+<url><loc>/reference/psyCtrSubsetWide.html</loc></url>
+<url><loc>/reference/robSummary.html</loc></url>
+<url><loc>/reference/robustCI.html</loc></url>
+<url><loc>/reference/robustPval.html</loc></url>
+<url><loc>/reference/rr.binary.html</loc></url>
+<url><loc>/reference/rr.precalc.html</loc></url>
+<url><loc>/reference/runMetaAnalysis.html</loc></url>
+<url><loc>/reference/selectArguments.html</loc></url>
+<url><loc>/reference/selectOutlierModel.html</loc></url>
+<url><loc>/reference/sendMessage.html</loc></url>
+<url><loc>/reference/setColnames.html</loc></url>
+<url><loc>/reference/simulateTreatmentCycles.html</loc></url>
+<url><loc>/reference/subgroupAnalysis.html</loc></url>
+<url><loc>/reference/summary.runMetaAnalysis.html</loc></url>
+<url><loc>/reference/testBaselineImbalance.html</loc></url>
+<url><loc>/reference/testRandomizedProportion.html</loc></url>
+<url><loc>/reference/tryCatch2.html</loc></url>
+<url><loc>/reference/updateMeta.html</loc></url>
 </urlset>
+

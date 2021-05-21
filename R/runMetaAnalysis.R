@@ -46,7 +46,7 @@
 #'                 which.influence = c("overall", "combined"),
 #'                 which.rob = c("overall", "combined"),
 #'                 which.waap.wls = c("overall", "combined"),
-#'                 nnt.cer = 0.2,
+#'                 nntCer = 0.2,
 #'                 rho.within.study = 0.6,
 #'                 phi.within.study = 0.9,
 #'                 power.within.study = 0.8,
@@ -66,7 +66,7 @@
 #'                 ...)
 #'
 #' @param data \code{data.frame}. Effect size data in the wide format, as 
-#' created by \code{\link{calculateEffectSizes}}.
+#' created by \code{\link[metapsyTools]{calculateEffectSizes}}.
 #' @param which.run \code{character}. Selection of models to be calculated. 
 #' See 'Details'.
 #' @param es.measure `character`. Should meta-analyses be calculated using the
@@ -80,17 +80,17 @@
 #' @param es.var `character`. Specifies the name of the variable containing the (pre-
 #' calculated) effect size data in `data`. When `es.measure = "g"`, `"EER"`, or `"CER"`, this is set to
 #' `.g` by default; `".log_rr"` is used when `es.measure = "RR"`. The default settings
-#' correspond with the standard output of [calculateEffectSizes()].
+#' correspond with the standard output of \code{\link[metapsyTools]{calculateEffectSizes}}.
 #' @param se.var `character`. Specifies the name of the variable containing the (pre-calculated)
 #' standard errors (square root of the variance) of the effect size metric defined
 #' in `es.var`. If `es.measure = "g"`, this is automatically set to `.g_se`; if 
 #' `es.measure = "RR"`, `".log_rr_se"` is used. The default settings
-#' correspond with the standard output of [calculateEffectSizes()].
+#' correspond with the standard output of \code{\link[metapsyTools]{calculateEffectSizes}}.
 #' @param es.binary.raw.vars `character`. A vector defining the column names in `data` in
 #' which the (1) raw event counts in the experimental group, (2) raw event counts in the
 #' control/reference group, (3) sample size in the experimental group, and (4) sample size
 #' of the control/reference group are stored. 
-#' Defaults correspond with the standard output of [calculateEffectSizes()].
+#' Defaults correspond with the standard output of \code{\link[metapsyTools]{calculateEffectSizes}}.
 #' @param method.tau \code{character}. A character string indicating 
 #' which method is used to estimate the between-study variance (tau-squared) 
 #' and its square root (tau). Either \code{"REML"} (default), \code{"DL"},
@@ -105,7 +105,7 @@
 #' `"threelevel"` and `"threelevel.che"` model.
 #' If this argument is set to `TRUE`, parametric bootstrapping is used to calculate confidence intervals around the between- and
 #' within-study heterogeneity estimates (\mjeqn{\tau}{\tau} and \mjeqn{I^2}{I^2}). Please note that this can take several minutes,
-#' depending on the number of effect sizes. If [correctPublicationBias()] is used and `i2.ci.boot` is `TRUE`,
+#' depending on the number of effect sizes. If \code{\link[metapsyTools]{correctPublicationBias}} is used and `i2.ci.boot` is `TRUE`,
 #' bootstrapping will also be used to calculate confidence intervals around the \mjeqn{G^2}{G^2} statistic 
 #' ([Rücker et al., 2011](https://academic.oup.com/biostatistics/article/12/1/122/391113))
 #' used in the limit meta-analysis (note that \mjeqn{G^2}{G^2} is printed as \mjeqn{I^2}{I^2} in this package).
@@ -143,7 +143,7 @@
 #' \code{"overall"} or \code{"combined"}, with \code{"overall"} being the default.
 #' @param which.waap.wls \code{character}. Which model should be used to run the (non-default) WAAP-WLS model? Must be
 #' \code{"overall"} or \code{"combined"}, with \code{"overall"} being the default.
-#' @param nnt.cer \code{numeric}. Value between 0 and 1, indicating the assumed control group event rate to be used
+#' @param nntCer \code{numeric}. Value between 0 and 1, indicating the assumed control group event rate to be used
 #' for calculating NNTs via the Furukawa-Leucht method.
 #' @param rho.within.study \code{numeric}. Value between 0 and 1, indicating the assumed correlation of effect sizes
 #' within studies. This is relevant to combine effect sizes for the \code{"combined"} analysis type, and used to estimate
@@ -181,7 +181,6 @@
 #'
 #' @examples
 #' \dontrun{
-#' ## Not run: 
 #' data("depressionPsyCtr")
 #' library(meta)
 #' 
@@ -294,15 +293,16 @@
 #' @author Mathias Harrer \email{mathias.h.harrer@@gmail.com},
 #' Paula Kuper \email{paula.r.kuper@@gmail.com}, Pim Cuijpers \email{p.cuijpers@@vu.nl}
 #'
-#' @seealso [plot.runMetaAnalysis()], [summary.runMetaAnalysis()],
-#' [eb.runMetaAnalysis()], [profile.runMetaAnalysis()],
-#' \code{\link{subgroupAnalysis}}. \code{\link{correctPublicationBias}},
-#' \code{\link{metaRegression}}, \code{\link{metaRegression}}, 
-#' \code{\link{calculateEffectSizes}}, 
+#' @seealso \code{\link[metapsyTools]{plot.runMetaAnalysis}}, \code{\link[metapsyTools]{summary.runMetaAnalysis}},
+#' \code{\link[metapsyTools]{eb.runMetaAnalysis}}, \code{\link[metapsyTools]{profile.runMetaAnalysis}},
+#' \code{\link[metapsyTools]{subgroupAnalysis}}. \code{\link[metapsyTools]{correctPublicationBias}},
+#' \code{\link[metapsyTools]{metaRegression}}, \code{\link[metapsyTools]{metaRegression}}, 
+#' \code{\link[metapsyTools]{calculateEffectSizes}}, 
 #'
 #' @details The \code{runMetaAnalysis} function is a wrapper for several types of meta-analytic models
 #' that are typically used. It allows to run all of these models in one step in order to generate results
-#' that are somewhat closer to being "publication-ready".
+#' that are somewhat closer to being "publication-ready". See \code{\link[metapsyTools]{plot.runMetaAnalysis}}
+#' and \code{\link[metapsyTools]{createRobSummary}} for additional functionality.
 #'
 #' By _default_, the following models are calculated:
 #'
@@ -417,8 +417,8 @@
 #' ## Risk of Bias data
 #' Using the `rob.data` argument, it is possible to specify which variables in the data set provided in
 #' `data` contain Risk of Bias (ROB) assessment information. If specified, this allows to generate
-#' forest plots with added ROB information when using [plot.runMetaAnalysis()]. ROB information added this 
-#' way can also be used to create ROB summary plots using [createRobSummary()].
+#' forest plots with added ROB information when using \code{\link[metapsyTools]{plot.runMetaAnalysis}}. ROB information added this 
+#' way can also be used to create ROB summary plots using \code{\link[metapsyTools]{createRobSummary}}.
 #' 
 #' The object provided to `rob.data` must be a `list` element with these elements:
 #' 
@@ -477,7 +477,7 @@ runMetaAnalysis = function(data,
                            which.influence = c("overall", "combined"),
                            which.rob = c("overall", "combined"),
                            which.waap.wls = c("overall", "combined"),
-                           nnt.cer = 0.2,
+                           nntCer = 0.2,
                            rho.within.study = 0.6,
                            phi.within.study = 0.9,
                            power.within.study = 0.8,
@@ -637,7 +637,7 @@ runMetaAnalysis = function(data,
                     measure.var, study.var, .raw.bin.es, .type.es, hakn,
                     method.tau.meta, method.tau.ci, method.tau,
                     dots, es.binary.raw.vars, round.digits,
-                    nnt.cer, which.run, rob.data)
+                    nntCer, which.run, rob.data)
   rownames(mGeneral$res) = "Overall"
   sendMessage(mGeneral, "overall", which.run)
   
@@ -656,7 +656,7 @@ runMetaAnalysis = function(data,
     
     mLowest = fitLowestModel(data, study.var, multi.study,
                              mGeneral, .type.es, round.digits,
-                             .raw.bin.es, nnt.cer, rob.data)
+                             .raw.bin.es, nntCer, rob.data)
     rownames(mLowest$res) = "One ES/study (lowest)"
     
     # If model failed, add to error model list
@@ -682,7 +682,7 @@ runMetaAnalysis = function(data,
       fitHighestModel(
         data, study.var, multi.study,
         mGeneral, .type.es, round.digits,
-        .raw.bin.es, nnt.cer, rob.data)
+        .raw.bin.es, nntCer, rob.data)
     rownames(mHighest$res) = "One ES/study (highest)"
     # If model failed, add to error model list
     if (mHighest$has.error){
@@ -708,7 +708,7 @@ runMetaAnalysis = function(data,
       mComb = fitCombinedHACEModel(which.combine, which.combine.var, measure.var,
                                    data, study.var, multi.study, es.var, se.var,
                                    mGeneral, .type.es, round.digits, hakn,
-                                   .raw.bin.es, nnt.cer, rho.within.study,
+                                   .raw.bin.es, nntCer, rho.within.study,
                                    method.tau, method.tau.ci, dots,
                                    es.binary.raw.vars, arm.var.1, arm.var.2,
                                    phi.within.study, n.var.arm1, 
@@ -727,7 +727,7 @@ runMetaAnalysis = function(data,
       mComb = fitCombinedModel(which.combine, which.combine.var,
                                data, study.var, multi.study, es.var, se.var,
                                mGeneral, .type.es, round.digits, hakn,
-                               .raw.bin.es, nnt.cer, rho.within.study,
+                               .raw.bin.es, nntCer, rho.within.study,
                                method.tau, method.tau.ci, dots,
                                es.binary.raw.vars, phi.within.study,
                                rob.data)
@@ -760,7 +760,7 @@ runMetaAnalysis = function(data,
     
     mOutliers = fitOutliersModel(data, study.var, multi.study,
                                  mGeneral, .type.es, round.digits,
-                                 .raw.bin.es, nnt.cer, which.run,
+                                 .raw.bin.es, nntCer, which.run,
                                  which.outliers, method.tau,
                                  m.for.outliers, rob.data)
     # If model failed, add to error model list
@@ -782,7 +782,7 @@ runMetaAnalysis = function(data,
     mInfluence = fitInfluenceModel(which.influence, mComb, mGeneral,
                                    which.run, method.tau,
                                    .raw.bin.es, .type.es, round.digits,
-                                   nnt.cer, rob.data)
+                                   nntCer, rob.data)
     influenceRes = mInfluence$influenceRes
     sendMessage(mInfluence, "influence", which.run)
     # If model failed, add to error model list
@@ -803,7 +803,7 @@ runMetaAnalysis = function(data,
   if ("rob" %in% which.run){
     mRob = fitRobModel(which.run, which.rob, which.outliers,
                        mGeneral, mComb, low.rob.filter, method.tau,
-                       .raw.bin.es, .type.es, round.digits, nnt.cer,
+                       .raw.bin.es, .type.es, round.digits, nntCer,
                        rob.data) %>% suppressWarnings()
     sendMessage(mRob, "rob", which.run)
     # If model failed, add to error model list
@@ -832,7 +832,7 @@ runMetaAnalysis = function(data,
                          measure.var, study.var, .raw.bin.es, .type.es, hakn,
                          method.tau.meta, method.tau.ci, method.tau,
                          dots, es.binary.raw.vars, round.digits,
-                         nnt.cer, which.run, mGeneral, mCombined,
+                         nntCer, which.run, mGeneral, mCombined,
                          use.rve, i2.ci.boot, nsim.boot)
     sendMessage(mThreeLevel, "threelevel", which.run)
     # If model failed, add to error model list
@@ -863,7 +863,7 @@ runMetaAnalysis = function(data,
                                measure.var, study.var, .raw.bin.es, .type.es, hakn,
                                method.tau.meta, method.tau.ci, method.tau,
                                dots, es.binary.raw.vars, round.digits,
-                               nnt.cer, which.run, mGeneral, mCombined,
+                               nntCer, which.run, mGeneral, mCombined,
                                use.rve, rho.within.study, which.combine.var,
                                phi.within.study, n.var.arm1, 
                                n.var.arm2, w1.var, w2.var, time.var,
@@ -883,7 +883,7 @@ runMetaAnalysis = function(data,
                               measure.var, study.var, .raw.bin.es, .type.es, hakn,
                               method.tau.meta, method.tau.ci, method.tau,
                               dots, es.binary.raw.vars, round.digits,
-                              nnt.cer, which.run, mGeneral, mCombined,
+                              nntCer, which.run, mGeneral, mCombined,
                               use.rve, rho.within.study, phi.within.study,
                               i2.ci.boot, nsim.boot)
       sendMessage(mCHE, "threelevel.che", which.run)
@@ -914,7 +914,7 @@ runMetaAnalysis = function(data,
                     measure.var, study.var, .raw.bin.es, .type.es, hakn,
                     method.tau.meta, method.tau.ci, method.tau,
                     dots, es.binary.raw.vars, round.digits,
-                    nnt.cer, which.run, mGeneral, mCombined,
+                    nntCer, which.run, mGeneral, mCombined,
                     use.rve, i2.ci.boot, nsim.boot)
     sendMessage(mCcrem, "ccrem", which.run)
     # If model failed, add to error model list
@@ -947,7 +947,7 @@ runMetaAnalysis = function(data,
                                measure.var, study.var, .raw.bin.es, .type.es, hakn,
                                method.tau.meta, method.tau.ci, method.tau,
                                dots, es.binary.raw.vars, round.digits,
-                               nnt.cer, which.run, mGeneral, mCombined,
+                               nntCer, which.run, mGeneral, mCombined,
                                use.rve, rho.within.study, which.combine.var,
                                phi.within.study, n.var.arm1, 
                                n.var.arm2, w1.var, w2.var, time.var,
@@ -967,7 +967,7 @@ runMetaAnalysis = function(data,
                          measure.var, study.var, .raw.bin.es, .type.es, hakn,
                          method.tau.meta, method.tau.ci, method.tau,
                          dots, es.binary.raw.vars, round.digits,
-                         nnt.cer, which.run, mGeneral, mCombined,
+                         nntCer, which.run, mGeneral, mCombined,
                          use.rve, rho.within.study, phi.within.study,
                          i2.ci.boot, nsim.boot)
       sendMessage(mCcremCHE, "ccrem.che", which.run)
@@ -994,7 +994,7 @@ runMetaAnalysis = function(data,
     mWaapWls = fitWaapWlsModel(which.run, which.waap.wls, 
                                mGeneral, mComb, beta.within.study,
                                method.tau, .raw.bin.es, .type.es, round.digits,
-                               nnt.cer, rob.data)
+                               nntCer, rob.data)
     
     # If model failed, add to error model list
     if (mWaapWls$has.error){
@@ -1086,7 +1086,7 @@ runMetaAnalysis = function(data,
        data = data.original,
        html = html,
        round.digits = round.digits,
-       nnt.cer = nnt.cer,
+       nntCer = nntCer,
        use.rve = use.rve,
        call = match.call(),
        .type.es = .type.es,

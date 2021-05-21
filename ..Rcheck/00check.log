@@ -1,0 +1,146 @@
+* using log directory '/Users/mathiasharrer/Documents/R/metapsyTools/..Rcheck'
+* using R version 4.5.2 (2025-10-31)
+* using platform: aarch64-apple-darwin20
+* R was compiled by
+    Apple clang version 16.0.0 (clang-1600.0.26.6)
+    GNU Fortran (GCC) 14.2.0
+* running under: macOS Sequoia 15.4.1
+* using session charset: ASCII
+* using options '--no-tests --no-manual --no-vignettes'
+* checking for file './DESCRIPTION' ... OK
+* checking extension type ... Package
+* this is package 'metapsyTools' version '1.0.13'
+* package encoding: UTF-8
+* checking package namespace information ... OK
+* checking package dependencies ... OK
+* checking if this is a source package ... OK
+* checking if there is a namespace ... OK
+* checking for executable files ... OK
+* checking for hidden files and directories ... NOTE
+Found the following hidden files and directories:
+  .DS_Store
+  .RData
+  .Rhistory
+  .Rproj.user/.DS_Store
+  .Rproj.user/E72F4868/.DS_Store
+  .git/.DS_Store
+  .gitignore
+  docs/.DS_Store
+  docs/articles/.DS_Store
+  docs/assets/.DS_Store
+  docs/assets/figures/.DS_Store
+  docs/deps/.DS_Store
+  docs/figures/.DS_Store
+  docs/reference/.DS_Store
+  docs/reference/assets/.DS_Store
+  docs/reference/figures/.DS_Store
+  man/.DS_Store
+  pkgdown/.DS_Store
+  pkgdown/assets/.DS_Store
+  pkgdown/assets/articles/.DS_Store
+  vignettes/.DS_Store
+  vignettes/.gitignore
+  vignettes/web/.DS_Store
+  ..Rcheck
+  .Rproj.user
+  .git
+  .github
+These were most likely included in error. See section 'Package
+structure' in the 'Writing R Extensions' manual.
+* checking for portable file names ... WARNING
+Found the following files with non-portable file names:
+  docs/deps/_Fira Code-0.4.0
+  docs/deps/_Fira Code-0.4.1
+  docs/deps/_Fira Sans-0.4.0
+  docs/deps/_Fira Sans-0.4.1
+  docs/deps/_JetBrains Mono-0.4.0
+  docs/deps/_Roboto Slab-0.4.0
+  docs/deps/_Roboto Slab-0.4.1
+These are not fully portable file names.
+See section 'Package structure' in the 'Writing R Extensions' manual.
+Found the following non-portable file paths:
+  metapsyTools/.Rproj.user/E72F4868/ctx/ctx-13137/plots_dir/2daa4299-05f1-4f6d-b7c9-1f45cb431187.snapshot
+  metapsyTools/.Rproj.user/shared/notebooks/59945CA6-metapsyTools/1/s/lib/bootstrap-3.3.5/css/bootstrap-theme.css
+  metapsyTools/.Rproj.user/shared/notebooks/59945CA6-metapsyTools/1/s/lib/bootstrap-3.3.5/css/bootstrap-theme.css.map
+  metapsyTools/.Rproj.user/shared/notebooks/59945CA6-metapsyTools/1/s/lib/bootstrap-3.3.5/css/bootstrap-theme.min.css
+  metapsyTools/.Rproj.user/shared/notebooks/59945CA6-metapsyTools/1/s/lib/bootstrap-3.3.5/css/bootstrap.css
+  metapsyTools/.Rproj.user/shared/notebooks/59945CA6-metapsyTools/1/s/lib/bootstrap-3.3.5/css/bootstrap.css.map
+  metapsyTools/.Rproj.user/shared/notebooks/59945CA6-metapsyTools/1/s/lib/bootstrap-3.3.5/css/bootstrap.min.css
+  metapsyTools/.Rproj.user/shared/notebooks/59945CA6-metapsyTools/1/s/lib/bootstrap-3.3.5/css/cerulean.min.css
+  metapsyTools/.Rproj.user/shared/notebooks/59945CA6-metapsyTools/1/s/lib/bootstrap-3.3.5/css/cosmo.min.css
+  metapsyTools/.Rproj.user/shared/notebooks/59945CA6-metapsyTools/1/s/lib/bootstrap-3.3.5/css/darkly.min.css
+  metapsyTools/.Rproj.user/shared/notebooks/59945CA6-metapsyTools/1/s/lib/bootstrap-3.3.5/css/flatly.min.css
+  metapsyTools/.Rproj.user/shared/notebooks/59945CA6-metapsyTools/1/s/lib/bootstrap-3.3.5/css/fonts/Lato.ttf
+  metapsyTools/.Rproj.user/shared/notebooks/59945CA6-metapsyTools/1/s/lib/bootstrap-3.3.5/css/fonts/LatoBold.ttf
+  metapsyTools/.Rproj.user/shared/notebooks/59945CA6-metapsyTools/1/s/lib/bootstrap-3.3.5/css/fonts/LatoItalic.ttf
+  metapsyTools/.Rproj.user/shared/notebooks/59945CA6-metapsyTools/1/s/lib/bootstrap-3.3.5/css/fonts/NewsCycle.ttf
+  metapsyTools/.Rproj.user/shared/notebooks/59945CA6-metapsyTools/1/s/lib/bootstrap-3.3.5/css/fonts/NewsCycleBold.ttf
+  metapsyTools/.Rproj.user/shared/notebooks/59945CA6-metapsyTools/1/s/lib/bootstrap-3.3.5/css/fonts/OpenSans.ttf
+  metapsyTools/.Rproj.user/shared/notebooks/59945CA6-metapsyTools/1/s/lib/bootstrap-3.3.5/css/fonts/OpenSansBold.ttf
+  metapsyTools/.Rproj.user/shared/notebooks/59945CA6-metapsyTools/1/s/lib/bootstrap-3.3.5/css/fonts/OpenSansBoldItalic.ttf
+  metapsyTools/.Rproj.user/shared/notebooks/59945CA6-metapsyTools/1/s/lib/bootstrap-3.3.5/css/fonts/OpenSansItalic.ttf
+  metapsyTools/.Rproj.user/shared/notebooks/59945CA6-metapsyTools/1/s/lib/bootstrap-3.3.5/css/fonts/OpenSansLight.ttf
+  metapsyTools/.Rproj.user/shared/notebooks/59945CA6-metapsyTools/1/s/lib/bootstrap-3.3.5/css/fonts/OpenSansLightItalic.ttf
+  metapsyTools/.Rproj.user/shared/notebooks/59945CA6-metapsyTools/1/s/lib/bootstrap-3.3.5/css/fonts/Raleway.ttf
+  metapsyTools/.Rproj.user/shared/notebooks/59945CA6-metapsyTools/1/s/lib/bootstrap-3.3.5/css/fonts/RalewayBold.ttf
+  metapsyTools/.Rproj.user/shared/notebooks/59945CA6-metapsyTools/1/s/lib/bootstrap-3.3.5/css/fonts/Roboto.ttf
+  metapsyTools/.Rproj.user/shared/notebooks/59945CA6-metapsyTools/1/s/lib/bootstrap-3.3.5/css/fonts/RobotoBold.ttf
+  metapsyTools/.Rproj.user/shared/notebooks/59945CA6-metapsyTools/1/s/lib/bootstrap-3.3.5/css/fonts/RobotoLight.ttf
+  metapsyTools/.Rproj.user/shared/notebooks/59945CA6-metapsyTools/1/s/lib/bootstrap-3.3.5/css/fonts/RobotoMedium.ttf
+  metapsyTools/.Rproj.user/shared/notebooks/59945CA6-metapsyTools/1/s/lib/bootstrap-3.3.5/css/fonts/SourceSansPro.ttf
+  metapsyTools/.Rproj.user/shared/notebooks/59945CA6-metapsyTools/1/s/lib/bootstrap-3.3.5/css/fonts/SourceSansProBold.ttf
+  metapsyTools/.Rproj.user/shared/notebooks/59945CA6-metapsyTools/1/s/lib/bootstrap-3.3.5/css/fonts/SourceSansProItalic.ttf
+  metapsyTools/.Rproj.user/shared/notebooks/59945CA6-metapsyTools/1/s/lib/bootstrap-3.3.5/css/fonts/SourceSansProLight.ttf
+  metapsyTools/.Rproj.user/shared/notebooks/59945CA6-metapsyTools/1/s/lib/bootstrap-3.3.5/css/fonts/Ubuntu.ttf
+  metapsyTools/.Rproj.user/shared/notebooks/59945CA6-metapsyTools/1/s/lib/bootstrap-3.3.5/css/journal.min.css
+  metapsyTools/.Rproj.user/shared/notebooks/59945CA6-metapsyTools/1/s/lib/bootstrap-3.3.5/css/lumen.min.css
+  metapsyTools/.Rproj.user/shared/notebooks/59945CA6-metapsyTools/1/s/lib/bootstrap-3.3.5/css/paper.min.css
+  metapsyTools/.Rproj.user/shared/notebooks/59945CA6-metapsyTools/1/s/lib/bootstrap-3.3.5/css/readable.min.css
+  metapsyTools/.Rproj.user/shared/notebooks/59945CA6-metapsyTools/1/s/lib/bootstrap-3.3.5/css/sandstone.min.css
+  metapsyTools/.Rproj.user/shared/notebooks/59945CA6-metapsyTools/1/s/lib/bootstrap-3.3.5/css/simplex.min.css
+  metapsyTools/.Rproj.user/shared/notebooks/59945CA6-metapsyTools/1/s/lib/bootstrap-3.3.5/css/spacelab.min.css
+  metapsyTools/.Rproj.user/shared/notebooks/59945CA6-metapsyTools/1/s/lib/bootstrap-3.3.5/css/united.min.css
+  metapsyTools/.Rproj.user/shared/notebooks/59945CA6-metapsyTools/1/s/lib/bootstrap-3.3.5/css/yeti.min.css
+  metapsyTools/.Rproj.user/shared/notebooks/59945CA6-metapsyTools/1/s/lib/bootstrap-3.3.5/fonts/glyphicons-halflings-regular.eot
+  metapsyTools/.Rproj.user/shared/notebooks/59945CA6-metapsyTools/1/s/lib/bootstrap-3.3.5/fonts/glyphicons-halflings-regular.svg
+  metapsyTools/.Rproj.user/shared/notebooks/59945CA6-metapsyTools/1/s/lib/bootstrap-3.3.5/fonts/glyphicons-halflings-regular.ttf
+  metapsyTools/.Rproj.user/shared/notebooks/59945CA6-metapsyTools/1/s/lib/bootstrap-3.3.5/fonts/glyphicons-halflings-regular.woff
+  metapsyTools/.Rproj.user/shared/notebooks/59945CA6-metapsyTools/1/s/lib/bootstrap-3.3.5/fonts/glyphicons-halflings-regular.woff2
+  metapsyTools/.Rproj.user/shared/notebooks/59945CA6-metapsyTools/1/s/lib/bootstrap-3.3.5/js/bootstrap.js
+  metapsyTools/.Rproj.user/shared/notebooks/59945CA6-metapsyTools/1/s/lib/bootstrap-3.3.5/js/bootstrap.min.js
+  metapsyTools/.Rproj.user/shared/notebooks/59945CA6-metapsyTools/1/s/lib/bootstrap-3.3.5/shim/html5shiv.min.js
+  metapsyTools/.Rproj.user/shared/notebooks/59945CA6-metapsyTools/1/s/lib/bootstrap-3.3.5/shim/respond.min.js
+  metapsyTools/.Rproj.user/shared/notebooks/59945CA6-metapsyTools/1/s/lib/jquery-3.6.0/jquery-3.6.0.min.js
+  metapsyTools/.Rproj.user/shared/notebooks/59945CA6-metapsyTools/1/s/lib/jquery-3.6.0/jquery-3.6.0.min.map
+  metapsyTools/.Rproj.user/shared/notebooks/59945CA6-metapsyTools/1/s/lib/lightable-0.0.1/lightable.css
+  metapsyTools/docs/deps/bootstrap-5.1.0/fonts/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuFuYMZs.woff
+  metapsyTools/docs/deps/bootstrap-5.1.0/fonts/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuI6fMZs.woff
+  metapsyTools/docs/deps/bootstrap-5.1.0/fonts/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfMZs.woff
+  metapsyTools/docs/deps/bootstrap-5.1.0/fonts/memQYaGs126MiZpBA-UFUIcVXSCEkx2cmqvXlWq8tWZ0Pw86hd0Rk5hkWVAexg.woff
+  metapsyTools/docs/deps/bootstrap-5.1.0/fonts/memQYaGs126MiZpBA-UFUIcVXSCEkx2cmqvXlWq8tWZ0Pw86hd0Rk5hkaVQ.woff
+  metapsyTools/docs/deps/bootstrap-5.1.0/fonts/memQYaGs126MiZpBA-UFUIcVXSCEkx2cmqvXlWq8tWZ0Pw86hd0Rk8ZkWVAexg.woff
+  metapsyTools/docs/deps/bootstrap-5.1.0/fonts/memQYaGs126MiZpBA-UFUIcVXSCEkx2cmqvXlWq8tWZ0Pw86hd0Rk8ZkaVQ.woff
+  metapsyTools/docs/deps/bootstrap-5.1.0/fonts/memQYaGs126MiZpBA-UFUIcVXSCEkx2cmqvXlWq8tWZ0Pw86hd0RkyFjWVAexg.woff
+  metapsyTools/docs/deps/bootstrap-5.1.0/fonts/memQYaGs126MiZpBA-UFUIcVXSCEkx2cmqvXlWq8tWZ0Pw86hd0RkyFjaVQ.woff
+  metapsyTools/docs/deps/bootstrap-5.1.0/fonts/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsg-1x4gaVQ.woff
+  metapsyTools/docs/deps/bootstrap-5.1.0/fonts/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsg-1y4k.woff
+  metapsyTools/docs/deps/bootstrap-5.1.0/fonts/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsiH0B4gaVQ.woff
+  metapsyTools/docs/deps/bootstrap-5.1.0/fonts/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsiH0C4k.woff
+  metapsyTools/docs/deps/bootstrap-5.1.0/fonts/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsjZ0B4gaVQ.woff
+  metapsyTools/docs/deps/bootstrap-5.1.0/fonts/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsjZ0C4k.woff
+  metapsyTools/docs/deps/bootstrap-5.2.2/fonts/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuFuYMZs.woff
+  metapsyTools/docs/deps/bootstrap-5.2.2/fonts/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuI6fMZs.woff
+  metapsyTools/docs/deps/bootstrap-5.2.2/fonts/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfMZs.woff
+  metapsyTools/docs/deps/bootstrap-5.2.2/fonts/memQYaGs126MiZpBA-UFUIcVXSCEkx2cmqvXlWq8tWZ0Pw86hd0Rk5hkWVAexg.woff
+  metapsyTools/docs/deps/bootstrap-5.2.2/fonts/memQYaGs126MiZpBA-UFUIcVXSCEkx2cmqvXlWq8tWZ0Pw86hd0Rk5hkaVQ.woff
+  metapsyTools/docs/deps/bootstrap-5.2.2/fonts/memQYaGs126MiZpBA-UFUIcVXSCEkx2cmqvXlWq8tWZ0Pw86hd0Rk8ZkWVAexg.woff
+  metapsyTools/docs/deps/bootstrap-5.2.2/fonts/memQYaGs126MiZpBA-UFUIcVXSCEkx2cmqvXlWq8tWZ0Pw86hd0Rk8ZkaVQ.woff
+  metapsyTools/docs/deps/bootstrap-5.2.2/fonts/memQYaGs126MiZpBA-UFUIcVXSCEkx2cmqvXlWq8tWZ0Pw86hd0RkyFjWVAexg.woff
+  metapsyTools/docs/deps/bootstrap-5.2.2/fonts/memQYaGs126MiZpBA-UFUIcVXSCEkx2cmqvXlWq8tWZ0Pw86hd0RkyFjaVQ.woff
+  metapsyTools/docs/deps/bootstrap-5.2.2/fonts/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsg-1x4gaVQ.woff
+  metapsyTools/docs/deps/bootstrap-5.2.2/fonts/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsg-1y4k.woff
+  metapsyTools/docs/deps/bootstrap-5.2.2/fonts/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsiH0B4gaVQ.woff
+  metapsyTools/docs/deps/bootstrap-5.2.2/fonts/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsiH0C4k.woff
+  metapsyTools/docs/deps/bootstrap-5.2.2/fonts/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsjZ0B4gaVQ.woff
+  metapsyTools/docs/deps/bootstrap-5.2.2/fonts/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsjZ0C4k.woff
+

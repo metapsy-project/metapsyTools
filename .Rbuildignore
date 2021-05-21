@@ -8,4 +8,5 @@
 ^docs$
 ^pkgdown$
 ^.*\.github$
+^man/validation-helpers.*\.Rd$
 

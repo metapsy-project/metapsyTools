@@ -12,7 +12,7 @@ fitOutliersModel(
   .type.es,
   round.digits,
   .raw.bin.es,
-  nnt.cer,
+  nntCer,
   which.run,
   which.outliers,
   method.tau,

@@ -1,0 +1,35 @@
+# Fit 'ccrem.che' model
+
+Fit 'ccrem.che' model
+
+## Usage
+
+``` r
+fitCcremCHEModel(
+  data,
+  es.var,
+  se.var,
+  arm.var.1,
+  arm.var.2,
+  measure.var,
+  study.var,
+  .raw.bin.es,
+  .type.es,
+  hakn,
+  method.tau.meta,
+  method.tau.ci,
+  method.tau,
+  dots,
+  es.binary.raw.vars,
+  round.digits,
+  nnt.cer,
+  which.run,
+  mGeneral,
+  mCombined,
+  use.rve,
+  rho.within.study,
+  phi.within.study,
+  i2.ci.boot,
+  nsim.boot
+)
+```

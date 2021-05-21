@@ -46,7 +46,7 @@ runMetaAnalysis(data,
                 which.influence = c("overall", "combined"),
                 which.rob = c("overall", "combined"),
                 which.waap.wls = c("overall", "combined"),
-                nnt.cer = 0.2,
+                nntCer = 0.2,
                 rho.within.study = 0.6,
                 phi.within.study = 0.9,
                 power.within.study = 0.8,
@@ -67,7 +67,7 @@ runMetaAnalysis(data,
 }
 \arguments{
 \item{data}{\code{data.frame}. Effect size data in the wide format, as
-created by \code{\link{calculateEffectSizes}}.}
+created by \code{\link[metapsyTools]{calculateEffectSizes}}.}
 
 \item{which.run}{\code{character}. Selection of models to be calculated.
 See 'Details'.}
@@ -85,19 +85,19 @@ Can be set to \code{"precalculated"} (default) or \code{"raw"}.}
 \item{es.var}{\code{character}. Specifies the name of the variable containing the (pre-
 calculated) effect size data in \code{data}. When \code{es.measure = "g"}, \code{"EER"}, or \code{"CER"}, this is set to
 \code{.g} by default; \code{".log_rr"} is used when \code{es.measure = "RR"}. The default settings
-correspond with the standard output of \code{\link[=calculateEffectSizes]{calculateEffectSizes()}}.}
+correspond with the standard output of \code{\link[metapsyTools]{calculateEffectSizes}}.}
 
 \item{se.var}{\code{character}. Specifies the name of the variable containing the (pre-calculated)
 standard errors (square root of the variance) of the effect size metric defined
 in \code{es.var}. If \code{es.measure = "g"}, this is automatically set to \code{.g_se}; if
 \code{es.measure = "RR"}, \code{".log_rr_se"} is used. The default settings
-correspond with the standard output of \code{\link[=calculateEffectSizes]{calculateEffectSizes()}}.}
+correspond with the standard output of \code{\link[metapsyTools]{calculateEffectSizes}}.}
 
 \item{es.binary.raw.vars}{\code{character}. A vector defining the column names in \code{data} in
 which the (1) raw event counts in the experimental group, (2) raw event counts in the
 control/reference group, (3) sample size in the experimental group, and (4) sample size
 of the control/reference group are stored.
-Defaults correspond with the standard output of \code{\link[=calculateEffectSizes]{calculateEffectSizes()}}.}
+Defaults correspond with the standard output of \code{\link[metapsyTools]{calculateEffectSizes}}.}
 
 \item{method.tau}{\code{character}. A character string indicating
 which method is used to estimate the between-study variance (tau-squared)
@@ -115,7 +115,7 @@ this argument is therefore set to \code{FALSE}, and no confidence intervals arou
 \code{"threelevel"} and \code{"threelevel.che"} model.
 If this argument is set to \code{TRUE}, parametric bootstrapping is used to calculate confidence intervals around the between- and
 within-study heterogeneity estimates (\mjeqn{\tau}{\tau} and \mjeqn{I^2}{I^2}). Please note that this can take several minutes,
-depending on the number of effect sizes. If \code{\link[=correctPublicationBias]{correctPublicationBias()}} is used and \code{i2.ci.boot} is \code{TRUE},
+depending on the number of effect sizes. If \code{\link[metapsyTools]{correctPublicationBias}} is used and \code{i2.ci.boot} is \code{TRUE},
 bootstrapping will also be used to calculate confidence intervals around the \mjeqn{G^2}{G^2} statistic
 (\href{https://academic.oup.com/biostatistics/article/12/1/122/391113}{Rücker et al., 2011})
 used in the limit meta-analysis (note that \mjeqn{G^2}{G^2} is printed as \mjeqn{I^2}{I^2} in this package).}
@@ -169,7 +169,7 @@ Defaults to \code{"multi_arm1"}, the variable which encodes multi-arm interventi
 \item{which.waap.wls}{\code{character}. Which model should be used to run the (non-default) WAAP-WLS model? Must be
 \code{"overall"} or \code{"combined"}, with \code{"overall"} being the default.}
 
-\item{nnt.cer}{\code{numeric}. Value between 0 and 1, indicating the assumed control group event rate to be used
+\item{nntCer}{\code{numeric}. Value between 0 and 1, indicating the assumed control group event rate to be used
 for calculating NNTs via the Furukawa-Leucht method.}
 
 \item{rho.within.study}{\code{numeric}. Value between 0 and 1, indicating the assumed correlation of effect sizes
@@ -223,7 +223,8 @@ different meta-analytic approaches.
 \details{
 The \code{runMetaAnalysis} function is a wrapper for several types of meta-analytic models
 that are typically used. It allows to run all of these models in one step in order to generate results
-that are somewhat closer to being "publication-ready".
+that are somewhat closer to being "publication-ready". See \code{\link[metapsyTools]{plot.runMetaAnalysis}}
+and \code{\link[metapsyTools]{createRobSummary}} for additional functionality.
 
 By \emph{default}, the following models are calculated:
 
@@ -340,8 +341,8 @@ setting replacement functions is provided \href{https://tools.metapsy.org/refere
 
 Using the \code{rob.data} argument, it is possible to specify which variables in the data set provided in
 \code{data} contain Risk of Bias (ROB) assessment information. If specified, this allows to generate
-forest plots with added ROB information when using \code{\link[=plot.runMetaAnalysis]{plot.runMetaAnalysis()}}. ROB information added this
-way can also be used to create ROB summary plots using \code{\link[=createRobSummary]{createRobSummary()}}.
+forest plots with added ROB information when using \code{\link[metapsyTools]{plot.runMetaAnalysis}}. ROB information added this
+way can also be used to create ROB summary plots using \code{\link[metapsyTools]{createRobSummary}}.
 
 The object provided to \code{rob.data} must be a \code{list} element with these elements:
 \itemize{
@@ -360,7 +361,6 @@ For more details see the \href{https://tools.metapsy.org/articles/metapsytools}{
 }
 \examples{
 \dontrun{
-## Not run: 
 data("depressionPsyCtr")
 library(meta)
 
@@ -472,11 +472,11 @@ createRobSummary(res,
 
 }
 \seealso{
-\code{\link[=plot.runMetaAnalysis]{plot.runMetaAnalysis()}}, \code{\link[=summary.runMetaAnalysis]{summary.runMetaAnalysis()}},
-\code{\link[=eb.runMetaAnalysis]{eb.runMetaAnalysis()}}, \code{\link[=profile.runMetaAnalysis]{profile.runMetaAnalysis()}},
-\code{\link{subgroupAnalysis}}. \code{\link{correctPublicationBias}},
-\code{\link{metaRegression}}, \code{\link{metaRegression}},
-\code{\link{calculateEffectSizes}},
+\code{\link[metapsyTools]{plot.runMetaAnalysis}}, \code{\link[metapsyTools]{summary.runMetaAnalysis}},
+\code{\link[metapsyTools]{eb.runMetaAnalysis}}, \code{\link[metapsyTools]{profile.runMetaAnalysis}},
+\code{\link[metapsyTools]{subgroupAnalysis}}. \code{\link[metapsyTools]{correctPublicationBias}},
+\code{\link[metapsyTools]{metaRegression}}, \code{\link[metapsyTools]{metaRegression}},
+\code{\link[metapsyTools]{calculateEffectSizes}},
 }
 \author{
 Mathias Harrer \email{mathias.h.harrer@gmail.com},

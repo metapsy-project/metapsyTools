@@ -7,7 +7,7 @@
 correctPublicationBias(model, 
                        which.run = model$which.run[1],
                        lower.is.better = TRUE,
-                       selmodel.steps = 0.05,
+                       selmodelSteps = 0.05,
                        ...)
 }
 \arguments{
@@ -20,10 +20,10 @@ Uses the default analysis in \code{model} if no value is specified by the user. 
 
 \item{lower.is.better}{Do lower values indicate better outcomes (i.e. higher effects)? Default is \code{TRUE}.}
 
-\item{selmodel.steps}{Thresholds to be assumed for the step function in the selection model. Must be a vector
+\item{selmodelSteps}{Thresholds to be assumed for the step function in the selection model. Must be a vector
 of numbers referring to the cut-points in the selection models. If two-sided testing is assumed for the
 included studies, the cut-point must be doubled to obtain the assumed \emph{p}-value
-(e.g. \code{selmodel.steps = c(0.03, 0.05)} means that \emph{p}=0.06 and \emph{p}=0.10 are assumed as selection thresholds).
+(e.g. \code{selmodelSteps = c(0.03, 0.05)} means that \emph{p}=0.06 and \emph{p}=0.10 are assumed as selection thresholds).
 The default is \code{0.05}.}
 
 \item{...}{Additional arguments. See \link[meta]{trimfill.default} and \link[metasens]{limitmeta}.}

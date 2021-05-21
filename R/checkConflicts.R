@@ -1,7 +1,7 @@
 #' Check for (potential) data format conflicts
 #'
 #' This function checks for potential data formatting conflicts that may produce errors or incorrect
-#' results when applying the [calculateEffectSizes()] or [runMetaAnalysis()] function later on.
+#' results when applying the \code{\link[metapsyTools]{calculateEffectSizes}} or \code{\link[metapsyTools]{runMetaAnalysis}} function later on.
 #'
 #' @param .data Meta-analysis data stored as a \code{data.frame}, to be checked by the function.
 #' @param vars.for.id \code{character} vector, containing column names of all 

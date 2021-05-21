@@ -1,7 +1,7 @@
 #' Create a summary risk of bias plot
 #'
 #' If the `rob.data` argument has been specified, this function allows to create
-#' a summary risk of bias plot for results of the [runMetaAnalysis()] function.
+#' a summary risk of bias plot for results of the \code{\link[metapsyTools]{runMetaAnalysis}} function.
 #'
 #' @usage createRobSummary(model, 
 #'                  name.low, 
@@ -9,7 +9,7 @@
 #'                  name.unclear, 
 #'                  which.run = model$which.run[1])
 #'
-#' @param model An object of class \code{runMetaAnalysis}, created by the [runMetaAnalysis()] function.
+#' @param model An object of class \code{runMetaAnalysis}, created by the \code{\link[metapsyTools]{runMetaAnalysis}} function.
 #' @param name.low A `character` vector, specifying which code(s) have been used in the original data for 
 #' studies with a low risk of bias.
 #' @param name.high A `character` vector, specifying which code(s) have been used in the original data for 

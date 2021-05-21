@@ -11,7 +11,7 @@ proportionMID(model,
               plot = FALSE)
 }
 \arguments{
-\item{model}{A class \code{runMetaAnalysis} object, created by the \code{\link[=runMetaAnalysis]{runMetaAnalysis()}} function.}
+\item{model}{A class \code{runMetaAnalysis} object, created by the \code{\link[metapsyTools]{runMetaAnalysis}} function.}
 
 \item{mid}{A \code{numeric} value, indicating a clinically relevant effect threshold (e.g. a minimally
 important difference; \mjeqn{MID}{MID}; Cuijpers et al., \href{https://onlinelibrary.wiley.com/doi/full/10.1002/da.22249}{2014})
@@ -26,7 +26,7 @@ Defaults to \code{"all"}, which means that proportions are calculated for all mo
 Alternatively, possible values are \code{"overall"}, \code{"combined"}, \code{"lowest"},
 \code{"highest"}, \code{"outliers"}, \code{"influence"} and \code{"rob"}, if these
 models are available in the \code{model} object. If
-\code{\link[=correctPublicationBias]{correctPublicationBias()}} has been run, \code{"trimfill"}, \code{limitmeta} and \code{selection}
+\code{\link[metapsyTools]{correctPublicationBias}} has been run, \code{"trimfill"}, \code{limitmeta} and \code{selection}
 are also possible options. It is also possible to concatenate model names, meaning
 that proportions are calculated for all the supplied models.}
 
@@ -45,7 +45,7 @@ the estimated proportions, using the model-based estimate of the pooled effect s
 and between-study heterogeneity \mjeqn{\tau^2}{\tau^2}.
 }
 \description{
-Based on results of the \code{\link[=runMetaAnalysis]{runMetaAnalysis()}}, this function allows to
+Based on results of the \code{\link[metapsyTools]{runMetaAnalysis}} function, this function allows to
 estimate the proportion of true effect sizes that exceed a user-defined
 meaningful (e.g. clinically relevant) threshold.
 }
@@ -132,7 +132,7 @@ Mathur, M. B., & VanderWeele, T. J. (2019). New metrics for meta-analyses of
 heterogeneous effects. \emph{Statistics in Medicine, 38}(8), 1336-1342.
 }
 \seealso{
-\code{\link{runMetaAnalysis}}, \code{\link{correctPublicationBias}}
+\code{\link[metapsyTools]{runMetaAnalysis}}, \code{\link[metapsyTools]{correctPublicationBias}}
 }
 \author{
 Mathias Harrer \email{mathias.h.harrer@gmail.com},

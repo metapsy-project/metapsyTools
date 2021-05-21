@@ -34,34 +34,8 @@
 #' were not found in the database. `NULL` if no database was provided.
 #'
 #' @examples
-#' \dontrun{
-#' library(readxl)
-#' library(xlsx)
-#' 
-#' # Get example database from metapsy.org/assets/files/data.xlsx
-#' data <- read_excel("data.xlsx")
-#' 
-#' # Get example extraction sheet from metapsy.org/assets/files/rob_data.xlsx
-#' rob_data <- read_excel("rob_data.xlsx")
-#' 
-#' # Create ratings
-#' tmp <- metapsyTools:::createRobRatings(rob.data = rob_data,
-#'                                        database = data)
-#' tmp
-#' 
-#' # Show database
-#' tmp$database
-#' 
-#' # Show extraction sheet
-#' tmp$rob.data
-#' 
-#' # Save both files into a new MS Excel file
-#' xlsx::write.xlsx(tmp$database, "data_rated.xlsx", 
-#'                  sheetName = "database", showNA = FALSE)
-#' xlsx::write.xlsx(tmp$rob.data, "data_rated.xlsx", 
-#'                  sheetName = "rob", showNA = FALSE,
-#'                  append = TRUE)
-#' }
+#' # Examples removed to avoid rJava dependency issues during pkgdown builds.
+#' # See package vignettes for usage examples.
 #' 
 #' @author Mathias Harrer \email{mathias.h.harrer@@gmail.com},
 #' Clara Miguel Sanz \email{clara.miguelsanz@@vu.nl}, 
@@ -73,6 +47,7 @@
 #' @importFrom crayon green yellow cyan bold
 #' @importFrom stringr str_replace_all
 #' @keywords internal
+#' @noRd
 
 createRobRatings = function(rob.data, database = NULL) {
   
@@ -487,22 +462,8 @@ print.createRobRatings = function(x, ...){
 #' If different studies are included in both sheets, they will be saved under `diff.studies`.
 #'
 #' @examples
-#' \dontrun{
-#' library(readxl)
-#' 
-#' # Get example extraction sheet from metapsy.org/assets/files/rob_data.xlsx
-#' rob_data <- read_excel("rob_data.xlsx")
-#' 
-#' # Create second sheet with partly different ratings
-#' rob_data -> rob_data_2
-#' rob_data_2[-1,] -> rob_data_2
-#' rob_data_2[1,"d2_5"] = "NI"
-#' rob_data_2[1,"d4_15"] = "No/PN"
-#' 
-#' # Check for discrepancies
-#' tmp <- metapsyTools:::checkRobDiscrepancies(rob_data, rob_data_2)
-#' tmp
-#' }
+#' # Examples removed to avoid rJava dependency issues during pkgdown builds.
+#' # See package vignettes for usage examples.
 #'
 #' @author Mathias Harrer \email{mathias.h.harrer@@gmail.com},
 #' Clara Miguel Sanz \email{clara.miguelsanz@@vu.nl}, 
@@ -513,6 +474,7 @@ print.createRobRatings = function(x, ...){
 #' @import dplyr
 #' @importFrom crayon green yellow cyan bold
 #' @keywords internal
+#' @noRd
 
 checkRobDiscrepancies = function(data.1, data.2) {
   

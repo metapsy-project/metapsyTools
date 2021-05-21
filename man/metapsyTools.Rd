@@ -2,8 +2,8 @@
 % Please edit documentation in R/metapsyTools-package.R
 \docType{package}
 \name{metapsyTools}
-\alias{metapsyTools}
 \alias{metapsyTools-package}
+\alias{metapsyTools}
 \title{metapsyTools: Several Helper Functions for \code{Metapsy} Databases}
 \description{
 \code{metapsyTools} is a companion R package for the \emph{Metapsy} database.

@@ -15,7 +15,7 @@ flagEffectSizes(data,
 \arguments{
 \item{data}{A \code{data.frame}, including effect size data following the
 \href{https://docs.metapsy.org/data-preparation/format/}{Metapsy data standard}, as
-created by \code{\link[=calculateEffectSizes]{calculateEffectSizes()}}.}
+created by \code{\link[metapsyTools]{calculateEffectSizes}}.}
 
 \item{reference}{A \code{character} value, indicating the specific disorder for which reference values should be used.
 Defaults to \code{"all"}, meaning that the reference values across all included disorders are used. Other supported
@@ -57,7 +57,7 @@ which power is determined (\code{mu.fe}), as well as the first quartile of power
 \item \code{data}. The original data.frame provided in \code{data}.
 }
 
-Returned objects can be directly analyzed using \code{\link[=runMetaAnalysis]{runMetaAnalysis()}}, which will then
+Returned objects can be directly analyzed using \code{\link[metapsyTools]{runMetaAnalysis}}, which will then
 remove flagged studies (3 flags) during the computation.
 }
 \description{
@@ -97,7 +97,7 @@ Thus, by default, only the most severely underpowered trials are flagged.
 For each effect size, the three indicators are summed (0–3 flags). Effects showing
 all three risk indicators are considered highly implausible and may be
 excluded by default from meta-analytic models. This is the default behavior if results
-of \code{flagEffectSizes} are forwarded directly to \code{\link[=runMetaAnalysis]{runMetaAnalysis()}}.
+of \code{flagEffectSizes} are forwarded directly to \code{\link[metapsyTools]{runMetaAnalysis}}.
 Reference values can be applied across all mental health problems (\code{"all"}), or calibrated to specific
 fields (\code{"dep"} = depression, \code{"psy"} = psychosis, \code{"ptsd"} = PTSD), depending on
 the user's selection for the \code{reference} argument. To improve calibration,

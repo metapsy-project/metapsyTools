@@ -8,7 +8,7 @@ subgroupAnalysis(.model,
                  ...,
                  .which.run = .model$which.run[1],
                  .round.digits = 2,
-                 .nnt.cer = NULL,
+                 .nntCer = NULL,
                  .tau.common = FALSE,
                  .html = TRUE)
 }
@@ -23,7 +23,7 @@ analysis in \code{.model} if no value is specified by the user.}
 
 \item{.round.digits}{\code{numeric}. Number of digits to round the (presented) results by. Default is \code{2}.}
 
-\item{.nnt.cer}{\code{numeric}. Value between 0 and 1, indicating the assumed control group event rate to be used
+\item{.nntCer}{\code{numeric}. Value between 0 and 1, indicating the assumed control group event rate to be used
 for calculating NNTs via the Furukawa-Leucht method. If set to \code{NULL} (default),
 the value saved in \code{.model} is (re-)used.}
 

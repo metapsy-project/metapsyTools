@@ -22,7 +22,7 @@ provided using the \code{|} operator. Multiple filter statements separated using
 \value{
 \code{filterPoolingData} returns the filtered data set as class \code{data.frame}.
 The filtered data set should then be ready for meta-analytic pooling, for example
-using \code{\link[=runMetaAnalysis]{runMetaAnalysis()}}.
+using \code{\link[metapsyTools]{runMetaAnalysis}}.
 }
 \description{
 This convenience function allows to create a filtered data set, which is then ready

@@ -324,7 +324,7 @@ metapsyNNT = function(d, CER = NULL, event.e = NULL, n.e = NULL, event.c = NULL,
         else {
         }
         if (method == "Furukawa") {
-          if (missing(CER) | class(CER) != "numeric") {
+          if (missing(CER) | !inherits(CER, "numeric")) {
             stop("To use Furukawa's method, provide a numeric value for CER. \n")
           }
           else {
@@ -338,7 +338,7 @@ metapsyNNT = function(d, CER = NULL, event.e = NULL, n.e = NULL, event.c = NULL,
     }
   }
   else {
-    if (class(event.e) == "numeric" & missing(d)) {
+    if (inherits(event.e, "numeric") & missing(d)) {
       EER = event.e/n.e
       CER = event.c/n.c
       NNT = abs(1/(EER - CER))
@@ -605,7 +605,7 @@ overallAlgorithm = function(d1, d2, d3, d4, d5) {
 
 #' Tests if value is `NA` or `NaN`
 #'
-#' @param expr R expression.
+#' @param x Value to test.
 #' @usage isNAorNaN(x)
 #' @export 
 #' @keywords internal
@@ -763,7 +763,7 @@ fitOverallModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
                            measure.var, study.var, .raw.bin.es, .type.es, hakn,
                            method.tau.meta, method.tau.ci, method.tau,
                            dots, es.binary.raw.vars, round.digits,
-                           nnt.cer, which.run, rob.data){
+                           nntCer, which.run, rob.data){
   
   data.original = data
   round.digits = abs(round.digits)
@@ -883,7 +883,7 @@ fitOverallModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
                                  round.digits), "]"),
         nnt = metapsyNNT(
           ifelse(isTRUE(common) & !isTRUE(random), 
-                 abs(TE.common), abs(TE.random)), nnt.cer) %>%
+                 abs(TE.common), abs(TE.random)), nntCer) %>%
           ifelse(identical(.type.es, "RR"), NA, .) %>% 
           ifelse(isTRUE(.raw.bin.es), 
                  nnt.raw.bin.es, .) %>% 
@@ -910,7 +910,7 @@ fitOverallModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
 #' @keywords internal 
 fitLowestModel = function(data, study.var, multi.study,
                           mGeneral, .type.es, round.digits,
-                          .raw.bin.es, nnt.cer, rob.data){
+                          .raw.bin.es, nntCer, rob.data){
   
   message("- ", crayon::green("[OK] "), 
           "Calculating effect size using only lowest effect... ",
@@ -983,7 +983,7 @@ fitLowestModel = function(data, study.var, multi.study,
                                      round.digits), "]"),
             nnt = metapsyNNT(
               ifelse(isTRUE(common) & !isTRUE(random), 
-                     abs(TE.common), abs(TE.random)), nnt.cer) %>%
+                     abs(TE.common), abs(TE.random)), nntCer) %>%
               ifelse(identical(.type.es, "RR"), NA, .) %>% 
               ifelse(isTRUE(.raw.bin.es), 
                      nnt.raw.bin.es, .) %>% 
@@ -1021,7 +1021,7 @@ fitLowestModel = function(data, study.var, multi.study,
 #' @keywords internal 
 fitHighestModel = function(data, study.var, multi.study,
                            mGeneral, .type.es, round.digits,
-                           .raw.bin.es, nnt.cer, rob.data){
+                           .raw.bin.es, nntCer, rob.data){
   
   message("- ", crayon::green("[OK] "), 
           "Calculating effect size using only highest effect... ",
@@ -1100,7 +1100,7 @@ fitHighestModel = function(data, study.var, multi.study,
                                      round.digits), "]"),
             nnt = metapsyNNT(
               ifelse(isTRUE(common) & !isTRUE(random), 
-                     abs(TE.common), abs(TE.random)), nnt.cer) %>%
+                     abs(TE.common), abs(TE.random)), nntCer) %>%
               ifelse(identical(.type.es, "RR"), NA, .) %>% 
               ifelse(isTRUE(.raw.bin.es), 
                      nnt.raw.bin.es, .) %>% 
@@ -1139,7 +1139,7 @@ fitHighestModel = function(data, study.var, multi.study,
 fitCombinedModel = function(which.combine, which.combine.var,
                             data, study.var, multi.study, es.var, se.var,
                             mGeneral, .type.es, round.digits, hakn,
-                            .raw.bin.es, nnt.cer, rho.within.study,
+                            .raw.bin.es, nntCer, rho.within.study,
                             method.tau, method.tau.ci, dots,
                             es.binary.raw.vars, phi.within.study,
                             rob.data){
@@ -1332,7 +1332,7 @@ fitCombinedModel = function(which.combine, which.combine.var,
                                    round.digits), "]"),
           nnt = metapsyNNT(
             ifelse(isTRUE(common) & !isTRUE(random), 
-                   abs(TE.common), abs(TE.random)), nnt.cer) %>%
+                   abs(TE.common), abs(TE.random)), nntCer) %>%
             ifelse(identical(.type.es, "RR"), NA, .) %>% 
             ifelse(isTRUE(.raw.bin.es), 
                    nnt.raw.bin.es, .) %>% 
@@ -1375,7 +1375,7 @@ fitCombinedModel = function(which.combine, which.combine.var,
 fitCombinedHACEModel = function(which.combine, which.combine.var, measure.var,
                                 data, study.var, multi.study, es.var, se.var,
                                 mGeneral, .type.es, round.digits, hakn,
-                                .raw.bin.es, nnt.cer, rho.within.study,
+                                .raw.bin.es, nntCer, rho.within.study,
                                 method.tau, method.tau.ci, dots,
                                 es.binary.raw.vars, arm.var.1, arm.var.2,
                                 phi.within.study, n.var.arm1, 
@@ -1612,7 +1612,7 @@ fitCombinedHACEModel = function(which.combine, which.combine.var, measure.var,
                                    round.digits), "]"),
           nnt = metapsyNNT(
             ifelse(isTRUE(common) & !isTRUE(random), 
-                   abs(TE.common), abs(TE.random)), nnt.cer) %>%
+                   abs(TE.common), abs(TE.random)), nntCer) %>%
             ifelse(identical(.type.es, "RR"), NA, .) %>% 
             ifelse(isTRUE(.raw.bin.es), 
                    nnt.raw.bin.es, .) %>% 
@@ -1655,7 +1655,7 @@ fitCombinedHACEModel = function(which.combine, which.combine.var, measure.var,
 #' @keywords internal 
 fitOutliersModel = function(data, study.var, multi.study,
                             mGeneral, .type.es, round.digits,
-                            .raw.bin.es, nnt.cer, which.run,
+                            .raw.bin.es, nntCer, which.run,
                             which.outliers, method.tau,
                             m.for.outliers, rob.data){
   if (method.tau == "FE"){
@@ -1722,7 +1722,7 @@ fitOutliersModel = function(data, study.var, multi.study,
                                  round.digits), "]"),
         nnt = metapsyNNT(
           ifelse(isTRUE(common) & !isTRUE(random), 
-                 abs(TE.common), abs(TE.random)), nnt.cer) %>%
+                 abs(TE.common), abs(TE.random)), nntCer) %>%
           ifelse(identical(.type.es, "RR"), NA, .) %>% 
           ifelse(isTRUE(.raw.bin.es), 
                  nnt.raw.bin.es, .) %>% 
@@ -1799,7 +1799,7 @@ selectOutlierModel = function(
 fitInfluenceModel = function(which.influence, mComb,
                              mGeneral, which.run, method.tau,
                              .raw.bin.es, .type.es, round.digits,
-                             nnt.cer, rob.data){
+                             nntCer, rob.data){
   
   message("- ", crayon::green("[OK] "), 
           "Calculating effect size with influential cases removed... ",
@@ -1897,7 +1897,7 @@ fitInfluenceModel = function(which.influence, mComb,
                                  round.digits), "]"),
         nnt = metapsyNNT(
           ifelse(isTRUE(common) & !isTRUE(random), 
-                 abs(TE.common), abs(TE.random)), nnt.cer) %>%
+                 abs(TE.common), abs(TE.random)), nntCer) %>%
           ifelse(identical(.type.es, "RR"), NA, .) %>% 
           ifelse(isTRUE(.raw.bin.es), 
                  nnt.raw.bin.es, .) %>% 
@@ -1939,7 +1939,7 @@ fitInfluenceModel = function(which.influence, mComb,
 fitRobModel = function(which.run, which.rob, which.outliers,
                        mGeneral, mComb, low.rob.filter,
                        method.tau, .raw.bin.es, .type.es, round.digits,
-                       nnt.cer, rob.data){
+                       nntCer, rob.data){
   
   has.bs = FALSE
   
@@ -2063,7 +2063,7 @@ fitRobModel = function(which.run, which.rob, which.outliers,
                                  round.digits), "]"),
         nnt = metapsyNNT(
           ifelse(isTRUE(common) & !isTRUE(random), 
-                 abs(TE.common), abs(TE.random)), nnt.cer) %>%
+                 abs(TE.common), abs(TE.random)), nntCer) %>%
           ifelse(identical(.type.es, "RR"), NA, .) %>% 
           ifelse(isTRUE(.raw.bin.es), 
                  nnt.raw.bin.es, .) %>% 
@@ -2106,7 +2106,7 @@ fitThreeLevelModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
                               measure.var, study.var, .raw.bin.es, .type.es, hakn,
                               method.tau.meta, method.tau.ci, method.tau,
                               dots, es.binary.raw.vars, round.digits,
-                              nnt.cer, which.run, mGeneral, mCombined,
+                              nntCer, which.run, mGeneral, mCombined,
                               use.rve, i2.ci.boot, nsim.boot){
   
   has.bs = FALSE
@@ -2360,7 +2360,7 @@ fitThreeLevelModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
                                                   ifelse(identical(.type.es, "RR"), exp(.), .), 
                                                 round.digits), "]"),
                    nnt = ifelse(identical(.type.es, "RR"), 
-                                NA, metapsyNNT(abs(as.numeric(b[,1])), nnt.cer)) %>% 
+                                NA, metapsyNNT(abs(as.numeric(b[,1])), nntCer)) %>% 
                      ifelse(isTRUE(.raw.bin.es), nnt.g, .) %>% 
                      round(round.digits) %>% abs(),
                    excluded = "none")
@@ -2456,7 +2456,7 @@ fitThreeLevelModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
                                 NA, metapsyNNT(abs(as.numeric(
                                   clubSandwich::conf_int(
                                     mThreeLevel$value, "CR2")[["beta"]])), 
-                                  nnt.cer)) %>% 
+                                  nntCer)) %>% 
                      ifelse(isTRUE(.raw.bin.es), nnt.g, .) %>% 
                      round(round.digits) %>% abs(),
                    excluded = "none")
@@ -2501,7 +2501,7 @@ fitThreeLevelCHEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
                                  measure.var, study.var, .raw.bin.es, .type.es, hakn,
                                  method.tau.meta, method.tau.ci, method.tau,
                                  dots, es.binary.raw.vars, round.digits,
-                                 nnt.cer, which.run, mGeneral, mCombined,
+                                 nntCer, which.run, mGeneral, mCombined,
                                  use.rve, rho.within.study, phi.within.study,
                                  i2.ci.boot, nsim.boot){
   
@@ -2812,7 +2812,7 @@ fitThreeLevelCHEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
                              ifelse(identical(.type.es, "RR"), exp(.), .), 
                            round.digits), "]"),
                    nnt = ifelse(identical(.type.es, "RR"), 
-                                NA, metapsyNNT(abs(as.numeric(b[,1])), nnt.cer)) %>% 
+                                NA, metapsyNNT(abs(as.numeric(b[,1])), nntCer)) %>% 
                      ifelse(isTRUE(.raw.bin.es), nnt.g, .) %>% 
                      round(round.digits) %>% abs(),
                    excluded = "none")
@@ -2898,7 +2898,7 @@ fitThreeLevelCHEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
                    nnt = ifelse(identical(.type.es, "RR"), 
                                 NA, metapsyNNT(abs(as.numeric(
                                   clubSandwich::conf_int(
-                                    mCHE$value, "CR2")[["beta"]])), nnt.cer)) %>% 
+                                    mCHE$value, "CR2")[["beta"]])), nntCer)) %>% 
                      ifelse(isTRUE(.raw.bin.es), nnt.g, .) %>% 
                      round(round.digits) %>% abs(),
                    excluded = "none")
@@ -2942,7 +2942,7 @@ fitThreeLevelHACEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
                                   measure.var, study.var, .raw.bin.es, .type.es, hakn,
                                   method.tau.meta, method.tau.ci, method.tau,
                                   dots, es.binary.raw.vars, round.digits,
-                                  nnt.cer, which.run, mGeneral, mCombined,
+                                  nntCer, which.run, mGeneral, mCombined,
                                   use.rve, rho.within.study, which.combine.var,
                                   phi.within.study, n.var.arm1, 
                                   n.var.arm2, w1.var, w2.var, time.var,
@@ -3298,7 +3298,7 @@ fitThreeLevelHACEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
                              ifelse(identical(.type.es, "RR"), exp(.), .), 
                            round.digits), "]"),
                    nnt = ifelse(identical(.type.es, "RR"), 
-                                NA, metapsyNNT(abs(as.numeric(b[,1])), nnt.cer)) %>% 
+                                NA, metapsyNNT(abs(as.numeric(b[,1])), nntCer)) %>% 
                      ifelse(isTRUE(.raw.bin.es), nnt.g, .) %>% 
                      round(round.digits) %>% abs(),
                    excluded = "none")
@@ -3385,7 +3385,7 @@ fitThreeLevelHACEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
                    nnt = ifelse(identical(.type.es, "RR"), 
                                 NA, metapsyNNT(abs(as.numeric(
                                   clubSandwich::conf_int(
-                                    mCHE$value, "CR2")[["beta"]])), nnt.cer)) %>% 
+                                    mCHE$value, "CR2")[["beta"]])), nntCer)) %>% 
                      ifelse(isTRUE(.raw.bin.es), nnt.g, .) %>% 
                      round(round.digits) %>% abs(),
                    excluded = "none")
@@ -3434,7 +3434,7 @@ fitCcremModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
                          measure.var, study.var, .raw.bin.es, .type.es, hakn,
                          method.tau.meta, method.tau.ci, method.tau,
                          dots, es.binary.raw.vars, round.digits,
-                         nnt.cer, which.run, mGeneral, mCombined,
+                         nntCer, which.run, mGeneral, mCombined,
                          use.rve, i2.ci.boot, nsim.boot){
   
   has.bs = FALSE
@@ -3716,7 +3716,7 @@ fitCcremModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
                                                   ifelse(identical(.type.es, "RR"), exp(.), .), 
                                                 round.digits), "]"),
                    nnt = ifelse(identical(.type.es, "RR"), 
-                                NA, metapsyNNT(abs(as.numeric(b[,1])), nnt.cer)) %>% 
+                                NA, metapsyNNT(abs(as.numeric(b[,1])), nntCer)) %>% 
                      ifelse(isTRUE(.raw.bin.es), nnt.g, .) %>% 
                      round(round.digits) %>% abs(),
                    excluded = "none")
@@ -3807,7 +3807,7 @@ fitCcremModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
                    nnt = ifelse(identical(.type.es, "RR"), 
                                 NA, metapsyNNT(abs(as.numeric(
                                   mCcrem$value[["b"]])), 
-                                  nnt.cer)) %>% 
+                                  nntCer)) %>% 
                      ifelse(isTRUE(.raw.bin.es), nnt.g, .) %>% 
                      round(round.digits) %>% abs(),
                    excluded = "none")
@@ -3852,7 +3852,7 @@ fitCcremCHEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
                             measure.var, study.var, .raw.bin.es, .type.es, hakn,
                             method.tau.meta, method.tau.ci, method.tau,
                             dots, es.binary.raw.vars, round.digits,
-                            nnt.cer, which.run, mGeneral, mCombined,
+                            nntCer, which.run, mGeneral, mCombined,
                             use.rve, rho.within.study, phi.within.study,
                             i2.ci.boot, nsim.boot){
   
@@ -4189,7 +4189,7 @@ fitCcremCHEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
                              ifelse(identical(.type.es, "RR"), exp(.), .), 
                            round.digits), "]"),
                    nnt = ifelse(identical(.type.es, "RR"), 
-                                NA, metapsyNNT(abs(as.numeric(b[,1])), nnt.cer)) %>% 
+                                NA, metapsyNNT(abs(as.numeric(b[,1])), nntCer)) %>% 
                      ifelse(isTRUE(.raw.bin.es), nnt.g, .) %>% 
                      round(round.digits) %>% abs(),
                    excluded = "none")
@@ -4268,7 +4268,7 @@ fitCcremCHEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
                              ifelse(identical(.type.es, "RR"), exp(.), .), 
                            round.digits), "]"),
                    nnt = ifelse(identical(.type.es, "RR"), 
-                                NA, metapsyNNT(abs(as.numeric(mCHE$value[["b"]])), nnt.cer)) %>% 
+                                NA, metapsyNNT(abs(as.numeric(mCHE$value[["b"]])), nntCer)) %>% 
                      ifelse(isTRUE(.raw.bin.es), nnt.g, .) %>% 
                      round(round.digits) %>% abs(),
                    excluded = "none")
@@ -4312,7 +4312,7 @@ fitCcremHACEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
                              measure.var, study.var, .raw.bin.es, .type.es, hakn,
                              method.tau.meta, method.tau.ci, method.tau,
                              dots, es.binary.raw.vars, round.digits,
-                             nnt.cer, which.run, mGeneral, mCombined,
+                             nntCer, which.run, mGeneral, mCombined,
                              use.rve, rho.within.study, which.combine.var,
                              phi.within.study, n.var.arm1, 
                              n.var.arm2, w1.var, w2.var, time.var,
@@ -4694,7 +4694,7 @@ fitCcremHACEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
                              ifelse(identical(.type.es, "RR"), exp(.), .), 
                            round.digits), "]"),
                    nnt = ifelse(identical(.type.es, "RR"), 
-                                NA, metapsyNNT(abs(as.numeric(b[,1])), nnt.cer)) %>% 
+                                NA, metapsyNNT(abs(as.numeric(b[,1])), nntCer)) %>% 
                      ifelse(isTRUE(.raw.bin.es), nnt.g, .) %>% 
                      round(round.digits) %>% abs(),
                    excluded = "none")
@@ -4774,7 +4774,7 @@ fitCcremHACEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
                              ifelse(identical(.type.es, "RR"), exp(.), .), 
                            round.digits), "]"),
                    nnt = ifelse(identical(.type.es, "RR"), 
-                                NA, metapsyNNT(abs(as.numeric(mCHE$value[["b"]])), nnt.cer)) %>% 
+                                NA, metapsyNNT(abs(as.numeric(mCHE$value[["b"]])), nntCer)) %>% 
                      ifelse(isTRUE(.raw.bin.es), nnt.g, .) %>% 
                      round(round.digits) %>% abs(),
                    excluded = "none")
@@ -4823,7 +4823,7 @@ fitCcremHACEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
 fitWaapWlsModel = function(which.run, which.waap.wls, 
                            mGeneral, mComb, beta.within.study,
                            method.tau, .raw.bin.es, .type.es, round.digits,
-                           nnt.cer, rob.data){
+                           nntCer, rob.data){
   
   has.bs = FALSE
   
@@ -4971,7 +4971,7 @@ fitWaapWlsModel = function(which.run, which.waap.wls,
                                         exp(upper.predict), upper.predict), 
                                  round.digits), "]"),
         nnt = metapsyNNT(
-          abs(as.numeric(coefficients[1])), nnt.cer) %>%
+          abs(as.numeric(coefficients[1])), nntCer) %>%
           ifelse(identical(.type.es, "RR"), NA, .) %>% 
           ifelse(isTRUE(.raw.bin.es), 
                  nnt.raw.bin.es, .) %>% 
@@ -5982,7 +5982,7 @@ robSummary = function (data, name.high = "High", name.unclear = "Unclear",
                         name.low = "Low", studies, name.missing, table = FALSE) {
   
   
-  if (class(data) != "data.frame") {
+  if (!inherits(data, "data.frame")) {
     stop("'data' must be of class 'data.frame'.")
   }
   if (missing(name.missing)) {

@@ -7,7 +7,7 @@
 isNAorNaN(x)
 }
 \arguments{
-\item{expr}{R expression.}
+\item{x}{Value to test.}
 }
 \description{
 Tests if value is \code{NA} or \code{NaN}

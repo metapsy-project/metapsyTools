@@ -5,14 +5,15 @@ Version: 1.0.13
 Author: Mathias Harrer[cre], Paula Kuper[cre], Antonia Sprenger[cre], Pim Cuijpers[aut]
 Authors@R: c(
     person("Mathias", "Harrer", email = "mathias.h.harrer@gmail.com", role = "cre", comment = c(ORCID = "0000-0001-7016-2687")),
-    person("Paula", "Kuper", email = "paula.kuper@tum.de", role = "aut", comment = c(ORCID = "00000-0002-7481-976X")),
+    person("Paula", "Kuper", email = "paula.kuper@tum.de", role = "aut", comment = c(ORCID = "0000-0002-7481-976X")),
     person("Antonia", "Sprenger", email = "antonia.sprenger@tum.de", role = "aut", comment = c(ORCID = "0000-0002-1180-7702")),
     person("Pim", "Cuijpers", email = "p.cuijpers@vu.nl", role = "aut", comment = c(ORCID = "0000-0001-5497-2743")))
 Description: A companion R package for the Metapsy database. The package aims to faciliate calculation of meta-analytic effect sizes for the included trials. For this purpose, data can be checked and converted into the required format to calculate the effect sizes for all trials. Various wrapper functions are included to then pool and analyze the results. 
 License: MIT + file LICENSE
+Maintainer: Mathias Harrer <mathias.h.harrer@gmail.com>
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.3
 Roxygen: list(markdown = TRUE)
 VignetteBuilder: knitr
 Imports: 
@@ -26,7 +27,9 @@ Imports:
     metafor, metasens, rlang, scales,
     mathjaxr, numDeriv
 Suggests: 
-    netmeta
+    netmeta,
+    testthat (>= 3.0.0),
+    covr
 Depends: R (>= 4.1.0) 
 URL: https://github.com/metapsy-project/metapsyTools
 RdMacros: mathjaxr

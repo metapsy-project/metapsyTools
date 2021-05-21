@@ -15,7 +15,7 @@
 #'
 #' @param data A `data.frame`, including effect size data following the 
 #' [Metapsy data standard](https://docs.metapsy.org/data-preparation/format/), as 
-#' created by [calculateEffectSizes()].
+#' created by \code{\link[metapsyTools]{calculateEffectSizes}}.
 #' @param reference A `character` value, indicating the specific disorder for which reference values should be used.
 #' Defaults to `"all"`, meaning that the reference values across all included disorders are used. Other supported 
 #' values are `"dep"` (depression), `"psy"` (psychosis), and `"ptsd"` (PTSD). To improve calibration, 
@@ -51,7 +51,7 @@
 #'  \item `data`. The original data.frame provided in `data`.
 #' }
 #' 
-#' Returned objects can be directly analyzed using [runMetaAnalysis()], which will then
+#' Returned objects can be directly analyzed using \code{\link[metapsyTools]{runMetaAnalysis}}, which will then
 #' remove flagged studies (3 flags) during the computation. 
 #' 
 #' @details
@@ -85,7 +85,7 @@
 #' For each effect size, the three indicators are summed (0–3 flags). Effects showing 
 #' all three risk indicators are considered highly implausible and may be 
 #' excluded by default from meta-analytic models. This is the default behavior if results
-#' of `flagEffectSizes` are forwarded directly to [runMetaAnalysis()].
+#' of \code{flagEffectSizes} are forwarded directly to \code{\link[metapsyTools]{runMetaAnalysis}}.
 #' Reference values can be applied across all mental health problems (`"all"`), or calibrated to specific 
 #' fields (`"dep"` = depression, `"psy"` = psychosis, `"ptsd"` = PTSD), depending on 
 #' the user's selection for the `reference` argument. To improve calibration, 
@@ -183,7 +183,7 @@ flagEffectSizes = function(data, reference = c("all", "dep", "psy", "ptsd"),
 
 #' Print method for objects of class 'flagEffectSizes'
 #'
-#' Print S3 method for objects of class \code{flagEffectSizes}, as created by [flagEffectSizes()].
+#' Print S3 method for objects of class \code{flagEffectSizes}, as created by \code{\link[metapsyTools]{flagEffectSizes}}.
 #'
 #' @param x An object of class \code{flagEffectSizes}.
 #' @param ... Additional arguments.
@@ -200,7 +200,7 @@ print.flagEffectSizes = function(x, ...) {
 
 #' Plot method for objects of class 'flagEffectSizes'
 #'
-#' Plot S3 method for objects of class \code{flagEffectSizes}, as created by [flagEffectSizes()].
+#' Plot S3 method for objects of class \code{flagEffectSizes}, as created by \code{\link[metapsyTools]{flagEffectSizes}}.
 #'
 #' @param x An object of class \code{flagEffectSizes}.
 #' @param ... Additional arguments.

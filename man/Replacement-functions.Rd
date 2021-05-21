@@ -25,7 +25,7 @@
 \alias{which.outliers}
 \alias{which.influence}
 \alias{which.rob}
-\alias{nnt.cer}
+\alias{nntCer}
 \alias{rho.within.study}
 \alias{phi.within.study}
 \alias{w1.var}
@@ -35,7 +35,11 @@
 \alias{use.rve}
 \alias{html}
 \alias{lower.is.better}
-\alias{selmodel.steps}
+\alias{selmodelSteps}
+\alias{nnt.runMetaAnalysis}
+\alias{nnt<-.runMetaAnalysis}
+\alias{selmodel.runMetaAnalysis}
+\alias{selmodel<-.runMetaAnalysis}
 \alias{rerun}
 \alias{which.run<-}
 \alias{es.measure<-}
@@ -57,7 +61,7 @@
 \alias{which.outliers<-}
 \alias{which.influence<-}
 \alias{which.rob<-}
-\alias{nnt.cer<-}
+\alias{nntCer<-}
 \alias{rho.within.study<-}
 \alias{phi.within.study<-}
 \alias{w1.var<-}
@@ -67,7 +71,7 @@
 \alias{use.rve<-}
 \alias{html<-}
 \alias{lower.is.better<-}
-\alias{selmodel.steps<-}
+\alias{selmodelSteps<-}
 \alias{near.pd<-}
 \alias{i2.ci.threelevel<-}
 \alias{i2.ci.threelevel}
@@ -97,17 +101,20 @@ which.combine.var(x) <- value
 which.outliers(x) <- value
 which.influence(x) <- value
 which.rob(x) <- value
-nnt.cer(x) <- value
+nntCer(x) <- value
+\method{nnt}{runMetaAnalysis}(x) <- value
 rho.within.study(x) <- value
 phi.within.study(x) <- value
 w1.var(x) <- value
 w2.var(x) <- value
+time.var(x) <- value
 vcov(x) <- value
 near.pd(x) <- value
 use.rve(x) <- value
 html(x) <- value
 lower.is.better(x) <- value
-selmodel.steps(x) <- value
+selmodelSteps(x) <- value
+\method{selmodel}{runMetaAnalysis}(x) <- value
 rerun(m)
 }
 \arguments{
@@ -123,6 +130,12 @@ Once a model has been fitted using \code{runMetaAnalysis},
 replacement functions are defined for each function argument. This
 allows to quickly tweak one or more analysis settings, which are implemented
 once the \code{rerun} function is called.
+}
+\details{
+\code{nntCer} / \code{nntCer<-} and \code{selmodelSteps} / \code{selmodelSteps<-}
+are also available as S3 methods \code{nnt}, \code{nnt<-}, \code{selmodel}, \code{selmodel<-}
+for \code{runMetaAnalysis} objects. The function \code{time.var} (and \code{time.var<-})
+is a regular replacement function, not an S3 method for \code{time}.
 }
 \examples{
 \dontrun{
@@ -142,5 +155,5 @@ rerun(m)
 }
 }
 \seealso{
-\code{\link{runMetaAnalysis}}, \code{\link{correctPublicationBias}}
+\code{\link[metapsyTools]{runMetaAnalysis}}, \code{\link[metapsyTools]{correctPublicationBias}}
 }

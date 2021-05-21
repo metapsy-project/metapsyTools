@@ -46,13 +46,14 @@
 #'                                       "totaln_arm2" = "numeric"))
 #'
 #' @return \code{checkDataFormat} returns messages that specify if input variables, 
-#' values and classes of the variables are as defined.
+#' values and classes of the variables are as defined. The output should then be passed to
+#' \code{\link[metapsyTools]{checkConflicts}} and then to \code{\link[metapsyTools]{runMetaAnalysis}}.
 #' 
 #' If default settings are used, `checkDataFormat()` can be used in combination
-#' with [checkConflicts()] to determine if a dataset follows the [Metapsy data standard](https://docs.metapsy.org/data-preparation/format/).
+#' with \code{\link[metapsyTools]{checkConflicts}} to determine if a dataset follows the [Metapsy data standard](https://docs.metapsy.org/data-preparation/format/).
 #' Datasets that are formatted using this standard can be directly used in 
 #' the [analysis module](https://tools.metapsy.org/articles/metapsytools#the-analysis-module) in `metapsyTools`; 
-#' for example the [runMetaAnalysis()] function.
+#' for example the \code{\link[metapsyTools]{runMetaAnalysis}} function.
 #' 
 #' @details The function checks if:
 #'  \itemize{
@@ -122,18 +123,17 @@ checkDataFormat = function(data,
                                                  "totaln_arm1" = "numeric", 
                                                  "totaln_arm2" = "numeric")){
 
+  # Validate input
+  validate_data_frame(data, arg_name = "data")
   
-
-
-
-
   # 1. Check if data set contains all relevant variables.
   if (length(must.contain) > 0){
-    if (sum(colnames(data) %in% must.contain) < length(must.contain)){
-      must.contain[which(!must.contain %in% colnames(data))] -> miss
+    missing <- validate_required_columns(data, must.contain, arg_name = "data")
+    
+    if (length(missing) > 0){
       message("- ", crayon::yellow("[!] "), 
               "Data set does not contain variable(s) ",
-                     crayon::green(paste(miss, collapse = ", ")), ".")
+              crayon::green(paste(missing, collapse = ", ")), ".")
     } else {
       message("- ", crayon::green("[OK] "), 
               "Data set contains all variables in 'must.contain'.")
@@ -142,38 +142,53 @@ checkDataFormat = function(data,
   
   # 2. Check if variables are of desired type; if not, try to convert
   if (length(variable.class) > 0){
-    for (i in 1:length(variable.class)){
-      if (class(data[[names(variable.class)[i]]]) == variable.class[[i]]){
+    for (var_name in names(variable.class)){
+      target_class <- variable.class[[var_name]]
+      
+      # Skip if variable doesn't exist in data
+      if (!var_name %in% colnames(data)) {
+        next
+      }
+      
+      current_class <- class(data[[var_name]])[1]
+      
+      if (current_class == target_class){
         message(paste0("- ", crayon::green("[OK] "), 
-                       "'", names(variable.class)[i], 
+                       "'", var_name, 
                        "' has desired class ",
-                       variable.class[[i]], "."))
+                       target_class, "."))
       } else {
-        try({
-          data[[names(variable.class)[i]]] = 
-            as(data[[names(variable.class)[i]]],
-               variable.class[[i]])},
-          silent = TRUE) -> try.convert
-        message(paste0("- ", crayon::green("[OK] "), "'",
-                       names(variable.class)[i], 
-                       "' has been converted to class ",
-                       variable.class[[i]], "."))
+        # Try to convert
+        data[[var_name]] <- safe_convert_class(
+          data[[var_name]], 
+          target_class, 
+          var_name
+        )
+        
+        # Check if conversion was successful
+        new_class <- class(data[[var_name]])[1]
+        if (new_class == target_class) {
+          message(paste0("- ", crayon::green("[OK] "), "'",
+                         var_name, 
+                         "' has been converted to class ",
+                         target_class, "."))
+        } else {
+          message(paste0("- ", crayon::yellow("[!] "), "'",
+                         var_name, 
+                         "' could not be converted from ",
+                         current_class, " to ", target_class, "."))
+        }
       }
     }
   }
   
   # 3. Check if dataset contains 'subset' or 'exclude', rename if necessary
-  if ("subset" %in% colnames(data)){
-    message(paste0("- ", crayon::green("[OK] "), "'subset' is not an allowed variable name. ",
-                   "Changed the name to 'subset.1'."))
-    data$`subset.1` = data[["subset"]]
-    data["subset"] = NULL
-  }
-  if ("exclude" %in% colnames(data)){
-    message(paste0("- ", crayon::green("[OK] "), "'exclude' is not an allowed variable name. ",
-                   "Changed the name to 'exclude.1'."))
-    data$`exclude.1` = data[["exclude"]]
-    data["exclude"] = NULL
+  rename_result <- rename_reserved_columns(data)
+  data <- rename_result$data
+  
+  if (rename_result$renamed) {
+    message(paste0("- ", crayon::green("[OK] "), 
+                   "Reserved variable name(s) have been renamed."))
   }
   
   return(data)

@@ -43,7 +43,7 @@
 #' sign of a calculated effect size should be reversed (\code{TRUE}) or not (\code{FALSE}). Set to \code{NULL} (default) if
 #' no changes should be made.
 #' @param impute.response `logical`. When calculating the (log)-risk ratios, should response rates be computed
-#' using the [imputeResponse()] function? `FALSE` by default. If defined, the column specified in `change.sign`
+#' using the \code{\link[metapsyTools]{imputeResponse}} function? `FALSE` by default. If defined, the column specified in `change.sign`
 #' will also be considered when calculating the response.
 #' @param vars.for.id \code{character} vector, containing column names of all variables 
 #' used to construct unique comparison IDs.
@@ -55,7 +55,7 @@
 #' representing the suffix used to differentiate between the first and second arm in a comparison.
 #' @param .trt.indicator \code{character}. A character specifying the name used to indicate the treatment arm.
 #' @param .impute.response.vars `list`. Named list with the names of columns in `data` and the specific argument in
-#' [imputeResponse()] they should be used for.
+#' \code{\link[metapsyTools]{imputeResponse}} they should be used for.
 #' 
 #' @return \code{calculateEffectSizes} returns the meta-analysis data set as 
 #' class \code{data.frame} in wide format (if results are saved to a variable). 

@@ -18,10 +18,10 @@
 #'                html = TRUE)
 #'
 #' @param data \code{data.frame}. Effect size data in the wide format, as 
-#' created by \code{\link{calculateEffectSizes}}. For the other default settings to be
+#' created by \code{\link[metapsyTools]{calculateEffectSizes}}. For the other default settings to be
 #' applicable, the data set should follow the [Metapsy data standard](https://docs.metapsy.org/data-preparation/format/).
 #' Alternatively, one can also provide an `metapsyDatabase` object as returned by [metapsyData::getData()],
-#' or a meta-analysis object returned by [runMetaAnalysis()].
+#' or a meta-analysis object returned by \code{\link[metapsyTools]{runMetaAnalysis}}.
 #' @param which Should the data set be summarized with respect to the included
 #' treatments (`"treatments"`) or treatment comparisons (`"comparisons"`)? Defaults to
 #' `"treatments"`.
@@ -74,7 +74,7 @@
 #' Paula Kuper \email{paula.r.kuper@@gmail.com}, Pim Cuijpers \email{p.cuijpers@@vu.nl}
 #'
 #' @seealso \code{\link{createStudyTable}}, \code{\link{calculateEffectSizes}}, 
-#' \code{\link{subgroupAnalysis}}, \code{\link{correctPublicationBias}},
+#' \code{\link[metapsyTools]{subgroupAnalysis}}, \code{\link[metapsyTools]{correctPublicationBias}},
 #' \code{\link{metaRegression}}, \code{\link{runMetaAnalysis}}.
 #'
 #' @importFrom crayon green blue bold

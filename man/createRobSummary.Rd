@@ -11,7 +11,7 @@ createRobSummary(model,
                  which.run = model$which.run[1])
 }
 \arguments{
-\item{model}{An object of class \code{runMetaAnalysis}, created by the \code{\link[=runMetaAnalysis]{runMetaAnalysis()}} function.}
+\item{model}{An object of class \code{runMetaAnalysis}, created by the \code{\link[metapsyTools]{runMetaAnalysis}} function.}
 
 \item{name.low}{A \code{character} vector, specifying which code(s) have been used in the original data for
 studies with a low risk of bias.}
@@ -32,7 +32,7 @@ Creates a RevMan-type risk of bias summary plot.
 }
 \description{
 If the \code{rob.data} argument has been specified, this function allows to create
-a summary risk of bias plot for results of the \code{\link[=runMetaAnalysis]{runMetaAnalysis()}} function.
+a summary risk of bias plot for results of the \code{\link[metapsyTools]{runMetaAnalysis}} function.
 }
 \examples{
 \dontrun{

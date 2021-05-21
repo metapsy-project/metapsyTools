@@ -81,7 +81,7 @@ To use the data preparation module (i.e. calculate effect sizes), **study design
 -   **`condition_arm2`**: Condition in the second trial arm. The condition name is standardized to ensure comparability across trials (e.g. `wlc` for all trial arms that employed a waitlist control group).
 -   **`multi_arm1`**: In multiarm trials, this variable provides a "specification" of the type of treatment used in the first arm. This variable is set to `NA` (missing) when the study was not a multiarm trial. For example, if a multiarm trial employed two types of CBT interventions, face-to-face and Internet-based, this variable would be set to `f2f` and `Internet`, respectively.
 -   **`multi_arm2`**: In multiarm trials, this variable provides a "specification" of the type of treatment used in the second arm. This variable is set to `NA` (missing) when the study was not a multiarm trial. For example, if a multiarm trial employed two types of control groups, waitlist and placebo, this variable would be set to `wl` and `plac`, respectively.
--   **`outcome_type`**: This variable encodes the type of outcome that builds the basis of the comparison, e.g. `"response"`, `"remission"` or `"deterioration"`. This is variable is particularly relevant for dichotomous effect size data, because it indicates what the event counts refer to. The `"msd"` factor level is used for outcomes expressed in means and standard deviations.
+-   **`outcome_type`**: This variable encodes the type of outcome that builds the basis of the comparison, e.g. `"response"`, `"remission"` or `"deterioration"`. This variable is particularly relevant for dichotomous effect size data, because it indicates what the event counts refer to. The `"msd"` factor level is used for outcomes expressed in means and standard deviations.
 -   **`instrument`**: This variable describes the instrument through which the relevant outcome was measured.
 -   **`time`**: The measurement point at which the outcome was obtained (e.g. `post` or `follow-up`).
 -   **`time_weeks`**: The measurement point at which the outcome was obtained, in weeks after randomization (set to `NA` if this information was not available).
@@ -276,7 +276,7 @@ We see one important detail here. When dichotomous outcome data is provided, the
 
 #### Change Effect Size Sign
 
-The `change.sign` argument in `calculateEffectSizes` can be used to change the sign of one or several calculated effect sizes (e.g. change the calculated effect size from $g$=0.30 to $g$=---0.30, or vice versa). This is illustrated below:
+The `change.sign` argument in `calculateEffectSizes` can be used to change the sign of one or several calculated effect sizes (e.g. change the calculated effect size from $g$=0.30 to $g$=-0.30, or vice versa). This is illustrated below:
 
 ```{r, eval=F}
 # Take a slice of the data for illustration
@@ -592,8 +592,8 @@ The `runMetaAnalysis` function allows to tweak many, many details of the specifi
 response rates), or `"CER"` (for control group response rates).
 -   `es.type`. By default, analyses are conducted using the `"precalculated"` effect sizes stored in the prepared data set. For risk ratios, one can alternatively set this argument to `"raw"`, which means that the "raw" event counts are used for computations (instead of the pre-calculated log-risk ratio and its standard error). This is typically preferable, but may not be possible if this information could not be extracted from all primary studies.
 -   `method.tau`. This argument controls the method to be used for estimating the between-study heterogeneity variance $\tau^2$. The default is `"REML"` (restricted maximum likelihood), but other options such as the DerSimonian-Laird estimator (`"DL"`) are also available (see the [`runMetaAnalysis`](https://tools.metapsy.org/reference/runmetaanalysis) function documentation for more details). Note that three-level meta-analysis models can only be fitted using (restricted) maximum likelihood.
--   `nnt.cer`. The `runMetaAnalysis` function uses the method by Furukawa and Leucht ([2011](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0019070)) to calculate the Number Needed to Treat (NNT) for each pooled effect size. This method needs an estimate of the control group event rate (CER). By default, `nnt.cer = 0.2` is used, but you can set this to another value if desired.
--   `rho.within.study`. To combine effect sizes on a study level before pooling (`"combined"` model), one has to assume a within-study correlation of effects. By default, `rho.within.study = 0.6` is assumed, but this value can and should be changed based on better approximations. This value also controls the assumed within-study correlation in the multilevel CHE model (`"theelevel.che"`).
+-   `nntCer`. The `runMetaAnalysis` function uses the method by Furukawa and Leucht ([2011](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0019070)) to calculate the Number Needed to Treat (NNT) for each pooled effect size. This method needs an estimate of the control group event rate (CER). By default, `nntCer = 0.2` is used, but you can set this to another value if desired.
+-   `rho.within.study`. To combine effect sizes on a study level before pooling (`"combined"` model), one has to assume a within-study correlation of effects. By default, `rho.within.study = 0.6` is assumed, but this value can and should be changed based on better approximations. This value also controls the assumed within-study correlation in the multilevel CHE model (`"threelevel.che"`).
 -   `low.rob.filter`. By default, the function uses all comparisons for which the risk of bias rating in the `rob` variable has a value greater `2` (`low.rob.filter = "rob > 2"`). If your risk of bias rating is in another variable, or if another threshold should be used, you can change this argument accordingly.
 
 Here is an example of a `runMetaAnalysis` call with non-default settings:
@@ -603,7 +603,7 @@ runMetaAnalysis(ma.data,
                 es.measure = "RR",
                 es.type = "raw",
                 method.tau = "DL",
-                nnt.cer = 0.4,
+                nntCer = 0.4,
                 rho.within.study = 0.8)
 ```
 
@@ -626,7 +626,7 @@ runMetaAnalysis(ma.data, which.combine = "studies")
 
 Please note that, by default, no confidence intervals are printed for the $I^2$ value of the `"threelevel"` and `"threelevel.che"` model (the same is also the case for the $G^2$ value, the equivalent of $I^2$ in limit meta-analyses; see [Publication Bias] section)[^4]. This is because there are two heterogeneity variances in three-level models: the "conventional" between-study heterogeneity variance $\tau^2_{(1)}$ and the heterogeneity variance within studies, $\tau^2_{(2)}$. This means that there are also two $I^2$ values, one within studies, and one for the between-study heterogeneity. Established closed-form or iterative solutions (such as the $Q$-Profile method; Viechtbauer, [2007](https://pubmed.ncbi.nlm.nih.gov/16463355/)) are not directly applicable here, which means that confidence intervals cannot be calculated that easily.
 
-[^4]: The $G^2$ statistic ([Rücker et al., 2011](https://academic.oup.com/biostatistics/article/12/1/122/391113)) quanitifies the percentage of between-study heterogeneity that remains after small-study effects have been accounted for (in `metapsyTools`, $G^2$ is printed as $I^2$ ).
+[^4]: The $G^2$ statistic ([Rücker et al., 2011](https://academic.oup.com/biostatistics/article/12/1/122/391113)) quantifies the percentage of between-study heterogeneity that remains after small-study effects have been accounted for (in `metapsyTools`, $G^2$ is printed as $I^2$ ).
 
 In `metapsyTools`, one can resort to the **parametric bootstrap** (van den Noortgate & Onghena, [2005](https://link.springer.com/content/pdf/10.3758/BF03206394.pdf)) to obtain approximate confidence intervals around the $\tau^2$ and $I^2$ values. Bootstrapping is performed when the `i2.ci.boot` argument is set to `TRUE`. By default, $n$=5000 bootstrap samples are drawn, which should be seen as the absolute lower limit; more replications are preferable and can be specified via the `nsim.boot` argument.
 
@@ -656,7 +656,7 @@ Confidence intervals around $I^2$ and the $\tau^2$ will then be printed out alon
     # Within Studies  0.003 [0; 0.03]        0.8 [0; 10.31]    
     # Total           0.339 [0.079; 0.681]  88   [63.17; 93.67]
 
-When `runMetaAnalysis` was run with `i2.ci.boot` set to `TRUE`, the $I^2$ (or, more correctly, $G^2$) value of the **limit meta-analysis** will also be calculated using parametric bootstraping, provided that `correctPublicationBias` is called afterwards (see [publication bias](https://tools.metapsy.org/articles/metapsytools#publication-bias) section).
+When `runMetaAnalysis` was run with `i2.ci.boot` set to `TRUE`, the $I^2$ (or, more correctly, $G^2$) value of the **limit meta-analysis** will also be calculated using parametric bootstrapping, provided that `correctPublicationBias` is called afterwards (see [publication bias](https://tools.metapsy.org/articles/metapsytools#publication-bias) section).
 
 <br>
 
@@ -746,7 +746,7 @@ eggers.test(res$model.overall)
 
 For an overview of all available functionality, you can consult the specific documentation entry for each meta-analysis model type:
 
--   `"overall"`, `"combined"`, `"lowest"`, `"highest"`, `"outliers"`, `"influence"`, `"rob"`: run `?metagen` in the console (if effect size if $g$, or if if effect size is $RR$ and `es.type` is `"precalculated"`); otherwise, run `?metabin`.
+-   `"overall"`, `"combined"`, `"lowest"`, `"highest"`, `"outliers"`, `"influence"`, `"rob"`: run `?metagen` in the console (if effect size is $g$, or if effect size is $RR$ and `es.type` is `"precalculated"`); otherwise, run `?metabin`.
 
 -   `"threelevel"` and `"threelevel.che"`: run `?rma.mv` in the console. The [methods](https://wviechtb.github.io/metafor/reference/rma.mv.html#methods-1) section in this documentation entry is particularly relevant, since it shows functions that can be applied to this model type (so-called S3 methods).
 
@@ -803,7 +803,7 @@ If, for example, we want to check the results using a different estimator of $\t
 
 ```{r, eval=F}
 method.tau(res) <- "PM"
-nnt.cer(res) <- 0.7
+nntCer(res) <- 0.7
 ```
 
 Then, we have to call the `rerun` function:
@@ -820,8 +820,8 @@ A list of all available setting replacement functions is provided [here](https:/
 
 It is also possible to correct effect size estimates for potential publication bias and/or small-study effects using the [`correctPublicationBias`](https://tools.metapsy.org/reference/correctpublicationbias) function. This will apply three correction methods at the same time, providing a range of (more or less) plausible corrected values. Using the `which.run` argument, we can apply these methods to a specific model we fitted previously.[^5] Here, we select the `"combined"` analysis.
 
-[^5]: By default, `correctPublicationBias` uses the first model defined via `which.run`\
-    in `runMetaAnalysis` (typically, the `"overall"` model). Other possible values are`"overall"`, `"combined"`, `"lowest"`, `"highest"`, `"outliers"`, `"influence"` and `"rob"`. Currently, three-level models are not supported in `correctPublicationBias`.
+[^5]: By default, `correctPublicationBias` uses the first model defined via `which.run`
+    in `runMetaAnalysis` (typically, the `"overall"` model). Other possible values are `"overall"`, `"combined"`, `"lowest"`, `"highest"`, `"outliers"`, `"influence"` and `"rob"`. Currently, three-level models are not supported in `correctPublicationBias`.
 
 ```{r, eval=FALSE}
 correctPublicationBias(res, which.run = "combined")
@@ -841,7 +841,7 @@ The reason why three publication bias methods are applied at the same time is be
 
 -   The **limit meta-analysis** method assumes that publication bias manifests itself in so-called small-study effects (i.e., it assumes that small studies with high standard errors are more likely to be affected by publication bias). It calculates the expected ("shrunken") pooled effect as the standard error $\epsilon_k$ goes to zero, while accounting for between-study heterogeneity. Importantly, this methods controls for small-study effects only, which can be associated with publication bias, but does not have to.
 
--   Lastly, a **step function selection model** is calculated, which allows to account for the possibility that results are more or less likely to get published depending on their $P$ value. By default, the `selmodel.steps` argument is set to 0.05, which means that we assume that results with $p$\<0.1 are more likely to get published. It is also possible to define more than one selection threshold, e.g. by setting `selmodel.steps` to `c(0.025, 0.05)`.
+-   Lastly, a **step function selection model** is calculated, which allows to account for the possibility that results are more or less likely to get published depending on their $P$ value. By default, the `selmodelSteps` argument is set to 0.05, which means that we assume that results with $p$\<0.1 are more likely to get published. It is also possible to define more than one selection threshold, e.g. by setting `selmodelSteps` to `c(0.025, 0.05)`.
 
 For further details, see Harrer, Cuijpers, Furukawa & Ebert (2022, chap. [9.3](https://bookdown.org/MathiasHarrer/Doing_Meta_Analysis_in_R/pub-bias.html#pub-bias-which-method)).
 
@@ -856,7 +856,7 @@ correctPublicationBias(
               type = "R",
               
               # Use a random-effects model without bias parameter
-              # to shrink effects in the limi meta-analysis
+              # to shrink effects in the limit meta-analysis
               method.adjust = "mulim") 
 ```
 
@@ -934,7 +934,7 @@ metaRegression(res$model.threelevel,
     # ---
     # Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
-Please note that, to be available in `metaRegression`, is is necessary that the moderator variable(s) are already included in the data set that we originally used to call `runMetaAnalysis`.
+Please note that, to be available in `metaRegression`, it is necessary that the moderator variable(s) are already included in the data set that we originally used to call `runMetaAnalysis`.
 
 <br></br>
 

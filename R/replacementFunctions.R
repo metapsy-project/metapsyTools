@@ -34,35 +34,45 @@
 #' which.outliers(x) <- value
 #' which.influence(x) <- value
 #' which.rob(x) <- value
-#' nnt.cer(x) <- value
+#' nntCer(x) <- value
+#' \method{nnt}{runMetaAnalysis}(x) <- value
 #' rho.within.study(x) <- value
 #' phi.within.study(x) <- value
 #' w1.var(x) <- value
 #' w2.var(x) <- value
+#' time.var(x) <- value
 #' vcov(x) <- value
 #' near.pd(x) <- value
 #' use.rve(x) <- value
 #' html(x) <- value
 #' lower.is.better(x) <- value
-#' selmodel.steps(x) <- value
+#' selmodelSteps(x) <- value
+#' \method{selmodel}{runMetaAnalysis}(x) <- value
 #' rerun(m)
 #' 
-#' @export data<- which.run<- which.run near.pd near.pd<- es.measure es.measure<- es.type es.type<- es.var es.var<- se.var se.var<- es.binary.raw.vars es.binary.raw.vars<- method.tau method.tau<- hakn hakn<- study.var study.var<- arm.var.1 arm.var.1<- arm.var.2 arm.var.2<- measure.var measure.var<- low.rob.filter low.rob.filter<- method.tau.ci method.tau.ci<- which.combine which.combine<- which.combine.var which.combine.var<- which.outliers which.outliers<- which.influence which.influence<- which.rob which.rob<- nnt.cer nnt.cer<- rho.within.study rho.within.study<- phi.within.study phi.within.study<- w1.var w1.var<- w2.var w2.var<- vcov<- use.rve use.rve<- html html<- lower.is.better lower.is.better<- i2.ci.threelevel<- i2.ci.threelevel nsim.boot<- nsim.boot selmodel.steps selmodel.steps<- rerun
+#' @details
+#' \code{nntCer} / \code{nntCer<-} and \code{selmodelSteps} / \code{selmodelSteps<-}
+#' are also available as S3 methods \code{nnt}, \code{nnt<-}, \code{selmodel}, \code{selmodel<-}
+#' for \code{runMetaAnalysis} objects. The function \code{time.var} (and \code{time.var<-})
+#' is a regular replacement function, not an S3 method for \code{time}.
+#' 
+#' @export data<- which.run<- which.run near.pd near.pd<- es.measure es.measure<- es.type es.type<- es.var es.var<- se.var se.var<- es.binary.raw.vars es.binary.raw.vars<- method.tau method.tau<- hakn hakn<- study.var study.var<- arm.var.1 arm.var.1<- arm.var.2 arm.var.2<- measure.var measure.var<- low.rob.filter low.rob.filter<- method.tau.ci method.tau.ci<- round.digits round.digits<- which.combine which.combine<- which.combine.var which.combine.var<- which.outliers which.outliers<- which.influence which.influence<- which.rob which.rob<- nntCer nntCer<- rho.within.study rho.within.study<- phi.within.study phi.within.study<- w1.var w1.var<- w2.var w2.var<- vcov<- use.rve use.rve<- html html<- lower.is.better lower.is.better<- selmodelSteps selmodelSteps<- i2.ci.threelevel<- i2.ci.threelevel nsim.boot<- nsim.boot rerun
 #' @aliases data which.run near.pd es.measure es.type es.var se.var es.binary.raw.vars 
 #' method.tau hakn study.var arm.var.1 arm.var.2 measure.var low.rob.filter 
 #' method.tau.ci round.digits which.combine which.combine.var which.outliers 
-#' which.influence which.rob nnt.cer rho.within.study phi.within.study 
-#' w1.var w2.var time.var vcov use.rve html lower.is.better selmodel.steps
+#' which.influence which.rob nntCer rho.within.study phi.within.study 
+#' w1.var w2.var time.var vcov use.rve html lower.is.better selmodelSteps
+#' nnt.runMetaAnalysis nnt<-.runMetaAnalysis selmodel.runMetaAnalysis selmodel<-.runMetaAnalysis
 #' rerun data<- which.run<-
 #' es.measure<- es.type<- es.var<- se.var<- es.binary.raw.vars<- 
 #' method.tau<- hakn<- study.var<- arm.var.1<- arm.var.2<- 
 #' measure.var<- low.rob.filter<- method.tau.ci<- round.digits<- 
 #' which.combine<- which.combine.var<- which.outliers<- 
-#' which.influence<- which.rob<- nnt.cer<- rho.within.study<- 
+#' which.influence<- which.rob<- nntCer<- rho.within.study<- 
 #' phi.within.study<- w1.var<- w2.var<- time.var<- vcov<- 
-#' use.rve<- html<- lower.is.better<- selmodel.steps<- near.pd near.pd<-
+#' use.rve<- html<- lower.is.better<- selmodelSteps<- near.pd near.pd<-
 #' i2.ci.threelevel<- i2.ci.threelevel nsim.boot<- nsim.boot
-#' @seealso \code{\link{runMetaAnalysis}}, \code{\link{correctPublicationBias}}
+#' @seealso \code{\link[metapsyTools]{runMetaAnalysis}}, \code{\link[metapsyTools]{correctPublicationBias}}
 #' @examples 
 #' \dontrun{
 #' data("depressionPsyCtr")
@@ -213,12 +223,14 @@ low.rob.filter = `low.rob.filter<-`
 }
 method.tau.ci = `method.tau.ci<-`
 
+#' @export
 `round.digits<-` = function(x, value){
   origArgs = as.list(x$call)
   origArgs$round.digits = value[1]
   x$call = as.call(as.call(origArgs))
   return(x)
 }
+#' @export
 round.digits = `round.digits<-`
 
 `which.combine<-` = function(x, value){
@@ -261,13 +273,32 @@ which.influence = `which.influence<-`
 }
 which.rob = `which.rob<-`
 
-`nnt.cer<-` = function(x, value){
+nntCer = function(x, ...) as.list(x$call)$nntCer
+`nntCer<-` = function(x, value){
   origArgs = as.list(x$call)
   origArgs$nnt.cer = value[1]
   x$call = as.call(as.call(origArgs))
   return(x)
 }
-nnt.cer = `nnt.cer<-`
+
+#' Get or set NNT control event rate
+#'
+#' Generic getter and setter for the NNT control event rate (\code{nntCer})
+#' component of a \code{runMetaAnalysis} object. See \code{\link[metapsyTools]{Replacement functions}}.
+#'
+#' @param x Object of class \code{runMetaAnalysis}.
+#' @param ... Optional arguments (ignored).
+#' @return For \code{nnt(x)}, the current \code{nntCer} value. For \code{nnt(x) <- value}, the updated object (invisibly).
+#' @export
+nnt = function(x, ...) UseMethod("nnt")
+#' @exportS3Method nnt runMetaAnalysis
+nnt.runMetaAnalysis = function(x, ...) nntCer(x)
+#' @param value New value for \code{nntCer}.
+#' @rdname nnt
+#' @export
+`nnt<-` = function(x, value) UseMethod("nnt<-")
+#' @rawNamespace S3method("nnt<-", runMetaAnalysis)
+`nnt<-.runMetaAnalysis` = function(x, value) `nntCer<-`(x, value)
 
 `rho.within.study<-` = function(x, value){
   origArgs = as.list(x$call)
@@ -301,6 +332,8 @@ w1.var = `w1.var<-`
 }
 w2.var = `w2.var<-`
 
+#' @rawNamespace export("time.var<-")
+#' @rawNamespace export("time.var")
 `time.var<-` = function(x, value){
   origArgs = as.list(x$call)
   origArgs$time.var = value[1]
@@ -353,7 +386,8 @@ html = `html<-`
 }
 lower.is.better = `lower.is.better<-`
 
-`selmodel.steps<-` = function(x, value){
+selmodelSteps = function(x, ...) as.list(x$correctPublicationBias$call)$selmodelSteps
+`selmodelSteps<-` = function(x, value){
   if (is.null(x$correctPublicationBias)){
     stop("'correctPublicationBias' must be run first.")
   }
@@ -362,8 +396,26 @@ lower.is.better = `lower.is.better<-`
   x$correctPublicationBias$call = as.call(origArgs)
   return(x)
 }
-selmodel.steps = `selmodel.steps<-`
 
+#' Get or set selection model steps
+#'
+#' Generic getter and setter for the selection model steps (\code{selmodelSteps})
+#' component of a \code{runMetaAnalysis} object (after \code{correctPublicationBias}).
+#' See \code{\link[metapsyTools]{Replacement functions}}.
+#'
+#' @param x Object of class \code{runMetaAnalysis}.
+#' @param ... Optional arguments (ignored).
+#' @return For \code{selmodel(x)}, the current \code{selmodelSteps} value. For \code{selmodel(x) <- value}, the updated object (invisibly).
+#' @export
+selmodel = function(x, ...) UseMethod("selmodel")
+#' @exportS3Method selmodel runMetaAnalysis
+selmodel.runMetaAnalysis = function(x, ...) selmodelSteps(x)
+#' @param value New value for \code{selmodelSteps}.
+#' @rdname selmodel
+#' @export
+`selmodel<-` = function(x, value) UseMethod("selmodel<-")
+#' @rawNamespace S3method("selmodel<-", runMetaAnalysis)
+`selmodel<-.runMetaAnalysis` = function(x, value) `selmodelSteps<-`(x, value)
 
 rerun = function(m){
   d = m$data
@@ -375,5 +427,3 @@ rerun = function(m){
   }
   return(rMA)
 }
-
-

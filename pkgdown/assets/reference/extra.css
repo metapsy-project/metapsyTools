@@ -158,6 +158,33 @@ font-family: system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,"N
 font-weight: 400
 }
 
+/* Navbar dropdown menu styling */
+.navbar .dropdown-menu {
+  background-color: #fff !important;
+  border-radius: 0 !important;
+  border: 1px solid rgba(0, 0, 0, 0.15) !important;
+}
+
+.navbar .dropdown-menu .dropdown-item {
+  color: #212529 !important;
+}
+
+.navbar .dropdown-menu .dropdown-item:hover,
+.navbar .dropdown-menu .dropdown-item:focus {
+  background-color: #f8f9fa !important;
+  color: #212529 !important;
+}
+
+.navbar .dropdown-menu .dropdown-divider {
+  background-color: lightgray !important;
+  border-color: lightgray !important;
+}
+
+/* Active nav link border-radius */
+.nav-item.active .nav-link {
+  border-radius: 0 !important;
+}
+
 .fu {
 font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 font-weight: 600;

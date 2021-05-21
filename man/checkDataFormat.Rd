@@ -50,13 +50,14 @@ Metapsy data standard.}
 }
 \value{
 \code{checkDataFormat} returns messages that specify if input variables,
-values and classes of the variables are as defined.
+values and classes of the variables are as defined. The output should then be passed to
+\code{\link[metapsyTools]{checkConflicts}} and then to \code{\link[metapsyTools]{runMetaAnalysis}}.
 
 If default settings are used, \code{checkDataFormat()} can be used in combination
-with \code{\link[=checkConflicts]{checkConflicts()}} to determine if a dataset follows the \href{https://docs.metapsy.org/data-preparation/format/}{Metapsy data standard}.
+with \code{\link[metapsyTools]{checkConflicts}} to determine if a dataset follows the \href{https://docs.metapsy.org/data-preparation/format/}{Metapsy data standard}.
 Datasets that are formatted using this standard can be directly used in
 the \href{https://tools.metapsy.org/articles/metapsytools#the-analysis-module}{analysis module} in \code{metapsyTools};
-for example the \code{\link[=runMetaAnalysis]{runMetaAnalysis()}} function.
+for example the \code{\link[metapsyTools]{runMetaAnalysis}} function.
 }
 \description{
 This function checks if a \code{data.frame} object conforms with the

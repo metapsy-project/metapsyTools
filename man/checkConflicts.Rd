@@ -48,7 +48,7 @@ The returned list has class \code{checkConflicts}.
 }
 \description{
 This function checks for potential data formatting conflicts that may produce errors or incorrect
-results when applying the \code{\link[=calculateEffectSizes]{calculateEffectSizes()}} or \code{\link[=runMetaAnalysis]{runMetaAnalysis()}} function later on.
+results when applying the \code{\link[metapsyTools]{calculateEffectSizes}} or \code{\link[metapsyTools]{runMetaAnalysis}} function later on.
 }
 \examples{
 \dontrun{

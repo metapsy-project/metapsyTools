@@ -16,7 +16,7 @@
 #'
 #' @return \code{filterPoolingData} returns the filtered data set as class \code{data.frame}.
 #' The filtered data set should then be ready for meta-analytic pooling, for example 
-#' using [runMetaAnalysis()].
+#' using \code{\link[metapsyTools]{runMetaAnalysis}}.
 #'
 #' @examples
 #' \dontrun{

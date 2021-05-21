@@ -7,7 +7,7 @@
 #'                  ...,
 #'                  .which.run = .model$which.run[1],
 #'                  .round.digits = 2,
-#'                  .nnt.cer = NULL,
+#'                  .nntCer = NULL,
 #'                  .tau.common = FALSE,
 #'                  .html = TRUE)
 #'
@@ -17,7 +17,7 @@
 #' @param .which.run The model in \code{.model} that should be used for the subgroup analyses. Uses the default
 #' analysis in \code{.model} if no value is specified by the user.
 #' @param .round.digits \code{numeric}. Number of digits to round the (presented) results by. Default is \code{2}.
-#' @param .nnt.cer \code{numeric}. Value between 0 and 1, indicating the assumed control group event rate to be used
+#' @param .nntCer \code{numeric}. Value between 0 and 1, indicating the assumed control group event rate to be used
 #' for calculating NNTs via the Furukawa-Leucht method. If set to \code{NULL} (default),
 #' the value saved in \code{.model} is (re-)used.
 #' @param .tau.common \code{logical}. Should a common (\code{TRUE}) or subgroup-specific (\code{FALSE}) estimate
@@ -73,7 +73,7 @@
 subgroupAnalysis = function(.model, ...,
                             .which.run = .model$which.run[1],
                             .round.digits = 2,
-                            .nnt.cer = NULL,
+                            .nntCer = NULL,
                             .tau.common = FALSE,
                             .html = TRUE){
   
@@ -225,11 +225,11 @@ subgroupAnalysis = function(.model, ...,
           ifelse(.=="[-; -]", "-", .)
 
         # NNT
-        if (is.null(.nnt.cer)){
-          metapsyNNT(abs(g.full), .model$nnt.cer) %>%
+        if (is.null(.nntCer)){
+          metapsyNNT(abs(g.full), .model$nntCer) %>%
             round(.round.digits) %>% abs() -> nnt
         } else {
-          metapsyNNT(abs(g.full), .nnt.cer) %>%
+          metapsyNNT(abs(g.full), .nntCer) %>%
             round(.round.digits) %>% abs() -> nnt
         }
 
@@ -317,11 +317,11 @@ subgroupAnalysis = function(.model, ...,
         }
       }
 
-      if (is.null(.nnt.cer)){
-        metapsyNNT(abs(g.full), .model$nnt.cer) %>%
+      if (is.null(.nntCer)){
+        metapsyNNT(abs(g.full), .model$nntCer) %>%
           round(.round.digits) %>% abs() -> nnt
       } else {
-        metapsyNNT(abs(g.full), .nnt.cer) %>%
+        metapsyNNT(abs(g.full), .nntCer) %>%
           round(.round.digits) %>% abs() -> nnt
       }
 

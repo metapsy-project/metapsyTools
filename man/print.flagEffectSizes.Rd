@@ -12,7 +12,7 @@
 \item{...}{Additional arguments.}
 }
 \description{
-Print S3 method for objects of class \code{flagEffectSizes}, as created by \code{\link[=flagEffectSizes]{flagEffectSizes()}}.
+Print S3 method for objects of class \code{flagEffectSizes}, as created by \code{\link[metapsyTools]{flagEffectSizes}}.
 }
 \author{
 Mathias Harrer \email{mathias.h.harrer@gmail.com},

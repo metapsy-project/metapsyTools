@@ -6,7 +6,7 @@
 #' @usage correctPublicationBias(model, 
 #'                        which.run = model$which.run[1],
 #'                        lower.is.better = TRUE,
-#'                        selmodel.steps = 0.05,
+#'                        selmodelSteps = 0.05,
 #'                        ...)
 #'
 #' @param model An object of class \code{runMetaAnalysis}, created by the \code{runMetaAnalysis} function.
@@ -15,10 +15,10 @@
 #' \code{"overall"}, \code{"combined"}, \code{"lowest"}, \code{"highest"}, \code{"outliers"},
 #' \code{"influence"} and \code{"rob"}.
 #' @param lower.is.better Do lower values indicate better outcomes (i.e. higher effects)? Default is \code{TRUE}.
-#' @param selmodel.steps Thresholds to be assumed for the step function in the selection model. Must be a vector
+#' @param selmodelSteps Thresholds to be assumed for the step function in the selection model. Must be a vector
 #' of numbers referring to the cut-points in the selection models. If two-sided testing is assumed for the
 #' included studies, the cut-point must be doubled to obtain the assumed \emph{p}-value 
-#' (e.g. \code{selmodel.steps = c(0.03, 0.05)} means that \emph{p}=0.06 and \emph{p}=0.10 are assumed as selection thresholds).
+#' (e.g. \code{selmodelSteps = c(0.03, 0.05)} means that \emph{p}=0.06 and \emph{p}=0.10 are assumed as selection thresholds).
 #' The default is \code{0.05}.
 #' @param ... Additional arguments. See \link[meta]{trimfill.default} and \link[metasens]{limitmeta}.
 #'
@@ -103,7 +103,7 @@
 correctPublicationBias = function(model, 
                                   which.run = model$which.run[1],
                                   lower.is.better = TRUE,
-                                  selmodel.steps = 0.05,
+                                  selmodelSteps = 0.05,
                                   ...){
   
   # Check class
@@ -173,7 +173,7 @@ correctPublicationBias = function(model,
   # Get steering variables
   .raw.bin.es = model[[".raw.bin.es"]]
   .type.es = model[[".type.es"]]
-  nnt.cer = model[["nnt.cer"]]
+  nntCer = model[["nntCer"]]
   round.digits = model[["round.digits"]]
   M.orig = M
   
@@ -260,7 +260,7 @@ correctPublicationBias = function(model,
                                  round.digits), "]"),
         nnt = metapsyNNT(
           ifelse(isTRUE(common) & !isTRUE(random), 
-                 abs(TE.common), abs(TE.random)), nnt.cer) %>%
+                 abs(TE.common), abs(TE.random)), nntCer) %>%
           ifelse(identical(.type.es, "RR"), NA, .) %>% 
           ifelse(isTRUE(.raw.bin.es), 
                  nnt.raw.bin.es, .) %>% 
@@ -448,7 +448,7 @@ correctPublicationBias = function(model,
                          exp(.), .), 
                 round.digits), "]"),
         nnt = metapsyNNT(
-          abs(TE.adjust), nnt.cer) %>%
+          abs(TE.adjust), nntCer) %>%
           ifelse(identical(.type.es, "RR"), NA, .) %>% 
           ifelse(isTRUE(.raw.bin.es), 
                  nnt.raw.bin.es, .) %>% 
@@ -527,7 +527,7 @@ correctPublicationBias = function(model,
                    type = "stepfun",
                    alternative = 
                      ifelse(lower.is.better, "less", "greater"),
-                   steps = selmodel.steps)}, silent = TRUE)
+                   steps = selmodelSteps)}, silent = TRUE)
   .selmodel.error = FALSE
   
   if (inherits(mSelmodel, "try-error")){
@@ -537,14 +537,14 @@ correctPublicationBias = function(model,
                   type = "stepfun",
                   alternative = 
                     ifelse(lower.is.better, "less", "greater"),
-                  steps = selmodel.steps, 
+                  steps = selmodelSteps, 
                   verbose = TRUE))
     .selmodel.error = TRUE
   }
   
   # Extract information from overall model
   r.digits = model$round.digits
-  m.nnt.cer = model$nnt.cer
+  m.nntCer = model$nntCer
   
   if (isTRUE(.selmodel.error)){
     mSelmodelRes = data.frame(
@@ -596,7 +596,7 @@ correctPublicationBias = function(model,
           metafor::selmodel(type = "stepfun",
                             alternative = 
                               ifelse(lower.is.better, "less", "greater"),
-                            steps = selmodel.steps) %>% 
+                            steps = selmodelSteps) %>% 
           {metapsyNNT(abs(as.numeric(.$b)), 
                       CER = cer)} -> nnt.g
       } else {
@@ -607,7 +607,7 @@ correctPublicationBias = function(model,
           metafor::selmodel(type = "stepfun",
                             alternative = 
                               ifelse(lower.is.better, "less", "greater"),
-                            steps = selmodel.steps) %>% 
+                            steps = selmodelSteps) %>% 
           {metapsyNNT(abs(as.numeric(.$b)), 
                       CER = cer)} -> nnt.g
       }
@@ -648,12 +648,12 @@ correctPublicationBias = function(model,
                   ifelse(identical(.type.es, "RR"), exp(.), .), 
                 r.digits), "]"),
         nnt = ifelse(identical(.type.es, "RR"), 
-                     NA, metapsyNNT(abs(as.numeric(b[,1])), m.nnt.cer)) %>% 
+                     NA, metapsyNNT(abs(as.numeric(b[,1])), m.nntCer)) %>% 
                      ifelse(isTRUE(.raw.bin.es), nnt.g, .) %>% 
                      round(round.digits) %>% abs(),
         excluded = paste0(
           "Step-function selection model with cutpoints p=",
-          paste(selmodel.steps*2, collapse = ", "), ". ",
+          paste(selmodelSteps*2, collapse = ", "), ". ",
           "The selection model parameter test was ",
           ifelse(LRTp < 0.05, "significant: ", "not significant: "),
           "\u03C7\u00B2","=", round(LRT, 3), 
@@ -689,7 +689,7 @@ correctPublicationBias = function(model,
   if (!isTRUE(.selmodel.error)){
     message("- ", crayon::green("[OK] "),
             "Estimated effect using step function selection model (p=",
-            paste(selmodel.steps*2, collapse = ", "), ").")
+            paste(selmodelSteps*2, collapse = ", "), ").")
     } 
   
   
