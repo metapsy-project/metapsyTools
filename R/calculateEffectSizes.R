@@ -1,4 +1,4 @@
-# data: meta-analysis dataset of class expandMultiarmTrials, created using expanMultiarmTrials
+# data: meta-analysis data set of class expandMultiarmTrials, created using expanMultiarmTrials
 # comp.id.indicator: character, column name of the variable storing the comparison ID
 # group.indicator: character, column name of the variable storing the study name
 # group.indicator: character, column name of the variable storing the condition
