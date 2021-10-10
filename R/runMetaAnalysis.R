@@ -1,5 +1,4 @@
-inpatients %>%
-  filter(primary == 1) %>%
+psyCtrSubset %>%
   checkDataFormat() %>%
   checkConflicts() %>%
   expandMultiarmTrials() %>%
@@ -16,8 +15,10 @@ runMetaAnalysis = function(data,
                                          "influence", "rob", "threelevel"),
                            method.tau = "REML",
                            hakn = TRUE,
-                           comp.var = "study",
-                           study.var = "study.id",
+                           study.var = "study",
+                           arm.var.1 = "Cond_spec_trt1",
+                           arm.var.2 = "Cond_spec_trt2",
+                           measure.var = "Outc_measure",
                            es.var = "es",
                            se.var = "se",
                            low.rob.filter = "rob > 2",
@@ -40,12 +41,25 @@ runMetaAnalysis = function(data,
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
   data.original = data
+
+  # Create comparison variable
+  paste0(data[[study.var]], " (",
+         data[[arm.var.1]], " vs. ",
+         data[[arm.var.2]], "; ",
+         data[[measure.var]], ")") -> data$comparison
+
+  paste0(data[[arm.var.1]], " vs. ",
+         data[[arm.var.2]]) -> data$comparison.only
+
+  data[[measure.var]] -> data$instrument
+
+
   data = data[!is.na(data[[es.var]]),]
   method.tau.ci = ifelse(method.tau.ci == "Q-Profile", "QP", method.tau.ci)
 
   mGeneral = meta::metagen(TE = data[[es.var]],
                            seTE = data[[se.var]],
-                           studlab = data[[comp.var]],
+                           studlab = data[[study.var]],
                            data = data,
                            sm = "g",
                            hakn = hakn,
@@ -92,7 +106,9 @@ runMetaAnalysis = function(data,
   if (length(multi.study) > 0){
     data %>%
       split(.[[study.var]]) %>%
-      purrr::map(function(x){x[[es.var]] == min(x[[es.var]])}) %>%
+      purrr::map(function(x){
+        tiebreaker = rnorm(nrow(x), sd=1e-10)
+        x[[es.var]] + tiebreaker == min(x[[es.var]] + tiebreaker)}) %>%
       do.call(c,.) -> lowest
   } else {
     lowest = NULL
@@ -121,7 +137,7 @@ runMetaAnalysis = function(data,
   if (is.null(mLowest$exclude[1])){
     mLowestRes$excluded = "none"
   } else {
-    mLowestRes$excluded = paste(data[[comp.var]][mLowest$exclude],
+    mLowestRes$excluded = paste(data$comparison[mLowest$exclude],
                                 collapse = ", ")}
   rownames(mLowestRes) = "One ES/study (lowest)"
 
@@ -141,7 +157,9 @@ runMetaAnalysis = function(data,
   if (length(multi.study) > 0){
     data %>%
       split(.[[study.var]]) %>%
-      purrr::map(function(x){x[[es.var]] == max(x[[es.var]])}) %>%
+      purrr::map(function(x){
+        tiebreaker = rnorm(nrow(x), sd=1e-10)
+        x[[es.var]] + tiebreaker == max(x[[es.var]] + tiebreaker)}) %>%
       do.call(c,.) -> highest
   } else {
     highest = NULL
@@ -170,7 +188,7 @@ runMetaAnalysis = function(data,
   if (is.null(mHighest$exclude[1])){
     mHighestRes$excluded = "none"
   } else {
-    mHighestRes$excluded = paste(data[[comp.var]][mHighest$exclude],
+    mHighestRes$excluded = paste(data$comparison[mHighest$exclude],
                                  collapse = ", ")}
   rownames(mHighestRes) = "One ES/study (highest)"
 
@@ -271,7 +289,7 @@ runMetaAnalysis = function(data,
     )
   })
   rownames(mOutliersRes) = "Outliers removed"
-  mOutliersRes$excluded = paste(mOutliers$studlab[mOutliers$exclude], collapse = ", ")
+  mOutliersRes$excluded = paste(mOutliers$data$comparison[mOutliers$exclude], collapse = ", ")
 
   if ("outliers" %in% which.run){
     message("- [OK] Calculated effect size with outliers removed")
@@ -322,7 +340,7 @@ runMetaAnalysis = function(data,
   rownames(mInfluenceRes) = "Influence Analysis"
   mInfluenceRes$excluded = paste("removed as influential cases:",
                                  ifelse(sum(influenceRes$Data$is.infl == "yes") > 0,
-                                        paste(mInfluence$studlab[influenceRes$Data$is.infl == "yes"],
+                                        paste(mInfluence$data$comparison[influenceRes$Data$is.infl == "yes"],
                                               collapse = ", "), "none"))
 
   if ("influence" %in% which.run){
@@ -350,7 +368,9 @@ runMetaAnalysis = function(data,
   }
 
   if ("rob" %in% which.run){
-    robFilter = paste0("data.for.rob$", low.rob.filter)
+    robVar = strsplit(low.rob.filter, " ")[[1]][1]
+    m.for.rob$data[[robVar]] = as.numeric(m.for.rob$data[[robVar]])
+    robFilter = paste0("data.for.rob$", low.rob.filter, " & !is.na(data.for.rob$", robVar, ")")
     robMask = eval(parse(text = robFilter))
     mRob = update.meta(m.for.rob, exclude = !robMask)
   } else {
@@ -377,7 +397,7 @@ runMetaAnalysis = function(data,
     )
   })
   rownames(mRobRes) = paste("Only", low.rob.filter)
-  mRobRes$excluded = paste(mRob$studlab[!robMask], collapse = ", ")
+  mRobRes$excluded = paste(mRob$data$comparison[!robMask], collapse = ", ")
 
   if ("rob" %in% which.run){
     message("- [OK] Calculated effect size using only low RoB information")
@@ -399,7 +419,7 @@ runMetaAnalysis = function(data,
 
   mThreeLevel = metafor::rma.mv(yi = data[[es.var]],
                                 V = data[[se.var]]*data[[se.var]],
-                                slab = data[[comp.var]],
+                                slab = data[[study.var]],
                                 data = data,
                                 random = as.formula(formula),
                                 test = ifelse(hakn == TRUE, "t", "z"),
@@ -539,15 +559,22 @@ plot.runMetaAnalysis = function(x, which = NULL, ...){
                 "rob" = "model.rob", "combined" = "model.combined",
                 "threelevel" = "model.threelevel")
 
+  leftCols = c("studlab", "comparison.only", "instrument", "TE", "seTE")
+  leftLabs = c("Study", "Comparison", "Instrument", "g", "S.E.")
+
   # print forest plot by default
   if (is.null(which)){
     if (models[[x$which.run[1]]][1] != "model.threelevel"){
       message("- [OK] Generating forest plot ('", which.run[1], "' model)")
-      meta::forest.meta(x[[models[[x$which.run[1]]][1]]], smlab = " ", ...)
+      meta::forest.meta(x[[models[[x$which.run[1]]][1]]], smlab = " ",
+                        leftcols = leftCols, leftlabs = leftLabs,
+                        text.random = "RE Model", ...)
     }
     if (models[[x$which.run[1]]][1] == "lowest.highest"){
       message("- [OK] Generating forest plot ('", "highest", "' model)")
-      meta::forest.meta(x$model.highest, smlab = " ", ...)
+      meta::forest.meta(x$model.highest, smlab = " ",
+                        leftcols = leftCols, leftlabs = leftLabs,
+                        text.random = "RE Model", ...)
     }
     if (models[[x$which.run[1]]][1] == "model.threelevel"){
       metafor::forest.rma(x$model.threelevel, ...)
@@ -556,34 +583,48 @@ plot.runMetaAnalysis = function(x, which = NULL, ...){
 
     if (which[1] == "overall"){
       message("- [OK] Generating forest plot ('overall' model)")
-      meta::forest.meta(x$model.overall, smlab = " ", ...)
+      meta::forest.meta(x$model.overall, smlab = " ",
+                        leftcols = leftCols, leftlabs = leftLabs,
+                        text.random = "RE Model", ...)
     }
 
     if (which[1] == "lowest.highest"){
       message("- [OK] Generating forest plot ('lowest' model)")
-      meta::forest.meta(x$model.lowest, smlab = " ", ...)
+      meta::forest.meta(x$model.lowest, smlab = " ",
+                        leftcols = leftCols, leftlabs = leftLabs,
+                        text.random = "RE Model", ...)
       message("- [OK] Generating forest plot ('highest' model)")
-      meta::forest.meta(x$model.highest, smlab = " ", ...)
+      meta::forest.meta(x$model.highest, smlab = " ",
+                        leftcols = leftCols, leftlabs = leftLabs,
+                        text.random = "RE Model", ...)
     }
 
     if (which[1] == "outliers"){
       message("- [OK] Generating forest plot ('outliers' model)")
-      meta::forest.meta(x$model.outliers, smlab = " ", ...)
+      meta::forest.meta(x$model.outliers, smlab = " ",
+                        leftcols = leftCols, leftlabs = leftLabs,
+                        text.random = "RE Model", ...)
     }
 
     if (which[1] == "influence"){
       message("- [OK] Generating forest plot ('influence' model)")
-      meta::forest.meta(x$model.influence, smlab = " ", ...)
+      meta::forest.meta(x$model.influence, smlab = " ",
+                        leftcols = leftCols, leftlabs = leftLabs,
+                        text.random = "RE Model", ...)
     }
 
     if (which[1] == "rob"){
       message("- [OK] Generating forest plot ('rob' model)")
-      meta::forest.meta(x$model.rob, smlab = " ", ...)
+      meta::forest.meta(x$model.rob, smlab = " ",
+                        leftcols = leftCols, leftlabs = leftLabs,
+                        text.random = "RE Model", ...)
     }
 
     if (which[1] == "combined"){
       message("- [OK] Generating forest plot ('combined' model)")
-      meta::forest.meta(x$model.combined, smlab = " ", ...)
+      meta::forest.meta(x$model.combined, smlab = " ",
+                        leftcols = leftCols, leftlabs = leftLabs,
+                        text.random = "RE Model", ...)
     }
 
     if (which[1] == "threelevel"){
@@ -605,27 +646,27 @@ plot.runMetaAnalysis = function(x, which = NULL, ...){
       message("- [OK] Generating leave-one-out forest plot (sorted by I2)")
       suppressWarnings({plot(x$influence.analysis$ForestI2)})
     }
+
+    if (which[1] == "summary"){
+
+      stringr::str_replace_all(x$summary$g.ci, ";|\\]|\\[", "") %>%
+        strsplit(" ") %>% purrr::map(~as.numeric(.)) %>% do.call(rbind,.) %>%
+        {colnames(.) = c("lower", "upper");.} %>%
+        cbind(model = rownames(x$summary), g = x$summary$g,.) %>%
+        data.frame() %>%
+        dplyr::mutate(g = as.numeric(g),
+                      lower = as.numeric(lower),
+                      upper = as.numeric(upper)) %>%
+        meta::metagen(TE = g, lower = lower, upper = upper, studlab = model,
+                      data = .) %>%
+        meta::forest.meta(col.square = "lightblue",
+                          rightcols = FALSE,
+                          overall.hetstat = FALSE,
+                          test.overall = FALSE, overall = FALSE,
+                          leftlabs = c("Model", "g", "SE"))
   }
-
-  if (which[1] == "summary"){
-
-    stringr::str_replace_all(x$summary$g.ci, ";|\\]|\\[", "") %>%
-      strsplit(" ") %>% map(~as.numeric(.)) %>% do.call(rbind,.) %>%
-      {colnames(.) = c("lower", "upper");.} %>%
-      cbind(model = rownames(x$summary), g = x$summary$g,.) %>%
-      data.frame() %>%
-      dplyr::mutate(g = as.numeric(g),
-             lower = as.numeric(lower),
-             upper = as.numeric(upper)) %>%
-      meta::metagen(TE = g, lower = lower, upper = upper, studlab = model,
-                    data = .) %>%
-      meta::forest.meta(col.square = "lightblue",
-                        rightcols = FALSE,
-                        overall.hetstat = FALSE,
-                        test.overall = FALSE, overall = FALSE,
-                        leftlabs = c("Model", "g", "SE"))
-
   }
 }
+
 
 

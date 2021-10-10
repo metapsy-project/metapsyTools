@@ -131,7 +131,7 @@ subgroupAnalysis = function(.model, ...,
 
 
 
-subgroupAnalysis(res, ADD_setting, sr_clinician, country, Outc_measure)
+subgroupAnalysis(res, ADD_setting, country, Outc_measure)
 
 
 
