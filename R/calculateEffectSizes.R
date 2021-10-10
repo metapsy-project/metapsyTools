@@ -1,57 +1,25 @@
 #' Calculate effect sizes
 #'
-#'
 #' This is a function to calculate effect sizes of meta-analysis data created by \code{expandMultiarmTrials}.
 #'
 #' @usage calculateEffectSizes(data,
 #'        comp.id.indicator = "id",
-#'        study.indicator = "study",
-#'        group.indicator = "condition",
-#'        pivot.vars = c("id", "condition", "Post_M", "Post_SD",
-#'                      "Post_N", "Rand_N", "Improved_N", "Change_m",
-#'                      "Change_SD", "Change_N"),
-#'        funcs = list(
-#'                  mean.sd = function(x, ...){
-#'                    x \%>\%
-#'                      purrr::pmap_dfr(function(Post_M_ig, Post_M_cg, Post_SD_ig,
-#'                                               Post_SD_cg, Post_N_ig, Post_N_cg, ...)
-#'                      {esc::esc_mean_sd(Post_M_ig, Post_SD_ig, Post_N_ig,
-#'                                        Post_M_cg, Post_SD_cg, Post_N_cg,
-#'                                        es.type = "g") \%>\%
-#'                          as.data.frame() \%>\% dplyr::select(es, se) \%>\%
-#'                          suppressWarnings()})},
-#'                  binary = function(x, ...){
-#'                    x \%>\%
-#'                      purrr::pmap_dfr(function(Improved_N_ig, Improved_N_cg,
-#'                                               Rand_N_ig, Rand_N_cg, ...)
-#'                      {esc::esc_2x2(Improved_N_ig,
-#'                                    Rand_N_ig - Improved_N_ig,
-#'                                    Improved_N_cg,
-#'                                    Rand_N_cg - Improved_N_cg,
-#'                                    es.type = "g") \%>\%
-#'                          as.data.frame() \%>\% dplyr::select(es, se) \%>\%
-#'                          suppressWarnings() \%>\%
-#'                          mutate(es = es*-1)})},
-#'                  change = function(x, ...){
-#'                    x \%>\%
-#'                      purrr::pmap_dfr(function(Change_m_ig, Change_m_cg, Change_SD_ig,
-#'                                               Change_SD_cg, Change_N_ig, Change_N_cg, ...)
-#'                      {esc::esc_mean_sd(Change_m_ig, Change_SD_ig, Change_N_ig,
-#'                                        Change_m_cg, Change_SD_cg, Change_N_cg,
-#'                                        es.type = "g") \%>\%
-#'                          as.data.frame() \%>\% dplyr::select(es, se) \%>\%
-#'                          suppressWarnings()})}))
+#'        trt.indicator = "trt",
+#'        funcs = list(meanSD = meanSD,
+#'                     binaryES = binaryES,
+#'                     changeES = changeES),
+#'                     change.sign = NULL)
 #'
 #'
 #' @param data Meta-analysis data set of class \code{expandMultiarmTrials}, created using \code{expandMultiarmTrials}.
-#' @param comp.id.indicator \code{character}, column name of the variable storing the comparison ID.
-#' @param study.indicator \code{character}, column name of the variable storing the study name.
-#' @param group.indicator \code{character}, column name of the variable storing the condition (intervention or control group).
-#' @param pivot.vars \code{character} vector, contains the name of the comparison ID variable, the condition variable, and all raw effect size data variables from which effect sizes should be calculated.
+#' @param comp.id.indicator \code{character}, column name of the variable storing the comparison ID; typically created by \code{expandMultiarmTrials}.
+#' @param trt.indicator \code{character}, column name of the variable storing the treatment indicator (treatment 1 or 2); typically created by \code{expandMultiarmTrials}.
 #' @param funcs \code{list} of functions. These functions will be used to calculate the effect sizes (Hedges' \emph{g}) based on the raw data (see Details).
+#' @param change.sign \code{character}. Name of a \code{logical} column in \code{data}, encoding if the
+#' sign of a calculated effect size should be reversed (\code{TRUE}) or not (\code{FALSE}). Set to \code{NULL} (default) if
+#' no changes should be made.
 #'
-#'
-#' @return \code{calculateEffectSizes} returns the meta-analysis data set as class \code{data.frame} (if results are saved to a variable). It also generates the following columns, wich are added to the data:
+#' @return \code{calculateEffectSizes} returns the meta-analysis data set as class \code{data.frame} in wide format (if results are saved to a variable). It also generates the following columns, wich are added to the data:
 #' \itemize{
 #' \item{\code{es} calculated effect sizes for each comparison.}
 #' \item{\code{se} calculated standard error of the effect size.}
@@ -68,22 +36,21 @@
 #'
 #' #Example 2: further use to pool effect sizes
 #' library(meta)
-#' library(dplyr)
 #' inpatients %>%
-#'     checkDataFormat ()%>%
-#'     expandMultiarmTrials() %>%
-#'     calculateEffectSizes() %>%
-#'     dplyr::filter(!is.na(es) & primary==1) %>%
-#'     metagen(es, se, studlab=study, comb.fixed=FALSE, data=.)
+#'   checkDataFormat() %>%
+#'   expandMultiarmTrials() %>%
+#'   calculateEffectSizes() %>%
+#'   filterPoolingData(primary==1) %>%
+#'   metagen(es, se, studlab=study, comb.fixed=FALSE, data=.)
 #'
 #'
 #' # Example 3: use for 3-level model
 #' library(metafor)
+#' library(dplyr)
 #' inpatients %>%
 #'   checkDataFormat ()%>%
 #'   expandMultiarmTrials() %>%
 #'   calculateEffectSizes() %>%
-#'   dplyr::filter(!is.na(es)) %>%
 #'   dplyr::mutate(es.id = 1:nrow(.)) %>%
 #'   metafor::rma.mv(es, se^2, data = ., slab = study.id,
 #'                   random = ~ 1 | study.id/es.id, test = "t")
@@ -107,50 +74,20 @@
 #'
 #' @importFrom tidyr pivot_longer pivot_wider
 #' @importFrom dplyr all_of select filter mutate arrange
-#' @importFrom purrr pmap_dfr
+#' @importFrom purrr pmap_dfr map
 #' @importFrom esc esc_mean_sd
+#' @importFrom stringr str_remove str_replace
 #' @import magrittr
 #' @import dplyr
 #' @export calculateEffectSizes
 
 calculateEffectSizes = function(data,
                                 comp.id.indicator = "id",
-                                study.indicator = "study",
-                                group.indicator = "condition",
-                                pivot.vars = c("id", "condition",
-                                               "Post_M", "Post_SD", "Post_N",
-                                               "Rand_N", "Improved_N",
-                                               "Change_m", "Change_SD",
-                                               "Change_N"),
-                                funcs = list(
-                                  mean.sd = function(x, ...){
-                                    x %>%
-                                      purrr::pmap_dfr(function(Post_M_ig, Post_M_cg, Post_SD_ig,
-                                                               Post_SD_cg, Post_N_ig, Post_N_cg, ...)
-                                      {esc::esc_mean_sd(Post_M_ig, Post_SD_ig, Post_N_ig,
-                                                        Post_M_cg, Post_SD_cg, Post_N_cg, es.type = "g") %>%
-                                          as.data.frame() %>% dplyr::select(es, se) %>%
-                                          suppressWarnings()})},
-                                  binary = function(x, ...){
-                                    x %>%
-                                      purrr::pmap_dfr(function(Improved_N_ig, Improved_N_cg, Rand_N_ig, Rand_N_cg, ...)
-                                      {esc::esc_2x2(Improved_N_ig,
-                                                    Rand_N_ig - Improved_N_ig,
-                                                    Improved_N_cg,
-                                                    Rand_N_cg - Improved_N_cg,
-                                                    es.type = "g") %>%
-                                          as.data.frame() %>% dplyr::select(es, se) %>%
-                                          suppressWarnings() %>%
-                                          mutate(es = es*-1)})},
-                                  change = function(x, ...){
-                                    x %>%
-                                      purrr::pmap_dfr(function(Change_m_ig, Change_m_cg, Change_SD_ig,
-                                                               Change_SD_cg, Change_N_ig, Change_N_cg, ...)
-                                      {esc::esc_mean_sd(Change_m_ig, Change_SD_ig, Change_N_ig,
-                                                        Change_m_cg, Change_SD_cg, Change_N_cg, es.type = "g") %>%
-                                          as.data.frame() %>% dplyr::select(es, se) %>%
-                                          suppressWarnings()})})
-){
+                                trt.indicator = "trt",
+                                funcs = list(meanSD = meanSD,
+                                             binaryES = binaryES,
+                                             changeES = changeES),
+                                change.sign = NULL){
 
   # check class
   if (class(data)[2] != "expandMultiarmTrials"){
@@ -164,43 +101,76 @@ calculateEffectSizes = function(data,
   # Define id
   data$id = data[[comp.id.indicator]]
 
+
   # Convert to wide
   data %>%
-    dplyr::select(dplyr::all_of(pivot.vars)) %>%
-    tidyr::pivot_wider(names_from = dplyr::all_of(group.indicator),
-                       values_from = c(-id, -dplyr::all_of(group.indicator))) %>%
-    {.[,colSums(is.na(.))<nrow(.)]} -> data.wide
+    tidyr::pivot_wider(names_from = trt.indicator,
+                       values_from = c(-id, -trt.indicator, -study)) -> data.wide
+
 
   # Apply funcs
-  message("calculating effect sizes...")
+  message("- Calculating effect sizes...")
   es.res = list()
   for (i in 1:length(funcs)){
-    es.res[[i]] = funcs[[i]](data.wide)
+    es.res[[i]] = try({funcs[[i]](data.wide)}, silent = TRUE)
   }
+
+  # Check if all functions could be applied
+  es.res %>% purrr::map(~class(.)) %>%
+    unlist() %>% {. == "try-error"} -> error.mask
+
+  funcs2 = funcs[!error.mask]
+  if (length(funcs) == 0){
+    stop("None of the supplied functions could be applied correctly.")
+  }
+
+  # Recalculate if necessary
+  if (sum(error.mask) != 0){
+    es.res = list()
+    for (i in 1:length(funcs2)){
+      es.res[[i]] = try({funcs2[[i]](data.wide)}, silent = TRUE)}
+  }
+
   es.res = do.call(cbind, es.res)
-  message("SUCCESS")
+
+  if (sum(error.mask) > 0){
+    message("- [!] Function(s) ", paste(names(funcs)[error.mask], collapse = ", "),
+            " not applied. Check for potential data/function problems.")
+    message("- [!] All other effect size calculation functions were applied successfully.")
+  } else {
+    message("- [OK] Effect sizes calculated successfully")
+  }
 
   # Now, bind all calculated ES together,
   # then bind together with wide dataset
   es.res %>%
-    apply(., 1, function(x) x[!is.na(x)]) %>% t() %>%
+    apply(., 1, function(x){
+      if (length(x[!is.na(x)]) == 0){return(c(NA, NA))} else {
+        return(x[!is.na(x)])}}) %>% t() %>%
     cbind(data.wide, .) -> data.wide.es
 
-  # Now, transform the wide format data set with calculated ES
-  # back to long and merge back with original version
-  data.wide.es %>%
-    dplyr::select(id, es, se) %>%
-    dplyr::mutate(trt1 = "t.1", trt2 = "t.2") %>%
-    tidyr::pivot_longer(-id,
-                        names_to = c(".value"),
-                        names_pattern = "(..)") %>%
-    dplyr::arrange(id) %>%
-    dplyr::select(2:3) %>%
-    cbind(data %>% arrange(id) %>% select(-id), .) -> dat.final
+  # Remove duplicate columns
+  data.wide.es[!duplicated(t(data.wide.es))] -> data.wide.es
+  for (i in 1:ncol(data.wide.es)){
+    if (grepl("_trt1", colnames(data.wide.es)[i]) &
+              !(stringr::str_replace(colnames(data.wide.es)[i], "_trt1", "_trt2") %in%
+              colnames(data.wide.es))){
+      colnames(data.wide.es)[i] = stringr::str_remove(colnames(data.wide.es)[i], "_trt1")
+    }
+  }
+  data.wide.es -> dat.final
+
+  # Change sign
+  if (!is.null(change.sign)){
+    change.mask = ifelse(dat.final[[change.sign]], -1, 1)
+    dat.final$es = dat.final$es * change.mask
+  }
 
   # Return
   return(dat.final)
+
 }
+
 
 
 

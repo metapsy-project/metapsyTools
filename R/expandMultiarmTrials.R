@@ -7,20 +7,21 @@
 #' @param vars.for.id \code{character} vector, containing column names of all variables used to construct unique comparison IDs.
 #' @param study.indicator \code{character}, signifying the name of the variable containing the study name.
 #' @param multiarm.indicator \code{numeric}, signifying if a row is part of a multiarm study (1) or not (0).
-#' @param multiarm.group.indicator \code{character}, signifying the name of the variable containing the name of the (active) treatment arm. Should be NA when study is not a multiarm trial/the row is part of the control group.
 #' @param no.arms.indicator \code{character}, signifying the name of the variable containing the number of arms included in a study (typically 2).
 #' @param group.indicator \code{character}, column name of the variable storing the study name.
+#' @param condition.specification \code{character}, column name of the variable storing the trial condition name.
 #' @param group.names \code{list}, storing the name of the value corresponding to the intervention group (\code{"ig"}) and control group (\code{"cg"}).
 #'
 #' @usage expandMultiarmTrials(data,
 #'                      vars.for.id = c("study", "primary",
 #'                                      "Outc_measure",
-#'                                      "Time", "Time_weeks"),
+#'                                      "Time", "Time_weeks",
+#'                                      "sr_clinician"),
 #'                      study.indicator = "study",
 #'                      multiarm.indicator = "is.multiarm",
-#'                      multiarm.group.indicator = "multiple_arms",
 #'                      no.arms.indicator = "no.arms",
 #'                      group.indicator = "condition",
+#'                      condition.specification = "Cond_spec",
 #'                      group.names = list("ig" = "ig",
 #'                                         "cg" = "cg"))
 #'
@@ -43,23 +44,29 @@
 #' @author Mathias Harrer \email{mathias.h.harrer@@gmail.com}, Paula Kuper \email{paula.r.kuper@gmail.com}, Pim Cuijpers \email{p.cuijpers@@vu.nl}
 #'
 #' @seealso \code{\link{calculateEffectSizes}}
-#' @importFrom dplyr filter arrange pull
+#' @importFrom dplyr filter arrange pull all_of
 #' @importFrom stringr str_replace_all str_remove_all
 #' @importFrom magrittr set_rownames
+#' @importFrom purrr map_df
 #' @import magrittr
 #' @export expandMultiarmTrials
 
 expandMultiarmTrials = function(data,
                                 vars.for.id = c("study", "primary",
                                                 "Outc_measure",
-                                                "Time", "Time_weeks"),
+                                                "Time", "Time_weeks",
+                                                "sr_clinician"),
                                 study.indicator = "study",
                                 multiarm.indicator = "is.multiarm",
-                                multiarm.group.indicator = "multiple_arms",
                                 no.arms.indicator = "no.arms",
                                 group.indicator = "condition",
+                                condition.specification = "Cond_spec",
                                 group.names = list("ig" = "ig",
                                                    "cg" = "cg")){
+
+  if ("checkConflicts" %in% class(data)){
+    stop("Data format conflicts were detected. Run 'checkConflicts' to diagnose potential problems.")
+  }
 
   # Check if all specified variables are in dataset
   allvars = c(vars.for.id, multiarm.indicator,
@@ -76,57 +83,44 @@ expandMultiarmTrials = function(data,
   # Create comparison id (multiarm ids appear 3+ times)
   apply(data, 1,
         function(x){paste(as.character(x[vars.for.id]), collapse = "_")}) %>%
-    str_replace_all(",", "_") %>% str_remove_all(" ") -> data$id
+    stringr::str_replace_all(",", "_") %>% str_remove_all(" ") -> data$id
 
   # Filter out multiarm studies
   data[data[names(data) == multiarm.indicator] == 1,] %>%
     dplyr::arrange(id, group.indicator) -> data.multiarm
 
-  # Create IG arm names in multiarm studies
-  data.multiarm[
-    data.multiarm[names(data.multiarm) == group.indicator] ==
-      group.names[["ig"]],] %>%
-    pull(multiarm.group.indicator) -> arm.names
+  # Filter out non-multiarm studies
+  data[data[names(data) == multiarm.indicator] == 0,] %>%
+    dplyr::arrange(id, group.indicator) -> data.no.multiarm
 
-  # Expand data set so that each comparison has two lines (unique comparisons,
-  # including multi-arm trials)
-  i.ma = which(data.multiarm[,names(data.multiarm) == group.indicator] == group.names[["cg"]])
+  # Split multiarm data by id; then expand ID-wise
+  data.multiarm %>%
+    split.data.frame(.$id) %>%
+    purrr::map_df(function(x){
+      multiarmExpander(x,
+                       condition.specification = condition.specification,
+                       group.indicator = group.indicator)}) -> data.multiarm
 
-  # Create CG arms via duplication
-  n.reps = data.multiarm[i.ma,
-                         names(data.multiarm)[names(data.multiarm) ==
-                                                no.arms.indicator]] %>%
-                                                          pull(1) %>% {. -1}
-  data.multiarm[rep(i.ma, n.reps),] %>%
-    set_rownames(NULL) -> data.cg
-  data.cg[[study.indicator]] = paste0(data.cg[[study.indicator]], " -", arm.names)
+  # Add trt column to data.no.multiarm
+  data.no.multiarm$trt = ifelse(data.no.multiarm[[group.indicator]] == group.names[["ig"]],
+                                "trt1", "trt2")
 
-  # Prepare non-CG arms
-  data.multiarm[data.multiarm[,names(data.multiarm) ==
-                                group.indicator] ==
-                  group.names[["ig"]],] -> data.igs
+  # Combine
+  data = rbind(data.no.multiarm, data.multiarm)
 
-  data.igs[[study.indicator]] = paste0(data.igs[[study.indicator]],
-                                      " -", data.igs[[multiarm.group.indicator]])
-
-
-  # Combine all multiarm data
-  data.multiarm = rbind(data.igs, data.cg)
-  apply(data.multiarm, 1,
-        function(x){paste(as.character(x[vars.for.id]), collapse = "_")}) %>%
-    str_replace_all(",", "_") %>% str_remove_all(" ") -> data.multiarm$id
-  data.multiarm = dplyr::arrange(data.multiarm, id)
-
-  # Add multiarm and non-multiarm data
-  rbind(data[data[[multiarm.indicator]] == 0,], data.multiarm) -> data
-  data = dplyr::arrange(data, id)
+  # Order dataset
+  data[order(data$trt),] -> data
+  data[order(data$id),] -> data
 
   # Set class
   class(data) = c("data.frame", "expandMultiarmTrials")
 
   # Return
-  return(data)
+  if (sum(table(data$id) != 2) != 0){
+    stop("'expandMultiarmTrials' could not create unique comparisons. Please check for residual formatting issues.")
+  } else {
+    message("- [OK] Multiarm trial expansion successful")
+    return(data)
+  }
 
 }
-
-

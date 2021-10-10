@@ -1,0 +1,4 @@
+# New Functions
+- Reporter Function (MA & Subgroup Analysis)
+- Response Rates Toshi + NNT
+- Table Function

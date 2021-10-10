@@ -5,7 +5,7 @@
 \alias{inpatients}
 \title{The 'inpatients' dataset with 32 clinical trials}
 \format{
-A \code{data.frame} with 179 rows and 45 variables:
+A \code{data.frame} with 179 rows and 46 variables:
 \describe{
   \item{study}{\code{character}, The study label containing the author(s) and year of the study.}
   \item{condition}{\code{character}, The condition of the groups, either "intervention group" or "control group".}
@@ -24,10 +24,13 @@ A \code{data.frame} with 179 rows and 45 variables:
 }
 }
 \usage{
-data(inpatients)
+data("inpatients")
 }
 \description{
-An example dataset containing data of 32 clinical trials. Its format equals the format of data in the "metapsy" database that is similar to the long format in R. The dataset also contains columns with study characteristics that are important for effect size calculation and more.
+An example dataset containing data of 32 clinical trials. Its format equals
+the format of data in the "metapsy" database that is similar to the long format
+in \emph{R}. The dataset also contains columns with study characteristics that
+are important for effect size calculation and more.
 }
 \author{
 Mathias Harrer, Paula Kuper, Pim Cuijpers

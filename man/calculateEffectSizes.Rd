@@ -11,37 +11,9 @@ calculateEffectSizes(data,
        pivot.vars = c("id", "condition", "Post_M", "Post_SD",
                      "Post_N", "Rand_N", "Improved_N", "Change_m",
                      "Change_SD", "Change_N"),
-       funcs = list(
-                 mean.sd = function(x, ...){
-                   x \%>\%
-                     purrr::pmap_dfr(function(Post_M_ig, Post_M_cg, Post_SD_ig,
-                                              Post_SD_cg, Post_N_ig, Post_N_cg, ...)
-                     {esc::esc_mean_sd(Post_M_ig, Post_SD_ig, Post_N_ig,
-                                       Post_M_cg, Post_SD_cg, Post_N_cg,
-                                       es.type = "g") \%>\%
-                         as.data.frame() \%>\% dplyr::select(es, se) \%>\%
-                         suppressWarnings()})},
-                 binary = function(x, ...){
-                   x \%>\%
-                     purrr::pmap_dfr(function(Improved_N_ig, Improved_N_cg,
-                                              Rand_N_ig, Rand_N_cg, ...)
-                     {esc::esc_2x2(Improved_N_ig,
-                                   Rand_N_ig - Improved_N_ig,
-                                   Improved_N_cg,
-                                   Rand_N_cg - Improved_N_cg,
-                                   es.type = "g") \%>\%
-                         as.data.frame() \%>\% dplyr::select(es, se) \%>\%
-                         suppressWarnings() \%>\%
-                         mutate(es = es*-1)})},
-                 change = function(x, ...){
-                   x \%>\%
-                     purrr::pmap_dfr(function(Change_m_ig, Change_m_cg, Change_SD_ig,
-                                              Change_SD_cg, Change_N_ig, Change_N_cg, ...)
-                     {esc::esc_mean_sd(Change_m_ig, Change_SD_ig, Change_N_ig,
-                                       Change_m_cg, Change_SD_cg, Change_N_cg,
-                                       es.type = "g") \%>\%
-                         as.data.frame() \%>\% dplyr::select(es, se) \%>\%
-                         suppressWarnings()})}))
+       funcs = list(meanSD = meanSD,
+                    binaryES = binaryES,
+                    changeES = changeES))
 }
 \arguments{
 \item{data}{Meta-analysis data set of class \code{expandMultiarmTrials}, created using \code{expandMultiarmTrials}.}
