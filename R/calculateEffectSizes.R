@@ -79,6 +79,8 @@
 #' @importFrom stringr str_remove str_replace
 #' @import magrittr
 #' @import dplyr
+#' @importFrom stats dffits model.matrix rnorm rstudent
+#' @importFrom utils combn
 #' @export calculateEffectSizes
 
 calculateEffectSizes = function(data,
@@ -104,8 +106,8 @@ calculateEffectSizes = function(data,
 
   # Convert to wide
   data %>%
-    tidyr::pivot_wider(names_from = trt.indicator,
-                       values_from = c(-id, -trt.indicator, -study)) -> data.wide
+    tidyr::pivot_wider(names_from = dplyr::all_of(trt.indicator),
+                       values_from = c(-id, -dplyr::all_of(trt.indicator), -study)) -> data.wide
 
 
   # Apply funcs

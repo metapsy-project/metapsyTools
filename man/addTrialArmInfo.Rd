@@ -4,7 +4,7 @@
 \alias{addTrialArmInfo}
 \title{Add information that varies between trial arms as extra columns to your meta-analysis dataset}
 \usage{
-addTrialArmInfo(.data, ..., .arm.variable,
+addTrialArmInfo(.data, ...,
             .group.indicator = "condition",
             .name.intervention.group = "ig",
             .name.control.group = "cg",

@@ -10,6 +10,8 @@
 #' @importFrom dplyr select
 #' @importFrom purrr pmap_dfr
 #' @importFrom esc esc_mean_sd
+#' @importFrom stats dffits model.matrix rnorm rstudent
+#' @importFrom utils combn
 #' @export meanSD
 #' @keywords internal
 
@@ -35,6 +37,8 @@ meanSD = function(x, ...){
 #' @importFrom dplyr select mutate
 #' @importFrom purrr pmap_dfr
 #' @importFrom esc esc_2x2
+#' @importFrom stats dffits model.matrix rnorm rstudent
+#' @importFrom utils combn
 #' @export binaryES
 #' @keywords internal
 
@@ -65,6 +69,8 @@ binaryES = function(x, ...){
 #' @importFrom dplyr select
 #' @importFrom purrr pmap_dfr
 #' @importFrom esc esc_mean_sd
+#' @importFrom stats dffits model.matrix rnorm rstudent
+#' @importFrom utils combn
 #' @export changeES
 #' @keywords internal
 
@@ -99,7 +105,7 @@ changeES = function(x, ...){
 #' @param method The method to be used to calculate the NNT from \code{d}. Either \code{"KraemerKupfer"} for the
 #' method proposed by Kraemer and Kupfer (2006) or \code{"Furukawa"} for the Furukawa method (Furukawa & Leucht, 2011).
 #' Please note that the Furukawa's method can only be used when \code{CER} is specified.
-#' @usage NNT(d, CER, event.e, n.e, event.c, n.c, names, method)
+#' @usage metapsyNNT(d, CER, event.e, n.e, event.c, n.c, names, method)
 #' @export metapsyNNT
 #' @keywords internal
 
@@ -180,11 +186,14 @@ metapsyNNT = function(d, CER = NULL, event.e = NULL, n.e = NULL, event.c = NULL,
 #' @param condition.specification trial condition specification.
 #' @param group.indicator group indicator (IG or CG).
 #' @export multiarmExpander
+#' @importFrom stats dffits model.matrix rnorm rstudent
+#' @importFrom utils combn
 #' @keywords internal
 
 multiarmExpander = function(study,
                             condition.specification,
                             group.indicator,
+                            group.names,
                             id){
 
   # Replace missings with empty char
@@ -194,7 +203,7 @@ multiarmExpander = function(study,
   # Get combination of study arms
   varType = study[[group.indicator]]
   names(varType) = study[[condition.specification]]
-  combn(study[[condition.specification]], 2,
+  utils::combn(study[[condition.specification]], 2,
         simp = FALSE) -> combinations
 
   # Expand by looping through all combinations;
@@ -235,10 +244,12 @@ multiarmExpander = function(study,
 #' @usage Detect(...)
 #' @export Detect
 #' @importFrom stringr str_detect
+#' @importFrom stats dffits model.matrix rnorm rstudent
+#' @importFrom utils combn
 #' @keywords internal
 
 Detect = function(...){
-  str_detect(...)
+  stringr::str_detect(...)
 }
 
 

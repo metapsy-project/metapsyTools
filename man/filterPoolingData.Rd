@@ -5,7 +5,7 @@
 \title{Filter data to be pooled for meta-analysis}
 \usage{
 filterPoolingData(.data, ...,
-                  .filter.missing.rows = TRUE,
+                  .filter.missing.rows = FALSE,
                   .es.column = es)
 }
 \arguments{
@@ -15,7 +15,7 @@ filterPoolingData(.data, ...,
 that return a logical value. To apply multiple filters, simply separate them using a comma. "OR" statements can be
 provided using the \code{|} operator. Multiple filter statements separated using commas will be combined using the AND (\code{&}) operator. See "Details".}
 
-\item{.filter.missing.rows}{\code{logical}. Should rows with no effect sizes be filtered out? Default is \code{TRUE}.}
+\item{.filter.missing.rows}{\code{logical}. Should rows with no effect sizes be filtered out? Default is \code{FALSE}.}
 
 \item{.es.column}{Name of the column in \code{.data} to be used for filtering out rows with no effect sizes. Default is \code{es}.}
 }
@@ -35,9 +35,10 @@ in the data set (e.g. \code{primary == 1, meanage == 58}). The filtering stateme
 If you want to apply an "OR" filter, simply use \code{|} instead of a comma (e.g. \code{type == "cbt" | format == 6}). To select all rows
 that contain one of several values in a variable, use \code{\%in\%}; e.g. \code{study \%in\% c("Bailey, 2017", "Barth 2005")}.
 
-By default, the \code{filterPoolingData} function filters out all rows which have \code{NA} in the effect size column. This is because the
-database uses an arm-based (long) data format by default, while a wide data format (one row for each study/effect) is needed to use
-most meta-analysis packages.
+The \code{\link{Detect}} function can be used within the function call to search for variable elements which \emph{contain} one or several
+selected words (separated by \code{|}). To include all rows which contain the word "cbt" or "wl" or "cau" in the "Cond_spec_trt2" variable,
+we can use \code{Detect(Cond_spect_trt2, "cbt|wl|cau")}. This will also filter out elements like \code{"cbt (online)"}, because "cbt" is
+included.
 
 For more details see the help vignette: \code{vignette("metapsyTools")}.
 }
@@ -62,11 +63,20 @@ inpatients \%>\%
     expandMultiarmTrials() \%>\%
     calculateEffectSizes() \%>\%
     filterPoolingData(Outc_measure \%in\% c("hamd", "bdi-ii"))
+
+# Example 4: Search for studies using "fuzzy-ish" matching
+data("psyCtrSubset")
+psyCtrSubset \%>\%
+  expandMultiarmTrials() \%>\%
+  calculateEffectSizes() \%>\%
+  filterPoolingData(Detect(Cond_spec_trt1 , "cbt|sup"),
+                    Detect(Cond_spec_trt2 , "wl|cau"),
+                    !study \%in\% "Heckman, 2011")
 }
 
 }
 \seealso{
-\code{\link{calculateEffectSizes}}
+\code{\link{filterPriorityRule}}
 }
 \author{
 Mathias Harrer \email{mathias.h.harrer@gmail.com}, Paula Kuper \email{paula.r.kuper@gmail.com}, Pim Cuijpers \email{p.cuijpers@vu.nl}

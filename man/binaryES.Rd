@@ -9,8 +9,8 @@ binaryES(x, ...)
 \arguments{
 \item{x}{data}
 
-\item{...}{Binary effect size data. Must be \code{Improved_N_ig}, \code{Improved_N_cg}, \code{Rand_N_ig},
-\code{Rand_N_cg} (all \code{numeric}).}
+\item{...}{Binary effect size data. Must be \code{Improved_N_trt1}, \code{Improved_N_trt2}, \code{Rand_N_trt1},
+\code{Rand_N_trt2} (all \code{numeric}).}
 }
 \description{
 Calculate Hedges' g binary outcome data. Only meant to be used as

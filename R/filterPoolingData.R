@@ -4,7 +4,7 @@
 #' to be used for meta-analytic pooling.
 #'
 #' @usage filterPoolingData(.data, ...,
-#'                   .filter.missing.rows = TRUE,
+#'                   .filter.missing.rows = FALSE,
 #'                   .es.column = es)
 #'
 #' @param .data A \code{data.frame} containing the calculated effect sizes, as created by the \code{\link{calculateEffectSizes}} function.
@@ -51,7 +51,7 @@
 #'
 #' @author Mathias Harrer \email{mathias.h.harrer@@gmail.com}, Paula Kuper \email{paula.r.kuper@@gmail.com}, Pim Cuijpers \email{p.cuijpers@@vu.nl}
 #'
-#' @seealso \code{\link{calculateEffectSizes}}
+#' @seealso \code{\link{filterPriorityRule}}
 #'
 #' @details The \code{filterPoolingData} function allows to apply several filters to your meta-analysis data set all at once.
 #' When used in a pipe (\code{\%>\%}), you only need to supply several filtering statements separated by commas, using the same column names as they appear
@@ -60,16 +60,20 @@
 #' If you want to apply an "OR" filter, simply use \code{|} instead of a comma (e.g. \code{type == "cbt" | format == 6}). To select all rows
 #' that contain one of several values in a variable, use \code{\%in\%}; e.g. \code{study \%in\% c("Bailey, 2017", "Barth 2005")}.
 #'
-#' By default, the \code{filterPoolingData} function filters out all rows which have \code{NA} in the effect size column. This is because the
-#' database uses an arm-based (long) data format by default, while a wide data format (one row for each study/effect) is needed to use
-#' most meta-analysis packages.
+#' The \code{\link{Detect}} function can be used within the function call to search for variable elements which \emph{contain} one or several
+#' selected words (separated by \code{|}). To include all rows which contain the word "cbt" or "wl" or "cau" in the "Cond_spec_trt2" variable,
+#' we can use \code{Detect(Cond_spect_trt2, "cbt|wl|cau")}. This will also filter out elements like \code{"cbt (online)"}, because "cbt" is
+#' included.
 #'
 #' For more details see the help vignette: \code{vignette("metapsyTools")}.
 #'
 #' @import dplyr
+#' @importFrom stats dffits model.matrix rnorm rstudent
+#' @importFrom utils combn
 #' @export filterPoolingData
 
-filterPoolingData = function(.data, ..., .filter.missing.rows = FALSE,
+filterPoolingData = function(.data, ...,
+                             .filter.missing.rows = FALSE,
                              .es.column = es){
 
   es = enquo(.es.column)
@@ -86,15 +90,6 @@ filterPoolingData = function(.data, ..., .filter.missing.rows = FALSE,
 
 }
 
-
-
-data("psyCtrSubset")
-psyCtrSubset %>%
-  expandMultiarmTrials() %>%
-  calculateEffectSizes() %>%
-  filterPoolingData(Detect(Cond_spec_trt1 , "cbt|sup"),
-                    Detect(Cond_spec_trt2 , "wl|cau"),
-                    !study %in% "Heckman, 2011")
 
 
 

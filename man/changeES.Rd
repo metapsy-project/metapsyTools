@@ -9,8 +9,8 @@ changeES(x, ...)
 \arguments{
 \item{x}{data}
 
-\item{...}{Change score effect size data. Must be \code{Change_m_ig}, \code{Change_m_cg}, \code{Change_SD_ig},
-\code{Change_SD_cg}, \code{Change_N_ig}, \code{Change_N_cg} (all \code{numeric}).}
+\item{...}{Change score effect size data. Must be \code{Change_m_trt1}, \code{Change_m_trt2}, \code{Change_SD_trt1},
+\code{Change_SD_trt2}, \code{Change_N_trt1}, \code{Change_N_trt2} (all \code{numeric}).}
 }
 \description{
 Calculate Hedges' g based on change data. Only meant to be used as

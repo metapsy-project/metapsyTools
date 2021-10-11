@@ -4,7 +4,7 @@
 #' separately for the intervention and control group. This is typically useful when trial-level variables
 #' (i.e. variables that differ between trial arms) are to be included in the final meta-analysis dataset.
 #'
-#' @usage addTrialArmInfo(.data, ..., .arm.variable,
+#' @usage addTrialArmInfo(.data, ...,
 #'             .group.indicator = "condition",
 #'             .name.intervention.group = "ig",
 #'             .name.control.group = "cg",
@@ -70,9 +70,11 @@
 #' @importFrom stringr str_replace_all
 #' @importFrom dplyr filter select arrange all_of
 #' @importFrom purrr map2
+#' @importFrom stats dffits model.matrix rnorm rstudent
+#' @importFrom utils combn
 #' @export addTrialArmInfo
 
-addTrialArmInfo = function(.data, ..., .arm.variable,
+addTrialArmInfo = function(.data, ...,
                            .group.indicator = "condition",
                            .name.intervention.group = "ig",
                            .name.control.group = "cg",

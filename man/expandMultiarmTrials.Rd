@@ -11,9 +11,9 @@ expandMultiarmTrials(data,
                                      "sr_clinician"),
                      study.indicator = "study",
                      multiarm.indicator = "is.multiarm",
-                     multiarm.group.indicator = "multiple_arms",
                      no.arms.indicator = "no.arms",
                      group.indicator = "condition",
+                     condition.specification = "Cond_spec",
                      group.names = list("ig" = "ig",
                                         "cg" = "cg"))
 }
@@ -26,11 +26,11 @@ expandMultiarmTrials(data,
 
 \item{multiarm.indicator}{\code{numeric}, signifying if a row is part of a multiarm study (1) or not (0).}
 
-\item{multiarm.group.indicator}{\code{character}, signifying the name of the variable containing the name of the (active) treatment arm. Should be NA when study is not a multiarm trial/the row is part of the control group.}
-
 \item{no.arms.indicator}{\code{character}, signifying the name of the variable containing the number of arms included in a study (typically 2).}
 
 \item{group.indicator}{\code{character}, column name of the variable storing the study name.}
+
+\item{condition.specification}{\code{character}, column name of the variable storing the trial condition name.}
 
 \item{group.names}{\code{list}, storing the name of the value corresponding to the intervention group (\code{"ig"}) and control group (\code{"cg"}).}
 }
@@ -51,11 +51,7 @@ This function expands multiarm studies in a meta-analysis data set, thereby ensu
 }
 \examples{
 data("inpatients")
-
-# Example 1: define variables included in unique comparison IDs
-expandMultiarmTrials(inpatients,
-                     vars.for.id= c("study", "condition",
-                                    "Time", "primary"))
+expandMultiarmTrials(inpatients)
 
 }
 \seealso{

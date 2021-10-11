@@ -9,8 +9,8 @@ meanSD(x, ...)
 \arguments{
 \item{x}{data}
 
-\item{...}{Effect size data. Must be \code{Post_M_ig}, \code{Post_M_cg}, \code{Post_SD_ig},
-\code{Post_SD_cg}, \code{Post_N_ig}, \code{Post_N_cg} (all \code{numeric}).}
+\item{...}{Effect size data. Must be \code{Post_M_trt1}, \code{Post_M_trt2}, \code{Post_SD_trt1},
+\code{Post_SD_trt2}, \code{Post_N_trt1}, \code{Post_N_trt2} (all \code{numeric}).}
 }
 \description{
 Calculate Hedges' g using Mean and Standard Deviation. Only meant to be used as

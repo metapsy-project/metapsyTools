@@ -1,13 +1,143 @@
-psyCtrSubset %>%
-  checkDataFormat() %>%
-  checkConflicts() %>%
-  expandMultiarmTrials() %>%
-  calculateEffectSizes() -> data
-
-runMetaAnalysis(data) -> res
-
-
-# scales pvalue
+#' Run different types of meta-analyses
+#'
+#' This wrapper function allows to simultaneously pool effect sizes using
+#' different meta-analytic approaches.
+#'
+#' @usage runMetaAnalysis(data,
+#'                 which.run = c("overall", "combined",
+#'                               "lowest.highest", "outliers",
+#'                               "influence", "rob", "threelevel"),
+#'                 method.tau = "REML",
+#'                 hakn = TRUE,
+#'                 study.var = "study",
+#'                 arm.var.1 = "Cond_spec_trt1",
+#'                 arm.var.2 = "Cond_spec_trt2",
+#'                 measure.var = "Outc_measure",
+#'                 es.var = "es",
+#'                 se.var = "se",
+#'                 low.rob.filter = "rob > 2",
+#'                 method.tau.ci = "Q-Profile",
+#'                 round.digits = 2,
+#'                 which.outliers = c("general", "combined"),
+#'                 which.influence = c("general", "combined"),
+#'                 which.rob = c("general", "combined"),
+#'                 nnt.cer = 0.2,
+#'                 rho.within.study = 0.5,
+#'                 html = TRUE)
+#'
+#' @param data \code{data.frame}. Effect size data in the wide format, as created by \code{\link{calculateEffectSizes}}.
+#' @param which.run \code{character}. Selection of models to be calculated. See 'Details'.
+#' @param method.tau \code{character}. A character string indicating which method is used to estimate the
+#' between-study variance (tau-squared) and its square root (tau). Either \code{"REML"} (default), \code{"DL"},
+#' \code{"PM"}, \code{"ML"}, \code{"HS"}, \code{"SJ"}, \code{"HE"}, or \code{"EB"}, can be abbreviated (see
+#' \code{\link[meta]{metagen}}). Use \code{"FE"} to use a fixed-effect model.
+#' @param hakn \code{logical}. Should the Knapp-Hartung adjustment for effect size significance tests be used? Default is \code{TRUE}.
+#' @param study.var \code{character}. The name of the variable in \code{data} in which the study IDs are stored.
+#' @param arm.var.1 \code{character}. The name of the variable in \code{data} in which the condition (e.g. "guided iCBT")
+#' of the \emph{first} arm within a comparison are stored.
+#' @param arm.var.2 \code{character}. The name of the variable in \code{data} in which the condition (e.g. "wlc")
+#' of the \emph{second} arm within a comparison are stored.
+#' @param measure.var \code{character}. The name of the variable in \code{data} in which the instrument used for the comparison is stored.
+#' @param es.var \code{character}. The name of the variable in \code{data} in which the calculated effect sizes (i.e. Hedges' \emph{g})
+#' are stored.
+#' @param se.var \code{character}. The name of the variable in \code{data} in which the standard error of the calculated effect sizes (i.e. Hedges' \emph{g})
+#' are stored.
+#' @param low.rob.filter \code{character}. A filtering statement by which to include studies for the "low RoB only" analysis.
+#' Please note that the name of the variable must be included as a column in \code{data}.
+#' @param method.tau.ci \code{character}. A character string indicating which method is used to estimate the
+#' confidence interval of tau/tau-squared. Either \code{"Q-Profile"} (default and recommended),
+#' \code{"BJ"}, \emph{"J"}, or \emph{"PL"} can be abbreviated. See \code{\link[meta]{metagen}} for details.
+#' @param round.digits \code{numeric}. Number of digits to round the (presented) results by. Default is \code{2}.
+#' @param which.outliers \code{character}. Which model should be used to conduct outlier analyses? Must be one of the
+#' options available for \code{which.run}, with \code{"general"} being the default.
+#' @param which.influence \code{character}. Which model should be used to conduct influence analyses? Must be one of the
+#' options available for \code{which.run}, with \code{"general"} being the default.
+#' @param which.rob \code{character}. Which model should be used to conduct the "low risk of bias only" analyses? Must be one of the
+#' options available for \code{which.run}, with \code{"general"} being the default.
+#' @param nnt.cer \code{numeric}. Value between 0 and 1, indicating the assumed control group event rate to be used
+#' for calculating NNTs via the Furukawa-Leucht method.
+#' @param rho.within.study \code{numeric}. Value between 0 and 1, indicating the assumed correlation of effect sizes
+#' within studies. This is relevant to combine effect sizes for the \code{"combined"} analysis type. Default is \code{0.5}.
+#' @param html \code{logical}. Should an HTML table be created for the results? Default is \code{TRUE}.
+#'
+#'
+#' @return Returns an object of class \code{"runMetaAnalysis"}. This object includes, among other things,
+#' a \code{data.frame} with the name \code{summary}, in which all results are summarized - including the
+#' studies which were removed for some analysis steps. Other objects are the "raw" model objects returned
+#' by all selected analysis types. This allows to conduct further operations on some models specifically (e.g.
+#' run a meta-regression by plugging one of the model objects in \code{update.meta}.
+#'
+#'
+#' @examples
+#' \dontrun{
+#' data("inpatients")
+#' library(meta)
+#'
+#' inpatients %>%
+#'    checkDataFormat() %>%
+#'      checkConflicts() %>%
+#'      expandMultiarmTrials() %>%
+#'      calculateEffectSizes() -> data
+#'
+#' # Run the meta-analyses
+#' runMetaAnalysis(data) -> res
+#'
+#' # Show summary
+#' res
+#'
+#' # Show forest plot (by default, "general" is used)
+#' plot(res)
+#'
+#' # Show forest plot of specific analysis
+#' plot(res, "outliers")
+#' plot(res, "threelevel")
+#' plot(res, "baujat")
+#' plot(res, "influence")
+#' plot(res, "lowest.highest")
+#'
+#' # Extract specific model and do further calculations
+#' # (e.g. meta-regression on 'year')
+#' metareg(res$model.overall, ~year)
+#' }
+#'
+#' @author Mathias Harrer \email{mathias.h.harrer@@gmail.com},
+#' Paula Kuper \email{paula.r.kuper@@gmail.com}, Pim Cuijpers \email{p.cuijpers@@vu.nl}
+#'
+#' @seealso \code{\link{calculateEffectSizes}}
+#'
+#' @details The \code{runMetaAnalysis} function is a wrapper for several types of meta-analytic models
+#' that are typically used. It allows to run all of these models in one step in order to generate results
+#' that are somewhat closer to being "publication-ready".
+#'
+#' By default, the following models are calculated:
+#'
+#' \itemize{
+#'   \item \code{"overall"}. Runs a generic inverse-variance (random-effects) model. All included
+#'   effect sizes are treated as independent.
+#'   \item \code{"combined"}. Pools all effect sizes within one study (defined by \code{study.var}) before
+#'   pooling. This ensures that all effect sizes are independent (i.e., unit-of-analysis error &
+#'   double-counting is avoided). To combine the effects, one has to assume a correlation of effect sizes
+#'   within studies, empirical estimates of which are typically not available.
+#'   \item \code{"lowest.highest"}. Runs a meta-analysis, but with only (i) the lowest and (ii) highest
+#'   effect size within each study included.
+#'   \item \code{"outlier"}. Runs a meta-analysis without statistical outliers (i.e. effect sizes for which
+#'   the confidence interval does not overlap with the confidence intervall of the overall effect).
+#'   \item \code{"influence"}. Runs a meta-analysis without influential cases (see \code{\link[metafor]{influence.rma.uni}} for
+#'   details).
+#'   \item \code{"rob"}. Runs a meta-analysis with only low-RoB studies included.
+#'   \item \code{"threelevel"}. Runs a multilevel (three-level) meta-analysis model, with effect sizes nested
+#'   in studies.
+#' }
+#' For more details see the help vignette: \code{vignette("metapsyTools")}.
+#'
+#' @import dplyr
+#' @importFrom scales pvalue
+#' @importFrom purrr map
+#' @importFrom meta update.meta metagen
+#' @importFrom metafor escalc aggregate.escalc rma.mv
+#' @importFrom stats dffits model.matrix rnorm rstudent
+#' @importFrom utils combn
+#' @export runMetaAnalysis
 
 runMetaAnalysis = function(data,
                            which.run = c("overall", "combined",
@@ -33,6 +163,8 @@ runMetaAnalysis = function(data,
 
 
   message("- Pooling the data...")
+
+  warn.end = FALSE
 
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
   #                                                                           #
@@ -316,7 +448,7 @@ runMetaAnalysis = function(data,
   influenceRes = metapsyInfluenceAnalysis(m.for.influence,
                                           random = ifelse(method.tau == "FE",
                                                           FALSE, TRUE))
-  mInfluence = update.meta(m.for.influence,
+  mInfluence = meta::update.meta(m.for.influence,
                            exclude = influenceRes$Data$is.infl == "yes")
 
   mInfluenceRes = with(mInfluence,{
@@ -372,10 +504,17 @@ runMetaAnalysis = function(data,
     m.for.rob$data[[robVar]] = as.numeric(m.for.rob$data[[robVar]])
     robFilter = paste0("data.for.rob$", low.rob.filter, " & !is.na(data.for.rob$", robVar, ")")
     robMask = eval(parse(text = robFilter))
-    mRob = update.meta(m.for.rob, exclude = !robMask)
+    if (sum(robMask) == 0){
+      message("- [!] No low risk of bias studies detected! Switching to 'general'.")
+      robMask = rep(TRUE, nrow(mGeneral$data))
+      mRob = meta::update.meta(mGeneral, exclude = !robMask)
+      warn.end = TRUE
+    } else {
+      mRob = meta::update.meta(m.for.rob, exclude = !robMask)
+    }
   } else {
     robMask = rep(TRUE, nrow(mGeneral$data))
-    mRob = update.meta(mGeneral, exclude = !robMask)
+    mRob = meta::update.meta(mGeneral, exclude = !robMask)
   }
 
   mRobRes = with(mRob,{
@@ -505,10 +644,32 @@ runMetaAnalysis = function(data,
     message("- [OK] Done!")
   }
 
+  if (warn.end == TRUE){
+    warning("There were some issues during the calculations. Please check the report above.", call. = FALSE)
+  }
+
   return(returnlist)
 
 }
 
+
+#' Print method for objects of class 'runMetaAnalysis'.
+#'
+#' Print S3 method for objects of class \code{runMetaAnalysis}.
+#'
+#' @param x An object of class \code{runMetaAnalysis}.
+#' @param ... Additional arguments.
+#'
+#' @author Mathias Harrer \email{mathias.h.harrer@@gmail.com},
+#' Paula Kuper \email{paula.r.kuper@@gmail.com}, Pim Cuijpers \email{p.cuijpers@@vu.nl}
+#'
+#' @importFrom knitr kable
+#' @importFrom magrittr set_colnames
+#' @importFrom dplyr as_tibble
+#' @importFrom kableExtra kable_styling column_spec footnote
+#'
+#' @export
+#' @method print runMetaAnalysis
 
 
 print.runMetaAnalysis = function(x, ...){
@@ -550,6 +711,27 @@ print.runMetaAnalysis = function(x, ...){
   }
 }
 
+#' Plot method for objects of class 'runMetaAnalysis'.
+#'
+#' Plot S3 method for objects of class \code{runMetaAnalysis}.
+#'
+#' @param x An object of class \code{runMetaAnalysis}.
+#' @param which Model to be plotted. Can be one of \code{"overall"},
+#' \code{"combined"}, \code{"lowest.highest"}, \code{"outliers"},
+#' \code{"influence"}, \code{"baujat"}, \code{"loo-es"} or \code{"loo-i2"}.
+#' @param ... Additional arguments.
+#'
+#' @author Mathias Harrer \email{mathias.h.harrer@@gmail.com},
+#' Paula Kuper \email{paula.r.kuper@@gmail.com}, Pim Cuijpers \email{p.cuijpers@@vu.nl}
+#'
+#' @importFrom meta forest.meta
+#' @importFrom metafor forest.rma
+#' @importFrom stringr str_replace_all
+#' @importFrom purrr map
+#' @importFrom dplyr mutate
+#'
+#' @export
+#' @method plot runMetaAnalysis
 
 plot.runMetaAnalysis = function(x, which = NULL, ...){
 

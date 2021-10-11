@@ -86,7 +86,7 @@
 #' @importFrom metafor rma.uni influence.rma.uni
 #' @importFrom meta metainf
 #' @importFrom graphics abline axis lines mtext par plot points rect segments text
-#' @importFrom stats as.formula hat influence ks.test optimize pbinom pchisq pf pnorm pt punif qchisq qf qnorm qt reformulate reorder setNames uniroot
+#' @importFrom stats as.formula hat influence ks.test optimize pbinom pchisq pf pnorm pt rnorm punif qchisq qf qnorm qt reformulate reorder setNames uniroot model.matrix rstudent dffits model.matrix
 #'
 #' @export metapsyInfluenceAnalysis
 #'

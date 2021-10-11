@@ -1,7 +1,7 @@
 Package: metapsyTools
 Type: Package
 Title: Several R Helper Functions For The "Metapsy" Database
-Version: 0.1.0
+Version: 0.2.0
 Author: Mathias Harrer[cre], Paula Kuper[cre], Pim Cuijpers[aut]
 Authors@R: c(
     person("Mathias", "Harrer", email = "mathias.h.harrer@gmail.com", role = "cre", comment = c(ORCID = "0000-0001-7016-2687")),
@@ -11,16 +11,14 @@ Description: A companion R package for the metapsy database. It aims to faciliat
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.1.1
-Suggests: 
-    knitr,
-    rmarkdown,
-    meta
+RoxygenNote: 7.1.2
 VignetteBuilder: knitr
 Imports: 
     dplyr (>= 0.8.0.1), esc, magrittr (>= 1.5),
-    purrr, rmarkdown, stringr (>= 1.4.0),
+    purrr, rmarkdown, stringr (>= 1.4.0), 
     graphics (>= 3.5.2), stats (>= 3.5.2),
     utils (>= 3.5.2), methods (>= 3.5.2),
-    tidyr
+    tidyr, forcats, ggplot2, ggrepel, 
+    gridExtra, kableExtra, knitr, meta,
+    metafor, rlang, scales
 Depends: R (>= 3.5.0) 

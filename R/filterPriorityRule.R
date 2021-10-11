@@ -1,19 +1,61 @@
-psyCtrSubset %>%
-  checkDataFormat() %>%
-  checkConflicts() %>%
-  expandMultiarmTrials() %>%
-  calculateEffectSizes() -> data
+#' Filter data based on a priority rule
+#'
+#' This function filters rows of a dataset based on a priority rule for specific variables
+#' defined by the user.
+#'
+#' @usage filterPriorityRule(.data, ..., .study.indicator = "study")
+#'
+#' @param .data A \code{data.frame} containing the calculated effect sizes, as created by the \code{\link{calculateEffectSizes}} function.
+#' @param ... <\link[dplyr]{dplyr_data_masking}>. A number of prioritized filtering rules for variables.
+#' Should follow the form \code{variable = c("prio1", "prio2", ...)}. To apply multiple priority filters,
+#' simply separate them using a comma. For each study, rows are then selected based on the specified hierarchy for
+#' a variable. The priorities are provided as a concatenated vector, representing the variable levels. The level
+#' to appear first in this vector has the highest priority, the second one the second-largest priority, and so on.
+#' If a study contains none of the variable levels specified in the function call, the study is omitted entirely.
+#' @param .study.indicator \code{character}. Name of the variable in which the study IDs are stored.
+#'
+#' @return \code{filterPriorityRule} returns the filtered data set as class \code{data.frame}.
+#' The filtered data set should then be ready for meta-analytic pooling, for example using \link[meta]{metagen}.
+#' Further filters can be applied using \code{\link{filterPoolingData}}.
+#'
+#' @examples
+#' \dontrun{
+#' # Load data and calculate effect size
+#' data("psyCtrSubset")
+#' psyCtrSubset %>%
+#'   checkDataFormat() %>%
+#'   checkConflicts() %>%
+#'   expandMultiarmTrials() %>%
+#'   calculateEffectSizes() -> data
+#'
+#' # Filterusing four priority rules
+#' filterPriorityRule(data,
+#'                    Cond_spec_trt1 = c("cbt", "pst"),
+#'                    Cond_spec_trt2 = c("cau", "wl", "cbt"),
+#'                    Outc_measure = c("cesd", "phq-9", "scl", "hdrs"),
+#'                    Time = c("post", "fu")) -> res
+#' }
+#'
+#' @author Mathias Harrer \email{mathias.h.harrer@@gmail.com}, Paula Kuper \email{paula.r.kuper@@gmail.com}, Pim Cuijpers \email{p.cuijpers@@vu.nl}
+#'
+#' @seealso \code{\link{filterPoolingData}}
+#'
+#' @details For more details see the help vignette: \code{vignette("metapsyTools")}.
+#'
+#' @import dplyr
+#' @importFrom purrr map_df
+#' @importFrom rlang eval_tidy
+#' @importFrom stats dffits model.matrix rnorm rstudent
+#' @importFrom utils combn
+#' @export filterPriorityRule
 
-filterPriorityRule(data,
-                   Cond_spec_trt1 = c("cbt", "pst"),
-                   Cond_spec_trt2 = c("cau", "wl", "cbt"),
-                   Outc_measure = c("cesd", "phq-9", "scl", "hdrs"),
-                   Time = c("post", "fu")) -> res
 
-filterPriorityRule = function(data, ..., study.indicator = "study"){
+filterPriorityRule = function(.data, ..., .study.indicator = "study"){
 
-  rules = enquos(...)
+  rules = dplyr::enquos(...)
   vars = names(rules)
+  data = .data
+  study.indicator = .study.indicator
 
   for (i in 1:length(rules)){
 
@@ -44,10 +86,5 @@ filterPriorityRule = function(data, ..., study.indicator = "study"){
   return(data)
 }
 
-filterPriorityRule(data,
-                   Cond_spec_trt2 = c("cau", "wl", "cbt"),
-                   Outc_measure = c("cesd", "bdi-ii", "hamd"),
-                   Time = c("FU", "post")) -> res
 
-runMetaAnalysis(res) %>% plot()
 

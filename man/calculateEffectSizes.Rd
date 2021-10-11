@@ -6,30 +6,27 @@
 \usage{
 calculateEffectSizes(data,
        comp.id.indicator = "id",
-       study.indicator = "study",
-       group.indicator = "condition",
-       pivot.vars = c("id", "condition", "Post_M", "Post_SD",
-                     "Post_N", "Rand_N", "Improved_N", "Change_m",
-                     "Change_SD", "Change_N"),
+       trt.indicator = "trt",
        funcs = list(meanSD = meanSD,
                     binaryES = binaryES,
-                    changeES = changeES))
+                    changeES = changeES),
+                    change.sign = NULL)
 }
 \arguments{
 \item{data}{Meta-analysis data set of class \code{expandMultiarmTrials}, created using \code{expandMultiarmTrials}.}
 
-\item{comp.id.indicator}{\code{character}, column name of the variable storing the comparison ID.}
+\item{comp.id.indicator}{\code{character}, column name of the variable storing the comparison ID; typically created by \code{expandMultiarmTrials}.}
 
-\item{study.indicator}{\code{character}, column name of the variable storing the study name.}
-
-\item{group.indicator}{\code{character}, column name of the variable storing the condition (intervention or control group).}
-
-\item{pivot.vars}{\code{character} vector, contains the name of the comparison ID variable, the condition variable, and all raw effect size data variables from which effect sizes should be calculated.}
+\item{trt.indicator}{\code{character}, column name of the variable storing the treatment indicator (treatment 1 or 2); typically created by \code{expandMultiarmTrials}.}
 
 \item{funcs}{\code{list} of functions. These functions will be used to calculate the effect sizes (Hedges' \emph{g}) based on the raw data (see Details).}
+
+\item{change.sign}{\code{character}. Name of a \code{logical} column in \code{data}, encoding if the
+sign of a calculated effect size should be reversed (\code{TRUE}) or not (\code{FALSE}). Set to \code{NULL} (default) if
+no changes should be made.}
 }
 \value{
-\code{calculateEffectSizes} returns the meta-analysis data set as class \code{data.frame} (if results are saved to a variable). It also generates the following columns, wich are added to the data:
+\code{calculateEffectSizes} returns the meta-analysis data set as class \code{data.frame} in wide format (if results are saved to a variable). It also generates the following columns, wich are added to the data:
 \itemize{
 \item{\code{es} calculated effect sizes for each comparison.}
 \item{\code{se} calculated standard error of the effect size.}
@@ -63,22 +60,21 @@ inpatients \%>\%
 
 #Example 2: further use to pool effect sizes
 library(meta)
-library(dplyr)
 inpatients \%>\%
-    checkDataFormat ()\%>\%
-    expandMultiarmTrials() \%>\%
-    calculateEffectSizes() \%>\%
-    dplyr::filter(!is.na(es) & primary==1) \%>\%
-    metagen(es, se, studlab=study, comb.fixed=FALSE, data=.)
+  checkDataFormat() \%>\%
+  expandMultiarmTrials() \%>\%
+  calculateEffectSizes() \%>\%
+  filterPoolingData(primary==1) \%>\%
+  metagen(es, se, studlab=study, comb.fixed=FALSE, data=.)
 
 
 # Example 3: use for 3-level model
 library(metafor)
+library(dplyr)
 inpatients \%>\%
   checkDataFormat ()\%>\%
   expandMultiarmTrials() \%>\%
   calculateEffectSizes() \%>\%
-  dplyr::filter(!is.na(es)) \%>\%
   dplyr::mutate(es.id = 1:nrow(.)) \%>\%
   metafor::rma.mv(es, se^2, data = ., slab = study.id,
                   random = ~ 1 | study.id/es.id, test = "t")

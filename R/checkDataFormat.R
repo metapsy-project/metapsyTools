@@ -69,6 +69,8 @@
 #' @seealso \code{\link{expandMultiarmTrials}}
 #' @export checkDataFormat
 #' @importFrom methods as
+#' @importFrom stats dffits model.matrix rnorm rstudent
+#' @importFrom utils combn
 
 checkDataFormat = function(data,
                            must.contain = c("study", "condition",

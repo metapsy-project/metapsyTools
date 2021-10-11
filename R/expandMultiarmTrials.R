@@ -35,11 +35,7 @@
 #'  For more details see the help vignette: \code{vignette("metapsyTools")}.
 #' @examples
 #' data("inpatients")
-#'
-#' # Example 1: define variables included in unique comparison IDs
-#' expandMultiarmTrials(inpatients,
-#'                      vars.for.id= c("study", "condition",
-#'                                     "Time", "primary"))
+#' expandMultiarmTrials(inpatients)
 #'
 #' @author Mathias Harrer \email{mathias.h.harrer@@gmail.com}, Paula Kuper \email{paula.r.kuper@gmail.com}, Pim Cuijpers \email{p.cuijpers@@vu.nl}
 #'
@@ -49,6 +45,8 @@
 #' @importFrom magrittr set_rownames
 #' @importFrom purrr map_df
 #' @import magrittr
+#' @importFrom stats dffits model.matrix rnorm rstudent
+#' @importFrom utils combn
 #' @export expandMultiarmTrials
 
 expandMultiarmTrials = function(data,
@@ -99,7 +97,8 @@ expandMultiarmTrials = function(data,
     purrr::map_df(function(x){
       multiarmExpander(x,
                        condition.specification = condition.specification,
-                       group.indicator = group.indicator)}) -> data.multiarm
+                       group.indicator = group.indicator,
+                       group.names = group.names)}) -> data.multiarm
 
   # Add trt column to data.no.multiarm
   data.no.multiarm$trt = ifelse(data.no.multiarm[[group.indicator]] == group.names[["ig"]],

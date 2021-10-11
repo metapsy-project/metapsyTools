@@ -26,15 +26,15 @@ When working with imported data of the Metapsy database in R, there are a few po
 We can see this, for example, in the study of Hauksson (2017): This is a three-arm study that compares two interventions ("grp" and "ind") against a control group (resulting in three rows for the primary outcome). In R, this format is too ambiguous to calculate effect sizes directly.
 
 ```{r, echo=FALSE, message=F}
-library(metapsyTools)
-library(dplyr)
-
-inpatients %>% 
-  dplyr::filter(study=="Hauksson, 2017" & primary==1) %>% 
-  dplyr::select(c(1:6,8),) -> x
-
-class(x) = "data.frame"
-x
+# library(metapsyTools)
+# library(dplyr)
+# 
+# inpatients %>% 
+#   dplyr::filter(study=="Hauksson, 2017" & primary==1) %>% 
+#   dplyr::select(c(1:6,8),) -> x
+# 
+# class(x) = "data.frame"
+# x
 ```
 
 
@@ -54,10 +54,10 @@ For this purpose, it is highly recommended to combine all three functions using 
 Instead of nesting functions, a pipe processes an object using a sequence of operations by passing the result of one step as input for the next step. For the `metapsyTools` package, this means that each function can be applied on a meta-analysis data set in one run, and we do not have to create intermediate objects, or go through the process step by step, to get the required effect size data:
 
 ```{r, eval=FALSE}
-inpatients %>% 
-  checkDataFormat() %>% 
-  expandMultiarmTrials() %>% 
-  calculateEffectSizes()
+# inpatients %>% 
+#   checkDataFormat() %>% 
+#   expandMultiarmTrials() %>% 
+#   calculateEffectSizes()
 ```
 
 This code uses the `inpatients` example data set. First, the data set is checked, then the multiarm study rows are expanded, and finally, the effect sizes are calculated for each comparison. 
@@ -67,14 +67,14 @@ This code uses the `inpatients` example data set. First, the data set is checked
 We can now filter, for example, a specific study and outcome, and inspect the effect sizes:
 
 ```{r }
-# Show primary outcome of 'Hauksson, 2017'
-inpatients %>% 
-  checkDataFormat() %>% 
-  expandMultiarmTrials() %>% 
-  calculateEffectSizes() %>% 
-  dplyr::filter(study.id == "Hauksson, 2017" & primary==1) %>% 
-  dplyr::select(study, es, se, condition, 
-                multiple_arms, primary)
+# # Show primary outcome of 'Hauksson, 2017'
+# inpatients %>% 
+#   checkDataFormat() %>% 
+#   expandMultiarmTrials() %>% 
+#   calculateEffectSizes() %>% 
+#   dplyr::filter(study.id == "Hauksson, 2017" & primary==1) %>% 
+#   dplyr::select(study, es, se, condition, 
+#                 multiple_arms, primary)
 ```
 
 
@@ -87,14 +87,14 @@ After the effect sizes have been calculated using `calculateEffectSizes`, the da
 In the example below, only the **primary outcome** data is pooled. This is achieved by including `primary == 1` into the the call to `dplyr::filter`. Other types of meta-analyses can be conducted by changing the filtering logic in this step (e.g. adding ` & country == 4` to only use studies from a specific location).
 
 ```{r, message=F, eval=F}
-library(meta)
-
-inpatients %>% 
-  checkDataFormat %>% 
-  expandMultiarmTrials %>% 
-  calculateEffectSizes %>% 
-  dplyr::filter(!is.na(es) & primary==1) %>% 
-  meta::metagen(es, se, studl = study, comb.f = FALSE, data=.)
+# library(meta)
+# 
+# inpatients %>% 
+#   checkDataFormat %>% 
+#   expandMultiarmTrials %>% 
+#   calculateEffectSizes %>% 
+#   dplyr::filter(!is.na(es) & primary==1) %>% 
+#   meta::metagen(es, se, studl = study, comb.f = FALSE, data=.)
 ```
 
 ```
@@ -162,16 +162,16 @@ As we can see, the functions of the `metapsyTools` package, combined with the pi
 Three-level meta-analyses can also be conducted using this logic:
 
 ```{r, message=F, eval=F}
-library(metafor)
-
-inpatients %>%
-  checkDataFormat ()%>%
-  expandMultiarmTrials() %>%
-  calculateEffectSizes() %>%
-  dplyr::filter(!is.na(es)) %>%
-  dplyr::mutate(es.id = 1:nrow(.)) %>%
-  metafor::rma.mv(es, se^2, data = ., slab = study.id,
-                  random = ~ 1 | study.id/es.id, test = "t")
+# library(metafor)
+# 
+# inpatients %>%
+#   checkDataFormat ()%>%
+#   expandMultiarmTrials() %>%
+#   calculateEffectSizes() %>%
+#   dplyr::filter(!is.na(es)) %>%
+#   dplyr::mutate(es.id = 1:nrow(.)) %>%
+#   metafor::rma.mv(es, se^2, data = ., slab = study.id,
+#                   random = ~ 1 | study.id/es.id, test = "t")
 ```
 
 ```

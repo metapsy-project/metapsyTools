@@ -50,6 +50,8 @@
 #'}
 #' @importFrom metafor rma.uni
 #' @importFrom meta update.meta
+#' @importFrom stats dffits model.matrix rnorm rstudent
+#' @importFrom utils combn
 #'
 #' @export metapsyFindOutliers
 #'

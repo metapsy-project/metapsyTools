@@ -108,6 +108,8 @@
 #' @importFrom forcats fct_recode
 #' @importFrom kableExtra kable_styling column_spec
 #' @importFrom knitr kable
+#' @importFrom stats dffits model.matrix rnorm rstudent
+#' @importFrom utils combn
 #' @export createStudyTable
 
 
