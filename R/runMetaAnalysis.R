@@ -164,6 +164,9 @@ runMetaAnalysis = function(data,
 
   message("- Pooling the data...")
 
+  # Throw out all NAs/Missings
+  data = data[!is.na(data[[es.var]]) & data[[es.var]] != Inf & data[[es.var]] != -Inf,]
+
   warn.end = FALSE
 
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -747,7 +750,7 @@ plot.runMetaAnalysis = function(x, which = NULL, ...){
   # print forest plot by default
   if (is.null(which)){
     if (models[[x$which.run[1]]][1] != "model.threelevel"){
-      message("- [OK] Generating forest plot ('", which.run[1], "' model)")
+      message("- [OK] Generating forest plot ('", x$which.run[1], "' model)")
       meta::forest.meta(x[[models[[x$which.run[1]]][1]]], smlab = " ",
                         leftcols = leftCols, leftlabs = leftLabs,
                         text.random = "RE Model", ...)

@@ -4,13 +4,7 @@
 \alias{multiarmExpander}
 \title{Expander function for multiarm trials}
 \usage{
-multiarmExpander(
-  study,
-  condition.specification,
-  group.indicator,
-  group.names,
-  id
-)
+multiarmExpander(study, condition.specification, group.indicator, group.names)
 }
 \arguments{
 \item{study}{data of one study, for one unique assessment point.}
@@ -18,6 +12,8 @@ multiarmExpander(
 \item{condition.specification}{trial condition specification.}
 
 \item{group.indicator}{group indicator (IG or CG).}
+
+\item{group.names}{group names (list).}
 }
 \description{
 Expands multiarm trial.

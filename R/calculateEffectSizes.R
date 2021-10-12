@@ -162,6 +162,8 @@ calculateEffectSizes = function(data,
   }
   data.wide.es -> dat.final
 
+  colnames(dat.final)[c(ncol(dat.final)-1, ncol(dat.final))] = c("es", "se")
+
   # Change sign
   if (!is.null(change.sign)){
     change.mask = ifelse(dat.final[[change.sign]], -1, 1)

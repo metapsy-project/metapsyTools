@@ -185,6 +185,7 @@ metapsyNNT = function(d, CER = NULL, event.e = NULL, n.e = NULL, event.c = NULL,
 #' @param study data of one study, for one unique assessment point.
 #' @param condition.specification trial condition specification.
 #' @param group.indicator group indicator (IG or CG).
+#' @param group.names group names (list).
 #' @export multiarmExpander
 #' @importFrom stats dffits model.matrix rnorm rstudent
 #' @importFrom utils combn
@@ -193,8 +194,7 @@ metapsyNNT = function(d, CER = NULL, event.e = NULL, n.e = NULL, event.c = NULL,
 multiarmExpander = function(study,
                             condition.specification,
                             group.indicator,
-                            group.names,
-                            id){
+                            group.names){
 
   # Replace missings with empty char
   study[[condition.specification]][is.na(study[[condition.specification]])] = "N/A"

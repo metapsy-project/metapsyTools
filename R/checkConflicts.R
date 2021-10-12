@@ -128,7 +128,7 @@ checkConflicts = function(.data,
 
   class(returnlist) = c("checkConflicts", "list")
 
-  if (nrow(returnlist$allConflicts) == 0){
+  if (nrow(returnlist$idConflicts) == 0){
     message("- [OK] No data format conflicts detected")
     return(data.return)
   } else {
@@ -166,8 +166,8 @@ print.checkConflicts = function(x, ...){
   if (nrow(x$cgConflicts) != 0){
     cat("\n")
     cat("\n")
-    message(paste0("Control group conflicts \n",
-                   "- check if each trial has one unique control/reference group \n",
+    message(paste0("Trials with 2+ control groups \n",
+                   "- NOTE: As of version 0.2.0, 'metapsyTools' can handle 2+ control groups! \n",
                    "--------------------"))
     cat(paste(unique(x$cgConflicts$study), collapse = "\n"))
   }

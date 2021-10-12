@@ -147,12 +147,6 @@ checkDataFormat = function(data,
                                                 variable.class[[i]])},
           silent = TRUE) -> try.convert
 
-        if (class(try.convert) == "try-error"){
-          stop("Variable '", names(variable.class)[10],
-               "' either does not exist, or cannot be converted to class '",
-               variable.class[[i]],"'.")
-        }
-
         message(paste0("- [OK] '", names(variable.class)[i], "' has been converted to class ",
                        variable.class[[i]], "."))
       }
