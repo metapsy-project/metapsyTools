@@ -201,8 +201,8 @@ runMetaAnalysis = function(data,
                            method.tau = method.tau,
                            method.tau.ci = method.tau.ci,
                            prediction = TRUE,
-                           comb.fixed = ifelse(method.tau == "FE", TRUE, FALSE),
-                           comb.random = ifelse(method.tau == "FE", FALSE, TRUE))
+                           fixed = ifelse(method.tau == "FE", TRUE, FALSE),
+                           random = ifelse(method.tau == "FE", FALSE, TRUE))
 
   mGeneralRes = with(mGeneral,{
 
@@ -350,8 +350,8 @@ runMetaAnalysis = function(data,
                         method.tau = method.tau,
                         method.tau.ci = method.tau.ci,
                         prediction = TRUE,
-                        comb.fixed = ifelse(method.tau == "FE", TRUE, FALSE),
-                        comb.random = ifelse(method.tau == "FE", FALSE, TRUE))
+                        fixed = ifelse(method.tau == "FE", TRUE, FALSE),
+                        random = ifelse(method.tau == "FE", FALSE, TRUE))
 
   mCombRes = with(mComb,{
 

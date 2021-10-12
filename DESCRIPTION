@@ -19,6 +19,6 @@ Imports:
     graphics (>= 3.5.2), stats (>= 3.5.2),
     utils (>= 3.5.2), methods (>= 3.5.2),
     tidyr, forcats, ggplot2, ggrepel, 
-    gridExtra, kableExtra, knitr, meta,
+    gridExtra, kableExtra, knitr, meta (>= 5.0-0),
     metafor, rlang, scales
 Depends: R (>= 3.5.0) 

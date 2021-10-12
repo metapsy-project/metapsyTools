@@ -83,7 +83,7 @@ subgroupAnalysis = function(.model, ...,
   if (class(M)[1] == "metagen"){
 
     purrr::map(as.list(variables), function(x){
-      meta::update.meta(M, byvar = M$data[[x]])
+      meta::update.meta(M, subgroup = M$data[[x]])
     }) -> subgroup.analysis.list
     names(subgroup.analysis.list) = variables
 
