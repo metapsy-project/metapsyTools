@@ -5,4 +5,4 @@ utils::globalVariables(c("es", "se", ".", "condition", "study", "NNT",
                          "lower", "upper", "value", "y",
                          "group.names", "which.run",
                          "g", "model", "Analysis",
-                         "excluded"))
+                         "excluded", "yi", "vi"))
