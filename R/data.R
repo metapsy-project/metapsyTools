@@ -43,3 +43,15 @@
 "psyCtrSubset"
 
 
+#'  The 'database2021Subset' dataset
+#'
+#' An example dataset containing a subset of the 2021 depression trials database.
+#' Its format equals the format of data in the "Metapsy" database.
+#'
+#' The dataset has been included to showcase the correct formatting necessary to use \code{metapsyTools}.
+#'
+#' @format A \code{data.frame} with 381 rows and 63 variables.
+#' @author Mathias Harrer, Paula Kuper, Pim Cuijpers
+#' @usage data("database2021Subset")
+"database2021Subset"
+

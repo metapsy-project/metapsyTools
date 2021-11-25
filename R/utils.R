@@ -254,5 +254,38 @@ Detect = function(...){
 
 
 
+#' Include information of rows with switched reference group
+#'
+#' Adds effect size data and study information of rows with switched reference arms.
+#'
+#' @param dat Data set created by \code{calculateEffectSizes} in the wider format, which includes
+#' calculated effect sizes and standard errors in columns \code{es} and \code{se}, respectively. Only
+#' data sets created by \code{calculateEffectSizes} with \code{trt.indicator} set to \code{"trt"}
+#' can be used.
+#' @param ... Further arguments (not used).
+#' @usage includeSwitchedArms(dat, ...)
+#' @export includeSwitchedArms
+#' @importFrom stringr str_replace_all
+#' @importFrom dplyr mutate select
+#' @importFrom stats dffits model.matrix rnorm rstudent
+#' @importFrom utils combn
+#' @keywords internal
+
+includeSwitchedArms = function(dat, ...){
+  dat.orig = dat
+  stringr::str_replace_all(colnames(dat),
+                           c("_trt1" = "_trtX", "_trt2" = "_trt1",
+                             "_trtX" = "_trt2")) -> colnames(dat)
+
+  dat %>% dplyr::select(colnames(dat.orig)) %>%
+    dplyr::mutate(es = es*-1,
+           id = paste0(id, "_arm_switched")) %>%
+    rbind(., dat.orig) -> dat.expand
+
+  dat.expand = dat.expand[order(dat.expand$id),]
+  rownames(dat.expand) = NULL
+
+  return(dat.expand)
+}
 
 

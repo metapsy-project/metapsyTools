@@ -10,7 +10,8 @@ calculateEffectSizes(data,
        funcs = list(meanSD = meanSD,
                     binaryES = binaryES,
                     changeES = changeES),
-                    change.sign = NULL)
+       include.switched.arms = FALSE,
+       change.sign = NULL)
 }
 \arguments{
 \item{data}{Meta-analysis data set of class \code{expandMultiarmTrials}, created using \code{expandMultiarmTrials}.}
@@ -20,6 +21,9 @@ calculateEffectSizes(data,
 \item{trt.indicator}{\code{character}, column name of the variable storing the treatment indicator (treatment 1 or 2); typically created by \code{expandMultiarmTrials}.}
 
 \item{funcs}{\code{list} of functions. These functions will be used to calculate the effect sizes (Hedges' \emph{g}) based on the raw data (see Details).}
+
+\item{include.switched.arms}{\code{logical}. Should all unique arm \emph{comparisons} (in lieu of unique arm \emph{combinations}) be
+calculated? Default is \code{FALSE}. Can only be set to \code{TRUE} when \code{trt.indicator} is set to \code{"trt"}.}
 
 \item{change.sign}{\code{character}. Name of a \code{logical} column in \code{data}, encoding if the
 sign of a calculated effect size should be reversed (\code{TRUE}) or not (\code{FALSE}). Set to \code{NULL} (default) if
@@ -65,7 +69,7 @@ inpatients \%>\%
   expandMultiarmTrials() \%>\%
   calculateEffectSizes() \%>\%
   filterPoolingData(primary==1) \%>\%
-  metagen(es, se, studlab=study, comb.fixed=FALSE, data=.)
+  metagen(es, se, studlab=study, fixed=FALSE, data=.)
 
 
 # Example 3: use for 3-level model
