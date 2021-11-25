@@ -1,8 +1,11 @@
 .onAttach <- function(libname, pkgname) {
-  packageStartupMessage("Loading ", crayon::cyan$bold("{metapsyTools}"), " 0.2.1 [BETA]. For help, run ",
-                        crayon::green("vignette('metapsyTools')"), " in the R console.")
+  packageStartupMessage(crayon::green("\u2713"),
+                        crayon::cyan(" Loading "),
+                        crayon::cyan$bold("{metapsyTools}"),
+                        crayon::cyan(" 0.2.1 [BETA]. \n \u2192 For help, run "),
+                        crayon::green("vignette('metapsyTools')"),
+                        crayon::cyan(" in the R console."))
 }
-
 
 
 
