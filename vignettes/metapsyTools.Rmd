@@ -193,7 +193,9 @@ plot(g1, vertex.size = 35, vertex.color = "lightblue",
      vertex.label.family="Helvetica")
 ```
 
-![](graph.png){width=685px}
+<center>
+![](graph.png){width=200px}
+</center>
 
 In this example, 12 rows would be included after running `expandMultiarmTrials`, with 6 row pairs each corresponding with one of the 6 unique combinations. 
 
@@ -281,7 +283,9 @@ Please note that the current version of the data set only includes all unique tr
 
 This is because the sign of the calculated effect size depends on which treatment serves as the _reference_. The effect of CBT vs. PST, for example, depends on which arm serves as the reference group (i.e. CBT-PST or PST-CBT). Depending on which arm is chosen (and assuming non-zero mean differences), the calculated Hedges' $g$ value will either be negative (e.g. $g$=-0.31) or positive ($g$=0.31). We see this visualized in the graph below. There are now two directed arrows for each comparison (12 in total), and each arrow reads as "is compared to":
 
-![](graph2.png){width=685px}
+<center>
+![](graph2.png){width=200px}
+</center>
 
 To truly calculate all unique _comparisons_, we have to set the `include.switched.arms` argument to `TRUE` when running `calculateEffectSizes`. 
 
@@ -371,7 +375,9 @@ plot(g1, vertex.size = 35, vertex.color = "lightblue",
      vertex.label.family="Helvetica", layout=layout.circle)
 ```
 
-![](graph3.png){width=685px}
+<center>
+![](graph3.png){width=200px}
+</center>
 
 
 We can use the OR-Operator `|` within `filterPoolingData` for such filter types. Again, we use the `Detect` function to allow for fuzzy matching:
@@ -544,6 +550,35 @@ runMetaAnalysis(ma.data,
 ```
 
 
+It is also possible to directly extract each calculated model from the `runMetaAnalysis` results object. Each of these models are identical to the ones one would receive by running [`metagen`](https://bookdown.org/MathiasHarrer/Doing_Meta_Analysis_in_R/pooling-es.html#pre-calculated-es) or [`rma.mv`](https://bookdown.org/MathiasHarrer/Doing_Meta_Analysis_in_R/multilevel-ma.html#multilevel-R) directly. 
+
+```{r, eval=FALSE}
+res$model.overall
+res$model.combined
+res$model.lowest
+res$model.highest
+res$model.outliers
+res$model.influence
+res$model.rob
+res$model.threelevel
+```
+
+
+This means that **any kind of operation** available for `metagen` or `rma` models **is also available for the models created by `runMetaAnalysis`**. For example, we can generate a funnel plot for our "overall" model like this:
+
+```{r, eval=FALSE}
+library(meta)
+funnel(res$model.overall, 
+       studlab = TRUE, 
+       contour = c(0.9, 0.95, 0.99),
+       col.contour = c("darkgreen", "green", "lightgreen"))
+```
+
+<center>
+![](funnel.png){width=400px}
+</center>
+
+
 <br>
 
 It is also possible to generate **forest plots** of all the calculated models. We only have to plug the results object into `plot`, and specify the name of the model for which the forest plot should be retrieved:
@@ -563,7 +598,9 @@ This is what the "overall" model forest plot looks like in our example:
 plot(res, "overall")
 ```
 
-![](forest.png){width=685px}
+<center>
+![](forest.png){width=400px}
+</center>
 
 
 Note that the `plot` function is simply a wrapper for the `forest.meta` function in the `meta` package. Therefore, all the advanced [styling options](https://bookdown.org/MathiasHarrer/Doing_Meta_Analysis_in_R/forest.html) are also available using extra arguments.
@@ -576,8 +613,9 @@ plot(res, "overall",
      fontfamily = "Palatino")
 ```
 
-
-![](forest2.png){width=685px}
+<center>
+![](forest2.png){width=400px}
+</center>
 
 It is also possible to generate **Baujat** and **Leave-One-Out Plots** (not displayed here).
 
