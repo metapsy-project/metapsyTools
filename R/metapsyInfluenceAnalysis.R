@@ -297,7 +297,7 @@ metapsyInfluenceAnalysis = function(x, random = FALSE, subplot.heights = c(30, 1
                                                                                                                  size = 5), axis.title.y = element_text(size = 7), axis.text.y = element_text(size = 5)) + ylab("weight") +
     scale_y_continuous(labels = scalefun)
 
-  rma.influence.plot = arrangeGrob(rstudent.plot, dffits.plot, cook.d.plot, cov.r.plot, tau2.del.plot, QE.del.plot,
+  rma.influence.plot = gridExtra::arrangeGrob(rstudent.plot, dffits.plot, cook.d.plot, cov.r.plot, tau2.del.plot, QE.del.plot,
                                    hat.plot, weight.plot, ncol = 2)
 
   # Perform Influence Analysis on meta object, generate forests

@@ -112,7 +112,6 @@
 #' @importFrom utils combn
 #' @export createStudyTable
 
-
 createStudyTable = function(.data, ...,
                             .round.by.digits = NULL,
                             .column.names = NULL,
@@ -142,8 +141,15 @@ createStudyTable = function(.data, ...,
 
   # Merge with nonconverted data
   vars[vars == ""] = non.convert.vars
-  cbind(.data[non.convert.vars], data.convert) %>%
-    dplyr::select(dplyr::all_of(vars)) -> data
+  if (ncol(.data[non.convert.vars]) > 0 & ncol(data.convert) > 0){
+    cbind(.data[non.convert.vars], data.convert) %>%
+      dplyr::select(dplyr::all_of(vars)) -> data
+  } else if (ncol(.data[non.convert.vars]) > 0){
+    cbind(.data[non.convert.vars]) %>%
+      dplyr::select(dplyr::all_of(vars)) -> data
+  } else if (ncol(data.convert) > 0){
+    cbind(data.convert) %>%
+      dplyr::select(dplyr::all_of(vars)) -> data}
 
   if (!is.null(.round.by.digits)){
 
@@ -174,8 +180,11 @@ createStudyTable = function(.data, ...,
 
   # Rename columns
   if (!is.null(.column.names)){
-    colnames(data.d)[which(colnames(data.d) %in% names(.column.names))] =
-      unlist(.column.names)
+    colnames(data.d)[which(colnames(data.d) %in% names(.column.names))] -> col.mask
+    as.data.frame(.column.names) %>%
+      dplyr::select(dplyr::all_of(col.mask)) %>%
+      {.[1,]} %>% as.character() -> new.cnames
+    colnames(data.d)[which(colnames(data.d) %in% names(.column.names))] = new.cnames
   }
 
   rownames(data.d) = NULL

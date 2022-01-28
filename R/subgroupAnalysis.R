@@ -72,20 +72,50 @@ subgroupAnalysis = function(.model, ...,
     stop("Input must be of class 'runMetaAnalysis'. Did you apply 'runMetaAnalysis' first?")
   }
 
+
   variables = .model$data %>% dplyr::select(...) %>% colnames()
+  .round.digits = abs(.round.digits)
 
   # Get model type
   model.type = paste0("model.", .which.run)
   M = .model[[model.type]]
   message("- [OK] '", model.type, "' used for subgroup analyses.")
 
+  if (.which.run[1] == "combined" & .model$model.combined$k == 1){
+    stop("'.which.run' is set to 'combined', but there is only k=1 study/ES.")}
+  if (.which.run[1] == "lowest" & .model$model.lowest$k == 1){
+    stop("'.which.run' is set to 'lowest', but there is only k=1 study/ES.")}
+  if (.which.run[1] == "highest" & .model$model.highest$k == 1){
+    stop("'.which.run' is set to 'highest', but there is only k=1 study/ES.")}
+  if (.which.run[1] == "influence" & .model$model.influence$k == 1){
+    stop("'.which.run' is set to 'influence', but there is only k=1 study/ES.")}
+  if (.which.run[1] == "rob" & .model$model.rob$k == 1){
+    stop("'.which.run' is set to 'rob', but there is only k=1 study/ES.")}
+
   # Run all subgroup analyses
   if (class(M)[1] == "metagen"){
 
     purrr::map(as.list(variables), function(x){
-      meta::update.meta(M, subgroup = M$data[[x]])
+
+      na.mask = !is.na(M$data[[x]])
+      meta::metagen(TE = M$TE[na.mask],
+                    seTE = M$seTE[na.mask],
+                    studlab = M$studlab[na.mask],
+                    method.tau = M$method.tau,
+                    method.tau.ci = M$method.tau.ci,
+                    hakn = M$hakn,
+                    data = M$data[na.mask,],
+                    subgroup = M$data[[x]][na.mask],
+                    fixed = M$fixed,
+                    random = M$random)
+
     }) -> subgroup.analysis.list
     names(subgroup.analysis.list) = variables
+
+
+    if (sum(is.na(M$data[variables])) > 0){
+      warning("Some subgroup variables contained NA. These entries were omitted from model fitting.")
+    }
 
     # Extract information
     subgroup.analysis.list %>%
@@ -126,7 +156,8 @@ subgroupAnalysis = function(.model, ...,
                    n.comp = x$k.w, g = g, g.ci = g.ci,
                    i2 = i2, i2.ci = i2.ci,
                    nnt = nnt,
-                   p = x$pval.Q.b.random %>% scales::pvalue())
+                   p = ifelse(is.na(x$pval.Q.b.random), NA,
+                              scales::pvalue(x$pval.Q.b.random)))
       }) %>% do.call(rbind, .) %>% {rownames(.) = NULL;.} -> summary
   }
 

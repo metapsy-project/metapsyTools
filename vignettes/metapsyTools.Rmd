@@ -532,6 +532,59 @@ res
 ## Total           0.5597 88.2
 ```
 
+Using the `summary` method, details of the analysis settings can be printed. This function also returns recommended citations for the applied methods and/or packages.
+
+```{r, eval=F}
+summary(res)
+```
+
+```
+Analysis settings ---------------------------------------------------------- 
+
+✓ [Overall] Random effects model assumed. 
+✓ [Overall] Heterogeneity variance (tau2) calculated using restricted 
+  maximum-likelihood estimator.
+✓ [Overall] Test statistic and CI of the pooled effect calculated using 
+  the Knapp-Hartung adjustment. 
+✓ [Outliers removed] ES removed as outliers if the CI did not overlap 
+  with pooled effect CI. 
+✓ [Influence Analysis] Influential cases determined using diagnostics 
+  of Viechtbauer and Cheung (2010). 
+✓ [Combined] 'Combined' analysis: ES combined on study level assuming 
+  a correlation of rho = 0.5. 
+✓ [Three-Level Model] Three-level model estimated via restricted maximum 
+  likelihood, using the 'rma.mv' function in {metafor}. 
+✓ [Three-Level Model] Test statistics and CIs of the three-level model 
+  calculated based on a t-distribution. 
+
+
+Cite the following packages/methods: ---------------------------------------
+
+ - {meta}: Balduzzi S, Rücker G, Schwarzer G (2019),
+          How to perform a meta-analysis with R: a practical tutorial,
+          Evidence-Based Mental Health; 22: 153-160. 
+ - {metafor}: Viechtbauer, W. (2010). Conducting meta-analyses in R
+          with the metafor package. Journal of Statistical Software, 36(3), 1-48.
+          https://doi.org/10.18637/jss.v036.i03. 
+ - {dmetar}: Harrer, M., Cuijpers, P., Furukawa, T.A., & Ebert, D.D. (2021).
+          Doing Meta-Analysis with R: A Hands-On Guide. Boca Raton, FL and London:
+          Chapman & Hall/CRC Press. ISBN 978-0-367-61007-4. 
+ - R: R Core Team (2021). R: A language and environment for statistical computing.
+          R Foundation for Statistical Computing, Vienna, Austria.
+          URL https://www.R-project.org/.
+ - Influential cases: Viechtbauer, W., & Cheung, M. W.-L. (2010). Outlier and influence
+          diagnostics for meta-analysis. Research Synthesis Methods, 1(2), 112–125.
+          https://doi.org/10.1002/jrsm.11 
+ - tau2 estimator: Viechtbauer W. (2005): Bias and efficiency of meta-analytic variance
+          estimators in the random-effects model.Journal of Educational and
+          Behavioral Statistics, 30, 261–93 
+ - Knapp-Hartung: Hartung J, Knapp G (2001a): On tests of the overall treatment
+          effect in meta-analysis with normally distributed responses.
+          Statistics in Medicine, 20, 1771–82
+```
+
+
+
 The `runMetaAnalysis` function allows to tweak many, many details of the specific meta-analysis models (run `?runMetaAnalysis` to see the entire documentation). The most important arguments one may want to specify are:
 
 - `method.tau`. This argument controls the method to be used for estimating the between-study heterogeneity variance $\tau^2$. The default is `"REML"` (restricted maximum likelihood), but other options such as the DerSimonian-Laird estimator (`"DL"`) are also available (see the `runMetaAnalysis` function documentation for more details). Note that three-level meta-analysis models can only be fitted using (restricted) maximum likelihood.

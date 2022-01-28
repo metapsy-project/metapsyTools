@@ -23,14 +23,15 @@
 #'                 which.rob = c("general", "combined"),
 #'                 nnt.cer = 0.2,
 #'                 rho.within.study = 0.5,
-#'                 html = TRUE)
+#'                 html = TRUE,
+#'                 ...)
 #'
 #' @param data \code{data.frame}. Effect size data in the wide format, as created by \code{\link{calculateEffectSizes}}.
 #' @param which.run \code{character}. Selection of models to be calculated. See 'Details'.
 #' @param method.tau \code{character}. A character string indicating which method is used to estimate the
 #' between-study variance (tau-squared) and its square root (tau). Either \code{"REML"} (default), \code{"DL"},
 #' \code{"PM"}, \code{"ML"}, \code{"HS"}, \code{"SJ"}, \code{"HE"}, or \code{"EB"}, can be abbreviated (see
-#' \code{\link[meta]{metagen}}). Use \code{"FE"} to use a fixed-effect model.
+#' \code{\link[meta]{metagen}}). Use \code{"FE"} to use a fixed-effect/"common effect" model.
 #' @param hakn \code{logical}. Should the Knapp-Hartung adjustment for effect size significance tests be used? Default is \code{TRUE}.
 #' @param study.var \code{character}. The name of the variable in \code{data} in which the study IDs are stored.
 #' @param arm.var.1 \code{character}. The name of the variable in \code{data} in which the condition (e.g. "guided iCBT")
@@ -48,17 +49,18 @@
 #' confidence interval of tau/tau-squared. Either \code{"Q-Profile"} (default and recommended),
 #' \code{"BJ"}, \emph{"J"}, or \emph{"PL"} can be abbreviated. See \code{\link[meta]{metagen}} for details.
 #' @param round.digits \code{numeric}. Number of digits to round the (presented) results by. Default is \code{2}.
-#' @param which.outliers \code{character}. Which model should be used to conduct outlier analyses? Must be one of the
-#' options available for \code{which.run}, with \code{"general"} being the default.
-#' @param which.influence \code{character}. Which model should be used to conduct influence analyses? Must be one of the
-#' options available for \code{which.run}, with \code{"general"} being the default.
-#' @param which.rob \code{character}. Which model should be used to conduct the "low risk of bias only" analyses? Must be one of the
-#' options available for \code{which.run}, with \code{"general"} being the default.
+#' @param which.outliers \code{character}. Which model should be used to conduct outlier analyses? Must be
+#' \code{"general"} or \code{"combined"}, with \code{"general"} being the default.
+#' @param which.influence \code{character}. Which model should be used to conduct influence analyses? Must be
+#' \code{"general"} or \code{"combined"}, with \code{"general"} being the default.
+#' @param which.rob \code{character}. Which model should be used to conduct the "low risk of bias only" analyses? Must be
+#' \code{"general"} or \code{"combined"}, with \code{"general"} being the default.
 #' @param nnt.cer \code{numeric}. Value between 0 and 1, indicating the assumed control group event rate to be used
 #' for calculating NNTs via the Furukawa-Leucht method.
 #' @param rho.within.study \code{numeric}. Value between 0 and 1, indicating the assumed correlation of effect sizes
 #' within studies. This is relevant to combine effect sizes for the \code{"combined"} analysis type. Default is \code{0.5}.
 #' @param html \code{logical}. Should an HTML table be created for the results? Default is \code{TRUE}.
+#' @param ... Additional arguments.
 #'
 #'
 #' @return Returns an object of class \code{"runMetaAnalysis"}. This object includes, among other things,
@@ -159,13 +161,19 @@ runMetaAnalysis = function(data,
                            which.rob = c("general", "combined"),
                            nnt.cer = 0.2,
                            rho.within.study = 0.5,
-                           html = TRUE){
+                           html = TRUE,
+                           ...){
 
 
   message("- Pooling the data...")
 
+
   # Throw out all NAs/Missings
   data = data[!is.na(data[[es.var]]) & data[[es.var]] != Inf & data[[es.var]] != -Inf,]
+
+  if (nrow(data) < 3){
+    stop("Meta-analyses can only be run with at least 3 effect sizes.")
+  }
 
   warn.end = FALSE
 
@@ -176,6 +184,7 @@ runMetaAnalysis = function(data,
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
   data.original = data
+  round.digits = abs(round.digits)
 
   # Create comparison variable
   paste0(data[[study.var]], " (",
@@ -192,33 +201,36 @@ runMetaAnalysis = function(data,
   data = data[!is.na(data[[es.var]]),]
   method.tau.ci = ifelse(method.tau.ci == "Q-Profile", "QP", method.tau.ci)
 
+  method.tau.meta = ifelse(method.tau[1] == "FE", "REML", method.tau[1])
+
   mGeneral = meta::metagen(TE = data[[es.var]],
                            seTE = data[[se.var]],
                            studlab = data[[study.var]],
                            data = data,
                            sm = "g",
                            hakn = hakn,
-                           method.tau = method.tau,
+                           method.tau = method.tau.meta,
                            method.tau.ci = method.tau.ci,
                            prediction = TRUE,
                            fixed = ifelse(method.tau == "FE", TRUE, FALSE),
-                           random = ifelse(method.tau == "FE", FALSE, TRUE))
+                           random = ifelse(method.tau == "FE", FALSE, TRUE),
+                           ...)
 
   mGeneralRes = with(mGeneral,{
 
     data.frame(
       k = k,
-      g = ifelse(method.tau == "FE", TE.fixed, TE.random) %>% round(round.digits),
-      g.ci = paste0("[", ifelse(method.tau == "FE",
+      g = ifelse(fixed == TRUE & random == FALSE, TE.fixed, TE.random) %>% round(round.digits),
+      g.ci = paste0("[", ifelse(fixed == TRUE & random == FALSE,
                                 lower.fixed, lower.random) %>% round(round.digits),"; ",
-                    ifelse(method.tau == "FE",
+                    ifelse(fixed == TRUE & random == FALSE,
                            upper.fixed, upper.random) %>% round(round.digits), "]"),
-      p = ifelse(method.tau == "FE", pval.fixed, pval.random) %>% scales::pvalue(),
+      p = ifelse(fixed == TRUE & random == FALSE, pval.fixed, pval.random) %>% scales::pvalue(),
       i2 = round(I2*100, 2),
       i2.ci = paste0("[", round(lower.I2*100, 2), "; ", round(upper.I2*100, 2), "]"),
       prediction.ci = paste0("[", round(lower.predict, round.digits), "; ",
                              round(upper.predict, round.digits), "]"),
-      nnt = metapsyNNT(ifelse(method.tau == "FE", TE.fixed, TE.random), nnt.cer) %>%
+      nnt = metapsyNNT(ifelse(fixed == TRUE & random == FALSE, TE.fixed, TE.random), nnt.cer) %>%
         round(round.digits) %>% abs(),
       excluded = "none"
     )
@@ -239,35 +251,40 @@ runMetaAnalysis = function(data,
   multi.study = names(table(data[[study.var]])[table(data[[study.var]]) > 1])
 
   if (length(multi.study) > 0){
-    data %>%
-      split(.[[study.var]]) %>%
-      purrr::map(function(x){
-        tiebreaker = rnorm(nrow(x), sd=1e-10)
-        x[[es.var]] + tiebreaker == min(x[[es.var]] + tiebreaker)}) %>%
-      do.call(c,.) -> lowest
+    if (length(multi.study) > 0){
+      data %>%
+        split(.[[study.var]]) %>%
+        purrr::map(function(x){
+          tiebreaker = rnorm(nrow(x), sd=1e-10)
+          x[[es.var]] + tiebreaker == min(x[[es.var]] + tiebreaker)}) %>%
+        do.call(c,.) -> lowest
+    } else {
+      lowest = NULL
+    }
+
+    mLowest = meta::update.meta(mGeneral, exclude = !lowest)
+    mLowestRes = with(mLowest,{
+
+      data.frame(
+        k = k,
+        g = ifelse(fixed == TRUE & random == FALSE, TE.fixed, TE.random) %>% round(round.digits),
+        g.ci = paste0("[", ifelse(fixed == TRUE & random == FALSE,
+                                  lower.fixed, lower.random) %>% round(round.digits),"; ",
+                      ifelse(fixed == TRUE & random == FALSE,
+                             upper.fixed, upper.random) %>% round(round.digits), "]"),
+        p = ifelse(fixed == TRUE & random == FALSE, pval.fixed, pval.random) %>% scales::pvalue(),
+        i2 = round(I2*100, 2),
+        i2.ci = paste0("[", round(lower.I2*100, 2), "; ", round(upper.I2*100, 2), "]"),
+        prediction.ci = paste0("[", round(lower.predict, round.digits), "; ",
+                               round(upper.predict, round.digits), "]"),
+        nnt = metapsyNNT(ifelse(fixed == TRUE & random == FALSE, TE.fixed, TE.random), nnt.cer) %>%
+          round(round.digits) %>% abs()
+      )
+    })
   } else {
-    lowest = NULL
+    mLowest = mGeneral
+    mLowestRes = mGeneralRes
   }
-
-  mLowest = update.meta(mGeneral, exclude = !lowest)
-  mLowestRes = with(mLowest,{
-
-    data.frame(
-      k = k,
-      g = ifelse(method.tau == "FE", TE.fixed, TE.random) %>% round(round.digits),
-      g.ci = paste0("[", ifelse(method.tau == "FE",
-                                lower.fixed, lower.random) %>% round(round.digits),"; ",
-                    ifelse(method.tau == "FE",
-                           upper.fixed, upper.random) %>% round(round.digits), "]"),
-      p = ifelse(method.tau == "FE", pval.fixed, pval.random) %>% scales::pvalue(),
-      i2 = round(I2*100, 2),
-      i2.ci = paste0("[", round(lower.I2*100, 2), "; ", round(upper.I2*100, 2), "]"),
-      prediction.ci = paste0("[", round(lower.predict, round.digits), "; ",
-                             round(upper.predict, round.digits), "]"),
-      nnt = metapsyNNT(ifelse(method.tau == "FE", TE.fixed, TE.random), nnt.cer) %>%
-        round(round.digits) %>% abs()
-    )
-  })
 
   if (is.null(mLowest$exclude[1])){
     mLowestRes$excluded = "none"
@@ -290,35 +307,41 @@ runMetaAnalysis = function(data,
   multi.study = names(table(data[[study.var]])[table(data[[study.var]]) > 1])
 
   if (length(multi.study) > 0){
-    data %>%
-      split(.[[study.var]]) %>%
-      purrr::map(function(x){
-        tiebreaker = rnorm(nrow(x), sd=1e-10)
-        x[[es.var]] + tiebreaker == max(x[[es.var]] + tiebreaker)}) %>%
-      do.call(c,.) -> highest
+
+    if (length(multi.study) > 0){
+      data %>%
+        split(.[[study.var]]) %>%
+        purrr::map(function(x){
+          tiebreaker = rnorm(nrow(x), sd=1e-10)
+          x[[es.var]] + tiebreaker == max(x[[es.var]] + tiebreaker)}) %>%
+        do.call(c,.) -> highest
+    } else {
+      highest = NULL
+    }
+
+    mHighest = meta::update.meta(mGeneral, exclude = !highest)
+    mHighestRes = with(mHighest,{
+
+      data.frame(
+        k = k,
+        g = ifelse(fixed == TRUE & random == FALSE, TE.fixed, TE.random) %>% round(round.digits),
+        g.ci = paste0("[", ifelse(fixed == TRUE & random == FALSE,
+                                  lower.fixed, lower.random) %>% round(round.digits),"; ",
+                      ifelse(fixed == TRUE & random == FALSE,
+                             upper.fixed, upper.random) %>% round(round.digits), "]"),
+        p = ifelse(fixed == TRUE & random == FALSE, pval.fixed, pval.random) %>% scales::pvalue(),
+        i2 = round(I2*100, 2),
+        i2.ci = paste0("[", round(lower.I2*100, 2), "; ", round(upper.I2*100, 2), "]"),
+        prediction.ci = paste0("[", round(lower.predict, round.digits), "; ",
+                               round(upper.predict, round.digits), "]"),
+        nnt = metapsyNNT(ifelse(fixed == TRUE & random == FALSE, TE.fixed, TE.random), nnt.cer) %>%
+          round(round.digits) %>% abs()
+      )
+    })
   } else {
-    highest = NULL
+    mHighest = mGeneral
+    mHighestRes = mGeneralRes
   }
-
-  mHighest = update.meta(mGeneral, exclude = !highest)
-  mHighestRes = with(mHighest,{
-
-    data.frame(
-      k = k,
-      g = ifelse(method.tau == "FE", TE.fixed, TE.random) %>% round(round.digits),
-      g.ci = paste0("[", ifelse(method.tau == "FE",
-                                lower.fixed, lower.random) %>% round(round.digits),"; ",
-                    ifelse(method.tau == "FE",
-                           upper.fixed, upper.random) %>% round(round.digits), "]"),
-      p = ifelse(method.tau == "FE", pval.fixed, pval.random) %>% scales::pvalue(),
-      i2 = round(I2*100, 2),
-      i2.ci = paste0("[", round(lower.I2*100, 2), "; ", round(upper.I2*100, 2), "]"),
-      prediction.ci = paste0("[", round(lower.predict, round.digits), "; ",
-                             round(upper.predict, round.digits), "]"),
-      nnt = metapsyNNT(ifelse(method.tau == "FE", TE.fixed, TE.random), nnt.cer) %>%
-        round(round.digits) %>% abs()
-    )
-  })
 
   if (is.null(mHighest$exclude[1])){
     mHighestRes$excluded = "none"
@@ -339,6 +362,23 @@ runMetaAnalysis = function(data,
 
   data = metafor::escalc("SMD", yi = data[[es.var]],
                          sei = data[[se.var]], data = data)
+
+  rho.within.study = abs(rho.within.study[1])
+  if (rho.within.study[1] > 1){
+    stop("'rho.within.study' must be in [-1,1].")
+  }
+
+  if (rho.within.study[1] >.99){
+    message("- [!] 'rho.within.study' is very close to 1.",
+        " This can lead to non-positive-definite variance-covariance matrices.",
+        " If the V matrix is not positive-definite, assume a lower value.")
+    warn.end = TRUE}
+  if (rho.within.study[1] <.01){
+    message("- [!] 'rho.within.study' is very close to 0.",
+        " This can lead to non-positive-definite variance-covariance matrices.",
+        " If the V matrix is not positive-definite, assume a higher value.")
+    warn.end = TRUE}
+
   data.comb = metafor::aggregate.escalc(data, cluster = data[[study.var]],
                                         rho = rho.within.study)
   mComb = meta::metagen(TE = data.comb$yi,
@@ -347,33 +387,38 @@ runMetaAnalysis = function(data,
                         data = data.comb,
                         sm = "g",
                         hakn = hakn,
-                        method.tau = method.tau,
+                        method.tau = method.tau.meta,
                         method.tau.ci = method.tau.ci,
                         prediction = TRUE,
                         fixed = ifelse(method.tau == "FE", TRUE, FALSE),
-                        random = ifelse(method.tau == "FE", FALSE, TRUE))
+                        random = ifelse(method.tau == "FE", FALSE, TRUE),
+                        ...)
 
   mCombRes = with(mComb,{
 
     data.frame(
       k = k,
-      g = ifelse(method.tau == "FE", TE.fixed, TE.random) %>% round(round.digits),
-      g.ci = paste0("[", ifelse(method.tau == "FE",
+      g = ifelse(fixed == TRUE & random == FALSE, TE.fixed, TE.random) %>% round(round.digits),
+      g.ci = paste0("[", ifelse(fixed == TRUE & random == FALSE,
                                 lower.fixed, lower.random) %>% round(round.digits),"; ",
-                    ifelse(method.tau == "FE",
+                    ifelse(fixed == TRUE & random == FALSE,
                            upper.fixed, upper.random) %>% round(round.digits), "]"),
-      p = ifelse(method.tau == "FE", pval.fixed, pval.random) %>% scales::pvalue(),
+      p = ifelse(fixed == TRUE & random == FALSE, pval.fixed, pval.random) %>% scales::pvalue(),
       i2 = round(I2*100, 2),
       i2.ci = paste0("[", round(lower.I2*100, 2), "; ", round(upper.I2*100, 2), "]"),
       prediction.ci = paste0("[", round(lower.predict, round.digits), "; ",
                              round(upper.predict, round.digits), "]"),
-      nnt = metapsyNNT(ifelse(method.tau == "FE", TE.fixed, TE.random), nnt.cer) %>%
+      nnt = metapsyNNT(ifelse(fixed == TRUE & random == FALSE, TE.fixed, TE.random), nnt.cer) %>%
         round(round.digits) %>% abs()
     )
   })
   rownames(mCombRes) = "Combined"
   mCombRes$excluded = paste("combined:", ifelse(length(multi.study) > 0,
                                                 paste(multi.study, collapse = ", "), "none"))
+
+
+  # Add rho to mComb model
+  mComb$rho = rho.within.study
 
   class(data) = "data.frame"
 
@@ -409,22 +454,27 @@ runMetaAnalysis = function(data,
 
     data.frame(
       k = k,
-      g = ifelse(method.tau == "FE", TE.fixed, TE.random) %>% round(round.digits),
-      g.ci = paste0("[", ifelse(method.tau == "FE",
+      g = ifelse(fixed == TRUE & random == FALSE, TE.fixed, TE.random) %>% round(round.digits),
+      g.ci = paste0("[", ifelse(fixed == TRUE & random == FALSE,
                                 lower.fixed, lower.random) %>% round(round.digits),"; ",
-                    ifelse(method.tau == "FE",
+                    ifelse(fixed == TRUE & random == FALSE,
                            upper.fixed, upper.random) %>% round(round.digits), "]"),
-      p = ifelse(method.tau == "FE", pval.fixed, pval.random) %>% scales::pvalue(),
+      p = ifelse(fixed == TRUE & random == FALSE, pval.fixed, pval.random) %>% scales::pvalue(),
       i2 = round(I2*100, 2),
       i2.ci = paste0("[", round(lower.I2*100, 2), "; ", round(upper.I2*100, 2), "]"),
       prediction.ci = paste0("[", round(lower.predict, round.digits), "; ",
                              round(upper.predict, round.digits), "]"),
-      nnt = metapsyNNT(ifelse(method.tau == "FE", TE.fixed, TE.random), nnt.cer) %>%
+      nnt = metapsyNNT(ifelse(fixed == TRUE & random == FALSE, TE.fixed, TE.random), nnt.cer) %>%
         round(round.digits) %>% abs()
     )
   })
   rownames(mOutliersRes) = "Outliers removed"
-  mOutliersRes$excluded = paste(mOutliers$data$comparison[mOutliers$exclude], collapse = ", ")
+
+  if (length(mOutliers$data$comparison[mOutliers$exclude]) != 0){
+    mOutliersRes$excluded = paste(mOutliers$data$comparison[mOutliers$exclude], collapse = ", ")
+  } else {
+    mOutliersRes$excluded = "no outliers detected"
+  }
 
   if ("outliers" %in% which.run){
     message("- [OK] Calculated effect size with outliers removed")
@@ -440,7 +490,7 @@ runMetaAnalysis = function(data,
     m.for.influence = mGeneral
   }
 
-  if (which.outliers[1] == "combined"){
+  if (which.influence[1] == "combined"){
     m.for.influence = mComb
   }
 
@@ -458,17 +508,17 @@ runMetaAnalysis = function(data,
 
     data.frame(
       k = k,
-      g = ifelse(method.tau == "FE", TE.fixed, TE.random) %>% round(round.digits),
-      g.ci = paste0("[", ifelse(method.tau == "FE",
+      g = ifelse(fixed == TRUE & random == FALSE, TE.fixed, TE.random) %>% round(round.digits),
+      g.ci = paste0("[", ifelse(fixed == TRUE & random == FALSE,
                                 lower.fixed, lower.random) %>% round(round.digits),"; ",
-                    ifelse(method.tau == "FE",
+                    ifelse(fixed == TRUE & random == FALSE,
                            upper.fixed, upper.random) %>% round(round.digits), "]"),
-      p = ifelse(method.tau == "FE", pval.fixed, pval.random) %>% scales::pvalue(),
+      p = ifelse(fixed == TRUE & random == FALSE, pval.fixed, pval.random) %>% scales::pvalue(),
       i2 = round(I2*100, 2),
       i2.ci = paste0("[", round(lower.I2*100, 2), "; ", round(upper.I2*100, 2), "]"),
       prediction.ci = paste0("[", round(lower.predict, round.digits), "; ",
                              round(upper.predict, round.digits), "]"),
-      nnt = metapsyNNT(ifelse(method.tau == "FE", TE.fixed, TE.random), nnt.cer) %>%
+      nnt = metapsyNNT(ifelse(fixed == TRUE & random == FALSE, TE.fixed, TE.random), nnt.cer) %>%
         round(round.digits) %>% abs()
     )
   })
@@ -493,7 +543,7 @@ runMetaAnalysis = function(data,
     data.for.rob = mGeneral$data
   }
 
-  if (which.outliers[1] == "combined"){
+  if (which.rob[1] == "combined"){
     m.for.rob = mComb
     data.for.rob = mComb$data
   }
@@ -511,6 +561,7 @@ runMetaAnalysis = function(data,
       message("- [!] No low risk of bias studies detected! Switching to 'general'.")
       robMask = rep(TRUE, nrow(mGeneral$data))
       mRob = meta::update.meta(mGeneral, exclude = !robMask)
+      which.run[!which.run == "rob"] -> which.run
       warn.end = TRUE
     } else {
       mRob = meta::update.meta(m.for.rob, exclude = !robMask)
@@ -524,22 +575,27 @@ runMetaAnalysis = function(data,
 
     data.frame(
       k = k,
-      g = ifelse(method.tau == "FE", TE.fixed, TE.random) %>% round(round.digits),
-      g.ci = paste0("[", ifelse(method.tau == "FE",
+      g = ifelse(fixed == TRUE & random == FALSE, TE.fixed, TE.random) %>% round(round.digits),
+      g.ci = paste0("[", ifelse(fixed == TRUE & random == FALSE,
                                 lower.fixed, lower.random) %>% round(round.digits),"; ",
-                    ifelse(method.tau == "FE",
+                    ifelse(fixed == TRUE & random == FALSE,
                            upper.fixed, upper.random) %>% round(round.digits), "]"),
-      p = ifelse(method.tau == "FE", pval.fixed, pval.random) %>% scales::pvalue(),
+      p = ifelse(fixed == TRUE & random == FALSE, pval.fixed, pval.random) %>% scales::pvalue(),
       i2 = round(I2*100, 2),
       i2.ci = paste0("[", round(lower.I2*100, 2), "; ", round(upper.I2*100, 2), "]"),
       prediction.ci = paste0("[", round(lower.predict, round.digits), "; ",
                              round(upper.predict, round.digits), "]"),
-      nnt = metapsyNNT(ifelse(method.tau == "FE", TE.fixed, TE.random), nnt.cer) %>%
+      nnt = metapsyNNT(ifelse(fixed == TRUE & random == FALSE, TE.fixed, TE.random), nnt.cer) %>%
         round(round.digits) %>% abs()
     )
   })
   rownames(mRobRes) = paste("Only", low.rob.filter)
-  mRobRes$excluded = paste(mRob$data$comparison[!robMask], collapse = ", ")
+
+  if (length(mRob$data$comparison[!robMask]) != 0){
+    mRobRes$excluded = paste(mRob$data$comparison[!robMask], collapse = ", ")
+  } else {
+    mRobRes$excluded = paste0("no studies removed; ", low.rob.filter, " applies to all studies")
+  }
 
   if ("rob" %in% which.run){
     message("- [OK] Calculated effect size using only low RoB information")
@@ -565,7 +621,8 @@ runMetaAnalysis = function(data,
                                 data = data,
                                 random = as.formula(formula),
                                 test = ifelse(hakn == TRUE, "t", "z"),
-                                method = "REML")
+                                method = "REML",
+                                ...)
 
   # Calculate total I2
   W = diag(1/(data[[se.var]]^2))
@@ -611,6 +668,13 @@ runMetaAnalysis = function(data,
 
   if ("threelevel" %in% which.run){
     message("- [OK] Calculated effect size using three-level MA model")
+  }
+
+  if (length(multi.study) == 0 & "threelevel" %in% which.run){
+    message("- [!] All included ES seem to be independent.",
+            " A three-level model is not adequate and tau/I2 estimates are not trustworthy!")
+    warn.end = TRUE
+    which.run[!which.run == "threelevel"] -> which.run
   }
 
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -670,6 +734,7 @@ runMetaAnalysis = function(data,
 #' @importFrom magrittr set_colnames
 #' @importFrom dplyr as_tibble
 #' @importFrom kableExtra kable_styling column_spec footnote
+#' @importFrom crayon green blue magenta
 #'
 #' @export
 #' @method print runMetaAnalysis
@@ -681,7 +746,7 @@ print.runMetaAnalysis = function(x, ...){
                 "influence" = 5, "rob" = 6, "combined" = 7, "threelevel" = 8)
 
   cat("Model results ")
-  cat("---------------------- \n")
+  cat("------------------------------------------------ \n")
   dat = x$summary[unlist(models[x$which.run]),1:8]
   print(dplyr::as_tibble(cbind(model = rownames(dat), dat)))
 
@@ -852,6 +917,199 @@ plot.runMetaAnalysis = function(x, which = NULL, ...){
   }
   }
 }
+
+
+
+
+#' Show details of 'runMetaAnalysis' class objects.
+#'
+#' S3 method showing analysis settings for objects of class \code{runMetaAnalysis}.
+#'
+#' @param object An object of class \code{runMetaAnalysis}.
+#' @param ... Additional arguments.
+#'
+#' @author Mathias Harrer \email{mathias.h.harrer@@gmail.com},
+#' Paula Kuper \email{paula.r.kuper@@gmail.com}, Pim Cuijpers \email{p.cuijpers@@vu.nl}
+#'
+#' @importFrom knitr kable
+#' @importFrom magrittr set_colnames
+#' @importFrom dplyr as_tibble
+#' @importFrom kableExtra kable_styling column_spec footnote
+#' @importFrom crayon green blue magenta
+#'
+#' @export
+#' @method summary runMetaAnalysis
+
+
+summary.runMetaAnalysis = function(object, ...){
+
+  x = object
+  cat("\n")
+  cat("Analysis settings ")
+  cat("---------------------------------------------------------- \n")
+  cat("\n")
+
+  if (x$model.overall$fixed == TRUE & x$model.overall$random == FALSE){
+
+    cat(crayon::green("\u2713"), crayon::bold(crayon::magenta("[Overall]")),
+        "Effects pooled using inverse variance weighting. \n")
+
+    cat(crayon::green("\u2713"), crayon::bold(crayon::magenta("[Overall]")),
+        "Fixed ('common') effect model assumed. \n")
+
+    if ("outliers" %in% x$which.run){
+      cat(crayon::green("\u2713"), crayon::bold(crayon::magenta("[Outliers removed]")),
+          "ES removed as outliers if the CI did not overlap with pooled effect CI. \n")}
+
+    if ("influence" %in% x$which.run){
+      cat(crayon::green("\u2713"), crayon::bold(crayon::magenta("[Influence Analysis]")),
+          "Influential cases determined using diagnostics of Viechtbauer and Cheung (2010). \n")}
+
+    if ("combined" %in% x$which.run){
+      cat(crayon::green("\u2713"), crayon::bold(crayon::magenta("[Combined]")),
+          "'Combined' analysis: ES combined on study level assuming a correlation of rho =", paste0(x$model.combined$rho, ". \n"))}
+
+    if ("threelevel" %in% x$which.run){
+      cat(crayon::green("\u2713"), crayon::bold(crayon::magenta("[Three-Level Model]")),
+          "Three-level model estimated via restricted maximum likelihood, using the 'rma.mv'
+  function in {metafor}. \n")
+      if (x$model.threelevel$test == "t"){
+        cat(crayon::green("\u2713"), crayon::bold(crayon::magenta("[Three-Level Model]")),
+            "Test statistics and CIs of the three-level model calculated based on
+  a t-distribution. \n")
+      } else {
+        cat(crayon::green("\u2713"), crayon::bold(crayon::magenta("[Three-Level Model]")),
+            "Test statistics and CIs of the three-level model calculated based on
+  a Wald-type normal approximation. \n")
+      }}
+
+    cat("\n")
+    cat("\n")
+    cat("Cite the following packages/methods: ---------------------------------------\n")
+    cat("\n")
+    cat(" -", crayon::bold(crayon::blue("{meta}:")), "Balduzzi S, R\u00FCcker G, Schwarzer G (2019),
+          How to perform a meta-analysis with R: a practical tutorial,
+          Evidence-Based Mental Health; 22: 153-160. \n")
+    cat(" -", crayon::bold(crayon::blue("{metafor}:")), "Viechtbauer, W. (2010). Conducting meta-analyses in R
+          with the metafor package. Journal of Statistical Software, 36(3), 1-48.
+          https://doi.org/10.18637/jss.v036.i03. \n")
+    cat(" -", crayon::bold(crayon::blue("{dmetar}:")), "Harrer, M., Cuijpers, P., Furukawa, T.A., & Ebert, D.D. (2021).
+          Doing Meta-Analysis with R: A Hands-On Guide. Boca Raton, FL and London:
+          Chapman & Hall/CRC Press. ISBN 978-0-367-61007-4. \n")
+    cat(" -", crayon::bold(crayon::blue("R:")), "R Core Team (2021). R: A language and environment for statistical computing.
+          R Foundation for Statistical Computing, Vienna, Austria.
+          URL https://www.R-project.org/.\n")
+    if ("influence" %in% x$which.run){
+      cat(" -", crayon::bold(crayon::blue("Influential cases:")), "Viechtbauer, W., & Cheung, M. W.-L. (2010). Outlier and influence
+          diagnostics for meta-analysis. Research Synthesis Methods, 1(2), 112-125.
+          https://doi.org/10.1002/jrsm.11 \n")}
+
+  } else {
+
+    tau.methods = data.frame(method = c("REML", "DL", "PM", "ML", "HS", "SJ", "HE", "EB"),
+                             name = c("restricted maximum-likelihood", "DerSimonian-Laird",
+                                      "Paule-Mandel", "maximum likelihood", "Hunter and Schmidt",
+                                      "Sidik-Jonkman", "Hedges", "empirical Bayes"),
+                             citation =
+                               c("Viechtbauer W. (2005): Bias and efficiency of meta-analytic variance
+          estimators in the random-effects model.Journal of Educational and
+          Behavioral Statistics, 30, 261-93",
+          "DerSimonian R. & Laird N. (1986): Meta-analysis in clinical trials.
+          Controlled Clinical Trials, 7, 177-88",
+          "Paule RC & Mandel J (1982): Consensus values and weighting factors.
+          Journal of Research of the National Bureau of Standards, 87, 377-85",
+          "Viechtbauer W. (2005): Bias and efficiency of meta-analytic
+          variance estimators in the random-effects model. Journal of Educational
+          and Behavioral Statistics, 30, 261-93",
+          "Hunter JE & Schmidt FL (2015): Methods of Meta-Analysis: Correcting
+          Error and Bias in Research Findings (3rd edition). Thousand Oaks, CA: Sage",
+          "Sidik K & Jonkman JN (2005): Simple heterogeneity variance estimation
+          for meta-analysis. Journal of the Royal Statistical Society:
+          Series C (Applied Statistics), 54, 367-84",
+          "Hedges LV & Olkin I (1985): Statistical methods for meta-analysis.
+          San Diego, CA: Academic Press",
+          "Morris CN (1983): Parametric empirical Bayes inference: Theory
+          and applications (with discussion). Journal of the American
+          Statistical Association 78, 47-65"))
+
+
+    cat(crayon::green("\u2713"), crayon::bold(crayon::magenta("[Overall]")),
+        "Random effects model assumed. \n")
+
+    cat(crayon::green("\u2713"), crayon::bold(crayon::magenta("[Overall]")),
+        "Heterogeneity variance (tau2) calculated using",
+        tau.methods[tau.methods$method == x$model.overall$method.tau, "name"],
+        "estimator. \n")
+
+    if (x$model.overall$hakn == TRUE){
+      cat(crayon::green("\u2713"), crayon::bold(crayon::magenta("[Overall]")),
+          "Test statistic and CI of the pooled effect calculated using the Knapp-Hartung adjustment. \n")
+    } else {
+      cat(crayon::green("\u2713"), crayon::bold(crayon::magenta("[Overall]")),
+          "Test statistic and CI of the pooled effect calculated based on
+  a Wald-type normal approximation. \n")
+    }
+
+    if ("outliers" %in% x$which.run){
+      cat(crayon::green("\u2713"), crayon::bold(crayon::magenta("[Outliers removed]")),
+          "ES removed as outliers if the CI did not overlap with pooled effect CI. \n")}
+
+    if ("influence" %in% x$which.run){
+      cat(crayon::green("\u2713"), crayon::bold(crayon::magenta("[Influence Analysis]")),
+          "Influential cases determined using diagnostics of Viechtbauer and Cheung (2010). \n")}
+
+    if ("combined" %in% x$which.run){
+      cat(crayon::green("\u2713"), crayon::bold(crayon::magenta("[Combined]")),
+          "'Combined' analysis: ES combined on study level assuming a correlation of rho =", paste0(x$model.combined$rho, ". \n"))}
+
+    if ("threelevel" %in% x$which.run){
+      cat(crayon::green("\u2713"), crayon::bold(crayon::magenta("[Three-Level Model]")),
+          "Three-level model estimated via restricted maximum likelihood, using the 'rma.mv'
+  function in {metafor}. \n")
+      if (x$model.threelevel$test == "t"){
+        cat(crayon::green("\u2713"), crayon::bold(crayon::magenta("[Three-Level Model]")),
+            "Test statistics and CIs of the three-level model calculated based on
+  a t-distribution. \n")
+      } else {
+        cat(crayon::green("\u2713"), crayon::bold(crayon::magenta("[Three-Level Model]")),
+            "Test statistics and CIs of the three-level model calculated based on
+  a Wald-type normal approximation. \n")
+      }}
+
+    cat("\n")
+    cat("\n")
+    cat("Cite the following packages/methods: ---------------------------------------\n")
+    cat("\n")
+    cat(" -", crayon::bold(crayon::blue("{meta}:")), "Balduzzi S, R\u00FCcker G, Schwarzer G (2019),
+          How to perform a meta-analysis with R: a practical tutorial,
+          Evidence-Based Mental Health; 22: 153-160. \n")
+    cat(" -", crayon::bold(crayon::blue("{metafor}:")), "Viechtbauer, W. (2010). Conducting meta-analyses in R
+          with the metafor package. Journal of Statistical Software, 36(3), 1-48.
+          https://doi.org/10.18637/jss.v036.i03. \n")
+    cat(" -", crayon::bold(crayon::blue("{dmetar}:")), "Harrer, M., Cuijpers, P., Furukawa, T.A., & Ebert, D.D. (2021).
+          Doing Meta-Analysis with R: A Hands-On Guide. Boca Raton, FL and London:
+          Chapman & Hall/CRC Press. ISBN 978-0-367-61007-4. \n")
+    cat(" -", crayon::bold(crayon::blue("R:")), "R Core Team (2021). R: A language and environment for statistical computing.
+          R Foundation for Statistical Computing, Vienna, Austria.
+          URL https://www.R-project.org/.\n")
+    if ("influence" %in% x$which.run){
+      cat(" -", crayon::bold(crayon::blue("Influential cases:")), "Viechtbauer, W., & Cheung, M. W.-L. (2010). Outlier and influence
+          diagnostics for meta-analysis. Research Synthesis Methods, 1(2), 112-125.
+          https://doi.org/10.1002/jrsm.11 \n")}
+    cat(" -", crayon::bold(crayon::blue("tau2 estimator:")),
+        tau.methods[tau.methods$method == x$model.overall$method.tau, "citation"], "\n")
+    if (x$model.overall$hakn == TRUE){
+      cat(" -", crayon::bold(crayon::blue("Knapp-Hartung:")), "Hartung J, Knapp G (2001a): On tests of the overall treatment
+          effect in meta-analysis with normally distributed responses.
+          Statistics in Medicine, 20, 1771-82 \n")}
+  }
+
+}
+
+
+
+
+
 
 
 

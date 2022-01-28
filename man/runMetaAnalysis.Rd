@@ -24,7 +24,8 @@ runMetaAnalysis(data,
                 which.rob = c("general", "combined"),
                 nnt.cer = 0.2,
                 rho.within.study = 0.5,
-                html = TRUE)
+                html = TRUE,
+                ...)
 }
 \arguments{
 \item{data}{\code{data.frame}. Effect size data in the wide format, as created by \code{\link{calculateEffectSizes}}.}
@@ -34,7 +35,7 @@ runMetaAnalysis(data,
 \item{method.tau}{\code{character}. A character string indicating which method is used to estimate the
 between-study variance (tau-squared) and its square root (tau). Either \code{"REML"} (default), \code{"DL"},
 \code{"PM"}, \code{"ML"}, \code{"HS"}, \code{"SJ"}, \code{"HE"}, or \code{"EB"}, can be abbreviated (see
-\code{\link[meta]{metagen}}). Use \code{"FE"} to use a fixed-effect model.}
+\code{\link[meta]{metagen}}). Use \code{"FE"} to use a fixed-effect/"common effect" model.}
 
 \item{hakn}{\code{logical}. Should the Knapp-Hartung adjustment for effect size significance tests be used? Default is \code{TRUE}.}
 
@@ -63,14 +64,14 @@ confidence interval of tau/tau-squared. Either \code{"Q-Profile"} (default and r
 
 \item{round.digits}{\code{numeric}. Number of digits to round the (presented) results by. Default is \code{2}.}
 
-\item{which.outliers}{\code{character}. Which model should be used to conduct outlier analyses? Must be one of the
-options available for \code{which.run}, with \code{"general"} being the default.}
+\item{which.outliers}{\code{character}. Which model should be used to conduct outlier analyses? Must be
+\code{"general"} or \code{"combined"}, with \code{"general"} being the default.}
 
-\item{which.influence}{\code{character}. Which model should be used to conduct influence analyses? Must be one of the
-options available for \code{which.run}, with \code{"general"} being the default.}
+\item{which.influence}{\code{character}. Which model should be used to conduct influence analyses? Must be
+\code{"general"} or \code{"combined"}, with \code{"general"} being the default.}
 
-\item{which.rob}{\code{character}. Which model should be used to conduct the "low risk of bias only" analyses? Must be one of the
-options available for \code{which.run}, with \code{"general"} being the default.}
+\item{which.rob}{\code{character}. Which model should be used to conduct the "low risk of bias only" analyses? Must be
+\code{"general"} or \code{"combined"}, with \code{"general"} being the default.}
 
 \item{nnt.cer}{\code{numeric}. Value between 0 and 1, indicating the assumed control group event rate to be used
 for calculating NNTs via the Furukawa-Leucht method.}
@@ -79,6 +80,8 @@ for calculating NNTs via the Furukawa-Leucht method.}
 within studies. This is relevant to combine effect sizes for the \code{"combined"} analysis type. Default is \code{0.5}.}
 
 \item{html}{\code{logical}. Should an HTML table be created for the results? Default is \code{TRUE}.}
+
+\item{...}{Additional arguments.}
 }
 \value{
 Returns an object of class \code{"runMetaAnalysis"}. This object includes, among other things,
