@@ -7,7 +7,8 @@
 runMetaAnalysis(data,
                 which.run = c("overall", "combined",
                               "lowest.highest", "outliers",
-                              "influence", "rob", "threelevel"),
+                              "influence", "rob", "threelevel",
+                              "threelevel.che"),
                 method.tau = "REML",
                 hakn = TRUE,
                 study.var = "study",
@@ -24,6 +25,7 @@ runMetaAnalysis(data,
                 which.rob = c("general", "combined"),
                 nnt.cer = 0.2,
                 rho.within.study = 0.5,
+                use.rve = TRUE,
                 html = TRUE,
                 ...)
 }
@@ -60,7 +62,7 @@ Please note that the name of the variable must be included as a column in \code{
 
 \item{method.tau.ci}{\code{character}. A character string indicating which method is used to estimate the
 confidence interval of tau/tau-squared. Either \code{"Q-Profile"} (default and recommended),
-\code{"BJ"}, \emph{"J"}, or \emph{"PL"} can be abbreviated. See \code{\link[meta]{metagen}} for details.}
+\code{"BJ"}, \code{"J"}, or \code{"PL"} can be abbreviated. See \code{\link[meta]{metagen}} for details.}
 
 \item{round.digits}{\code{numeric}. Number of digits to round the (presented) results by. Default is \code{2}.}
 
@@ -77,7 +79,11 @@ confidence interval of tau/tau-squared. Either \code{"Q-Profile"} (default and r
 for calculating NNTs via the Furukawa-Leucht method.}
 
 \item{rho.within.study}{\code{numeric}. Value between 0 and 1, indicating the assumed correlation of effect sizes
-within studies. This is relevant to combine effect sizes for the \code{"combined"} analysis type. Default is \code{0.5}.}
+within studies. This is relevant to combine effect sizes for the \code{"combined"} analysis type, and used to estimate
+the variance-covariance matrices needed for the conditional and hierarchical effects three-level model. Default is \code{0.5}.}
+
+\item{use.rve}{\code{logical}. Should robust variance estimation be used to calculate confidence intervals and tests of three-level models?
+\code{TRUE} by default.}
 
 \item{html}{\code{logical}. Should an HTML table be created for the results? Default is \code{TRUE}.}
 
@@ -117,6 +123,11 @@ By default, the following models are calculated:
   \item \code{"rob"}. Runs a meta-analysis with only low-RoB studies included.
   \item \code{"threelevel"}. Runs a multilevel (three-level) meta-analysis model, with effect sizes nested
   in studies.
+  \item \code{"threelevel.che"}. Runs a multilevel (three-level) meta-analysis model, with effect sizes nested
+  in studies. Variance-covariance matrices of each study with two or more effect sizes are estimated using
+  \code{rho.within.study} as the assumed overall within-study correlation. This imputation allows to run a "correlated and
+  hierarchical effects" (CHE) model, which is typically a good approximation for data sets with unknown and/or
+  complex dependence structures.
 }
 For more details see the help vignette: \code{vignette("metapsyTools")}.
 }

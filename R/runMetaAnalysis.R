@@ -6,7 +6,8 @@
 #' @usage runMetaAnalysis(data,
 #'                 which.run = c("overall", "combined",
 #'                               "lowest.highest", "outliers",
-#'                               "influence", "rob", "threelevel"),
+#'                               "influence", "rob", "threelevel",
+#'                               "threelevel.che"),
 #'                 method.tau = "REML",
 #'                 hakn = TRUE,
 #'                 study.var = "study",
@@ -23,6 +24,7 @@
 #'                 which.rob = c("general", "combined"),
 #'                 nnt.cer = 0.2,
 #'                 rho.within.study = 0.5,
+#'                 use.rve = TRUE,
 #'                 html = TRUE,
 #'                 ...)
 #'
@@ -47,7 +49,7 @@
 #' Please note that the name of the variable must be included as a column in \code{data}.
 #' @param method.tau.ci \code{character}. A character string indicating which method is used to estimate the
 #' confidence interval of tau/tau-squared. Either \code{"Q-Profile"} (default and recommended),
-#' \code{"BJ"}, \emph{"J"}, or \emph{"PL"} can be abbreviated. See \code{\link[meta]{metagen}} for details.
+#' \code{"BJ"}, \code{"J"}, or \code{"PL"} can be abbreviated. See \code{\link[meta]{metagen}} for details.
 #' @param round.digits \code{numeric}. Number of digits to round the (presented) results by. Default is \code{2}.
 #' @param which.outliers \code{character}. Which model should be used to conduct outlier analyses? Must be
 #' \code{"general"} or \code{"combined"}, with \code{"general"} being the default.
@@ -58,7 +60,10 @@
 #' @param nnt.cer \code{numeric}. Value between 0 and 1, indicating the assumed control group event rate to be used
 #' for calculating NNTs via the Furukawa-Leucht method.
 #' @param rho.within.study \code{numeric}. Value between 0 and 1, indicating the assumed correlation of effect sizes
-#' within studies. This is relevant to combine effect sizes for the \code{"combined"} analysis type. Default is \code{0.5}.
+#' within studies. This is relevant to combine effect sizes for the \code{"combined"} analysis type, and used to estimate
+#' the variance-covariance matrices needed for the conditional and hierarchical effects three-level model. Default is \code{0.5}.
+#' @param use.rve \code{logical}. Should robust variance estimation be used to calculate confidence intervals and tests of three-level models?
+#' \code{TRUE} by default.
 #' @param html \code{logical}. Should an HTML table be created for the results? Default is \code{TRUE}.
 #' @param ... Additional arguments.
 #'
@@ -129,6 +134,11 @@
 #'   \item \code{"rob"}. Runs a meta-analysis with only low-RoB studies included.
 #'   \item \code{"threelevel"}. Runs a multilevel (three-level) meta-analysis model, with effect sizes nested
 #'   in studies.
+#'   \item \code{"threelevel.che"}. Runs a multilevel (three-level) meta-analysis model, with effect sizes nested
+#'   in studies. Variance-covariance matrices of each study with two or more effect sizes are estimated using
+#'   \code{rho.within.study} as the assumed overall within-study correlation. This imputation allows to run a "correlated and
+#'   hierarchical effects" (CHE) model, which is typically a good approximation for data sets with unknown and/or
+#'   complex dependence structures.
 #' }
 #' For more details see the help vignette: \code{vignette("metapsyTools")}.
 #'
@@ -137,6 +147,7 @@
 #' @importFrom purrr map
 #' @importFrom meta update.meta metagen
 #' @importFrom metafor escalc aggregate.escalc rma.mv
+#' @importFrom clubSandwich coef_test conf_int
 #' @importFrom stats dffits model.matrix rnorm rstudent
 #' @importFrom utils combn
 #' @export runMetaAnalysis
@@ -144,7 +155,8 @@
 runMetaAnalysis = function(data,
                            which.run = c("overall", "combined",
                                          "lowest.highest", "outliers",
-                                         "influence", "rob", "threelevel"),
+                                         "influence", "rob", "threelevel",
+                                         "threelevel.che"),
                            method.tau = "REML",
                            hakn = TRUE,
                            study.var = "study",
@@ -161,6 +173,7 @@ runMetaAnalysis = function(data,
                            which.rob = c("general", "combined"),
                            nnt.cer = 0.2,
                            rho.within.study = 0.5,
+                           use.rve = TRUE,
                            html = TRUE,
                            ...){
 
@@ -607,7 +620,7 @@ runMetaAnalysis = function(data,
   #                                                                           #
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-  if (method.tau != "REML"){
+  if (method.tau != "REML" & "threelevel" %in% which.run){
     message("- [OK] 3L-model tau(s) estimated using 'REML', since '",
             method.tau, "' is not applicable.")
   }
@@ -650,32 +663,222 @@ runMetaAnalysis = function(data,
                                                 "Within Studies",
                                                 "Total")
 
-  mThreeLevelRes = with(mThreeLevel, {
-    data.frame(k = k.all,
-               g = as.numeric(b[,1]) %>%  round(round.digits),
-               g.ci = paste0("[", ci.lb %>% round(round.digits), "; ",
-                             ci.ub %>% round(round.digits), "]"),
-               p = pval %>% scales::pvalue(),
-               i2 = round(I2, 1),
-               i2.ci = "-",
-               prediction.ci = paste0("[", round(predict(mThreeLevel)$pi.lb, round.digits), "; ",
-                                      round(predict(mThreeLevel)$pi.ub, round.digits), "]"),
-               nnt = metapsyNNT(as.numeric(b[,1]), nnt.cer) %>%
-                 round(round.digits) %>% abs())
-  })
-  rownames(mThreeLevelRes) = "Three-Level Model"
-  mThreeLevelRes$excluded = paste("Number of clusters/studies:", mThreeLevel$s.nlevels[1])
+  if (use.rve[1] == FALSE){
 
-  if ("threelevel" %in% which.run){
-    message("- [OK] Calculated effect size using three-level MA model")
+    mThreeLevelRes = with(mThreeLevel, {
+      data.frame(k = k.all,
+                 g = as.numeric(b[,1]) %>%  round(round.digits),
+                 g.ci = paste0("[", ci.lb %>% round(round.digits), "; ",
+                               ci.ub %>% round(round.digits), "]"),
+                 p = pval %>% scales::pvalue(),
+                 i2 = round(I2, 1),
+                 i2.ci = "-",
+                 prediction.ci = paste0("[", round(predict(mThreeLevel)$pi.lb, round.digits), "; ",
+                                        round(predict(mThreeLevel)$pi.ub, round.digits), "]"),
+                 nnt = metapsyNNT(as.numeric(b[,1]), nnt.cer) %>%
+                   round(round.digits) %>% abs())
+    })
+    rownames(mThreeLevelRes) = "Three-Level Model"
+    mThreeLevelRes$excluded = paste("Number of clusters/studies:", mThreeLevel$s.nlevels[1])
+
+    if ("threelevel" %in% which.run){
+      message("- [OK] Calculated effect size using three-level MA model")
+    }
+
+    if (length(multi.study) == 0 & "threelevel" %in% which.run){
+      message("- [!] All included ES seem to be independent.",
+              " A three-level model is not adequate and tau/I2 estimates are not trustworthy!")
+      warn.end = TRUE
+      which.run[!which.run == "threelevel"] -> which.run
+    }
+
+  } else {
+
+    # Get results: RVE used
+    crit = qt(0.025, mThreeLevel$ddf[[1]], lower.tail = FALSE)
+    tau2 = sum(mThreeLevel$sigma2)
+    SE = clubSandwich::conf_int(mThreeLevel, vcov = "CR2")[["SE"]]
+    pi.lb.rve = clubSandwich::conf_int(mThreeLevel, "CR2")[["beta"]] -
+      crit * sqrt(tau2 + (SE^2))
+    pi.ub.rve = clubSandwich::conf_int(mThreeLevel, "CR2")[["beta"]] +
+      crit * sqrt(tau2 + (SE^2))
+
+
+    mThreeLevelRes.RVE = with(mThreeLevel, {
+      data.frame(k = k.all,
+                 g = as.numeric(
+                   clubSandwich::conf_int(mThreeLevel, "CR2")[["beta"]]) %>%
+                   round(round.digits),
+                 g.ci = paste0("[",
+                               clubSandwich::conf_int(mThreeLevel, "CR2")[["CI_L"]] %>%
+                                 round(round.digits), "; ",
+                               clubSandwich::conf_int(mThreeLevel, "CR2")[["CI_U"]] %>%
+                                 round(round.digits), "]"),
+                 p = clubSandwich::coef_test(mThreeLevel, "CR2")[["p_Satt"]] %>%
+                   scales::pvalue(),
+                 i2 = round(I2, 1),
+                 i2.ci = "-",
+                 prediction.ci = paste0("[", round(pi.lb.rve, round.digits), "; ",
+                                        round(pi.ub.rve, round.digits), "]"),
+                 nnt = metapsyNNT(
+                   as.numeric(
+                     clubSandwich::conf_int(mThreeLevel, "CR2")[["beta"]]), nnt.cer) %>%
+                   round(round.digits) %>% abs())
+    })
+    rownames(mThreeLevelRes.RVE) = "Three-Level Model"
+    mThreeLevelRes.RVE$excluded = paste0("Number of clusters/studies: ", mThreeLevel$s.nlevels[1],
+                                         "; robust variance estimation (RVE) used.")
+    mThreeLevelRes = mThreeLevelRes.RVE
+
+    if ("threelevel" %in% which.run){
+      message("- [OK] Calculated effect size using three-level MA model")
+      message("- [OK] Robust variance estimation (RVE) used for three-level MA model")
+    }
+
+    if (length(multi.study) == 0 & "threelevel" %in% which.run){
+      message("- [!] All included ES seem to be independent.",
+              " A three-level model is not adequate and tau/I2 estimates are not trustworthy!")
+      warn.end = TRUE
+      which.run[!which.run == "threelevel"] -> which.run
+    }
+
   }
 
-  if (length(multi.study) == 0 & "threelevel" %in% which.run){
-    message("- [!] All included ES seem to be independent.",
-            " A three-level model is not adequate and tau/I2 estimates are not trustworthy!")
-    warn.end = TRUE
-    which.run[!which.run == "threelevel"] -> which.run
+
+  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+  #                                                                           #
+  #  9. Three-Level CHE Model                                                 #
+  #                                                                           #
+  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+  if (method.tau != "REML" & "threelevel.che" %in% which.run){
+    message("- [OK] Three-level CHE model tau(s) estimated using 'REML', since '",
+            method.tau, "' is not applicable.")
   }
+
+  data$es.id = 1:nrow(data)
+  formula.fixed = as.formula(paste0(colnames(data[es.var])," ~ 1"))
+  formula.rnd = as.formula(paste0("~ 1 | ", colnames(data[study.var]), "/es.id"))
+
+  Vmat <- clubSandwich::impute_covariance_matrix(data[[se.var]]*data[[se.var]],
+                                                 cluster = data[[study.var]],
+                                                 r = rho.within.study,
+                                                 smooth_vi = TRUE)
+
+  mCHE = metafor::rma.mv(formula.fixed,
+                         V = Vmat,
+                         slab = data[[study.var]],
+                         data = data,
+                         random = formula.rnd,
+                         test = ifelse(hakn == TRUE, "t", "z"),
+                         method = "REML", sparse = TRUE,
+                         ...)
+
+  # Calculate total I2
+  W = diag(1/(data[[se.var]]^2))
+  X = model.matrix(mCHE)
+  P = W - W %*% X %*% solve(t(X) %*% W %*% X) %*% t(X) %*% W
+  mCHE$I2 = 100 * sum(mCHE$sigma2) /
+    (sum(mCHE$sigma2) + (mCHE$k-mCHE$p)/sum(diag(P)))
+
+  # Calculate I2 per level
+  with(mCHE, {
+    I2.between.studies = (100 * sigma2 / (sum(sigma2) + (k-p)/sum(diag(P))))[1]
+  }) -> mCHE$I2.between.studies
+
+  with(mCHE, {
+    I2.between.studies = (100 * sigma2 / (sum(sigma2) + (k-p)/sum(diag(P))))[2]
+  }) -> mCHE$I2.within.studies
+
+  # Get tau and I2
+  data.frame(tau2 = c(mCHE$sigma2, sum(mCHE$sigma2)),
+             i2 = c(mCHE$I2.between.studies, mCHE$I2.within.studies,
+                    mCHE$I2)) -> mCHE$variance.components
+  mCHE$variance.components$tau2 = round(mCHE$variance.components$tau2, 4)
+  mCHE$variance.components$i2 = round(mCHE$variance.components$i2, 1)
+  rownames(mCHE$variance.components) = c("Between Studies",
+                                         "Within Studies",
+                                         "Total")
+
+  # Get results: no RVE
+  if (use.rve[1] == FALSE){
+    mCHERes = with(mCHE, {
+      data.frame(k = k.all,
+                 g = as.numeric(b[,1]) %>%  round(round.digits),
+                 g.ci = paste0("[", ci.lb %>% round(round.digits), "; ",
+                               ci.ub %>% round(round.digits), "]"),
+                 p = pval %>% scales::pvalue(),
+                 i2 = round(I2, 1),
+                 i2.ci = "-",
+                 prediction.ci = paste0("[", round(predict(mCHE)$pi.lb, round.digits), "; ",
+                                        round(predict(mCHE)$pi.ub, round.digits), "]"),
+                 nnt = metapsyNNT(as.numeric(b[,1]), nnt.cer) %>%
+                   round(round.digits) %>% abs())
+    })
+    rownames(mCHERes) = "Three-Level Model (CHE)"
+    mCHERes$excluded = paste("Number of clusters/studies:", mCHE$s.nlevels[1])
+
+    if ("threelevel.che" %in% which.run){
+      message("- [OK] Calculated effect size using three-level CHE model")
+    }
+
+    if (length(multi.study) == 0 & "threelevel.che" %in% which.run){
+      message("- [!] All included ES seem to be independent.",
+              " A three-level CHE model is not adequate and tau/I2 estimates are not trustworthy!")
+      warn.end = TRUE
+      which.run[!which.run == "threelevel.che"] -> which.run
+    }
+  } else {
+
+    # Get results: RVE used
+    crit = qt(0.025, mCHE$ddf[[1]], lower.tail = FALSE)
+    tau2 = sum(mCHE$sigma2)
+    SE = clubSandwich::conf_int(mCHE, vcov = "CR2")[["SE"]]
+    pi.lb.rve = clubSandwich::conf_int(mCHE, "CR2")[["beta"]] -
+      crit * sqrt(tau2 + (SE^2))
+    pi.ub.rve = clubSandwich::conf_int(mCHE, "CR2")[["beta"]] +
+      crit * sqrt(tau2 + (SE^2))
+
+
+    mCHERes.RVE = with(mCHE, {
+      data.frame(k = k.all,
+                 g = as.numeric(
+                   clubSandwich::conf_int(mCHE, "CR2")[["beta"]]) %>%
+                   round(round.digits),
+                 g.ci = paste0("[",
+                               clubSandwich::conf_int(mCHE, "CR2")[["CI_L"]] %>%
+                                 round(round.digits), "; ",
+                               clubSandwich::conf_int(mCHE, "CR2")[["CI_U"]] %>%
+                                 round(round.digits), "]"),
+                 p = clubSandwich::coef_test(mCHE, "CR2")[["p_Satt"]] %>%
+                   scales::pvalue(),
+                 i2 = round(I2, 1),
+                 i2.ci = "-",
+                 prediction.ci = paste0("[", round(pi.lb.rve, round.digits), "; ",
+                                        round(pi.ub.rve, round.digits), "]"),
+                 nnt = metapsyNNT(
+                   as.numeric(
+                     clubSandwich::conf_int(mCHE, "CR2")[["beta"]]), nnt.cer) %>%
+                   round(round.digits) %>% abs())
+    })
+    rownames(mCHERes.RVE) = "Three-Level Model (CHE)"
+    mCHERes.RVE$excluded = paste0("Number of clusters/studies: ", mCHE$s.nlevels[1],
+                                  "; robust variance estimation (RVE) used.")
+    mCHERes = mCHERes.RVE
+
+    if ("threelevel.che" %in% which.run){
+      message("- [OK] Calculated effect size using three-level CHE model (rho=", rho.within.study, ")")
+      message("- [OK] Robust variance estimation (RVE) used for three-level CHE model")
+    }
+
+    if (length(multi.study) == 0 & "threelevel.che" %in% which.run){
+      message("- [!] All included ES seem to be independent.",
+              " A three-level CHE model is not adequate and tau/I2 estimates are not trustworthy!")
+      warn.end = TRUE
+      which.run[!which.run == "threelevel.che"] -> which.run
+    }
+  }
+
 
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
   #                                                                           #
@@ -686,7 +889,7 @@ runMetaAnalysis = function(data,
 
   # Combine everything
   rbind(mGeneralRes, mLowestRes, mHighestRes, mOutliersRes,
-        mInfluenceRes, mRobRes, mCombRes, mThreeLevelRes) -> summary
+        mInfluenceRes, mRobRes, mCombRes, mThreeLevelRes, mCHERes) -> summary
 
   # Return
   list(summary = summary,
@@ -699,11 +902,14 @@ runMetaAnalysis = function(data,
        model.rob = mRob,
        model.threelevel = mThreeLevel,
        model.threelevel.var.comp = mThreeLevel$variance.components,
+       model.threelevel.che = mCHE,
+       model.threelevel.che.var.comp = mCHE$variance.components,
        influence.analysis = influenceRes,
        which.run = which.run,
        data = data.original,
        html = html,
-       nnt.cer = nnt.cer) -> returnlist
+       nnt.cer = nnt.cer,
+       use.rve = use.rve) -> returnlist
 
   class(returnlist) = c("runMetaAnalysis", "list")
 
@@ -743,7 +949,8 @@ runMetaAnalysis = function(data,
 print.runMetaAnalysis = function(x, ...){
 
   models = list("overall" = 1, "lowest.highest" = c(2,3), "outliers" = 4,
-                "influence" = 5, "rob" = 6, "combined" = 7, "threelevel" = 8)
+                "influence" = 5, "rob" = 6, "combined" = 7, "threelevel" = 8,
+                "threelevel.che" = 9)
 
   cat("Model results ")
   cat("------------------------------------------------ \n")
@@ -757,8 +964,16 @@ print.runMetaAnalysis = function(x, ...){
     print(x$model.threelevel.var.comp)
   }
 
+  if ("threelevel.che" %in% x$which.run){
+    cat("\n")
+    cat("Variance components (three-level CHE model) ")
+    cat("------------------ \n")
+    print(x$model.threelevel.che.var.comp)
+  }
+
   if (x$html == TRUE){
 
+    x$summary = x$summary[unlist(models[x$which.run]),]
     # Add footnote labels
     fn.rows = x$summary$excluded != "none"
     rownames(x$summary)[fn.rows] = paste0(rownames(x$summary[fn.rows,]), "<sup>",
@@ -792,7 +1007,7 @@ print.runMetaAnalysis = function(x, ...){
 #' @author Mathias Harrer \email{mathias.h.harrer@@gmail.com},
 #' Paula Kuper \email{paula.r.kuper@@gmail.com}, Pim Cuijpers \email{p.cuijpers@@vu.nl}
 #'
-#' @importFrom meta forest.meta
+#' @importFrom meta metagen forest.meta
 #' @importFrom metafor forest.rma
 #' @importFrom stringr str_replace_all
 #' @importFrom purrr map
@@ -807,14 +1022,16 @@ plot.runMetaAnalysis = function(x, which = NULL, ...){
                 "lowest.highest" = c("model.lowest", "model.highest"),
                 "outliers" = "model.outliers", "influence" = "model.influence",
                 "rob" = "model.rob", "combined" = "model.combined",
-                "threelevel" = "model.threelevel")
+                "threelevel" = "model.threelevel",
+                "che" = "model.threelevel.che")
 
   leftCols = c("studlab", "comparison.only", "instrument", "TE", "seTE")
   leftLabs = c("Study", "Comparison", "Instrument", "g", "S.E.")
 
   # print forest plot by default
   if (is.null(which)){
-    if (models[[x$which.run[1]]][1] != "model.threelevel"){
+    if (models[[x$which.run[1]]][1] != "model.threelevel" &&
+        models[[x$which.run[1]]][1] != "model.threelevel.che"){
       message("- [OK] Generating forest plot ('", x$which.run[1], "' model)")
       meta::forest.meta(x[[models[[x$which.run[1]]][1]]], smlab = " ",
                         leftcols = leftCols, leftlabs = leftLabs,
@@ -829,6 +1046,10 @@ plot.runMetaAnalysis = function(x, which = NULL, ...){
     if (models[[x$which.run[1]]][1] == "model.threelevel"){
       metafor::forest.rma(x$model.threelevel, ...)
     }
+    if (models[[x$which.run[1]]][1] == "model.threelevel.che"){
+      metafor::forest.rma(x$model.threelevel.che, ...)
+    }
+
   } else {
 
     if (which[1] == "overall"){
@@ -882,6 +1103,16 @@ plot.runMetaAnalysis = function(x, which = NULL, ...){
       metafor::forest.rma(x$model.threelevel, ...)
     }
 
+    if (which[1] == "che"){
+      message("- [OK] Generating forest plot ('threelevel.che' model)")
+      metafor::forest.rma(x$model.threelevel.che, ...)
+    }
+
+    if (which[1] == "threelevel.che"){
+      message("- [OK] Generating forest plot ('threelevel.che' model)")
+      metafor::forest.rma(x$model.threelevel.che, ...)
+    }
+
     if (which[1] == "baujat"){
       message("- [OK] Generating baujat plot")
       plot(x$influence.analysis$BaujatPlot)
@@ -899,10 +1130,17 @@ plot.runMetaAnalysis = function(x, which = NULL, ...){
 
     if (which[1] == "summary"){
 
+      models = list("overall" = 1, "lowest.highest" = c(2,3), "outliers" = 4,
+                    "influence" = 5, "rob" = 6, "combined" = 7, "threelevel" = 8,
+                    "threelevel.che" = 9)
+
+      x$summary = x$summary[unlist(models[x$which.run]),]
+
       stringr::str_replace_all(x$summary$g.ci, ";|\\]|\\[", "") %>%
         strsplit(" ") %>% purrr::map(~as.numeric(.)) %>% do.call(rbind,.) %>%
         {colnames(.) = c("lower", "upper");.} %>%
-        cbind(model = rownames(x$summary), g = x$summary$g,.) %>%
+        cbind(model = rownames(x$summary), g = x$summary$g,
+              i2 = round(x$summary$i2,1) %>% format(1), .) %>%
         data.frame() %>%
         dplyr::mutate(g = as.numeric(g),
                       lower = as.numeric(lower),
@@ -912,8 +1150,13 @@ plot.runMetaAnalysis = function(x, which = NULL, ...){
         meta::forest.meta(col.square = "lightblue",
                           rightcols = FALSE,
                           overall.hetstat = FALSE,
+                          weight.study = "same",
                           test.overall = FALSE, overall = FALSE,
-                          leftlabs = c("Model", "g", "SE"))
+                          leftcols = c("studlab", "TE", "ci", "i2"),
+                          leftlabs = c(expression(bold(Model)), expression(bold(g)),
+                                       expression(bold(CI)),
+                                       expression(bold(italic(I)^2)))) %>%
+        suppressWarnings()
   }
   }
 }
@@ -926,22 +1169,26 @@ plot.runMetaAnalysis = function(x, which = NULL, ...){
 #' S3 method showing analysis settings for objects of class \code{runMetaAnalysis}.
 #'
 #' @param object An object of class \code{runMetaAnalysis}.
+#' @param forest \code{logical}. Should a summary forest plot be returned? \code{TRUE} by default.
 #' @param ... Additional arguments.
 #'
 #' @author Mathias Harrer \email{mathias.h.harrer@@gmail.com},
 #' Paula Kuper \email{paula.r.kuper@@gmail.com}, Pim Cuijpers \email{p.cuijpers@@vu.nl}
 #'
 #' @importFrom knitr kable
+#' @importFrom meta metagen forest.meta
 #' @importFrom magrittr set_colnames
 #' @importFrom dplyr as_tibble
 #' @importFrom kableExtra kable_styling column_spec footnote
+#' @importFrom stringr str_replace_all
+#' @importFrom purrr map
 #' @importFrom crayon green blue magenta
 #'
 #' @export
 #' @method summary runMetaAnalysis
 
 
-summary.runMetaAnalysis = function(object, ...){
+summary.runMetaAnalysis = function(object, forest = TRUE, ...){
 
   x = object
   cat("\n")
@@ -973,7 +1220,7 @@ summary.runMetaAnalysis = function(object, ...){
       cat(crayon::green("\u2713"), crayon::bold(crayon::magenta("[Three-Level Model]")),
           "Three-level model estimated via restricted maximum likelihood, using the 'rma.mv'
   function in {metafor}. \n")
-      if (x$model.threelevel$test == "t"){
+      if (x$model.threelevel$test == "t" | x$model.threelevel.che$test[1] == "t"){
         cat(crayon::green("\u2713"), crayon::bold(crayon::magenta("[Three-Level Model]")),
             "Test statistics and CIs of the three-level model calculated based on
   a t-distribution. \n")
@@ -982,6 +1229,11 @@ summary.runMetaAnalysis = function(object, ...){
             "Test statistics and CIs of the three-level model calculated based on
   a Wald-type normal approximation. \n")
       }}
+
+    if (x$use.rve[1] == TRUE){
+      cat(crayon::green("\u2713"), crayon::bold(crayon::magenta("[Robust Variance Estimation]")),
+          "Robust variance estimation was used to guard the three-level model(s)
+  from misspecification. This was done using functions of the {clubSandwich} package.\n")}
 
     cat("\n")
     cat("\n")
@@ -999,10 +1251,23 @@ summary.runMetaAnalysis = function(object, ...){
     cat(" -", crayon::bold(crayon::blue("R:")), "R Core Team (2021). R: A language and environment for statistical computing.
           R Foundation for Statistical Computing, Vienna, Austria.
           URL https://www.R-project.org/.\n")
+    if (x$use.rve[1] == TRUE){
+      cat(" -", crayon::bold(crayon::blue("{clubSandwich}:")), "Pustejovsky, J. (2021). clubSandwich:
+          Cluster-Robust (Sandwich) Variance Estimators with Small-Sample Corrections.
+          R package version 0.5.3. https://CRAN.R-project.org/package=clubSandwich \n")}
     if ("influence" %in% x$which.run){
       cat(" -", crayon::bold(crayon::blue("Influential cases:")), "Viechtbauer, W., & Cheung, M. W.-L. (2010). Outlier and influence
           diagnostics for meta-analysis. Research Synthesis Methods, 1(2), 112-125.
           https://doi.org/10.1002/jrsm.11 \n")}
+    if ("threelevel.che" %in% x$which.run){
+      cat(" -", crayon::bold(crayon::blue("Three-level CHE model:")), "Pustejovsky, J.E., Tipton, E. Meta-analysis with Robust
+          Variance Estimation: Expanding the Range of Working Models. Prevention
+          Science (2021). https://doi.org/10.1007/s11121-021-01246-3 \n")}
+    if (x$use.rve[1] == TRUE){
+      cat(" -", crayon::bold(crayon::blue("Robust variance estimation:")), "Pustejovsky, J.E., Tipton, E. Meta-analysis with Robust
+          Variance Estimation: Expanding the Range of Working Models. Prevention
+          Science (2021). https://doi.org/10.1007/s11121-021-01246-3 \n")}
+
 
   } else {
 
@@ -1066,7 +1331,8 @@ summary.runMetaAnalysis = function(object, ...){
       cat(crayon::green("\u2713"), crayon::bold(crayon::magenta("[Three-Level Model]")),
           "Three-level model estimated via restricted maximum likelihood, using the 'rma.mv'
   function in {metafor}. \n")
-      if (x$model.threelevel$test == "t"){
+
+      if (x$model.threelevel$test[1] == "t" | x$model.threelevel.che$test[1] == "t"){
         cat(crayon::green("\u2713"), crayon::bold(crayon::magenta("[Three-Level Model]")),
             "Test statistics and CIs of the three-level model calculated based on
   a t-distribution. \n")
@@ -1075,6 +1341,12 @@ summary.runMetaAnalysis = function(object, ...){
             "Test statistics and CIs of the three-level model calculated based on
   a Wald-type normal approximation. \n")
       }}
+
+    if (x$use.rve[1] == TRUE){
+      cat(crayon::green("\u2713"), crayon::bold(crayon::magenta("[Robust Variance Estimation]")),
+          "Robust variance estimation was used to guard the three-level model(s)
+  from misspecification. This was done using functions of the {clubSandwich} package.\n")}
+
 
     cat("\n")
     cat("\n")
@@ -1092,6 +1364,10 @@ summary.runMetaAnalysis = function(object, ...){
     cat(" -", crayon::bold(crayon::blue("R:")), "R Core Team (2021). R: A language and environment for statistical computing.
           R Foundation for Statistical Computing, Vienna, Austria.
           URL https://www.R-project.org/.\n")
+    if (x$use.rve[1] == TRUE){
+    cat(" -", crayon::bold(crayon::blue("{clubSandwich}:")), "Pustejovsky, J. (2021). clubSandwich:
+          Cluster-Robust (Sandwich) Variance Estimators with Small-Sample Corrections.
+          R package version 0.5.3. https://CRAN.R-project.org/package=clubSandwich \n")}
     if ("influence" %in% x$which.run){
       cat(" -", crayon::bold(crayon::blue("Influential cases:")), "Viechtbauer, W., & Cheung, M. W.-L. (2010). Outlier and influence
           diagnostics for meta-analysis. Research Synthesis Methods, 1(2), 112-125.
@@ -1102,6 +1378,45 @@ summary.runMetaAnalysis = function(object, ...){
       cat(" -", crayon::bold(crayon::blue("Knapp-Hartung:")), "Hartung J, Knapp G (2001a): On tests of the overall treatment
           effect in meta-analysis with normally distributed responses.
           Statistics in Medicine, 20, 1771-82 \n")}
+    if ("threelevel.che" %in% x$which.run){
+      cat(" -", crayon::bold(crayon::blue("Three-level CHE model:")), "Pustejovsky, J.E., Tipton, E. Meta-analysis with Robust
+          Variance Estimation: Expanding the Range of Working Models. Prevention
+          Science (2021). https://doi.org/10.1007/s11121-021-01246-3 \n")}
+    if (x$use.rve[1] == TRUE){
+      cat(" -", crayon::bold(crayon::blue("Robust variance estimation:")), "Pustejovsky, J.E., Tipton, E. Meta-analysis with Robust
+          Variance Estimation: Expanding the Range of Working Models. Prevention
+          Science (2021). https://doi.org/10.1007/s11121-021-01246-3 \n")}
+  }
+
+  if (forest[1]){
+
+    models = list("overall" = 1, "lowest.highest" = c(2,3), "outliers" = 4,
+                  "influence" = 5, "rob" = 6, "combined" = 7, "threelevel" = 8,
+                  "threelevel.che" = 9)
+
+    x$summary = x$summary[unlist(models[x$which.run]),]
+
+    stringr::str_replace_all(x$summary$g.ci, ";|\\]|\\[", "") %>%
+      strsplit(" ") %>% purrr::map(~as.numeric(.)) %>% do.call(rbind,.) %>%
+      {colnames(.) = c("lower", "upper");.} %>%
+      cbind(model = rownames(x$summary), g = x$summary$g,
+            i2 = round(x$summary$i2,1) %>% format(1), .) %>%
+      data.frame() %>%
+      dplyr::mutate(g = as.numeric(g),
+                    lower = as.numeric(lower),
+                    upper = as.numeric(upper)) %>%
+      meta::metagen(TE = g, lower = lower, upper = upper, studlab = model,
+                    data = .) %>%
+      meta::forest.meta(col.square = "lightblue",
+                        rightcols = FALSE,
+                        overall.hetstat = FALSE,
+                        test.overall = FALSE, overall = FALSE,
+                        weight.study = "same",
+                        leftcols = c("studlab", "TE", "ci", "i2"),
+                        leftlabs = c(expression(bold(Model)), expression(bold(g)),
+                                     expression(bold(CI)),
+                                     expression(bold(italic(I)^2)))) %>%
+      suppressWarnings()
   }
 
 }

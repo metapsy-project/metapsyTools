@@ -4,10 +4,12 @@
 \alias{summary.runMetaAnalysis}
 \title{Show details of 'runMetaAnalysis' class objects.}
 \usage{
-\method{summary}{runMetaAnalysis}(object, ...)
+\method{summary}{runMetaAnalysis}(object, forest = TRUE, ...)
 }
 \arguments{
 \item{object}{An object of class \code{runMetaAnalysis}.}
+
+\item{forest}{\code{logical}. Should a summary forest plot be returned? \code{TRUE} by default.}
 
 \item{...}{Additional arguments.}
 }
