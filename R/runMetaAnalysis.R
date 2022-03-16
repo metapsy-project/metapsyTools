@@ -637,6 +637,15 @@ runMetaAnalysis = function(data,
                                 method = "REML",
                                 ...)
 
+  model.threelevel.legacy = list(slab = data[[study.var]],
+                                 data = data,
+                                 es.var = es.var,
+                                 se.var = se.var,
+                                 yi = data[[es.var]],
+                                 V = data[[se.var]]*data[[se.var]],
+                                 formula.rnd = as.formula(formula))
+  mThreeLevel$legacy = model.threelevel.legacy
+
   # Calculate total I2
   W = diag(1/(data[[se.var]]^2))
   X = model.matrix(mThreeLevel)
@@ -773,6 +782,13 @@ runMetaAnalysis = function(data,
                          test = ifelse(hakn == TRUE, "t", "z"),
                          method = "REML", sparse = TRUE,
                          ...)
+
+  model.threelevel.che.legacy = list(slab = data[[study.var]],
+                                     data = data,
+                                     formula.rnd = formula.rnd,
+                                     formula.fixed = formula.fixed,
+                                     Vmat = Vmat)
+  mCHE$legacy = model.threelevel.che.legacy
 
   # Calculate total I2
   W = diag(1/(data[[se.var]]^2))
