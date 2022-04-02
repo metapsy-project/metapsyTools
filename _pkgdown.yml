@@ -1,0 +1,59 @@
+template:
+  includes:
+    in_header: <script src="extra_script_header.js"></script>
+    after_body: <script src="extra_script.js"></script>
+  bootstrap: 5
+  bootswatch: flatly
+  bslib:
+    pkgdown-nav-height: 100px
+    base_font: {google: "Fira Sans"}
+    heading_font: {google: "Fira Sans"}
+    code_font: {google: "Fira Code"}
+navbar:
+  structure:
+    left: [intro, reference]
+    right: [search, github, vu]
+  components:
+    intro:
+      text: Get Started
+      href: articles/metapsyTools.html
+    reference:
+      text: Documentation
+      href: reference/index.html
+footer:
+  structure:
+    left: developed_by
+    right: null
+reference:
+- title: "Preparation Module"
+  desc: >
+    Functions to prepare the data and calculate effect sizes.
+  contents:
+  - checkDataFormat
+  - checkConflicts
+  - expandMultiarmTrials
+  - filterPoolingData
+  - filterPriorityRule
+  - addTrialArmInfo
+  - calculateEffectSizes
+- title: "Analysis Module"
+  desc: "Functions to run meta-analyses."
+  contents:
+  - runMetaAnalysis
+  - subgroupAnalysis
+  - starts_with("metaRegression")
+  - createStudyTable
+- title: "S3 Methods & Helper Functions"
+  desc: "Additional functionality for core functions."
+  contents:
+  - starts_with("metapsy")
+  - starts_with("plot")
+  - starts_with("print")
+  - starts_with("summary")
+- title: "Datasets"
+  contents:
+  - database2021Subset
+  - inpatients
+  - psyCtrSubset
+
+

@@ -4,3 +4,6 @@
 ^Meta$
 ^installation.R
 ^NOTES.txt
+^_pkgdown\.yml$
+^docs$
+^pkgdown$

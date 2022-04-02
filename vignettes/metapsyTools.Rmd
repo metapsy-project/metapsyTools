@@ -8,6 +8,8 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+<br></br>
+
 ## Introducing `metapsyTools`
 
 The `metapsyTools` package facilitates the calculation of effect sizes (i.e. Hedges' $g$) and meta-analyses based on the **Metapsy** database (or databases adhering to the same format).
@@ -27,7 +29,7 @@ This final dataset then builds the basis for the **analysis** module. Researcher
 
 <div style="border: 1px solid black; bg-color: gray; padding: 10px; border-radius: 3px;"><strong>Important</strong>: The preparation module requires a familiarity with the general structure of the database, as well as intermediate-level knowledge of R and the `metapsyTools` package itself, in order to diagnose (potential) issues. We advise that the preparation step (i.e. checking the data format, expanding multiarm trials, and calculating effect sizes each time the database is updated) should be conducted by a person with some proficiency in R & data wrangling. The analysis module, on the other hand, should be usable by all researchers.</div>
 
-<br>
+<br></br>
 
 ## The Preparation Module
 
@@ -316,7 +318,7 @@ The resulting data frame `data` now follows a "wider" format and includes all ef
 
 
 
-<br>
+<br></br>
 
 ## The Analysis Module
 
@@ -773,7 +775,7 @@ Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’
 
 
 
-<br>
+<br></br>
 
 ## Study Tables
 
