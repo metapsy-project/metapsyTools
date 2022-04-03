@@ -1,6 +1,7 @@
-<br></br>
+<h1>
+  <code style="background: white;">metapsyTools</code>
+</h1>
 
-# Companion `R` package for the "Metapsy" database
 
 The `metapsyTools` package facilitates the calculation of effect sizes and meta-analyses based on the Metapsy database (or databases adhering to the same format).
 
