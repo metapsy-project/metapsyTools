@@ -10,6 +10,10 @@
 #' For multiarm trials, these conditions \emph{must} be distinct (e.g. \code{"cbt-guided"} and \code{"cbt-unguided"}).
 #' @param .group.indicator \code{character}, variable encoding if a row represents an intervention or control/reference arm.
 #' @param .group.names \code{list}, storing the name of the value in \code{.group.indicator} corresponding to the intervention group (\code{"ig"}) and control group (\code{"cg"}).
+#' @param .groups.column.indicator \code{character}. If the dataset is in wide format: a character vector with two elements, representing the suffix used to
+#' differentiate between the first and second treatment in a comparison.
+#' @param data.format \code{character}. Either \code{"long"} or \code{"wide"}, depending on the format of the dataset in
+#' \code{data}. \code{NULL} by default, which lets the user define the format after the function has been called.
 #'
 #' @usage checkConflicts(.data,
 #'                vars.for.id = c("study", "primary",
@@ -20,7 +24,9 @@
 #'                .condition.specification = "Cond_spec",
 #'                .group.indicator = "condition",
 #'                .group.names = list("ig" = "ig",
-#'                                    "cg" = "cg"))
+#'                                    "cg" = "cg"),
+#'                .groups.column.indicator = c("_trt1", "_trt2"),
+#'                data.format = NULL)
 #'
 #' @return The type of data returned by \code{checkConflicts} depends on the outcome of the evaluation. When no problems
 #' have been detected, the function simply returns the dataset provided in \code{.data}.
@@ -62,7 +68,17 @@
 #'   checkDataFormat() %>%
 #'   checkConflicts(vars.for.id) %>%
 #'   expandMultiarmTrials(vars.for.id) -> res
-#'  }
+#'
+#' # Example 4: Wide format
+#' data("psyCtrSubsetWide")
+#' psyCtrSubsetWide %>%
+#'   checkDataFormat() %>%
+#'   checkConflicts()
+#'
+#' # Example 4: Wide format; overrule default input prompt
+#' checkConflicts(psyCtrSubsetWide,
+#'                data.format = "wide")
+#' }
 #'
 #'
 #' @author Mathias Harrer \email{mathias.h.harrer@@gmail.com}, Paula Kuper \email{paula.r.kuper@gmail.com}, Pim Cuijpers \email{p.cuijpers@@vu.nl}
@@ -86,57 +102,138 @@ checkConflicts = function(.data,
                           .condition.specification = "Cond_spec",
                           .group.indicator = "condition",
                           .group.names = list("ig" = "ig",
-                                              "cg" = "cg")){
+                                              "cg" = "cg"),
+                          .groups.column.indicator = c("_trt1",
+                                                       "_trt2"),
+                          data.format = NULL){
 
-  data.return = .data
+  if (!class(.data)[1] %in% c("wide", "long")){
+    if (is.null(data.format)){
+      # Format switch
+      input = readline("Enter: Is the data set in long [l] or wide [w] format? ")
+      if (input[1] %in% c("l", "L", "long", "Long")){
+        format = "long"
+        data.format = "long"
+      } else if (input[1] %in% c("w", "W", "wide", "Wide")){
+        format = "wide"
+        data.format = "wide"
+      } else {
+        stop("Data format must either be long [l] or wide [w].")
+      }
+    }
 
-  # Extract no.arms variable and id.vars
-  .data$no.arms = as.numeric(.data[[.no.arms]])
-  id.vars = vars.for.id
-
-  apply(.data, 1,
-        function(x){paste(as.character(x[id.vars]), collapse = "_")}) %>%
-    stringr::str_replace_all(",", "_") %>% stringr::str_remove_all(" ") -> .data$id
-
-  # Check for number of ID - no.arms conflict
-  table(.data$id, .data$no.arms) %>% as.matrix() -> M
-  b = as.numeric(colnames(M))
-  M[!(rowSums(t(t(M) %/% b)) == 1),] %>% rownames() -> conflictIds
-
-  # Check for unspecified condition specifications
-  .data$condition.expanded = paste0(.data[[.group.indicator]], "_",
-                                    .data[[.condition.specification]])
-  .data %>% dplyr::group_by(id) %>%
-    dplyr::group_map(~ mean(.x$no.arms) - length(unique(.x$condition.expanded))) %>%
-    do.call(c, .) %>% magrittr::set_names(unique(.data$id)) %>%
-    {.[. != 0]} %>% names() %>% union(., conflictIds) -> conflictIds
-
-  .data$condition.expanded = NULL
-
-  # Check for double control groups
-  table(.data$id, .data[[.group.indicator]] == .group.names[["cg"]])[,2] %>%
-    {.[.>1]} %>% names() -> multipleCgIds
-
-  list(allConflicts = .data %>%
-         dplyr::filter(id %in% union(conflictIds, multipleCgIds)),
-       idConflicts = .data %>%
-         dplyr::filter(id %in% conflictIds),
-       cgConflicts = .data %>%
-         dplyr::filter(id %in% multipleCgIds),
-       condition.specification = .condition.specification) -> returnlist
-
-
-  class(returnlist) = c("checkConflicts", "list")
-
-  if (nrow(returnlist$idConflicts) == 0){
-    message("- [OK] No data format conflicts detected")
-    return(data.return)
+    if (!(data.format[1] %in% c("long", "wide"))){
+      # Format switch
+      input = readline("Enter: Is the data set in long [l] or wide [w] format? ")
+      if (input[1] %in% c("l", "L", "long", "Long")){
+        format = "long"
+      } else if (input[1] %in% c("w", "W", "wide", "Wide")){
+        format = "wide"
+      } else {
+        stop("Data format must either be long [l] or wide [w].")
+      }
+    } else {format = data.format}
   } else {
-    message("- [!] Data format conflicts detected!")
-    return(returnlist)
+    format = class(.data)[1]
+  }
+
+  if (format[1] == "wide"){
+
+    data.return = .data
+
+    # Extract no.arms variable and id.vars
+    .data$no.arms = as.numeric(.data[[.no.arms]])
+    id.vars = vars.for.id
+
+    .data[colnames(.data) %in%
+            c(id.vars,
+              paste0(id.vars, .groups.column.indicator),
+              paste0(.condition.specification,
+                     .groups.column.indicator))] %>%
+      colnames() -> id.vars
+
+    apply(.data, 1,
+          function(x){paste(as.character(x[id.vars]), collapse = "_")}) %>%
+      stringr::str_replace_all(",", "_") %>% stringr::str_remove_all(" ") -> .data$id
+
+    # Check for ID conflicts
+    .data[.data$id %in%
+            names(table(.data$id)[table(.data$id) > 1]),] -> conflictIds
+
+    # Set multiple CG IDs conflicts (not used)
+    .data[NULL,] -> multipleCgIds
+
+    list(allConflicts = rbind(conflictIds, multipleCgIds),
+         idConflicts = conflictIds,
+         cgConflicts = multipleCgIds,
+         condition.specification = .condition.specification) -> returnlist
+
+
+    class(returnlist) = c("checkConflicts", "list")
+
+    if (nrow(returnlist$idConflicts) == 0){
+      message("- [OK] No data format conflicts detected")
+      class(data.return) = c("wide", "data.frame")
+      return(data.return)
+    } else {
+      message("- [!] Data format conflicts detected!")
+      return(returnlist)
+    }
+  }
+
+
+  if (format[1] == "long"){
+
+    data.return = .data
+
+    # Extract no.arms variable and id.vars
+    .data$no.arms = as.numeric(.data[[.no.arms]])
+    id.vars = vars.for.id
+
+    apply(.data, 1,
+          function(x){paste(as.character(x[id.vars]), collapse = "_")}) %>%
+      stringr::str_replace_all(",", "_") %>% stringr::str_remove_all(" ") -> .data$id
+
+    # Check for number of ID - no.arms conflict
+    table(.data$id, .data$no.arms) %>% as.matrix() -> M
+    b = as.numeric(colnames(M))
+    M[!(rowSums(t(t(M) %/% b)) == 1),] %>% rownames() -> conflictIds
+
+    # Check for unspecified condition specifications
+    .data$condition.expanded = paste0(.data[[.group.indicator]], "_",
+                                      .data[[.condition.specification]])
+    .data %>% dplyr::group_by(id) %>%
+      dplyr::group_map(~ mean(.x$no.arms) - length(unique(.x$condition.expanded))) %>%
+      do.call(c, .) %>% magrittr::set_names(unique(.data$id)) %>%
+      {.[. != 0]} %>% names() %>% union(., conflictIds) -> conflictIds
+
+    .data$condition.expanded = NULL
+
+    # Check for double control groups
+    table(.data$id, .data[[.group.indicator]] == .group.names[["cg"]])[,2] %>%
+      {.[.>1]} %>% names() -> multipleCgIds
+
+    list(allConflicts = .data %>%
+           dplyr::filter(id %in% union(conflictIds, multipleCgIds)),
+         idConflicts = .data %>%
+           dplyr::filter(id %in% conflictIds),
+         cgConflicts = .data %>%
+           dplyr::filter(id %in% multipleCgIds),
+         condition.specification = .condition.specification) -> returnlist
+
+
+    class(returnlist) = c("checkConflicts", "list")
+
+    if (nrow(returnlist$idConflicts) == 0){
+      message("- [OK] No data format conflicts detected")
+      class(data.return) = c("long", "data.frame")
+      return(data.return)
+    } else {
+      message("- [!] Data format conflicts detected!")
+      return(returnlist)
+    }
   }
 }
-
 
 #' Print method for the 'checkConflicts' function
 #'

@@ -14,8 +14,10 @@ expandMultiarmTrials(data,
                      no.arms.indicator = "no.arms",
                      group.indicator = "condition",
                      condition.specification = "Cond_spec",
+                     groups.column.indicator = c("_trt1", "_trt2"),
                      group.names = list("ig" = "ig",
-                                        "cg" = "cg"))
+                                        "cg" = "cg"),
+                     data.format = NULL)
 }
 \arguments{
 \item{data}{Meta-analysis data stored as a \code{data.frame}.}
@@ -32,7 +34,13 @@ expandMultiarmTrials(data,
 
 \item{condition.specification}{\code{character}, column name of the variable storing the trial condition name.}
 
+\item{groups.column.indicator}{\code{character}. If the dataset is in wide format: a character vector with two elements, representing the suffix used to
+differentiate between the first and second treatment in a comparison.}
+
 \item{group.names}{\code{list}, storing the name of the value corresponding to the intervention group (\code{"ig"}) and control group (\code{"cg"}).}
+
+\item{data.format}{\code{character}. Either \code{"long"} or \code{"wide"}, depending on the format of the dataset in
+\code{data}. \code{NULL} by default, which lets the user define the format after the function has been called.}
 }
 \value{
 \code{expandMultiarmTrials} returns the meta-analysis data set as class \code{data.frame} (if results are saved to a variable). The rows of multiarm studies are expanded so that each intervention group has an unambiguously assigned control group. It also generates the following columns:
@@ -50,8 +58,10 @@ This function expands multiarm studies in a meta-analysis data set, thereby ensu
  For more details see the help vignette: \code{vignette("metapsyTools")}.
 }
 \examples{
+\dontrun{
 data("inpatients")
 expandMultiarmTrials(inpatients)
+}
 
 }
 \seealso{

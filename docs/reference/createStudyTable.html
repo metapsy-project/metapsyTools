@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">metapsyTools</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.2</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -140,7 +140,6 @@ Paula Kuper <a href="mailto:paula.r.kuper@gmail.com">paula.r.kuper@gmail.com</a>
 <span class="r-in">  <span class="fu"><a href="checkConflicts.html">checkConflicts</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
 <span class="r-in">  <span class="fu"><a href="expandMultiarmTrials.html">expandMultiarmTrials</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
 <span class="r-in">  <span class="fu"><a href="calculateEffectSizes.html">calculateEffectSizes</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
-<span class="r-in">  <span class="fu"><a href="addTrialArmInfo.html">addTrialArmInfo</a></span><span class="op">(</span><span class="va">Post_N</span>, <span class="va">Cond_spec</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
 <span class="r-in">  <span class="fu">createStudyTable</span><span class="op">(</span></span>
 <span class="r-in">    <span class="va">study</span>,</span>
 <span class="r-in">    diag <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Cutoff"</span> <span class="op">=</span> <span class="st">"3"</span>, <span class="st">"Mood"</span> <span class="op">=</span> <span class="st">"2"</span>,</span>
@@ -150,20 +149,20 @@ Paula Kuper <a href="mailto:paula.r.kuper@gmail.com">paula.r.kuper@gmail.com</a>
 <span class="r-in">                    <span class="st">"Other"</span> <span class="op">=</span> <span class="st">"other"</span>,</span>
 <span class="r-in">                    <span class="st">"Psychiatric"</span> <span class="op">=</span> <span class="st">"psych"</span><span class="op">)</span>,</span>
 <span class="r-in">    <span class="va">meanage</span>, <span class="va">propwomen</span>,</span>
-<span class="r-in">    type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"CBT"</span> <span class="op">=</span> <span class="st">"cbt"</span>, <span class="st">"Other"</span> <span class="op">=</span> <span class="st">"other"</span>, <span class="st">"PST"</span> <span class="op">=</span> <span class="st">"pst"</span>,</span>
-<span class="r-in">             <span class="st">"BA"</span> <span class="op">=</span> <span class="st">"bat"</span>, <span class="st">"LR"</span> <span class="op">=</span> <span class="st">"lrt"</span>,</span>
-<span class="r-in">             <span class="st">"PDT"</span> <span class="op">=</span> <span class="st">"dyn"</span>, <span class="st">"IPT"</span> <span class="op">=</span> <span class="st">"ipt"</span><span class="op">)</span>,</span>
-<span class="r-in">    <span class="va">nsess</span>, <span class="va">Post_N_ig</span>, <span class="va">Post_N_cg</span>, <span class="va">Cond_spec_ig</span>, <span class="va">Cond_spec_cg</span>,</span>
+<span class="r-in">    type_trt1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"CBT"</span> <span class="op">=</span> <span class="st">"cbt"</span>, <span class="st">"Other"</span> <span class="op">=</span> <span class="st">"other"</span>, <span class="st">"PST"</span> <span class="op">=</span> <span class="st">"pst"</span>,</span>
+<span class="r-in">                  <span class="st">"BA"</span> <span class="op">=</span> <span class="st">"bat"</span>, <span class="st">"LR"</span> <span class="op">=</span> <span class="st">"lrt"</span>,</span>
+<span class="r-in">                  <span class="st">"PDT"</span> <span class="op">=</span> <span class="st">"dyn"</span>, <span class="st">"IPT"</span> <span class="op">=</span> <span class="st">"ipt"</span><span class="op">)</span>,</span>
+<span class="r-in">    <span class="va">nsess_trt1</span>, <span class="va">Post_N_trt1</span>, <span class="va">Post_N_trt2</span>, <span class="va">Cond_spec_trt1</span>, <span class="va">Cond_spec_trt2</span>,</span>
 <span class="r-in">    country <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Canada"</span> <span class="op">=</span> <span class="st">"4"</span>, <span class="st">"Europe"</span> <span class="op">=</span> <span class="st">"3"</span>, <span class="st">"USA"</span> <span class="op">=</span> <span class="st">"1"</span>,</span>
 <span class="r-in">                <span class="st">"Asia"</span> <span class="op">=</span> <span class="st">"6"</span>, <span class="st">"Middle East"</span> <span class="op">=</span> <span class="st">"7"</span>, <span class="st">"Australia"</span> <span class="op">=</span> <span class="st">"5"</span><span class="op">)</span>,</span>
 <span class="r-in">    <span class="va">sg</span>, <span class="va">ac</span>, <span class="va">ba</span>, <span class="va">itt</span>,</span>
-<span class="r-in">    .round.by.digits <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>meanage <span class="op">=</span> <span class="fl">0</span>, Post_N_ig <span class="op">=</span> <span class="fl">0</span>,</span>
-<span class="r-in">                            Post_N_cg <span class="op">=</span> <span class="fl">0</span><span class="op">)</span>,</span>
+<span class="r-in">    .round.by.digits <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>meanage <span class="op">=</span> <span class="fl">0</span>, Post_N_trt1 <span class="op">=</span> <span class="fl">0</span>,</span>
+<span class="r-in">                            Post_N_trt2 <span class="op">=</span> <span class="fl">0</span><span class="op">)</span>,</span>
 <span class="r-in">    .column.names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>agegrp2 <span class="op">=</span> <span class="st">"age group"</span>,</span>
 <span class="r-in">                         ADD_setting <span class="op">=</span> <span class="st">"setting"</span>,</span>
-<span class="r-in">                         Post_N_ig <span class="op">=</span> <span class="st">"N_ig"</span>, Post_N_cg <span class="op">=</span> <span class="st">"N_cg"</span>,</span>
-<span class="r-in">                         Cond_spec_ig <span class="op">=</span> <span class="st">"format_ig"</span>,</span>
-<span class="r-in">                         Cond_spec_cg <span class="op">=</span> <span class="st">"format_cg"</span><span class="op">)</span><span class="op">)</span> <span class="op">-&gt;</span> <span class="va">table</span></span>
+<span class="r-in">                         Post_N_trt1 <span class="op">=</span> <span class="st">"N_ig"</span>, Post_N_trt2 <span class="op">=</span> <span class="st">"N_cg"</span>,</span>
+<span class="r-in">                         Cond_spec_trt1 <span class="op">=</span> <span class="st">"format_ig"</span>,</span>
+<span class="r-in">                         Cond_spec_trt2 <span class="op">=</span> <span class="st">"format_cg"</span><span class="op">)</span><span class="op">)</span> <span class="op">-&gt;</span> <span class="va">table</span></span>
 <span class="r-in"><span class="op">}</span></span>
 <span class="r-in"></span>
 </code></pre></div>

@@ -29,7 +29,9 @@ checkDataFormat(data,
                                  "Improved_N" = "numeric",
                                  "Change_m" = "numeric",
                                  "Change_SD" = "numeric",
-                                 "Change_N" = "numeric"))
+                                 "Change_N" = "numeric"),
+           groups.column.indicator = c("_trt1", "_trt2"),
+           data.format = NULL)
 }
 \arguments{
 \item{data}{Meta-analysis data stored as a data.frame.}
@@ -39,6 +41,12 @@ checkDataFormat(data,
 \item{variable.contains}{\code{list}, defining which values should only be contained in a variable.}
 
 \item{variable.class}{\code{list}, defining the required data class for some or all variables. If the class differs, the function will try to convert the variable to the desired class.}
+
+\item{groups.column.indicator}{\code{character}. If the dataset is in wide format: a character vector with two elements, representing the suffix used to
+differentiate between the first and second treatment in a comparison.}
+
+\item{data.format}{\code{character}. Either \code{"long"} or \code{"wide"}, depending on the format of the dataset in
+\code{data}. \code{NULL} by default, which lets the user define the format after the function has been called.}
 }
 \value{
 \code{checkDataFormat} returns messages that specify if input variables, values and classes of the variables are as defined.
@@ -53,8 +61,12 @@ The function ckecks if:
  \item{variables contain desired values only and}
  \item{variables are of desired type (if not, it tries to convert them).}
  }
+ If the dataset format is wide, please specify all variable/column names
+ \emph{without} the group indicator suffix (e.g. for \code{"Cond_spec_trt1"} and
+ \code{"Cond_spec_trt2"}, simply use \code{"Cond_spec"}).
 }
 \examples{
+\dontrun{
 data("inpatients")
 
 # Example 1: Check data with default arguments
@@ -69,10 +81,13 @@ checkDataFormat(inpatients,
                                       no.arms = "numeric"))
 
 #Example 3: Convert variable class as predefined
-\dontrun{
 checkDataFormat(inpatients,
                 must.contain = c("primary", "study"),
                 variable.class = list(primary = "integer"))
+
+#Example 4: Wide format
+data("psyCtrSubsetWide")
+checkDataFormat(psyCtrSubsetWide)
 }
 
 

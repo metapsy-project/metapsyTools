@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">metapsyTools</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.2</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -58,7 +58,8 @@
                     binaryES <span class="op">=</span> <span class="va">binaryES</span>,
                     changeES <span class="op">=</span> <span class="va">changeES</span><span class="op">)</span>,
        include.switched.arms <span class="op">=</span> <span class="cn">FALSE</span>,
-       change.sign <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></code></pre></div>
+       change.sign <span class="op">=</span> <span class="cn">NULL</span>,
+       data.format <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -78,6 +79,9 @@ calculated? Default is <code>FALSE</code>. Can only be set to <code>TRUE</code> 
 <dd><p><code>character</code>. Name of a <code>logical</code> column in <code>data</code>, encoding if the
 sign of a calculated effect size should be reversed (<code>TRUE</code>) or not (<code>FALSE</code>). Set to <code>NULL</code> (default) if
 no changes should be made.</p></dd>
+<dt>data.format</dt>
+<dd><p><code>character</code>. Either <code>"long"</code> or <code>"wide"</code>, depending on the format of the dataset in
+<code>data</code>. <code>NULL</code> by default, which lets the user define the format after the function has been called.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>

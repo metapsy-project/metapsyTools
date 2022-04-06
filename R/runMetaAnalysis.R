@@ -11,6 +11,7 @@
 #'                 method.tau = "REML",
 #'                 hakn = TRUE,
 #'                 study.var = "study",
+#'                 extra.grouping.var = NULL,
 #'                 arm.var.1 = "Cond_spec_trt1",
 #'                 arm.var.2 = "Cond_spec_trt2",
 #'                 measure.var = "Outc_measure",
@@ -36,6 +37,9 @@
 #' \code{\link[meta]{metagen}}). Use \code{"FE"} to use a fixed-effect/"common effect" model.
 #' @param hakn \code{logical}. Should the Knapp-Hartung adjustment for effect size significance tests be used? Default is \code{TRUE}.
 #' @param study.var \code{character}. The name of the variable in \code{data} in which the study IDs are stored.
+#' @param extra.grouping.var \code{character}. Additional grouping variable within studies to be used for the \code{"combined"}
+#' analysis. This is useful, for example, to \emph{not} pool the effects of different treatment arms within multi-arm trials.
+#' \code{NULL} by default.
 #' @param arm.var.1 \code{character}. The name of the variable in \code{data} in which the condition (e.g. "guided iCBT")
 #' of the \emph{first} arm within a comparison are stored.
 #' @param arm.var.2 \code{character}. The name of the variable in \code{data} in which the condition (e.g. "wlc")
@@ -105,6 +109,17 @@
 #' # Extract specific model and do further calculations
 #' # (e.g. meta-regression on 'year')
 #' metareg(res$model.overall, ~year)
+#'
+#' # For the combined analysis, use provide an extra variable
+#' # so that different treatment arm comparisons in multiarm trials are NOT pooled
+#' data("psyCtrSubsetWide")
+#' psyCtrSubsetWide %>%
+#'   checkDataFormat() %>%
+#'   checkConflicts() %>%
+#'   expandMultiarmTrials() %>%
+#'   calculateEffectSizes() %>%
+#'   filterPoolingData(year > 2010) %>%
+#'   runMetaAnalysis(extra.grouping.var = "Cond_spec_trt1")
 #' }
 #'
 #' @author Mathias Harrer \email{mathias.h.harrer@@gmail.com},
@@ -160,6 +175,7 @@ runMetaAnalysis = function(data,
                            method.tau = "REML",
                            hakn = TRUE,
                            study.var = "study",
+                           extra.grouping.var = NULL,
                            arm.var.1 = "Cond_spec_trt1",
                            arm.var.2 = "Cond_spec_trt2",
                            measure.var = "Outc_measure",
@@ -373,6 +389,19 @@ runMetaAnalysis = function(data,
   #                                                                           #
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+  if (!is.null(extra.grouping.var)){
+    data$study.var.comb = paste(data[[study.var]], data[[extra.grouping.var]])
+    study.var.comb = "study.var.comb"
+  } else {
+    data$study.var.comb = data[[study.var]]
+    study.var.comb = study.var
+  }
+
+  # Define study ID variable
+  svc = data[[study.var.comb]]
+
+  multi.study.comb = names(table(data[[study.var.comb]])[table(data[[study.var.comb]]) > 1])
+
   data = metafor::escalc("SMD", yi = data[[es.var]],
                          sei = data[[se.var]], data = data)
 
@@ -392,11 +421,18 @@ runMetaAnalysis = function(data,
         " If the V matrix is not positive-definite, assume a higher value.")
     warn.end = TRUE}
 
-  data.comb = metafor::aggregate.escalc(data, cluster = data[[study.var]],
+  data.comb = metafor::aggregate.escalc(data, cluster = svc,
                                         rho = rho.within.study)
+
+  # Get studlabs of studies with multiple arms
+  table(data.comb[[study.var]], data.comb[[study.var.comb]]) %>%
+    {names(rowSums(.)[rowSums(.) > 1])} -> multi.entries
+
+
   mComb = meta::metagen(TE = data.comb$yi,
                         seTE = sqrt(data.comb$vi),
-                        studlab = data.comb[[study.var]],
+                        studlab = with(data.comb,{ifelse(study %in% multi.entries,
+                                                         study.var.comb, study)}),
                         data = data.comb,
                         sm = "g",
                         hakn = hakn,
@@ -426,8 +462,8 @@ runMetaAnalysis = function(data,
     )
   })
   rownames(mCombRes) = "Combined"
-  mCombRes$excluded = paste("combined:", ifelse(length(multi.study) > 0,
-                                                paste(multi.study, collapse = ", "), "none"))
+  mCombRes$excluded = paste("combined:", ifelse(length(multi.study.comb) > 0,
+                                                paste(multi.study.comb, collapse = ", "), "none"))
 
 
   # Add rho to mComb model

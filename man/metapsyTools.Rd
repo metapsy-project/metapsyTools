@@ -12,6 +12,13 @@ included trials. For this purpose, data can be checked and converted into
 the required format to calculate the effect sizes in R. It is then possible
 to run a meta-analysis using the output effect sizes.
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/MathiasHarrer/metapsyTools}
+}
+
+}
 \author{
 Mathias Harrer \email{mathias.h.harrer@gmail.com}, Paula Kuper \email{paula.r.kuper@gmail.com}, Pim Cuijpers \email{p.cuijpers@vu.nl}
 }

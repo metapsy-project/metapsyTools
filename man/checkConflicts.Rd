@@ -13,7 +13,9 @@ checkConflicts(.data,
                .condition.specification = "Cond_spec",
                .group.indicator = "condition",
                .group.names = list("ig" = "ig",
-                                   "cg" = "cg"))
+                                   "cg" = "cg"),
+               .groups.column.indicator = c("_trt1", "_trt2"),
+               data.format = NULL)
 }
 \arguments{
 \item{.data}{Meta-analysis data stored as a \code{data.frame}, to be checked by the function.}
@@ -28,6 +30,12 @@ For multiarm trials, these conditions \emph{must} be distinct (e.g. \code{"cbt-g
 \item{.group.indicator}{\code{character}, variable encoding if a row represents an intervention or control/reference arm.}
 
 \item{.group.names}{\code{list}, storing the name of the value in \code{.group.indicator} corresponding to the intervention group (\code{"ig"}) and control group (\code{"cg"}).}
+
+\item{.groups.column.indicator}{\code{character}. If the dataset is in wide format: a character vector with two elements, representing the suffix used to
+differentiate between the first and second treatment in a comparison.}
+
+\item{data.format}{\code{character}. Either \code{"long"} or \code{"wide"}, depending on the format of the dataset in
+\code{data}. \code{NULL} by default, which lets the user define the format after the function has been called.}
 }
 \value{
 The type of data returned by \code{checkConflicts} depends on the outcome of the evaluation. When no problems
@@ -74,7 +82,17 @@ psyCtrSubset \%>\%
   checkDataFormat() \%>\%
   checkConflicts(vars.for.id) \%>\%
   expandMultiarmTrials(vars.for.id) -> res
- }
+
+# Example 4: Wide format
+data("psyCtrSubsetWide")
+psyCtrSubsetWide \%>\%
+  checkDataFormat() \%>\%
+  checkConflicts()
+
+# Example 4: Wide format; overrule default input prompt
+checkConflicts(psyCtrSubsetWide,
+               data.format = "wide")
+}
 
 
 }

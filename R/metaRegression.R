@@ -10,7 +10,8 @@
 #' Paula Kuper \email{paula.r.kuper@@gmail.com}, Pim Cuijpers \email{p.cuijpers@@vu.nl}
 #' @examples
 #' \dontrun{
-#' metaRegression(res, ~ rob + scale(year))}
+#' metaRegression(res$model.combined, ~ rob + scale(year))
+#' }
 #' @export metaRegression
 
 metaRegression = function(x, ...){

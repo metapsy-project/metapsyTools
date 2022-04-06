@@ -11,7 +11,8 @@ calculateEffectSizes(data,
                     binaryES = binaryES,
                     changeES = changeES),
        include.switched.arms = FALSE,
-       change.sign = NULL)
+       change.sign = NULL,
+       data.format = NULL)
 }
 \arguments{
 \item{data}{Meta-analysis data set of class \code{expandMultiarmTrials}, created using \code{expandMultiarmTrials}.}
@@ -28,6 +29,9 @@ calculated? Default is \code{FALSE}. Can only be set to \code{TRUE} when \code{t
 \item{change.sign}{\code{character}. Name of a \code{logical} column in \code{data}, encoding if the
 sign of a calculated effect size should be reversed (\code{TRUE}) or not (\code{FALSE}). Set to \code{NULL} (default) if
 no changes should be made.}
+
+\item{data.format}{\code{character}. Either \code{"long"} or \code{"wide"}, depending on the format of the dataset in
+\code{data}. \code{NULL} by default, which lets the user define the format after the function has been called.}
 }
 \value{
 \code{calculateEffectSizes} returns the meta-analysis data set as class \code{data.frame} in wide format (if results are saved to a variable). It also generates the following columns, wich are added to the data:

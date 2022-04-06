@@ -43,6 +43,22 @@
 "psyCtrSubset"
 
 
+
+#'  The 'psyCtrSubset' dataset (wide format)
+#'
+#' An example dataset containing a subset of the 2021 depression trials database.
+#' In constrast to, e.g., the \code{psyCtrSubset} dataset, \code{psyCtrSubsetWide}
+#' is structured in the "wide(r)" format. The dataset also contains columns with study characteristics that
+#' are important for effect size calculation and more.
+#'
+#' The dataset has been included to showcase the correct formatting necessary to use \code{metapsyTools}.
+#'
+#' @format A \code{data.frame} with 175 rows and 64 variables.
+#' @author Mathias Harrer, Paula Kuper, Clara Miguel, Pim Cuijpers
+#' @usage data("psyCtrSubsetWide")
+"psyCtrSubsetWide"
+
+
 #'  The 'database2021Subset' dataset
 #'
 #' An example dataset containing a subset of the 2021 depression trials database.

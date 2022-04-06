@@ -12,6 +12,7 @@ runMetaAnalysis(data,
                 method.tau = "REML",
                 hakn = TRUE,
                 study.var = "study",
+                extra.grouping.var = NULL,
                 arm.var.1 = "Cond_spec_trt1",
                 arm.var.2 = "Cond_spec_trt2",
                 measure.var = "Outc_measure",
@@ -42,6 +43,10 @@ between-study variance (tau-squared) and its square root (tau). Either \code{"RE
 \item{hakn}{\code{logical}. Should the Knapp-Hartung adjustment for effect size significance tests be used? Default is \code{TRUE}.}
 
 \item{study.var}{\code{character}. The name of the variable in \code{data} in which the study IDs are stored.}
+
+\item{extra.grouping.var}{\code{character}. Additional grouping variable within studies to be used for the \code{"combined"}
+analysis. This is useful, for example, to \emph{not} pool the effects of different treatment arms within multi-arm trials.
+\code{NULL} by default.}
 
 \item{arm.var.1}{\code{character}. The name of the variable in \code{data} in which the condition (e.g. "guided iCBT")
 of the \emph{first} arm within a comparison are stored.}
@@ -161,6 +166,17 @@ plot(res, "lowest.highest")
 # Extract specific model and do further calculations
 # (e.g. meta-regression on 'year')
 metareg(res$model.overall, ~year)
+
+# For the combined analysis, use provide an extra variable
+# so that different treatment arm comparisons in multiarm trials are NOT pooled
+data("psyCtrSubsetWide")
+psyCtrSubsetWide \%>\%
+  checkDataFormat() \%>\%
+  checkConflicts() \%>\%
+  expandMultiarmTrials() \%>\%
+  calculateEffectSizes() \%>\%
+  filterPoolingData(year > 2010) \%>\%
+  runMetaAnalysis(extra.grouping.var = "Cond_spec_trt1")
 }
 
 }

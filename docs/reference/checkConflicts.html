@@ -12,7 +12,7 @@ results when applying the expandMultiarmTrials function later on."><meta propert
     
     <a class="navbar-brand me-2" href="../index.html">metapsyTools</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.2</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -63,7 +63,9 @@ results when applying the <code><a href="expandMultiarmTrials.html">expandMultia
                .condition.specification <span class="op">=</span> <span class="st">"Cond_spec"</span>,
                .group.indicator <span class="op">=</span> <span class="st">"condition"</span>,
                .group.names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"ig"</span> <span class="op">=</span> <span class="st">"ig"</span>,
-                                   <span class="st">"cg"</span> <span class="op">=</span> <span class="st">"cg"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+                                   <span class="st">"cg"</span> <span class="op">=</span> <span class="st">"cg"</span><span class="op">)</span>,
+               .groups.column.indicator <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"_trt1"</span>, <span class="st">"_trt2"</span><span class="op">)</span>,
+               data.format <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -81,6 +83,12 @@ For multiarm trials, these conditions <em>must</em> be distinct (e.g. <code>"cbt
 <dd><p><code>character</code>, variable encoding if a row represents an intervention or control/reference arm.</p></dd>
 <dt>.group.names</dt>
 <dd><p><code>list</code>, storing the name of the value in <code>.group.indicator</code> corresponding to the intervention group (<code>"ig"</code>) and control group (<code>"cg"</code>).</p></dd>
+<dt>.groups.column.indicator</dt>
+<dd><p><code>character</code>. If the dataset is in wide format: a character vector with two elements, representing the suffix used to
+differentiate between the first and second treatment in a comparison.</p></dd>
+<dt>data.format</dt>
+<dd><p><code>character</code>. Either <code>"long"</code> or <code>"wide"</code>, depending on the format of the dataset in
+<code>data</code>. <code>NULL</code> by default, which lets the user define the format after the function has been called.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -128,7 +136,17 @@ studies/<code>data.frame</code> columns. In particular, results are provided wit
 <span class="r-in">  <span class="fu"><a href="checkDataFormat.html">checkDataFormat</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
 <span class="r-in">  <span class="fu">checkConflicts</span><span class="op">(</span><span class="va">vars.for.id</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
 <span class="r-in">  <span class="fu"><a href="expandMultiarmTrials.html">expandMultiarmTrials</a></span><span class="op">(</span><span class="va">vars.for.id</span><span class="op">)</span> <span class="op">-&gt;</span> <span class="va">res</span></span>
-<span class="r-in"> <span class="op">}</span></span>
+<span class="r-in"></span>
+<span class="r-in"><span class="co"># Example 4: Wide format</span></span>
+<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"psyCtrSubsetWide"</span><span class="op">)</span></span>
+<span class="r-in"><span class="va">psyCtrSubsetWide</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
+<span class="r-in">  <span class="fu"><a href="checkDataFormat.html">checkDataFormat</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
+<span class="r-in">  <span class="fu">checkConflicts</span><span class="op">(</span><span class="op">)</span></span>
+<span class="r-in"></span>
+<span class="r-in"><span class="co"># Example 4: Wide format; overrule default input prompt</span></span>
+<span class="r-in"><span class="fu">checkConflicts</span><span class="op">(</span><span class="va">psyCtrSubsetWide</span>,</span>
+<span class="r-in">               data.format <span class="op">=</span> <span class="st">"wide"</span><span class="op">)</span></span>
+<span class="r-in"><span class="op">}</span></span>
 <span class="r-in"></span>
 <span class="r-in"></span>
 </code></pre></div>

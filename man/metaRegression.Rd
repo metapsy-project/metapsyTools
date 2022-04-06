@@ -17,7 +17,7 @@ on the class of the fitted model.
 }
 \examples{
 \dontrun{
-metaRegression(res, ~ rob + scale(year))
+metaRegression(res$model.combined, ~ rob + scale(year))
 }
 }
 \author{

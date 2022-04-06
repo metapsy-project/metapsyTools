@@ -71,7 +71,6 @@
 #'   checkConflicts() %>%
 #'   expandMultiarmTrials() %>%
 #'   calculateEffectSizes() %>%
-#'   addTrialArmInfo(Post_N, Cond_spec) %>%
 #'   createStudyTable(
 #'     study,
 #'     diag = c("Cutoff" = "3", "Mood" = "2",
@@ -81,20 +80,20 @@
 #'                     "Other" = "other",
 #'                     "Psychiatric" = "psych"),
 #'     meanage, propwomen,
-#'     type = c("CBT" = "cbt", "Other" = "other", "PST" = "pst",
-#'              "BA" = "bat", "LR" = "lrt",
-#'              "PDT" = "dyn", "IPT" = "ipt"),
-#'     nsess, Post_N_ig, Post_N_cg, Cond_spec_ig, Cond_spec_cg,
+#'     type_trt1 = c("CBT" = "cbt", "Other" = "other", "PST" = "pst",
+#'                   "BA" = "bat", "LR" = "lrt",
+#'                   "PDT" = "dyn", "IPT" = "ipt"),
+#'     nsess_trt1, Post_N_trt1, Post_N_trt2, Cond_spec_trt1, Cond_spec_trt2,
 #'     country = c("Canada" = "4", "Europe" = "3", "USA" = "1",
 #'                 "Asia" = "6", "Middle East" = "7", "Australia" = "5"),
 #'     sg, ac, ba, itt,
-#'     .round.by.digits = list(meanage = 0, Post_N_ig = 0,
-#'                             Post_N_cg = 0),
+#'     .round.by.digits = list(meanage = 0, Post_N_trt1 = 0,
+#'                             Post_N_trt2 = 0),
 #'     .column.names = list(agegrp2 = "age group",
 #'                          ADD_setting = "setting",
-#'                          Post_N_ig = "N_ig", Post_N_cg = "N_cg",
-#'                          Cond_spec_ig = "format_ig",
-#'                          Cond_spec_cg = "format_cg")) -> table
+#'                          Post_N_trt1 = "N_ig", Post_N_trt2 = "N_cg",
+#'                          Cond_spec_trt1 = "format_ig",
+#'                          Cond_spec_trt2 = "format_cg")) -> table
 #' }
 #'
 #' @author Mathias Harrer \email{mathias.h.harrer@@gmail.com},
@@ -117,6 +116,9 @@ createStudyTable = function(.data, ...,
                             .column.names = NULL,
                             .na.replace = "nr",
                             .html = TRUE){
+
+  if (class(.data)[1] == "runMetaAnalysis")
+    .data = .data$data
 
   # Get tidy-select columns
   convert.vars = dplyr::enquos(...) %>%
