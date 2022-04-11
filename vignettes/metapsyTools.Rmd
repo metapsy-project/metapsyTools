@@ -12,6 +12,8 @@ vignette: >
 
 ## Introducing `metapsyTools`
 
+---
+
 The `metapsyTools` package facilitates the calculation of effect sizes (i.e. Hedges' $g$) and meta-analyses based on the **Metapsy** database (or databases adhering to the same format).
 
 The package consists of **two modules**:
@@ -31,7 +33,11 @@ This final dataset then builds the basis for the **analysis** module. Researcher
 
 <br></br>
 
+<br></br>
+
 ## The Preparation Module
+
+---
 
 The preparation module in `metapsyTools` allows to:
 
@@ -39,6 +45,8 @@ The preparation module in `metapsyTools` allows to:
 - check for formatting conflicts which have to be resolved prior to any further steps, using `checkConflicts`
 - expand multiarm trials, thereby creating two rows in the data set for each possible treatment arm combination in each multiarm trial, using `expandMultiarmTrials`
 - calculate Hedges' $g$ for each comparison, provided suitable data is available, and generate a data set ready for meta-analyses, using `calculateEffectSizes`.
+
+<br></br>
 
 ### Required Structure of the Database
 
@@ -88,6 +96,7 @@ First, the database **must** contain these columns, with **exactly** this variab
 - Please do _not_ include a variable with the name "id", "es", or "se" in the original data file, because these are added later. See "Calculation of Hedges' $g$" for more information.
 
 
+<br></br>
 
 ### Data Format & Conflict Check
 
@@ -178,7 +187,7 @@ In our case, no data format conflicts were detected. This is because all the dat
 
 Note: Since version 0.2.0 the `Trials with 2+ control groups` section studies are not regarded as data conflicts anymore, because the functionality can now handle 2+ control groups. `ID conflicts`, however, will always have to be fixed before proceeding. ID conflicts indicate that unique comparison IDs could not be created for all results.
 
-<br>
+<br></br>
 
 ### Expanding Multiarm Trials
 
@@ -214,7 +223,7 @@ nrow(database2021SubsetExpanded) - nrow(database2021Subset)
 
 We see that the expansion was successful, and that 169 rows were added in the process.
 
-<br>
+<br></br>
 
 ### Calculation of Hedges' $g$
 
@@ -320,7 +329,11 @@ The resulting data frame `data` now follows a "wider" format and includes all ef
 
 <br></br>
 
+<br></br>
+
 ## The Analysis Module
+
+---
 
 The analysis module in `metapsyTools` allows to run different kinds of meta-analyses based on the final data set created by the preparation module. It is designed to also be usable by researchers who were not directly involved in the preparation step, and is less demanding in terms of required background knowledge.
 
@@ -777,7 +790,11 @@ Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’
 
 <br></br>
 
+<br></br>
+
 ## Study Tables
+
+---
 
 The `createStudyTable` function allows to create an overview table for the included studies/comparisons. One only has to supply the filtered data set first, and then the names of the desired variables in the order in which they should appear in the table.
 It is also possible to rename factor labels directly in the function, determine how far values should be rounded, and if variable names should be changed:

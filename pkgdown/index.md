@@ -3,7 +3,7 @@
 </h1>
 
 
-The `metapsyTools` package facilitates the calculation of effect sizes and meta-analyses based on the [Metapsy](www.metapsy.org) database (or databases adhering to the same format).
+The `metapsyTools` package facilitates the calculation of effect sizes and meta-analyses based on the [Metapsy](https://www.metapsy.org) database (or databases adhering to the same format).
 
 <br></br>
 
@@ -20,4 +20,9 @@ devtools::install_github(
     build_vignettes = TRUE)
 ```
 
+To report bugs, or for further information, you can contact [Mathias](mailto:mathias.h.harrer@gmail.com).
+
 <br></br>
+
+<br></br>
+

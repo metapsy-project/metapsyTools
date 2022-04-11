@@ -88,6 +88,7 @@
 <div class="section level2">
 <h2 id="introducing-metapsytools">Introducing <code>metapsyTools</code><a class="anchor" aria-label="anchor" href="#introducing-metapsytools"></a>
 </h2>
+<hr>
 <p>The <code>metapsyTools</code> package facilitates the calculation of effect sizes (i.e. Hedges’ <span class="math inline">\(g\)</span>) and meta-analyses based on the <strong>Metapsy</strong> database (or databases adhering to the same format).</p>
 <p>The package consists of <strong>two modules</strong>:</p>
 <ol style="list-style-type: decimal">
@@ -102,10 +103,12 @@
 <strong>Important</strong>: The preparation module requires a familiarity with the general structure of the database, as well as intermediate-level knowledge of R and the <code>metapsyTools</code> package itself, in order to diagnose (potential) issues. We advise that the preparation step (i.e. checking the data format, expanding multiarm trials, and calculating effect sizes each time the database is updated) should be conducted by a person with some proficiency in R &amp; data wrangling. The analysis module, on the other hand, should be usable by all researchers.
 </div>
 <p><br></p>
+<p><br></p>
 </div>
 <div class="section level2">
 <h2 id="the-preparation-module">The Preparation Module<a class="anchor" aria-label="anchor" href="#the-preparation-module"></a>
 </h2>
+<hr>
 <p>The preparation module in <code>metapsyTools</code> allows to:</p>
 <ul>
 <li>check if the classes of variables in the imported data set are as required, using <code>checkDataFormat</code>
@@ -116,6 +119,7 @@
 </li>
 <li>calculate Hedges’ <span class="math inline">\(g\)</span> for each comparison, provided suitable data is available, and generate a data set ready for meta-analyses, using <code>calculateEffectSizes</code>.</li>
 </ul>
+<p><br></p>
 <div class="section level3">
 <h3 id="required-structure-of-the-database">Required Structure of the Database<a class="anchor" aria-label="anchor" href="#required-structure-of-the-database"></a>
 </h3>
@@ -190,6 +194,7 @@
 <li>Effect size data should only be added if this specific outcome (e.g. PHQ-9 at post-test) was assessed in <em>all</em> trial arms. It is not possible to add effect size data that was only measured in some arms within one trial, but not all.</li>
 <li>Please do <em>not</em> include a variable with the name “id”, “es”, or “se” in the original data file, because these are added later. See “Calculation of Hedges’ <span class="math inline">\(g\)</span>” for more information.</li>
 </ul>
+<p><br></p>
 </div>
 <div class="section level3">
 <h3 id="data-format-conflict-check">Data Format &amp; Conflict Check<a class="anchor" aria-label="anchor" href="#data-format-conflict-check"></a>
@@ -357,11 +362,13 @@
 <strong>Should I use <code>include.switched.arms</code>?</strong> It is not essential to calculate all possible arm comparisons, because, for Hedges’ <span class="math inline">\(g\)</span>, reference groups can always be “switched” by multiplying the calculated effect size by -1. However, having all possible comparisons in your data set is convenient, because all required comparisons pertaining to a particular research question (e.g. “how effective is PST when CBT is the reference group?”) can directly be filtered out; there is typically no need for further data manipulation steps.
 </div>
 <p><br></p>
+<p><br></p>
 </div>
 </div>
 <div class="section level2">
 <h2 id="the-analysis-module">The Analysis Module<a class="anchor" aria-label="anchor" href="#the-analysis-module"></a>
 </h2>
+<hr>
 <p>The analysis module in <code>metapsyTools</code> allows to run different kinds of meta-analyses based on the final data set created by the preparation module. It is designed to also be usable by researchers who were not directly involved in the preparation step, and is less demanding in terms of required background knowledge.</p>
 <p>The analysis module allows to:</p>
 <ul>
@@ -714,11 +721,13 @@ scale(year)              -0.0990  0.2965  -0.3338  22  0.7417  -0.7138   0.5159
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1</code></pre>
 <p><br></p>
+<p><br></p>
 </div>
 </div>
 <div class="section level2">
 <h2 id="study-tables">Study Tables<a class="anchor" aria-label="anchor" href="#study-tables"></a>
 </h2>
+<hr>
 <p>The <code>createStudyTable</code> function allows to create an overview table for the included studies/comparisons. One only has to supply the filtered data set first, and then the names of the desired variables in the order in which they should appear in the table. It is also possible to rename factor labels directly in the function, determine how far values should be rounded, and if variable names should be changed:</p>
 <div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/createStudyTable.html">createStudyTable</a></span><span class="op">(</span><span class="va">ma.data</span>,

@@ -5,8 +5,9 @@
 
 
 ![R CMD Check](https://img.shields.io/badge/R%20CMD%20Check-passing-brightgreen)
+[![DOI](https://zenodo.org/badge/366115984.svg)](https://zenodo.org/badge/latestdoi/366115984)
 
-The `metapsyTools` package facilitates the calculation of effect sizes and meta-analyses based on the [Metapsy](www.metapsy.org) database (or databases adhering to the same format).
+The `metapsyTools` package facilitates the calculation of effect sizes and meta-analyses based on the [Metapsy](https://www.metapsy.org) database (or databases adhering to the same format).
 
 
 ## Installation
