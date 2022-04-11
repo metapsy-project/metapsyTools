@@ -1,0 +1,12 @@
+citHeader("To cite metapsyTools in publications use:")
+
+citEntry(
+  entry    = "Manual",
+  title    = '{metapsyTools}: Several {R} Helper Functions For The {"Metapsy"} Database',
+  author   = "Mathias Harrer and Paula Kuper and Pim Cuijpers",
+  year     = "2020",
+  url      = "m",
+  textVersion = paste("x"
+
+  )
+)

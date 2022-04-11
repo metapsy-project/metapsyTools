@@ -1,15 +1,17 @@
 <h1>
   <code style="background: white;">metapsyTools</code>
 </h1>
+<a href='https://dplyr.tidyverse.org'><img src='https://metapsytools.protectlab.org/logo.png' align="right" height="139" /></a>
 
 
-The `metapsyTools` package facilitates the calculation of effect sizes and meta-analyses based on the Metapsy database (or databases adhering to the same format).
+![R CMD Check](https://img.shields.io/badge/R%20CMD%20Check-passing-brightgreen)
 
-<br></br>
+The `metapsyTools` package facilitates the calculation of effect sizes and meta-analyses based on the [Metapsy](www.metapsy.org) database (or databases adhering to the same format).
+
 
 ## Installation
 
-The `metapsyTools` package lives in a password-protected **GitHub repository**. It can only be downloaded using a key, using the code below:
+The `metapsyTools` package lives in a **GitHub repository**. It can only be downloaded using the code below:
 
 ```r
 if (!require("devtools"))
@@ -17,10 +19,12 @@ if (!require("devtools"))
 
 devtools::install_github(
     "MathiasHarrer/metapsyTools",
-    build_vignettes = TRUE,
-    auth_token = "0acdd3b1fb4e36cdc7efa5f59da2918d121ea051")
+    build_vignettes = TRUE)
 ```
 
-Please do not distribute the download key to third parties!
+## Repository Rules
 
-<br></br>
+You are allowed to use, fork and share the package. Please note that we will **not consider** pull requests or issue reports from **external users** who are not part of the Metapsy project collaboration. 
+
+
+
