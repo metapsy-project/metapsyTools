@@ -1,6 +1,6 @@
 ---
 name: Report an issue or feature request
-about: Issues reporting is only allowed for collaborators of the Metapsy project!
+about: Issue reporting is only allowed for collaborators of the Metapsy project!
 title: ''
 labels: metapsy collaborator
 assignees: MathiasHarrer
