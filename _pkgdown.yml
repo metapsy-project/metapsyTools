@@ -19,7 +19,14 @@ navbar:
       href: articles/metapsyTools.html
     reference:
       text: Documentation
-      href: reference/index.html
+      menu: 
+      - text: Function Reference
+        href: reference/index.html
+      - text: -------
+      - text: Installation Guide
+        href: articles/web/installation.html
+      - text: A Look Inside
+        href: articles/web/look_inside.html
 footer:
   structure:
     left: developed_by

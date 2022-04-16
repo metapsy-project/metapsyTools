@@ -8,6 +8,7 @@
 #'                         .which.run = .model$which.run[1],
 #'                         .round.digits = 2,
 #'                         .nnt.cer = NULL,
+#'                         .tau.common = FALSE,
 #'                         .html = TRUE)
 #'
 #' @param .model An object of class \code{"runMetaAnalysis"}, created by \code{\link{runMetaAnalysis}}.
@@ -19,6 +20,9 @@
 #' @param .nnt.cer \code{numeric}. Value between 0 and 1, indicating the assumed control group event rate to be used
 #' for calculating NNTs via the Furukawa-Leucht method. If set to \code{NULL} (default),
 #' the value saved in \code{.model} is (re-)used.
+#' @param .tau.common \code{logical}. Should a common (\code{TRUE}) or subgroup-specific (\code{FALSE}) estimate
+#' of the between-study heterogeneity be calculated when analyzing the subgroups? \code{FALSE} by default. Note that subgroup
+#' analyses based on "multilevel" models automatically assume common heterogeneity estimates.
 #' @param .html \code{logical}. Should an HTML table be created for the results? Default is \code{TRUE}.
 #'
 #' @return Returns an object of class \code{"subgroupAnalysis"}. This object includes, among other things,
@@ -66,6 +70,7 @@ subgroupAnalysis = function(.model, ...,
                  .which.run = .model$which.run[1],
                  .round.digits = 2,
                  .nnt.cer = NULL,
+                 .tau.common = FALSE,
                  .html = TRUE){
 
   if (class(.model)[1] != "runMetaAnalysis"){
@@ -94,9 +99,12 @@ subgroupAnalysis = function(.model, ...,
 
   # Run all subgroup analyses
   if (class(M)[1] == "metagen"){
-
+    
+    if (.tau.common)
+      message("- [OK] Subgroup analyses conducted using a common heterogeneity variance estimate.")
+    
     purrr::map(as.list(variables), function(x){
-
+      
       na.mask = !is.na(M$data[[x]])
       meta::metagen(TE = M$TE[na.mask],
                     seTE = M$seTE[na.mask],
@@ -107,7 +115,8 @@ subgroupAnalysis = function(.model, ...,
                     data = M$data[na.mask,],
                     subgroup = M$data[[x]][na.mask],
                     fixed = M$fixed,
-                    random = M$random)
+                    random = M$random,
+                    tau.common = .tau.common)
 
     }) -> subgroup.analysis.list
     names(subgroup.analysis.list) = variables

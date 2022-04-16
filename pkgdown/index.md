@@ -20,7 +20,7 @@ devtools::install_github(
     build_vignettes = TRUE)
 ```
 
-To report bugs, or for further information, you can contact [Mathias](mailto:mathias.h.harrer@gmail.com).
+More details on how to install and update the package can be found in the [installation guide](articles/web/installation.html).
 
 <br></br>
 

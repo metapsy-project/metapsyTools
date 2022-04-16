@@ -9,6 +9,7 @@ subgroupAnalysis(.model,
                         .which.run = .model$which.run[1],
                         .round.digits = 2,
                         .nnt.cer = NULL,
+                        .tau.common = FALSE,
                         .html = TRUE)
 }
 \arguments{
@@ -25,6 +26,10 @@ analysis in \code{.model} if no value is specified by the user.}
 \item{.nnt.cer}{\code{numeric}. Value between 0 and 1, indicating the assumed control group event rate to be used
 for calculating NNTs via the Furukawa-Leucht method. If set to \code{NULL} (default),
 the value saved in \code{.model} is (re-)used.}
+
+\item{.tau.common}{\code{logical}. Should a common (\code{TRUE}) or subgroup-specific (\code{FALSE}) estimate
+of the between-study heterogeneity be calculated when analyzing the subgroups? \code{FALSE} by default. Note that subgroup
+analyses based on "multilevel" models automatically assume common heterogeneity estimates.}
 
 \item{.html}{\code{logical}. Should an HTML table be created for the results? Default is \code{TRUE}.}
 }

@@ -23,8 +23,14 @@ runMetaAnalysis objects."><meta property="og:image" content="/logo.png"><!-- mat
       <ul class="navbar-nav me-auto"><li class="nav-item">
   <a class="nav-link" href="../articles/metapsyTools.html">Get Started</a>
 </li>
-<li class="active nav-item">
-  <a class="nav-link" href="../reference/index.html">Documentation</a>
+<li class="active nav-item dropdown">
+  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-documentation">Documentation</a>
+  <div class="dropdown-menu" aria-labelledby="dropdown-documentation">
+    <a class="dropdown-item" href="../reference/index.html">Function Reference</a>
+    <div class="dropdown-divider"></div>
+    <a class="dropdown-item" href="../articles/web/installation.html">Installation Guide</a>
+    <a class="dropdown-item" href="../articles/web/look_inside.html">A Look Inside</a>
+  </div>
 </li>
       </ul><form class="form-inline my-2 my-lg-0" role="search">
         <input type="search" class="form-control me-sm-2" aria-label="Toggle navigation" name="search-input" data-search-index="../search.json" id="search-input" placeholder="Search for" autocomplete="off"></form>
@@ -59,6 +65,7 @@ runMetaAnalysis objects."><meta property="og:image" content="/logo.png"><!-- mat
                         .which.run <span class="op">=</span> <span class="va">.model</span><span class="op">$</span><span class="va">which.run</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>,
                         .round.digits <span class="op">=</span> <span class="fl">2</span>,
                         .nnt.cer <span class="op">=</span> <span class="cn">NULL</span>,
+                        .tau.common <span class="op">=</span> <span class="cn">FALSE</span>,
                         .html <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
     </div>
 
@@ -78,6 +85,10 @@ analysis in <code>.model</code> if no value is specified by the user.</p></dd>
 <dd><p><code>numeric</code>. Value between 0 and 1, indicating the assumed control group event rate to be used
 for calculating NNTs via the Furukawa-Leucht method. If set to <code>NULL</code> (default),
 the value saved in <code>.model</code> is (re-)used.</p></dd>
+<dt>.tau.common</dt>
+<dd><p><code>logical</code>. Should a common (<code>TRUE</code>) or subgroup-specific (<code>FALSE</code>) estimate
+of the between-study heterogeneity be calculated when analyzing the subgroups? <code>FALSE</code> by default. Note that subgroup
+analyses based on "multilevel" models automatically assume common heterogeneity estimates.</p></dd>
 <dt>.html</dt>
 <dd><p><code>logical</code>. Should an HTML table be created for the results? Default is <code>TRUE</code>.</p></dd>
 </dl></div>
