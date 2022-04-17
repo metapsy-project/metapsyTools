@@ -107,7 +107,7 @@ write.csv(data.prep, "data_prep.csv")
 # 3. Analysis -----------------------------------------------------------------
 
 
-# 3.1 Filtering Data ----------------------------------------------------------
+## 3.1 Filtering Data ---------------------------------------------------------
 
 # Filter data for our planned analysis
 instrumentPriority = c("hdrs", "bdi-2", "ces-d", "phq-9")
@@ -129,7 +129,7 @@ data.prep %>%
 
 
 
-# 3.2 Effect Size Pooling -----------------------------------------------------
+## 3.2 Effect Size Pooling ----------------------------------------------------
 
 # Now we pool the effects using runMetaAnalysis.
 # We change a few of the default settings to showcase the functiontality.
@@ -149,7 +149,7 @@ summary(res)
 
 
 
-# 3.3 Forest Plots ------------------------------------------------------------
+## 3.3 Forest Plots -----------------------------------------------------------
 
 # Forest plot of the 'combined' analysis - check if additional grouping worked
 # Width and height are specified in *inches* (sigh!)
@@ -173,7 +173,7 @@ dev.off()
 
 
 
-# 3.4 Model Diagnostiss -------------------------------------------------------
+## 3.4 Model Diagnostics ------------------------------------------------------
 
 # Plot a baujat plot
 plot(res, "baujat")
@@ -187,7 +187,7 @@ profile(res$model.threelevel.che)
 
 
 
-# 3.5 Small Study-Effects -----------------------------------------------------
+## 3.5 Small Study-Effects ----------------------------------------------------
 
 # Funnel plot
 col.contour <- c("gray75", "gray85", "gray95")
@@ -227,7 +227,7 @@ funnel.limitmeta(lim, shrunken = TRUE)
 
 
 
-# 3.6 Meta-Regression ---------------------------------------------------------
+## 3.6 Meta-Regression --------------------------------------------------------
 
 # Meta-Regression using the 'metaRegression' function
 # Here we conduct a multiple meta-regression using year and risk of bias
@@ -244,7 +244,7 @@ metaRegression(res$model.combined, ~ se)
 
 
 
-# 3.7 Subgroup Analysis -------------------------------------------------------
+## 3.7 Subgroup Analysis ------------------------------------------------------
 
 # We want to create a table with subgroup analysis results for 
 # 'type_format_trt2', 'country', 'age_group'.
@@ -257,7 +257,7 @@ plot(sg, "country")
 
 
 
-# 3.8 Study Table -------------------------------------------------------------
+## 3.8 Study Table ------------------------------------------------------------
 
 # Create a study table for the meta-analysis
 createStudyTable(res, study, 
