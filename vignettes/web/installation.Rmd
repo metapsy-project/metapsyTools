@@ -80,7 +80,7 @@ It is best to choose `n` (no). If the installation fails with this strategy
 
 The `metapsyTools` package is under active development and after some time, a new 
 version may be available. You can check the current version of of `metapsyTools`
-installated on your computer using this code:
+installed on your computer using this code:
 
 ```{r, eval=F}
 packageVersion("metapsyTools")
@@ -88,10 +88,10 @@ packageVersion("metapsyTools")
 
 The header of this website displays the most recent version of the package available
 for users. To use novel functionalities integrated into the package since your last installation,
-you will have to update the package that you have locally on your computer. 
+you have to update the package version that you have locally on your computer. 
 
-To update your package version, you first have to de-install the current version on your computer.
-You can do this using this code:
+To update the package, you first have to **de-install** the current version on your computer.
+You can do this using the following code:
 
 ```{r, eval=F}
 # Note: this code assumes you are working with RStudio 
@@ -99,7 +99,6 @@ remove.packages("metapsyTools")
 .rs.restartR() 
 ```
 
-You can then use the same code as used above to (re-)install the latest version
-of the package.
+You can then use the same code as used above to (re-)install the latest package version.
 
 <br></br>
