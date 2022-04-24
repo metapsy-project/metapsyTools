@@ -176,8 +176,9 @@ createStudyTable = function(.data, ...,
 
   # Replace NA values
   apply(data.d, 2, function(x){
-    x[x == "NA"] = NA; return(x)}) %>%
-    tidyr::replace_na(.na.replace) %>%
+    x[x == "NA"] = NA
+    tidyr::replace_na(x, .na.replace) -> x
+    return(x)}) %>%
     data.frame() -> data.d
 
   # Rename columns

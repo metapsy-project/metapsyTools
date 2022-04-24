@@ -242,6 +242,11 @@ metaRegression(res$model.threelevel.che, ~ scale(year) + scale(rob))
 # PET model (small study effects-corrected effect size)
 metaRegression(res$model.combined, ~ se)
 
+# Use regplot() to generate a bubble plot of the regression line.
+# We have to specify the parameter we want to have plotted
+m.reg <- metaRegression(res$model.outliers, ~ scale(year) + scale(rob))
+regplot(m.reg, "scale(rob)")
+
 
 
 ## 3.7 Subgroup Analysis ------------------------------------------------------

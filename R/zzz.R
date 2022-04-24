@@ -6,8 +6,7 @@
                         crayon::green("vignette('metapsyTools')"),
                         crayon::cyan(" in the R console."),
                         crayon::cyan("\n \u2192 Package documentation: "),
-                        crayon::green("metapsytools.protectlab.org"),
-                        crayon::cyan(".\n \u2192 Password: metapsyTools123!")) 
+                        crayon::green("metapsytools.protectlab.org")) 
 }
 
 

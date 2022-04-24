@@ -15,8 +15,8 @@
 <link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png">
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.1.0/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.1.0/bootstrap.bundle.min.js"></script><link href="../deps/_Fira%20Sans-0.4.0/font.css" rel="stylesheet">
-<link href="../deps/_Fira%20Code-0.4.0/font.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.1.0/bootstrap.bundle.min.js"></script><link href="../deps/_Fira%20Sans-0.4.1/font.css" rel="stylesheet">
+<link href="../deps/_Fira%20Code-0.4.1/font.css" rel="stylesheet">
 <!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- bootstrap-toc --><script src="https://cdn.rawgit.com/afeld/bootstrap-toc/v1.0.1/dist/bootstrap-toc.min.js"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="metapsyTools">
@@ -81,7 +81,8 @@
 <div class="row">
   <main id="main"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>metapsyTools</h1>
-                        <h4 data-toc-skip class="author">Mathias Harrer &amp; Paula Kuper</h4>
+                        <h4 data-toc-skip class="author">Mathias Harrer
+&amp; Paula Kuper</h4>
             
       
       <small class="dont-index">Source: <a href="https://github.com/MathiasHarrer/metapsyTools/blob/HEAD/vignettes/metapsyTools.Rmd" class="external-link"><code>vignettes/metapsyTools.Rmd</code></a></small>
@@ -95,18 +96,40 @@
 <h2 id="introducing-metapsytools">Introducing <code>metapsyTools</code><a class="anchor" aria-label="anchor" href="#introducing-metapsytools"></a>
 </h2>
 <hr>
-<p>The <code>metapsyTools</code> package facilitates the calculation of effect sizes (i.e. Hedges’ <span class="math inline">\(g\)</span>) and meta-analyses based on the <strong>Metapsy</strong> database (or databases adhering to the same format).</p>
+<p>The <code>metapsyTools</code> package facilitates the calculation of
+effect sizes (i.e. Hedges’ <span class="math inline">\(g\)</span>) and
+meta-analyses based on the <strong>Metapsy</strong> database (or
+databases adhering to the same format).</p>
 <p>The package consists of <strong>two modules</strong>:</p>
 <ol style="list-style-type: decimal">
-<li>A module to check the data format and calculate effect sizes for all possible study comparisons (<strong>preparation</strong> module);</li>
-<li>A module to select relevant comparisons for a specific meta-analysis, calculate the results (including subgroup analyses), and generate tables (<strong>analysis</strong> module).</li>
+<li>A module to check the data format and calculate effect sizes for all
+possible study comparisons (<strong>preparation</strong> module);</li>
+<li>A module to select relevant comparisons for a specific
+meta-analysis, calculate the results (including subgroup analyses), and
+generate tables (<strong>analysis</strong> module).</li>
 </ol>
-<p>The idea is to use the two modules in different contexts. For example, the <strong>preparation</strong> module can be used every time the database is updated to gather all information, calculate effect sizes, and bring the data into a format suitable for further analyses.</p>
-<p>This final dataset then builds the basis for the <strong>analysis</strong> module. Researchers simply have to filter out the comparisons that are relevant for their investigation, and can then use functions of the package to run a full meta-analysis, including sensitivity and subgroup analyses.</p>
+<p>The idea is to use the two modules in different contexts. For
+example, the <strong>preparation</strong> module can be used every time
+the database is updated to gather all information, calculate effect
+sizes, and bring the data into a format suitable for further
+analyses.</p>
+<p>This final dataset then builds the basis for the
+<strong>analysis</strong> module. Researchers simply have to filter out
+the comparisons that are relevant for their investigation, and can then
+use functions of the package to run a full meta-analysis, including
+sensitivity and subgroup analyses.</p>
 <p><br></p>
 <p><img src="overview.png" width="685"></p>
 <div style="border: 1px solid black; bg-color: gray; padding: 10px; border-radius: 3px;">
-<strong>Important</strong>: The preparation module requires a familiarity with the general structure of the database, as well as intermediate-level knowledge of R and the <code>metapsyTools</code> package itself, in order to diagnose (potential) issues. We advise that the preparation step (i.e. checking the data format, expanding multiarm trials, and calculating effect sizes each time the database is updated) should be conducted by a person with some proficiency in R &amp; data wrangling. The analysis module, on the other hand, should be usable by all researchers.
+<strong>Important</strong>: The preparation module requires a
+familiarity with the general structure of the database, as well as
+intermediate-level knowledge of R and the <code>metapsyTools</code>
+package itself, in order to diagnose (potential) issues. We advise that
+the preparation step (i.e. checking the data format, expanding multiarm
+trials, and calculating effect sizes each time the database is updated)
+should be conducted by a person with some proficiency in R &amp; data
+wrangling. The analysis module, on the other hand, should be usable by
+all researchers.
 </div>
 <p><br></p>
 <p><br></p>
@@ -117,96 +140,229 @@
 <hr>
 <p>The preparation module in <code>metapsyTools</code> allows to:</p>
 <ul>
-<li>check if the classes of variables in the imported data set are as required, using <code>checkDataFormat</code>
+<li>check if the classes of variables in the imported data set are as
+required, using <code>checkDataFormat</code>
 </li>
-<li>check for formatting conflicts which have to be resolved prior to any further steps, using <code>checkConflicts</code>
+<li>check for formatting conflicts which have to be resolved prior to
+any further steps, using <code>checkConflicts</code>
 </li>
-<li>expand multiarm trials, thereby creating two rows in the data set for each possible treatment arm combination in each multiarm trial, using <code>expandMultiarmTrials</code>
+<li>expand multiarm trials, thereby creating two rows in the data set
+for each possible treatment arm combination in each multiarm trial,
+using <code>expandMultiarmTrials</code>
 </li>
-<li>calculate Hedges’ <span class="math inline">\(g\)</span> for each comparison, provided suitable data is available, and generate a data set ready for meta-analyses, using <code>calculateEffectSizes</code>.</li>
+<li>calculate Hedges’ <span class="math inline">\(g\)</span> for each
+comparison, provided suitable data is available, and generate a data set
+ready for meta-analyses, using <code>calculateEffectSizes</code>.</li>
 </ul>
 <p><br></p>
 <div class="section level3">
 <h3 id="required-structure-of-the-database">Required Structure of the Database<a class="anchor" aria-label="anchor" href="#required-structure-of-the-database"></a>
 </h3>
-<p>For your own convenience, it is highly advised to <strong>strictly</strong> follow some data formatting rules prior to importing the dataset for effect size calculation. If all of these rules are followed closely, it minimizes the risk of receiving error messages, producing conflicts, etc.</p>
-<p>We assume that the database follows the general structure of the Metapsy database, in which <strong>each row represents a specific result of one trial arm</strong> (e.g. the measured self-reported depression severity in the control group at post-test in some study x).</p>
-<p>First, the database <strong>must</strong> contain these columns, with <strong>exactly</strong> this variable name:</p>
+<p>For your own convenience, it is highly advised to
+<strong>strictly</strong> follow some data formatting rules prior to
+importing the dataset for effect size calculation. If all of these rules
+are followed closely, it minimizes the risk of receiving error messages,
+producing conflicts, etc.</p>
+<p>We assume that the database follows the general structure of the
+Metapsy database, in which <strong>each row represents a specific result
+of one trial arm</strong> (e.g. the measured self-reported depression
+severity in the control group at post-test in some study x).</p>
+<p>First, the database <strong>must</strong> contain these columns, with
+<strong>exactly</strong> this variable name:</p>
 <ul>
 <li>
-<strong><code>study</code></strong>. The name and year of the study the result was extracted from, as a <code>character</code> variable, e.g. <code>"Cuijpers, 2019"</code>. This variable should <strong>not</strong> differ between study arms, measurement points, etc.<br>
+<strong><code>study</code></strong>. The name and year of the study
+the result was extracted from, as a <code>character</code> variable,
+e.g. <code>"Cuijpers, 2019"</code>. This variable should
+<strong>not</strong> differ between study arms, measurement points,
+etc.<br>
 </li>
 <li>
-<strong><code>condition</code></strong>. A <code>character</code> variable, representing if the trial arm served as the control group (<code>"cg"</code>) or intervention group (<code>"ig"</code>) in this specific trial. Overall, <code>condition</code> must only contain <code>"cg"</code> or <code>"ig"</code> values.</li>
+<strong><code>condition</code></strong>. A <code>character</code>
+variable, representing if the trial arm served as the control group
+(<code>"cg"</code>) or intervention group (<code>"ig"</code>) in this
+specific trial. Overall, <code>condition</code> must only contain
+<code>"cg"</code> or <code>"ig"</code> values.</li>
 <li>
-<strong><code>Cond_spec</code></strong>. A <code>character</code> variable, representing the “condition specification”. This variable encodes the type of intervention/control group employed in the trial arm (e.g. <code>"cau"</code> for care as usual, or <code>"pst"</code> for problem-solving therapy). <strong><em>NOTE</em></strong>: for multiarm trials, this variable encodes the different treatment in each trial arm. In multiarm trials, <code>Cond_spec</code> <strong>must</strong> have different values in differing treatment arms. Say, e.g., that one trial consisted of conditions PST online, PST face-to-face, and a wait-list. Here, we still use <code>"pst"</code> to specify that Problem-Solving Therapy was employed; but in brackets, we add the “special” subtype of PST to uniquely identify the two intervention arms. In sum, the values for this trial in <code>Cond_spec</code> would therefore be <code>"pst (online)"</code>, <code>"pst (f2f)"</code> and <code>"wl"</code>.</li>
+<strong><code>Cond_spec</code></strong>. A <code>character</code>
+variable, representing the “condition specification”. This variable
+encodes the type of intervention/control group employed in the trial arm
+(e.g. <code>"cau"</code> for care as usual, or <code>"pst"</code> for
+problem-solving therapy). <strong><em>NOTE</em></strong>: for multiarm
+trials, this variable encodes the different treatment in each trial arm.
+In multiarm trials, <code>Cond_spec</code> <strong>must</strong> have
+different values in differing treatment arms. Say, e.g., that one trial
+consisted of conditions PST online, PST face-to-face, and a wait-list.
+Here, we still use <code>"pst"</code> to specify that Problem-Solving
+Therapy was employed; but in brackets, we add the “special” subtype of
+PST to uniquely identify the two intervention arms. In sum, the values
+for this trial in <code>Cond_spec</code> would therefore be
+<code>"pst (online)"</code>, <code>"pst (f2f)"</code> and
+<code>"wl"</code>.</li>
 <li>
-<strong><code>multiple_arms</code></strong>. A <code>character</code> variable. This variable should be <code>NA</code> when a trial arm is not part of a multiarm study. When the arm <em>is</em> part of a multiarm trial, this variable should have the same value as in <code>Cond_spec</code>.</li>
+<strong><code>multiple_arms</code></strong>. A
+<code>character</code> variable. This variable should be <code>NA</code>
+when a trial arm is not part of a multiarm study. When the arm
+<em>is</em> part of a multiarm trial, this variable should have the same
+value as in <code>Cond_spec</code>.</li>
 <li>
-<strong><code>is.multiarm</code></strong>. A <code>numeric</code> variable which indicates if a trial arm is <em>not</em> part of a multiarm study (<code>0</code>, i.e. the study only has one intervention and one control group) or is part of a multiarm study (<code>1</code>).</li>
+<strong><code>is.multiarm</code></strong>. A <code>numeric</code>
+variable which indicates if a trial arm is <em>not</em> part of a
+multiarm study (<code>0</code>, i.e. the study only has one intervention
+and one control group) or is part of a multiarm study
+(<code>1</code>).</li>
 <li>
-<strong><code>no.arms</code></strong>. A <code>numeric</code> variable, indicating the number of arms in one trial. In non-multiarm trials, this should be <code>2</code>.</li>
+<strong><code>no.arms</code></strong>. A <code>numeric</code>
+variable, indicating the number of arms in one trial. In non-multiarm
+trials, this should be <code>2</code>.</li>
 <li>
-<strong><code>Outc_measure</code></strong>. A <code>character</code> variable, indicating the type of instrument used to measure the results (e.g. <code>"phq-9"</code>). If the same instrument was used to measure <strong>several</strong> quantities in one study, the type of outcome <strong>must</strong> be added in brackets, for example <code>"hdrs (response)"</code> and <code>"hdrs (remission)"</code>.</li>
+<strong><code>Outc_measure</code></strong>. A <code>character</code>
+variable, indicating the type of instrument used to measure the results
+(e.g. <code>"phq-9"</code>). If the same instrument was used to measure
+<strong>several</strong> quantities in one study, the type of outcome
+<strong>must</strong> be added in brackets, for example
+<code>"hdrs (response)"</code> and <code>"hdrs (remission)"</code>.</li>
 <li>
-<strong><code>Time</code></strong>. A <code>character</code> variable, indicating the assessment point (e.g. <code>"baseline"</code> or <code>"post"</code>).</li>
+<strong><code>Time</code></strong>. A <code>character</code>
+variable, indicating the assessment point (e.g. <code>"baseline"</code>
+or <code>"post"</code>).</li>
 <li>
-<strong><code>Time_weeks</code></strong>. A <code>character</code> variable, indicating the assessment point in time units (e.g. <code>"2 month"</code> or <code>"0"</code>). Can be <code>NA</code> in case no information was reported.</li>
+<strong><code>Time_weeks</code></strong>. A <code>character</code>
+variable, indicating the assessment point in time units
+(e.g. <code>"2 month"</code> or <code>"0"</code>). Can be
+<code>NA</code> in case no information was reported.</li>
 <li>
-<strong><code>primary</code></strong>. A <code>numeric</code> variable, indicating if the row contains results of the trial’s primary outcome (<code>1</code>) or not (<code>0</code>).</li>
+<strong><code>primary</code></strong>. A <code>numeric</code>
+variable, indicating if the row contains results of the trial’s primary
+outcome (<code>1</code>) or not (<code>0</code>).</li>
 <li>
-<strong><code>sr_clinician</code></strong>. A <code>character</code> variable, representing if an outcome was self-reported (e.g. <code>"self-reported"</code>), or assessed in some other way (e.g. <code>"clinician"</code>-rated).</li>
+<strong><code>sr_clinician</code></strong>. A <code>character</code>
+variable, representing if an outcome was self-reported
+(e.g. <code>"self-reported"</code>), or assessed in some other way
+(e.g. <code>"clinician"</code>-rated).</li>
 <li>
-<strong><code>rob</code></strong>. A variable indicating how many risk of bias criteria were fulfilled. This variable is not essential but expected by default in, for example, <code>runMetaAnalysis</code>.</li>
+<strong><code>rob</code></strong>. A variable indicating how many
+risk of bias criteria were fulfilled. This variable is not essential but
+expected by default in, for example, <code>runMetaAnalysis</code>.</li>
 <li>
-<strong><code>...</code></strong> Further variables to be used (among other things) for subgroup analyses, study details in the meta-analysis publication, meta-regression, or to define treatment types analyzed in network meta-analyses, and so forth.</li>
+<strong><code>...</code></strong> Further variables to be used
+(among other things) for subgroup analyses, study details in the
+meta-analysis publication, meta-regression, or to define treatment types
+analyzed in network meta-analyses, and so forth.</li>
 </ul>
-<p><strong>The following variables have to be added to calculate effect sizes</strong> (all of class <code>numeric</code>):</p>
+<p><strong>The following variables have to be added to calculate effect
+sizes</strong> (all of class <code>numeric</code>):</p>
 <ul>
 <li>Mean, SD and N:
 <ul>
 <li>
-<strong><code>Post_M</code></strong>. The mean of the measured outcome in the trial arm, if applicable. Otherwise, leave as <code>NA</code>.</li>
+<strong><code>Post_M</code></strong>. The mean of the measured
+outcome in the trial arm, if applicable. Otherwise, leave as
+<code>NA</code>.</li>
 <li>
-<strong><code>Post_SD</code></strong>. The sample standard deviation of the measured outcome in the trial arm, if applicable. Otherwise, leave as <code>NA</code>.</li>
+<strong><code>Post_SD</code></strong>. The sample standard deviation
+of the measured outcome in the trial arm, if applicable. Otherwise,
+leave as <code>NA</code>.</li>
 <li>
-<strong><code>Post_N</code></strong>. The sample size of the trial arm, if applicable. Otherwise, leave as <code>NA</code>.</li>
+<strong><code>Post_N</code></strong>. The sample size of the trial
+arm, if applicable. Otherwise, leave as <code>NA</code>.</li>
 </ul>
 </li>
 <li>Change Scores:
 <ul>
 <li>
-<strong><code>Change_m</code></strong> (note the lowercase “m”!). The mean pre-post change in the trial arm, if applicable. Otherwise, leave as <code>NA</code>.</li>
+<strong><code>Change_m</code></strong> (note the lowercase “m”!).
+The mean pre-post change in the trial arm, if applicable. Otherwise,
+leave as <code>NA</code>.</li>
 <li>
-<strong><code>Change_SD</code></strong>. The sample standard deviation of the change scores in the trial arm, if applicable. Otherwise, leave as <code>NA</code>.</li>
+<strong><code>Change_SD</code></strong>. The sample standard
+deviation of the change scores in the trial arm, if applicable.
+Otherwise, leave as <code>NA</code>.</li>
 <li>
-<strong><code>Change_N</code></strong>. The sample size of the trial arm, <em>if</em> change scores are used. Otherwise, leave as <code>NA</code>, particularly when data for <code>Post_M</code> and <code>Post_SD</code> are available in the same row.</li>
+<strong><code>Change_N</code></strong>. The sample size of the trial
+arm, <em>if</em> change scores are used. Otherwise, leave as
+<code>NA</code>, particularly when data for <code>Post_M</code> and
+<code>Post_SD</code> are available in the same row.</li>
 </ul>
 </li>
 <li>Response, Remission, …
 <ul>
 <li>
-<strong><code>Improved_N</code></strong>. The number of individuals in the trial arm who have <em>improved</em>. It is crucial that the outcome should be positive/desired (i.e. remission, response, but <em>not</em> e.g. deterioration) to ensure that the calculated effect sizes have the correct sign in the end!</li>
+<strong><code>Improved_N</code></strong>. The number of individuals
+in the trial arm who have <em>improved</em>. It is crucial that the
+outcome should be positive/desired (i.e. remission, response, but
+<em>not</em> e.g. deterioration) to ensure that the calculated effect
+sizes have the correct sign in the end!</li>
 <li>
-<strong><code>Rand_N</code></strong>. If the row contains improvement data: the number of individuals in the trial arm. Otherwise, leave as <code>NA</code>, particularly when data for <code>Post_M</code> and <code>Post_SD</code>, or <code>Change_m</code> and <code>Change_SD</code> are available in the same row.</li>
+<strong><code>Rand_N</code></strong>. If the row contains
+improvement data: the number of individuals in the trial arm. Otherwise,
+leave as <code>NA</code>, particularly when data for <code>Post_M</code>
+and <code>Post_SD</code>, or <code>Change_m</code> and
+<code>Change_SD</code> are available in the same row.</li>
 </ul>
 </li>
 </ul>
-<p><strong>Further remarks</strong> concerning the required data structure:</p>
+<p><strong>Further remarks</strong> concerning the required data
+structure:</p>
 <ul>
-<li>Often, it will not be possible to calculate the effect size data for all comparisons (e.g. because they reported their results in an “exotic” format, or because only the calculated value of <span class="math inline">\(d\)</span> or <span class="math inline">\(g\)</span> was reported). In this case, leave all effect size data variables in the dataset as <code>NA</code>. After using <code>calculateEffectSizes</code>, these comparisons will simply be forwarded without any calculations, and have <code>NA</code> in the calculated effect size and standard error columns. These gaps can then be filled manually by simply inserting the calculated <span class="math inline">\(g\)</span> and <span class="math inline">\(\sqrt{V_g}\)</span> values in the <code>es</code> and <code>se</code> columns generated by <code>calculatedEffectSizes</code> to “fill the gaps”. When the database is updated the next time, this leads to a temporary loss of the manually calculated effect sizes (the rows with manually calculated effect sizes will again be <code>NA</code> if the functions are used on the entire updated database). However, this should not be a large issue. The <code>calculateEffectSizes</code> function creates a unique <code>id</code> variable in the final dataset for each comparison. This ID can be used to match comparisons with their manually calculated effect sizes from the last update again.</li>
-<li>The <code>study</code> variable should be identical for all arms (and outcomes measured in that arm) provided by the same study. However, there is one exception. When results are consistently reported separately for subgroups within the trial (e.g. M, SD and N for patients with and without a clinical diagnosis, for all trial arms), these subgroups should be treated as <em>independent</em> studies (or alternatively, the results can be pooled to obtain overall data). This means that the <code>study</code> variable has to be adapted in this very special case to differentiate between the subgroups. This can be done by adding the subgroup in brackets, e.g. <code>"Dimidjan, 2005 (no diagnosis)"</code> and <code>"Dimidjan, 2005 (diagnosis)"</code>.</li>
-<li>Each comparison/row can only contain effect size data for one effect size data type as declared above (Mean, SD, N <em>or</em> Change Scores <em>or</em> Response/Remission), but for the selected effect size data type, <strong>all</strong> required data must be available (e.g. if <code>Post_M</code> and <code>Post_N</code> are provided, one <em>must</em> also provide data for <code>Post_SD</code>).</li>
-<li>Effect size data should only be added if this specific outcome (e.g. PHQ-9 at post-test) was assessed in <em>all</em> trial arms. It is not possible to add effect size data that was only measured in some arms within one trial, but not all.</li>
-<li>Please do <em>not</em> include a variable with the name “id”, “es”, or “se” in the original data file, because these are added later. See “Calculation of Hedges’ <span class="math inline">\(g\)</span>” for more information.</li>
+<li>Often, it will not be possible to calculate the effect size data for
+all comparisons (e.g. because they reported their results in an “exotic”
+format, or because only the calculated value of <span class="math inline">\(d\)</span> or <span class="math inline">\(g\)</span> was reported). In this case, leave all
+effect size data variables in the dataset as <code>NA</code>. After
+using <code>calculateEffectSizes</code>, these comparisons will simply
+be forwarded without any calculations, and have <code>NA</code> in the
+calculated effect size and standard error columns. These gaps can then
+be filled manually by simply inserting the calculated <span class="math inline">\(g\)</span> and <span class="math inline">\(\sqrt{V_g}\)</span> values in the <code>es</code>
+and <code>se</code> columns generated by
+<code>calculatedEffectSizes</code> to “fill the gaps”. When the database
+is updated the next time, this leads to a temporary loss of the manually
+calculated effect sizes (the rows with manually calculated effect sizes
+will again be <code>NA</code> if the functions are used on the entire
+updated database). However, this should not be a large issue. The
+<code>calculateEffectSizes</code> function creates a unique
+<code>id</code> variable in the final dataset for each comparison. This
+ID can be used to match comparisons with their manually calculated
+effect sizes from the last update again.</li>
+<li>The <code>study</code> variable should be identical for all arms
+(and outcomes measured in that arm) provided by the same study. However,
+there is one exception. When results are consistently reported
+separately for subgroups within the trial (e.g. M, SD and N for patients
+with and without a clinical diagnosis, for all trial arms), these
+subgroups should be treated as <em>independent</em> studies (or
+alternatively, the results can be pooled to obtain overall data). This
+means that the <code>study</code> variable has to be adapted in this
+very special case to differentiate between the subgroups. This can be
+done by adding the subgroup in brackets,
+e.g. <code>"Dimidjan, 2005 (no diagnosis)"</code> and
+<code>"Dimidjan, 2005 (diagnosis)"</code>.</li>
+<li>Each comparison/row can only contain effect size data for one effect
+size data type as declared above (Mean, SD, N <em>or</em> Change Scores
+<em>or</em> Response/Remission), but for the selected effect size data
+type, <strong>all</strong> required data must be available (e.g. if
+<code>Post_M</code> and <code>Post_N</code> are provided, one
+<em>must</em> also provide data for <code>Post_SD</code>).</li>
+<li>Effect size data should only be added if this specific outcome
+(e.g. PHQ-9 at post-test) was assessed in <em>all</em> trial arms. It is
+not possible to add effect size data that was only measured in some arms
+within one trial, but not all.</li>
+<li>Please do <em>not</em> include a variable with the name “id”, “es”,
+or “se” in the original data file, because these are added later. See
+“Calculation of Hedges’ <span class="math inline">\(g\)</span>” for more
+information.</li>
 </ul>
 <p><br></p>
 </div>
 <div class="section level3">
 <h3 id="data-format-conflict-check">Data Format &amp; Conflict Check<a class="anchor" aria-label="anchor" href="#data-format-conflict-check"></a>
 </h3>
-<p>Once the data set has been pre-structured correctly, <code>metapsyTools</code> allows you to check the required variable format and control for potential formatting conflicts.</p>
-<p>If the formatting rules above are followed, none of the default behavior of the preparation module has to be changed. At first, one can run <code>checkDataFormat</code>. As an illustration, we will use the <code>database2021Subset</code> data frame, which is directly available after installing <code>metapsyTools</code>.</p>
+<p>Once the data set has been pre-structured correctly,
+<code>metapsyTools</code> allows you to check the required variable
+format and control for potential formatting conflicts.</p>
+<p>If the formatting rules above are followed, none of the default
+behavior of the preparation module has to be changed. At first, one can
+run <code>checkDataFormat</code>. As an illustration, we will use the
+<code>database2021Subset</code> data frame, which is directly available
+after installing <code>metapsyTools</code>.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/MathiasHarrer/metapsyTools" class="external-link">metapsyTools</a></span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"database2021Subset"</span><span class="op">)</span>
@@ -231,15 +387,32 @@
 <span class="co">## - [OK] 'Change_m' has desired class numeric.</span>
 <span class="co">## - [OK] 'Change_SD' has desired class numeric.</span>
 <span class="co">## - [OK] 'Change_N' has desired class numeric.</span></code></pre>
-<p>We see that the function has checked the required variables and their class. If divergent, the function will also try to <strong>convert</strong> the variable to the desired format.</p>
+<p>We see that the function has checked the required variables and their
+class. If divergent, the function will also try to
+<strong>convert</strong> the variable to the desired format.</p>
 <div style="border: 1px solid black; bg-color: gray; padding: 10px; border-radius: 3px;">
-<strong>Required variables for unique IDs</strong>: To function properly, the <code>metapsyTools</code> functions must be able to generate a <em>unique</em> ID for each comparison. By default, this is achieved by combining information of the <code>study</code>, <code>condition</code>, <code>Cond_spec</code>, <code>is.multiarm</code>, <code>no.arms</code>, <code>multiple_arms</code>, <code>Outc_measure</code>, <code>Time</code>, <code>primary</code>, <code>Time_weeks</code>, and <code>sr_clinician</code> variables. These variables are included by default in the <code>must.contain</code> argument in the <code>checkDataFormat</code> function. If all required variables are detected, an <code>OK</code> message is returned; as is the case in our example.
+<strong>Required variables for unique IDs</strong>: To function
+properly, the <code>metapsyTools</code> functions must be able to
+generate a <em>unique</em> ID for each comparison. By default, this is
+achieved by combining information of the <code>study</code>,
+<code>condition</code>, <code>Cond_spec</code>,
+<code>is.multiarm</code>, <code>no.arms</code>,
+<code>multiple_arms</code>, <code>Outc_measure</code>,
+<code>Time</code>, <code>primary</code>, <code>Time_weeks</code>, and
+<code>sr_clinician</code> variables. These variables are included by
+default in the <code>must.contain</code> argument in the
+<code>checkDataFormat</code> function. If all required variables are
+detected, an <code>OK</code> message is returned; as is the case in our
+example.
 </div>
-<p>We can also check the data for potential formatting issues, using the <code>checkConflicts</code> function.</p>
+<p>We can also check the data for potential formatting issues, using the
+<code>checkConflicts</code> function.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">database2021Subset</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/checkConflicts.html">checkConflicts</a></span><span class="op">(</span><span class="va">database2021Subset</span><span class="op">)</span> </code></pre></div>
 <pre><code><span class="co">## - [OK] No data format conflicts detected</span></code></pre>
-<p>In our case, no data format conflicts were detected. This is because all the data were pre-structured correctly. If data conflicts exist, the output looks similar to this:</p>
+<p>In our case, no data format conflicts were detected. This is because
+all the data were pre-structured correctly. If data conflicts exist, the
+output looks similar to this:</p>
 <pre><code><span class="co">## - [!] Data format conflicts detected!</span>
 <span class="co">## ID conflicts </span>
 <span class="co">## - check if the specified number of arms is correct </span>
@@ -272,35 +445,79 @@
 <span class="co">## Hautzinger, 2004</span>
 <span class="co">## Hummel, 2017</span>
 <span class="co">## Johansson, 2012a</span></code></pre>
-<p>Note: Since version 0.2.0 the <code>Trials with 2+ control groups</code> section studies are not regarded as data conflicts anymore, because the functionality can now handle 2+ control groups. <code>ID conflicts</code>, however, will always have to be fixed before proceeding. ID conflicts indicate that unique comparison IDs could not be created for all results.</p>
+<p>Note: Since version 0.2.0 the
+<code>Trials with 2+ control groups</code> section studies are not
+regarded as data conflicts anymore, because the functionality can now
+handle 2+ control groups. <code>ID conflicts</code>, however, will
+always have to be fixed before proceeding. ID conflicts indicate that
+unique comparison IDs could not be created for all results.</p>
 <p><br></p>
 </div>
 <div class="section level3">
 <h3 id="expanding-multiarm-trials">Expanding Multiarm Trials<a class="anchor" aria-label="anchor" href="#expanding-multiarm-trials"></a>
 </h3>
-<p>After all data format conflicts are resolved, one can process to <strong>expand multiarm trials</strong>. This means that for each possible comparison within a multiarm trial, there will be two rows in the data set, representing the two arms that are being compared. This is a prerequisite to calculate all possible between-group effect sizes later on.</p>
-<p>Imagine that one multiarm study compared CBT, PST, CAU and a waitlist (i.e. a four-arm trial). Under these conditions, there are <span class="math inline">\(\binom{4}{2} = \frac{4!}{2!(4-2)!} = 6\)</span> distinct arm combinations. We can represent this as a graph with 6 distinct arrows; each double arrow stands for one possible combination:</p>
+<p>After all data format conflicts are resolved, one can process to
+<strong>expand multiarm trials</strong>. This means that for each
+possible comparison within a multiarm trial, there will be two rows in
+the data set, representing the two arms that are being compared. This is
+a prerequisite to calculate all possible between-group effect sizes
+later on.</p>
+<p>Imagine that one multiarm study compared CBT, PST, CAU and a waitlist
+(i.e. a four-arm trial). Under these conditions, there are <span class="math inline">\(\binom{4}{2} = \frac{4!}{2!(4-2)!} = 6\)</span>
+distinct arm combinations. We can represent this as a graph with 6
+distinct arrows; each double arrow stands for one possible
+combination:</p>
 <center>
 <img src="graph.png" width="200">
 </center>
-<p>In this example, 12 rows would be included after running <code>expandMultiarmTrials</code>, with 6 row pairs each corresponding with one of the 6 unique combinations.</p>
-<p>We can try this out with our <code>database2021Subset</code> data set, saving the result as <code>database2021SubsetExpanded</code>, and exploring the number of added rows after expansion.</p>
+<p>In this example, 12 rows would be included after running
+<code>expandMultiarmTrials</code>, with 6 row pairs each corresponding
+with one of the 6 unique combinations.</p>
+<p>We can try this out with our <code>database2021Subset</code> data
+set, saving the result as <code>database2021SubsetExpanded</code>, and
+exploring the number of added rows after expansion.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">database2021SubsetExpanded</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/expandMultiarmTrials.html">expandMultiarmTrials</a></span><span class="op">(</span><span class="va">database2021Subset</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">database2021SubsetExpanded</span><span class="op">)</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">database2021Subset</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">## - [OK] Multiarm trial expansion successful</span>
 <span class="co">## [1] 169</span></code></pre>
-<p>We see that the expansion was successful, and that 169 rows were added in the process.</p>
+<p>We see that the expansion was successful, and that 169 rows were
+added in the process.</p>
 <p><br></p>
 </div>
 <div class="section level3">
 <h3 id="calculation-of-hedges-g">Calculation of Hedges’ <span class="math inline">\(g\)</span><a class="anchor" aria-label="anchor" href="#calculation-of-hedges-g"></a>
 </h3>
-<p>After the multiarm expansion, the effect size (<span class="math inline">\(g\)</span>) and its variance can be calculated for all comparisons, using <code>calculateEffectSizes</code>. When applying <code>calculateEffectSizes</code>, the effect size functions specified in the <code>funcs</code> argument are applied by default, which means that effect sizes based on Mean, SD and N, Change Scores and binary outcomes can be calculated.</p>
-<p>The function also transforms the provided data set from the “longer” format (one row per arm) to a “wider” format, in which each comparison corresponds with one row. Sometimes, however, information may <em>differ</em> between trial arms (e.g. the proportion of women included in each arm, or the overall treatment type). The <code>calculateEffectSizes</code> function handles this by automatically generating two columns with suffixes <code>_trt1</code> and <code>_trt2</code> for each variable with <em>differing values</em> within one comparison. This means that no information that differs between comparison arms is lost.</p>
-<p>The data set returned by <code>calculateEffectSizes</code> also includes a new variable <code>id</code> (Note: therefore, please do <em>not</em> include a variable with the name “id” in the original data file, because this is added later). This ID uniquely identifies each comparison.</p>
-<p>The calculated effect size, Hedges’ <span class="math inline">\(g\)</span> and its standard error, are saved in columns <code>es</code> and <code>se</code>, respectively, in the data frame returned by <code>calculateEffectSizes</code>. Therefore, please do <em>not</em> include a variable with the name “es” or “se” in the original data file.</p>
-<p>When the data are pre-structured as described above, no further specifications are needed to use <code>calculateEffectSizes</code>; only the <em>expanded</em> (!) dataset has to be provided. We save the result as <code>data</code>.</p>
+<p>After the multiarm expansion, the effect size (<span class="math inline">\(g\)</span>) and its variance can be calculated for
+all comparisons, using <code>calculateEffectSizes</code>. When applying
+<code>calculateEffectSizes</code>, the effect size functions specified
+in the <code>funcs</code> argument are applied by default, which means
+that effect sizes based on Mean, SD and N, Change Scores and binary
+outcomes can be calculated.</p>
+<p>The function also transforms the provided data set from the “longer”
+format (one row per arm) to a “wider” format, in which each comparison
+corresponds with one row. Sometimes, however, information may
+<em>differ</em> between trial arms (e.g. the proportion of women
+included in each arm, or the overall treatment type). The
+<code>calculateEffectSizes</code> function handles this by automatically
+generating two columns with suffixes <code>_trt1</code> and
+<code>_trt2</code> for each variable with <em>differing values</em>
+within one comparison. This means that no information that differs
+between comparison arms is lost.</p>
+<p>The data set returned by <code>calculateEffectSizes</code> also
+includes a new variable <code>id</code> (Note: therefore, please do
+<em>not</em> include a variable with the name “id” in the original data
+file, because this is added later). This ID uniquely identifies each
+comparison.</p>
+<p>The calculated effect size, Hedges’ <span class="math inline">\(g\)</span> and its standard error, are saved in
+columns <code>es</code> and <code>se</code>, respectively, in the data
+frame returned by <code>calculateEffectSizes</code>. Therefore, please
+do <em>not</em> include a variable with the name “es” or “se” in the
+original data file.</p>
+<p>When the data are pre-structured as described above, no further
+specifications are needed to use <code>calculateEffectSizes</code>; only
+the <em>expanded</em> (!) dataset has to be provided. We save the result
+as <code>data</code>.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calculateEffectSizes.html">calculateEffectSizes</a></span><span class="op">(</span><span class="va">database2021SubsetExpanded</span><span class="op">)</span>
 <span class="va">data</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"id"</span>, <span class="st">"es"</span>, <span class="st">"se"</span><span class="op">)</span><span class="op">]</span></code></pre></div>
@@ -321,7 +538,10 @@
 <span class="co">## 12      Ahmadpanah_2016_1_bdi-1_post_2month_self-... -1.7788 0.4347</span>
 <span class="co">## 13                         Alexopoulos_2016_1_hdr...      NA     NA</span>
 <span class="co">## 14              Alexopoulos_2016_1_hdrs(remission...  0.1700 0.1782</span></code></pre>
-<p>Looking at the column names, we also see that variables that differ between trial arms within one comparison have been split into two variables with suffixes <code>_treat1</code> and <code>_treat2</code>, where <code>_treat1</code> represents the reference treatment.</p>
+<p>Looking at the column names, we also see that variables that differ
+between trial arms within one comparison have been split into two
+variables with suffixes <code>_treat1</code> and <code>_treat2</code>,
+where <code>_treat1</code> represents the reference treatment.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">##  [1] "study"                              "id"                                </span>
@@ -342,12 +562,27 @@
 <span class="co">## [83] "Cond_spec_trt1"                     "Cond_spec_trt2"                    </span>
 <span class="co">## [85] "es"                                 "se" </span></code></pre>
 <p><br></p>
-<p>Please note that the current version of the data set only includes all unique treatment arm <strong>combinations</strong>, not all <em>unique</em> <strong>comparisons</strong>. Let us use the four-arm trial example (CBT, PST, CAU and a wait-list) again. While this trial provides 6 unique trial arm combinations, the number of unique <em>comparisons</em> is higher: <span class="math inline">\(\frac{n!}{(n-k)!} = \frac{4!}{2!} = 12\)</span>.</p>
-<p>This is because the sign of the calculated effect size depends on which treatment serves as the <em>reference</em>. The effect of CBT vs. PST, for example, depends on which arm serves as the reference group (i.e. CBT-PST or PST-CBT). Depending on which arm is chosen (and assuming non-zero mean differences), the calculated Hedges’ <span class="math inline">\(g\)</span> value will either be negative (e.g. <span class="math inline">\(g\)</span>=-0.31) or positive (<span class="math inline">\(g\)</span>=0.31). We see this visualized in the graph below. There are now two directed arrows for each comparison (12 in total), and each arrow reads as “is compared to”:</p>
+<p>Please note that the current version of the data set only includes
+all unique treatment arm <strong>combinations</strong>, not all
+<em>unique</em> <strong>comparisons</strong>. Let us use the four-arm
+trial example (CBT, PST, CAU and a wait-list) again. While this trial
+provides 6 unique trial arm combinations, the number of unique
+<em>comparisons</em> is higher: <span class="math inline">\(\frac{n!}{(n-k)!} = \frac{4!}{2!} =
+12\)</span>.</p>
+<p>This is because the sign of the calculated effect size depends on
+which treatment serves as the <em>reference</em>. The effect of CBT
+vs. PST, for example, depends on which arm serves as the reference group
+(i.e. CBT-PST or PST-CBT). Depending on which arm is chosen (and
+assuming non-zero mean differences), the calculated Hedges’ <span class="math inline">\(g\)</span> value will either be negative
+(e.g. <span class="math inline">\(g\)</span>=-0.31) or positive (<span class="math inline">\(g\)</span>=0.31). We see this visualized in the
+graph below. There are now two directed arrows for each comparison (12
+in total), and each arrow reads as “is compared to”:</p>
 <center>
 <img src="graph2.png" width="200">
 </center>
-<p>To truly calculate all unique <em>comparisons</em>, we have to set the <code>include.switched.arms</code> argument to <code>TRUE</code> when running <code>calculateEffectSizes</code>.</p>
+<p>To truly calculate all unique <em>comparisons</em>, we have to set
+the <code>include.switched.arms</code> argument to <code>TRUE</code>
+when running <code>calculateEffectSizes</code>.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calculateEffectSizes.html">calculateEffectSizes</a></span><span class="op">(</span><span class="va">database2021SubsetExpanded</span>,
                              include.switched.arms <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>
@@ -363,9 +598,23 @@
 <span class="co">## 8         Abas_2018_0_dssq_...rted_arm_switched            cau            pst   0.551</span>
 <span class="co">## 9                  Abas_201...e_0_self-reported            pst            cau   1.559</span>
 <span class="co">## 10    Abas_2018_1_phq-9_bas...rted_arm_switched            cau            pst  -1.559</span></code></pre>
-<p>The resulting data frame <code>data</code> now follows a “wider” format and includes all effect sizes that can theoretically be calculated. As a last step, one has to manually add the effect sizes and standard errors of comparisons for which <code>calculateEffectSizes</code> returned <code>NA</code>. This leads to a final data set which can be used with the <strong>analysis module</strong>, which will be described next.</p>
+<p>The resulting data frame <code>data</code> now follows a “wider”
+format and includes all effect sizes that can theoretically be
+calculated. As a last step, one has to manually add the effect sizes and
+standard errors of comparisons for which
+<code>calculateEffectSizes</code> returned <code>NA</code>. This leads
+to a final data set which can be used with the <strong>analysis
+module</strong>, which will be described next.</p>
 <div style="border: 1px solid black; bg-color: gray; padding: 10px; border-radius: 3px;">
-<strong>Should I use <code>include.switched.arms</code>?</strong> It is not essential to calculate all possible arm comparisons, because, for Hedges’ <span class="math inline">\(g\)</span>, reference groups can always be “switched” by multiplying the calculated effect size by -1. However, having all possible comparisons in your data set is convenient, because all required comparisons pertaining to a particular research question (e.g. “how effective is PST when CBT is the reference group?”) can directly be filtered out; there is typically no need for further data manipulation steps.
+<strong>Should I use <code>include.switched.arms</code>?</strong> It is
+not essential to calculate all possible arm comparisons, because, for
+Hedges’ <span class="math inline">\(g\)</span>, reference groups can
+always be “switched” by multiplying the calculated effect size by -1.
+However, having all possible comparisons in your data set is convenient,
+because all required comparisons pertaining to a particular research
+question (e.g. “how effective is PST when CBT is the reference group?”)
+can directly be filtered out; there is typically no need for further
+data manipulation steps.
 </div>
 <p><br></p>
 <p><br></p>
@@ -375,21 +624,39 @@
 <h2 id="the-analysis-module">The Analysis Module<a class="anchor" aria-label="anchor" href="#the-analysis-module"></a>
 </h2>
 <hr>
-<p>The analysis module in <code>metapsyTools</code> allows to run different kinds of meta-analyses based on the final data set created by the preparation module. It is designed to also be usable by researchers who were not directly involved in the preparation step, and is less demanding in terms of required background knowledge.</p>
+<p>The analysis module in <code>metapsyTools</code> allows to run
+different kinds of meta-analyses based on the final data set created by
+the preparation module. It is designed to also be usable by researchers
+who were not directly involved in the preparation step, and is less
+demanding in terms of required background knowledge.</p>
 <p>The analysis module allows to:</p>
 <ul>
-<li>Filter data using strict rules, fuzzy string matching, or by implementing prioritization rules (<code>filterPoolingData</code> and <code>filterPriorityRule</code>).</li>
-<li>Run conventional (random-effects) meta-analysis models as well as commonly reported sensitivity analyses (<code>runMetaAnalysis</code>)</li>
-<li>Run subgroup analyses based on the fitted model (<code>subgroupAnalysis</code>)</li>
-<li>Create study information tables (<code>createStudyTable</code>).</li>
+<li>Filter data using strict rules, fuzzy string matching, or by
+implementing prioritization rules (<code>filterPoolingData</code> and
+<code>filterPriorityRule</code>).</li>
+<li>Run conventional (random-effects) meta-analysis models as well as
+commonly reported sensitivity analyses
+(<code>runMetaAnalysis</code>)</li>
+<li>Run subgroup analyses based on the fitted model
+(<code>subgroupAnalysis</code>)</li>
+<li>Create study information tables
+(<code>createStudyTable</code>).</li>
 </ul>
 <p><br></p>
 <div class="section level3">
 <h3 id="filtering-relevant-comparisons">Filtering Relevant Comparisons<a class="anchor" aria-label="anchor" href="#filtering-relevant-comparisons"></a>
 </h3>
-<p>The <code>metapsyTools</code> package contains functions which allow to flexibly filter out comparisons that are relevant for a particular meta-analysis.</p>
-<p>The <code>filterPoolingData</code> function is the main function for filtering. We simply have to provide the final data set with calculated effect sizes (see preparation module), as well as one or several filtering criteria pertaining to our specific research question.</p>
-<p>Say that we want to run a meta-analysis of all studies in which CBT was compared to wait-lists, with the BDI-II at post-test being the analyzed outcome. We can filter out the relevant comparisons like this:</p>
+<p>The <code>metapsyTools</code> package contains functions which allow
+to flexibly filter out comparisons that are relevant for a particular
+meta-analysis.</p>
+<p>The <code>filterPoolingData</code> function is the main function for
+filtering. We simply have to provide the final data set with calculated
+effect sizes (see preparation module), as well as one or several
+filtering criteria pertaining to our specific research question.</p>
+<p>Say that we want to run a meta-analysis of all studies in which CBT
+was compared to wait-lists, with the BDI-II at post-test being the
+analyzed outcome. We can filter out the relevant comparisons like
+this:</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">data</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> 
   <span class="fu"><a href="../reference/filterPoolingData.html">filterPoolingData</a></span><span class="op">(</span><span class="va">Cond_spec_trt1</span> <span class="op">==</span> <span class="st">"cbt"</span>,
@@ -397,7 +664,15 @@
                     <span class="va">outc_instrument</span> <span class="op">==</span> <span class="st">"bdi-1"</span>,
                     <span class="va">Time</span> <span class="op">==</span> <span class="st">"post"</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">## [1] 6</span></code></pre>
-<p>We see that <span class="math inline">\(k\)</span>=6 comparisons fulfill these criteria. Note, however, that this will only select comparisons for which <code>Cond_spec</code> was <em>exactly</em> defined as <code>"cbt"</code>. For multiarm trials, it is necessary to add specifications in brackets (e.g. <code>"cbt (online)"</code>) to make the conditions in each arm unique. To filter out <em>all</em> comparisons which applied some form of CBT, we need to apply <strong>fuzzy matching</strong>. This can be achieved by using the <code>Detect</code> function within <code>filterPoolingData</code>:</p>
+<p>We see that <span class="math inline">\(k\)</span>=6 comparisons
+fulfill these criteria. Note, however, that this will only select
+comparisons for which <code>Cond_spec</code> was <em>exactly</em>
+defined as <code>"cbt"</code>. For multiarm trials, it is necessary to
+add specifications in brackets (e.g. <code>"cbt (online)"</code>) to
+make the conditions in each arm unique. To filter out <em>all</em>
+comparisons which applied some form of CBT, we need to apply
+<strong>fuzzy matching</strong>. This can be achieved by using the
+<code>Detect</code> function within <code>filterPoolingData</code>:</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">data</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> 
   <span class="fu"><a href="../reference/filterPoolingData.html">filterPoolingData</a></span><span class="op">(</span><span class="fu"><a href="../reference/Detect.html">Detect</a></span><span class="op">(</span><span class="va">Cond_spec_trt1</span>, <span class="st">"cbt"</span><span class="op">)</span>,
@@ -405,12 +680,18 @@
                     <span class="va">outc_instrument</span> <span class="op">==</span> <span class="st">"bdi-1"</span>,
                     <span class="va">Time</span> <span class="op">==</span> <span class="st">"post"</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">## [1] 11</span></code></pre>
-<p>We see that now, <span class="math inline">\(k\)</span>=11 CBT vs. wait-list comparisons were detected.</p>
-<p>We can create even more complex filters. Say that we want to examine the effect, as measured by the BDI-I at post-test, of CBT, PST, and BAT compared to <em>either</em> CAU or wait-lists. We can visualize this with a graph again:</p>
+<p>We see that now, <span class="math inline">\(k\)</span>=11 CBT
+vs. wait-list comparisons were detected.</p>
+<p>We can create even more complex filters. Say that we want to examine
+the effect, as measured by the BDI-I at post-test, of CBT, PST, and BAT
+compared to <em>either</em> CAU or wait-lists. We can visualize this
+with a graph again:</p>
 <center>
 <img src="graph3.png" width="200">
 </center>
-<p>We can use the OR-Operator <code>|</code> within <code>filterPoolingData</code> for such filter types. Again, we use the <code>Detect</code> function to allow for fuzzy matching:</p>
+<p>We can use the OR-Operator <code>|</code> within
+<code>filterPoolingData</code> for such filter types. Again, we use the
+<code>Detect</code> function to allow for fuzzy matching:</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">data</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> 
   <span class="fu"><a href="../reference/filterPoolingData.html">filterPoolingData</a></span><span class="op">(</span><span class="fu"><a href="../reference/Detect.html">Detect</a></span><span class="op">(</span><span class="va">Cond_spec_trt1</span>, <span class="st">"cbt|pst|bat"</span><span class="op">)</span>,
@@ -447,8 +728,21 @@
 25      Chowdhary, 2016            bat            cau
 26      Chowdhary, 2016            bat            cau</code></pre>
 <p><br></p>
-<p>Lastly, one can also filter data according to a specified <strong>priority rule</strong>, using the <code>filterPriorityRule</code> function. This is particularly helpful to select instruments. Say, for example, that we ordered certain instruments based on their known reliability. Now, for each study, we only want to select the comparison in which the most reliable instrument was used. It is possible that, for some studies, all used instruments are relatively unreliable. However, given our priority rule, we can still extract the comparison with a <em>relatively</em> high reliability, and discard all the other measurements within one study that are even less reliable.</p>
-<p>Assume that our priority rule for the employed instrument is <code>"hdrs"</code> (priority 1), <code>"bdi-2"</code> (priority 2), <code>"phq-9"</code> (priority 3) and <code>"bdi-1"</code> (priority 4). We can implement the rule like this:</p>
+<p>Lastly, one can also filter data according to a specified
+<strong>priority rule</strong>, using the
+<code>filterPriorityRule</code> function. This is particularly helpful
+to select instruments. Say, for example, that we ordered certain
+instruments based on their known reliability. Now, for each study, we
+only want to select the comparison in which the most reliable instrument
+was used. It is possible that, for some studies, all used instruments
+are relatively unreliable. However, given our priority rule, we can
+still extract the comparison with a <em>relatively</em> high
+reliability, and discard all the other measurements within one study
+that are even less reliable.</p>
+<p>Assume that our priority rule for the employed instrument is
+<code>"hdrs"</code> (priority 1), <code>"bdi-2"</code> (priority 2),
+<code>"phq-9"</code> (priority 3) and <code>"bdi-1"</code> (priority 4).
+We can implement the rule like this:</p>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">data</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> 
   <span class="co"># First, filter all other relevant characteristics</span>
@@ -493,22 +787,43 @@
 <div class="section level3">
 <h3 id="pooling-effects">Pooling Effects<a class="anchor" aria-label="anchor" href="#pooling-effects"></a>
 </h3>
-<p>After all relevant rows have been filtered out (in our case, these relevant comparisons are the ones we saved in <code>ma.data</code> previously), we can start to pool the effect sizes. The <code>runMetaAnalysis</code> function serves as a wrapper for several commonly used meta-analytic approaches, and, by default, applies them all at once to our data:</p>
+<p>After all relevant rows have been filtered out (in our case, these
+relevant comparisons are the ones we saved in <code>ma.data</code>
+previously), we can start to pool the effect sizes. The
+<code>runMetaAnalysis</code> function serves as a wrapper for several
+commonly used meta-analytic approaches, and, by default, applies them
+all at once to our data:</p>
 <ul>
 <li>
-<code>"overall"</code>. Runs a generic inverse-variance (random-effects) model. All included effect sizes are treated as independent.</li>
+<code>"overall"</code>. Runs a generic inverse-variance
+(random-effects) model. All included effect sizes are treated as
+independent.</li>
 <li>
-<code>"combined"</code>. Pools all effect sizes within one study before calculating the overall effect. This ensures that all effect sizes are independent (i.e., unit-of-analysis error &amp; double-counting is avoided). To combine the effects, one has to assume a <strong>correlation</strong> of effect sizes within studies, empirical estimates of which are typically not available. By default, <code>runMetaAnalysis</code> assumes that <span class="math inline">\(\rho\)</span>=0.5.</li>
+<code>"combined"</code>. Pools all effect sizes within one study
+before calculating the overall effect. This ensures that all effect
+sizes are independent (i.e., unit-of-analysis error &amp;
+double-counting is avoided). To combine the effects, one has to assume a
+<strong>correlation</strong> of effect sizes within studies, empirical
+estimates of which are typically not available. By default,
+<code>runMetaAnalysis</code> assumes that <span class="math inline">\(\rho\)</span>=0.5.</li>
 <li>
-<code>"lowest.highest"</code>. Runs a meta-analysis, but with only (i) the lowest and (ii) highest effect size within each study included.</li>
+<code>"lowest.highest"</code>. Runs a meta-analysis, but with only
+(i) the lowest and (ii) highest effect size within each study
+included.</li>
 <li>
-<code>"outlier"</code>. Runs a meta-analysis without statistical outliers (i.e. effect sizes for which the confidence interval does not overlap with the confidence interval of the overall effect).</li>
+<code>"outlier"</code>. Runs a meta-analysis without statistical
+outliers (i.e. effect sizes for which the confidence interval does not
+overlap with the confidence interval of the overall effect).</li>
 <li>
-<code>"influence"</code>. Runs a meta-analysis without influential cases (see <code>influence.rma.uni</code> for details).</li>
+<code>"influence"</code>. Runs a meta-analysis without influential
+cases (see <code>influence.rma.uni</code> for details).</li>
 <li>
-<code>"rob"</code>. Runs a meta-analysis with only low-RoB studies included. By default, only studies with a value <code>&gt; 2</code> in the <code>rob</code> variable are considered for this analysis.</li>
+<code>"rob"</code>. Runs a meta-analysis with only low-RoB studies
+included. By default, only studies with a value <code>&gt; 2</code> in
+the <code>rob</code> variable are considered for this analysis.</li>
 <li>
-<code>"threelevel"</code>. Runs a multilevel (three-level) meta-analysis model, with effect sizes nested in studies.</li>
+<code>"threelevel"</code>. Runs a multilevel (three-level)
+meta-analysis model, with effect sizes nested in studies.</li>
 </ul>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/runMetaAnalysis.html">runMetaAnalysis</a></span><span class="op">(</span><span class="va">ma.data</span><span class="op">)</span></code></pre></div>
@@ -522,7 +837,11 @@
 <span class="co">## - [OK] Calculated effect size using only low RoB information</span>
 <span class="co">## - [OK] Calculated effect size using three-level MA model</span>
 <span class="co">## - [OK] Done!</span></code></pre>
-<p>We can inspect the results by calling the created <code>res</code> object in the console. By default, an <strong>HTML table</strong> should pop up along with the console output. These pre-formatted HTML results tables can easily be transferred to, for example, MS Word using copy &amp; paste.</p>
+<p>We can inspect the results by calling the created <code>res</code>
+object in the console. By default, an <strong>HTML table</strong> should
+pop up along with the console output. These pre-formatted HTML results
+tables can easily be transferred to, for example, MS Word using copy
+&amp; paste.</p>
 <div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">res</span></code></pre></div>
 <pre><code><span class="co">## Model results ---------------------- </span>
@@ -541,9 +860,11 @@
 <span class="co">## Between Studies 0.4767 75.1</span>
 <span class="co">## Within Studies  0.0830 13.1</span>
 <span class="co">## Total           0.5597 88.2</span></code></pre>
-<p>Using the <code>summary</code> method, details of the analysis settings can be printed. This function also returns recommended citations for the applied methods and/or packages.</p>
+<p>Using the <code>summary</code> method, details of the analysis
+settings can be printed. This function also returns recommended
+citations for the applied methods and/or packages.</p>
 <div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="fu"><a href="https://wviechtb.github.io/metafor/reference/print.rma.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></code></pre></div>
 <pre><code>Analysis settings ---------------------------------------------------------- 
 
 ✓ [Overall] Random effects model assumed. 
@@ -586,25 +907,53 @@ Cite the following packages/methods: ---------------------------------------
  - Knapp-Hartung: Hartung J, Knapp G (2001a): On tests of the overall treatment
           effect in meta-analysis with normally distributed responses.
           Statistics in Medicine, 20, 1771–82</code></pre>
-<p>The <code>runMetaAnalysis</code> function allows to tweak many, many details of the specific meta-analysis models (run <code><a href="../reference/runMetaAnalysis.html">?runMetaAnalysis</a></code> to see the entire documentation). The most important arguments one may want to specify are:</p>
+<p>The <code>runMetaAnalysis</code> function allows to tweak many, many
+details of the specific meta-analysis models (run
+<code><a href="../reference/runMetaAnalysis.html">?runMetaAnalysis</a></code> to see the entire documentation). The most
+important arguments one may want to specify are:</p>
 <ul>
 <li>
-<code>method.tau</code>. This argument controls the method to be used for estimating the between-study heterogeneity variance <span class="math inline">\(\tau^2\)</span>. The default is <code>"REML"</code> (restricted maximum likelihood), but other options such as the DerSimonian-Laird estimator (<code>"DL"</code>) are also available (see the <code>runMetaAnalysis</code> function documentation for more details). Note that three-level meta-analysis models can only be fitted using (restricted) maximum likelihood.</li>
+<code>method.tau</code>. This argument controls the method to be
+used for estimating the between-study heterogeneity variance <span class="math inline">\(\tau^2\)</span>. The default is
+<code>"REML"</code> (restricted maximum likelihood), but other options
+such as the DerSimonian-Laird estimator (<code>"DL"</code>) are also
+available (see the <code>runMetaAnalysis</code> function documentation
+for more details). Note that three-level meta-analysis models can only
+be fitted using (restricted) maximum likelihood.</li>
 <li>
-<code>nnt.cer</code>. The <code>runMetaAnalysis</code> function uses the method by Furukawa and Leucht to calculate the Number Needed to Treat (NNT) for each pooled effect size. This method needs an estimate of the control group event rate (CER). By default, <code>nnt.cer = 0.2</code> is used, but you can set this to another value if desired.</li>
+<code>nnt.cer</code>. The <code>runMetaAnalysis</code> function uses
+the method by Furukawa and Leucht to calculate the Number Needed to
+Treat (NNT) for each pooled effect size. This method needs an estimate
+of the control group event rate (CER). By default,
+<code>nnt.cer = 0.2</code> is used, but you can set this to another
+value if desired.</li>
 <li>
-<code>rho.within.study</code>. To combine effect sizes on a study level before pooling (<code>Combined</code> model), one has to assume a within-study correlation of effects. By default, <code>rho.within.study = 0.5</code> is assumed, but this value can and should be changed based on better approximations.</li>
+<code>rho.within.study</code>. To combine effect sizes on a study
+level before pooling (<code>Combined</code> model), one has to assume a
+within-study correlation of effects. By default,
+<code>rho.within.study = 0.5</code> is assumed, but this value can and
+should be changed based on better approximations.</li>
 <li>
-<code>low.rob.filter</code>. By default, the function uses all comparisons for which the risk of bias rating in the <code>rob</code> variable has a value greater <code>2</code> (<code>low.rob.filter = "rob &gt; 2"</code>). If your risk of bias rating is in another variable, or if another threshold should be used, you can change this argument accordingly.</li>
+<code>low.rob.filter</code>. By default, the function uses all
+comparisons for which the risk of bias rating in the <code>rob</code>
+variable has a value greater <code>2</code>
+(<code>low.rob.filter = "rob &gt; 2"</code>). If your risk of bias
+rating is in another variable, or if another threshold should be used,
+you can change this argument accordingly.</li>
 </ul>
-<p>Here is an example of a <code>runMetaAnalysis</code> call with non-default settings:</p>
+<p>Here is an example of a <code>runMetaAnalysis</code> call with
+non-default settings:</p>
 <div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/runMetaAnalysis.html">runMetaAnalysis</a></span><span class="op">(</span><span class="va">ma.data</span>,
                 method.tau <span class="op">=</span> <span class="st">"DL"</span>,
                 nnt.cer <span class="op">=</span> <span class="fl">0.4</span>,
                 rho.within.study <span class="op">=</span> <span class="fl">0.8</span>,
                 low.rob.filter <span class="op">=</span> <span class="st">"rob &gt;= 4"</span><span class="op">)</span></code></pre></div>
-<p>It is also possible to directly extract each calculated model from the <code>runMetaAnalysis</code> results object. Each of these models are identical to the ones one would receive by running <a href="https://bookdown.org/MathiasHarrer/Doing_Meta_Analysis_in_R/pooling-es.html#pre-calculated-es" class="external-link"><code>metagen</code></a> or <a href="https://bookdown.org/MathiasHarrer/Doing_Meta_Analysis_in_R/multilevel-ma.html#multilevel-R" class="external-link"><code>rma.mv</code></a> directly.</p>
+<p>It is also possible to directly extract each calculated model from
+the <code>runMetaAnalysis</code> results object. Each of these models
+are identical to the ones one would receive by running <a href="https://bookdown.org/MathiasHarrer/Doing_Meta_Analysis_in_R/pooling-es.html#pre-calculated-es" class="external-link"><code>metagen</code></a>
+or <a href="https://bookdown.org/MathiasHarrer/Doing_Meta_Analysis_in_R/multilevel-ma.html#multilevel-R" class="external-link"><code>rma.mv</code></a>
+directly.</p>
 <div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">res</span><span class="op">$</span><span class="va">model.overall</span>
 <span class="va">res</span><span class="op">$</span><span class="va">model.combined</span>
@@ -614,7 +963,11 @@ Cite the following packages/methods: ---------------------------------------
 <span class="va">res</span><span class="op">$</span><span class="va">model.influence</span>
 <span class="va">res</span><span class="op">$</span><span class="va">model.rob</span>
 <span class="va">res</span><span class="op">$</span><span class="va">model.threelevel</span></code></pre></div>
-<p>This means that <strong>any kind of operation</strong> available for <code>metagen</code> or <code>rma</code> models <strong>is also available for the models created by <code>runMetaAnalysis</code></strong>. For example, we can generate a funnel plot for our “overall” model like this:</p>
+<p>This means that <strong>any kind of operation</strong> available for
+<code>metagen</code> or <code>rma</code> models <strong>is also
+available for the models created by
+<code>runMetaAnalysis</code></strong>. For example, we can generate a
+funnel plot for our “overall” model like this:</p>
 <div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/guido-s/meta/" class="external-link">meta</a></span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/pkg/meta/man/funnel.meta.html" class="external-link">funnel</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">model.overall</span>, 
@@ -625,7 +978,10 @@ Cite the following packages/methods: ---------------------------------------
 <img src="funnel.png" width="400">
 </center>
 <p><br></p>
-<p>It is also possible to generate <strong>forest plots</strong> of all the calculated models. We only have to plug the results object into <code>plot</code>, and specify the name of the model for which the forest plot should be retrieved:</p>
+<p>It is also possible to generate <strong>forest plots</strong> of all
+the calculated models. We only have to plug the results object into
+<code>plot</code>, and specify the name of the model for which the
+forest plot should be retrieved:</p>
 <div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span>, <span class="st">"overall"</span><span class="op">)</span>        <span class="co"># Overall model (all ES assumed to be independent)</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span>, <span class="st">"combined"</span><span class="op">)</span>       <span class="co"># ES combined within studies before pooling</span>
@@ -633,13 +989,17 @@ Cite the following packages/methods: ---------------------------------------
 <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span>, <span class="st">"outliers"</span><span class="op">)</span>       <span class="co"># Outliers-removed model</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span>, <span class="st">"influence"</span><span class="op">)</span>      <span class="co"># Influential cases-removed model</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span>, <span class="st">"threelevel"</span><span class="op">)</span>     <span class="co"># Three-level model</span></code></pre></div>
-<p>This is what the “overall” model forest plot looks like in our example:</p>
+<p>This is what the “overall” model forest plot looks like in our
+example:</p>
 <div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span>, <span class="st">"overall"</span><span class="op">)</span></code></pre></div>
 <center>
 <img src="forest.png" width="400">
 </center>
-<p>Note that the <code>plot</code> function is simply a wrapper for the <code>forest.meta</code> function in the <code>meta</code> package. Therefore, all the advanced <a href="https://bookdown.org/MathiasHarrer/Doing_Meta_Analysis_in_R/forest.html" class="external-link">styling options</a> are also available using extra arguments.</p>
+<p>Note that the <code>plot</code> function is simply a wrapper for the
+<code>forest.meta</code> function in the <code>meta</code> package.
+Therefore, all the advanced <a href="https://bookdown.org/MathiasHarrer/Doing_Meta_Analysis_in_R/forest.html" class="external-link">styling
+options</a> are also available using extra arguments.</p>
 <div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span>, <span class="st">"overall"</span>, 
      col.predict <span class="op">=</span> <span class="st">"lightgreen"</span>, 
@@ -648,7 +1008,8 @@ Cite the following packages/methods: ---------------------------------------
 <center>
 <img src="forest2.png" width="400">
 </center>
-<p>It is also possible to generate <strong>Baujat</strong> and <strong>Leave-One-Out Plots</strong> (not displayed here).</p>
+<p>It is also possible to generate <strong>Baujat</strong> and
+<strong>Leave-One-Out Plots</strong> (not displayed here).</p>
 <div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span>, <span class="st">"baujat"</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span>, <span class="st">"loo-es"</span><span class="op">)</span>
@@ -658,8 +1019,13 @@ Cite the following packages/methods: ---------------------------------------
 <div class="section level3">
 <h3 id="subgroup-analysis">Subgroup Analysis<a class="anchor" aria-label="anchor" href="#subgroup-analysis"></a>
 </h3>
-<p>The <code>subgroupAnalysis</code> function can be used to perform subgroup analyses. Every column included in the data set initially supplied to <code>runMetaAnalysis</code> can be used as a subgroup variable.</p>
-<p>For example, we might want to check if effects differ by country (<code>country</code>) or intervention type (<code>arm_format_trt1</code>):</p>
+<p>The <code>subgroupAnalysis</code> function can be used to perform
+subgroup analyses. Every column included in the data set initially
+supplied to <code>runMetaAnalysis</code> can be used as a subgroup
+variable.</p>
+<p>For example, we might want to check if effects differ by country
+(<code>country</code>) or intervention type
+(<code>arm_format_trt1</code>):</p>
 <div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">sg</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/subgroupAnalysis.html">subgroupAnalysis</a></span><span class="op">(</span><span class="va">res</span>, <span class="va">country</span>, <span class="va">arm_format_trt1</span><span class="op">)</span>
 <span class="va">sg</span></code></pre></div>
@@ -675,8 +1041,14 @@ Cite the following packages/methods: ---------------------------------------
 <span class="co">## 6 arm_format_trt1 cbt       19 -0.81 [-1.27; -0.35] 84.2  [76.6; 89.3] 6.64  0.191</span>
 <span class="co">## 7 arm_format_trt1 pst        3 -0.75 [-2.13; 0.64]  64.8  [0; 89.9]    6.93  0.191</span>
 <span class="co">## 8 arm_format_trt1 bat        3 -0.46 [-0.62; -0.3]  0     [0; 89.6]    9.66  0.191</span></code></pre>
-<p>We are informed that the “overall” model has been used for the subgroup analyses. By default, an HTML table should also pop up. The <code>p</code> column to the right represents the significance of the overall subgroup effect (e.g. there is a significant moderator effect of <code>country</code>).</p>
-<p>It is also possible to conduct subgroup analyses using another model, say, the three-level model. We only have to specify <code>.which.run</code>:</p>
+<p>We are informed that the “overall” model has been used for the
+subgroup analyses. By default, an HTML table should also pop up. The
+<code>p</code> column to the right represents the significance of the
+overall subgroup effect (e.g. there is a significant moderator effect of
+<code>country</code>).</p>
+<p>It is also possible to conduct subgroup analyses using another model,
+say, the three-level model. We only have to specify
+<code>.which.run</code>:</p>
 <div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">sg</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/subgroupAnalysis.html">subgroupAnalysis</a></span><span class="op">(</span><span class="va">res</span>, 
                        <span class="va">country</span>, <span class="va">arm_format_trt1</span>,
@@ -699,7 +1071,14 @@ Cite the following packages/methods: ---------------------------------------
 <div class="section level3">
 <h3 id="meta-regression">Meta-Regression<a class="anchor" aria-label="anchor" href="#meta-regression"></a>
 </h3>
-<p>Since the <code>runMetaAnalysis</code> function saves all fitted models internally, it is also possible to extract each of them individually to do further computations. Say, for example, that we want to do a multiple meta-regression using our <code>threelevel</code> model. We want to use the risk of bias rating, as well as the scaled study year as predictors. This can be achieved by extracting the model to be analyzed using the <code>$</code> operator, and then using <code>metaRegression</code> to fit the model.</p>
+<p>Since the <code>runMetaAnalysis</code> function saves all fitted
+models internally, it is also possible to extract each of them
+individually to do further computations. Say, for example, that we want
+to do a multiple meta-regression using our <code>threelevel</code>
+model. We want to use the risk of bias rating, as well as the scaled
+study year as predictors. This can be achieved by extracting the model
+to be analyzed using the <code>$</code> operator, and then using
+<code>metaRegression</code> to fit the model.</p>
 <div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/metaRegression.html">metaRegression</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">model.threelevel</span>, 
                <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/scale.html" class="external-link">scale</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">rob</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/scale.html" class="external-link">scale</a></span><span class="op">(</span><span class="va">year</span><span class="op">)</span><span class="op">)</span></code></pre></div>
@@ -734,7 +1113,13 @@ Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’
 <h2 id="study-tables">Study Tables<a class="anchor" aria-label="anchor" href="#study-tables"></a>
 </h2>
 <hr>
-<p>The <code>createStudyTable</code> function allows to create an overview table for the included studies/comparisons. One only has to supply the filtered data set first, and then the names of the desired variables in the order in which they should appear in the table. It is also possible to rename factor labels directly in the function, determine how far values should be rounded, and if variable names should be changed:</p>
+<p>The <code>createStudyTable</code> function allows to create an
+overview table for the included studies/comparisons. One only has to
+supply the filtered data set first, and then the names of the desired
+variables in the order in which they should appear in the table. It is
+also possible to rename factor labels directly in the function,
+determine how far values should be rounded, and if variable names should
+be changed:</p>
 <div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/createStudyTable.html">createStudyTable</a></span><span class="op">(</span><span class="va">ma.data</span>,
                  
@@ -798,10 +1183,18 @@ Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’
 <span class="co">## 20           Choi, 2012         4       39     0.80          CBT     Wait-List        6 ...</span>
 <span class="co">## 21      Chowdhary, 2016         4       41     0.69           BA Care-As-Usual        7 ...</span>
 <span class="co">## 22      Chowdhary, 2016         4       41     0.69           BA Care-As-Usual        7 ...</span></code></pre>
-<p>By default, <code>createStudyTable</code> also returns an HTML table that one can copy &amp; paste in MS Word.</p>
+<p>By default, <code>createStudyTable</code> also returns an HTML table
+that one can copy &amp; paste in MS Word.</p>
 <p><br></p>
 <div style="border: 1px solid black; bg-color: gray; padding: 10px; border-radius: 3px;">
-<strong>Still have questions?</strong> This vignette only provides a superficial overview of <code>metapsyTools</code>’ functionality. Every function also comes with a detailed documentation, which you may consult to learn more about available options and covered use cases. Please note that <code>metapsyTools</code> is still at an early development stage, which means that errors or other problems may still occur under some circumstances. To report an issue or ask for help, you can contact <strong>Mathias</strong> (<a href="mailto:mathias.harrer@tum.de" class="email">mathias.harrer@tum.de</a>).
+<strong>Still have questions?</strong> This vignette only provides a
+superficial overview of <code>metapsyTools</code>’ functionality. Every
+function also comes with a detailed documentation, which you may consult
+to learn more about available options and covered use cases. Please note
+that <code>metapsyTools</code> is still at an early development stage,
+which means that errors or other problems may still occur under some
+circumstances. To report an issue or ask for help, you can contact
+<strong>Mathias</strong> (<a href="mailto:mathias.harrer@tum.de" class="email">mathias.harrer@tum.de</a>).
 </div>
 <p><br></p>
 </div>

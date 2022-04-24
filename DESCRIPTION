@@ -14,8 +14,9 @@ LazyData: true
 RoxygenNote: 7.1.2
 VignetteBuilder: knitr
 Imports: 
-    clubSandwich (>= 0.5.3), crayon, dplyr (>= 0.8.0.1), esc, 
-    magrittr (>= 1.5), purrr, rmarkdown, stringr (>= 1.4.0), 
+    clubSandwich (>= 0.5.3), 
+    crayon, dplyr (>= 0.8.0.1), esc, 
+    magrittr (>= 1.5), purrr, stringr (>= 1.4.0), 
     graphics (>= 3.5.2), stats (>= 3.5.2),
     utils (>= 3.5.2), methods (>= 3.5.2),
     tidyr, forcats, ggplot2, ggrepel, 
