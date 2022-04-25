@@ -52,9 +52,14 @@ The preparation module in `metapsyTools` allows to:
 
 For your own convenience, it is highly advised to **strictly** follow some data formatting rules prior to importing the dataset for effect size calculation. If all of these rules are followed closely, it minimizes the risk of receiving error messages, producing conflicts, etc.
 
-We assume that the database follows the general structure of the Metapsy database, in which **each row represents a specific result of one trial arm** (e.g. the measured self-reported depression severity in the control group at post-test in some study x).
+The package can handle both data in the **"long"** and **"wide"** format. In the long format, **each row represents a specific result of one trial arm** (e.g. the measured self-reported depression severity in the control group at post-test in some study x). In the wide format, each row represents a specific **comparison** of two trial arms. 
 
-First, the database **must** contain these columns, with **exactly** this variable name:
+
+<br></br>
+
+#### Long Format
+
+If the database is in the long format, the dataset **must** contain these columns, with **exactly** this variable name:
 
 - **`study`**. The name and year of the study the result was extracted from, as a `character` variable, e.g. `"Cuijpers, 2019"`. This variable should **not** differ between study arms, measurement points, etc.  
 - **`condition`**. A `character` variable, representing if the trial arm served as the control group (`"cg"`) or intervention group (`"ig"`) in this specific trial. Overall, `condition` must only contain `"cg"` or `"ig"` values.
@@ -83,16 +88,56 @@ First, the database **must** contain these columns, with **exactly** this variab
 - Response, Remission, ...
   - **`Improved_N`**. The number of individuals in the trial arm who have _improved_. It is crucial that the outcome should be positive/desired (i.e. remission, response, but _not_ e.g. deterioration) to ensure that the calculated effect sizes have the correct sign in the end!
   - **`Rand_N`**. If the row contains improvement data: the number of individuals in the trial arm. Otherwise, leave as `NA`, particularly when data for `Post_M` and `Post_SD`, or `Change_m` and `Change_SD` are available in the same row.
+  
+The `psyCtrSubset` dataset an example of a correctly formatted database in the "long" format. You can run `data("psyCtrSubset")` after `metapsyTools` has been loaded to inspect it.
 
 
+<br></br>
 
+#### Wide Format
+
+If the database is in the wide format, the dataset **must** contain these columns, with **exactly** this variable name:
+
+- **`study`**. The name and year of the study the result was extracted from, as a `character` variable, e.g. `"Cuijpers, 2019"`. This variable should **not** differ between study arms, measurement points, etc.  
+- **`Cond_spec_trt1`** and **`Cond_spec_trt2`**. A `character` variable, representing the "condition specification" in the trial arms that are being compared. This variable encodes the type of intervention/control group employed in the trial arm (e.g. `"cau"` for care as usual, or `"pst"` for problem-solving therapy). **_NOTE_**: in multiarm trials, `Cond_spec_trt...` **must** have different values in differing treatment arms. Say, e.g., that one trial consisted of conditions PST online, PST face-to-face, and a wait-list. Here, we still use `"pst"` to specify that Problem-Solving Therapy was employed; but in brackets, we add the "special" subtype of PST to uniquely identify the two intervention arms. In sum, the values for this trial in `Cond_spec_trt...` would therefore be `"pst (online)"`, `"pst (f2f)"` and `"wl"`.
+- **`multiple_arms_trt1`** and **`multiple_arms_trt2`**. A `character` variable. This variable should be `NA` when a trial arm is not part of a multiarm study. When the arm _is_ part of a multiarm trial, this variable should have the same value as in `Cond_spec_trt...`.
+- **`is.multiarm`**. A `numeric` variable which indicates if a comparison is _not_ part of a multiarm study (`0`, i.e. the study only has one intervention and one control group) or is part of a multiarm study (`1`).
+- **`no.arms`**. A `numeric` variable, indicating the number of arms in one trial. In non-multiarm trials, this should be `2`. 
+- **`Outc_measure`**. A `character` variable, indicating the type of instrument used to measure the results (e.g. `"phq-9"`). If the same instrument was used to measure **several** quantities in one study, the type of outcome **must** be added in brackets, for example `"hdrs (response)"` and `"hdrs (remission)"`.
+- **`Time`**. A `character` variable, indicating the assessment point (e.g. `"baseline"` or `"post"`).
+- **`Time_weeks`**. A `character` variable, indicating the assessment point in time units (e.g. `"2 month"` or `"0"`). Can be `NA` in case no information was reported.
+- **`primary`**. A `numeric` variable, indicating if the row contains results of the trial's primary outcome (`1`) or not (`0`).
+- **`sr_clinician`**. A `character` variable, representing if an outcome was self-reported (e.g. `"self-reported"`), or assessed in some other way (e.g. `"clinician"`-rated). 
+- **`rob`**. A variable indicating how many risk of bias criteria were fulfilled. This variable is not essential but expected by default in, for example, `runMetaAnalysis`.
+- **`...`** Further variables to be used (among other things) for subgroup analyses, study details in the meta-analysis publication, meta-regression, or to define treatment types analyzed in network meta-analyses, and so forth.
+
+**The following variables have to be added to calculate effect sizes** (all of class `numeric`):
+
+- Mean, SD and N:
+  - **`Post_M_trt1`** and **`Post_M_trt2`**. The mean of the measured outcome in both trial arms that are being compared, if applicable. Otherwise, leave as `NA`.
+  - **`Post_SD_trt1`** and **`Post_SD_trt2`**. The sample standard deviations of the measured outcome in the two trial arms that are being compared, if applicable. Otherwise, leave as `NA`.
+  - **`Post_N_trt1`** and **`Post_N_trt2`**. The sample sizes of the two trial arms that are being compared, if applicable. Otherwise, leave as `NA`.
+- Change Scores:
+  - **`Change_m_trt1`** and **`Change_m_trt2`** (note the lowercase "m"!). The mean pre-post change scores in the two trial arms that are being compared, if applicable. Otherwise, leave as `NA`.
+  - **`Change_SD_trt1`** and **`Change_SD_trt2`**. The sample standard deviations of the change scores in the two trial arms that are being compared, if applicable. Otherwise, leave as `NA`.
+  - **`Change_N_trt1`** and **`Change_N_trt2`**. The sample sizes of the two trial arms that are being compared, _if_ change scores are used. Otherwise, leave as `NA`, particularly when data for `Post_M_trt..` and `Post_SD_trt...` are available in the same row.
+- Response, Remission, ...
+  - **`Improved_N_trt1`** and **`Improved_N_trt2`**. The number of individuals in the two trial arms who have _improved_. It is crucial that the outcome should be positive/desired (i.e. remission, response, but _not_ e.g. deterioration) to ensure that the calculated effect sizes have the correct sign in the end!
+  - **`Rand_N_trt1`** and **`Rand_N_trt2`**. If the comparison contains improvement data: the number of individuals in the two trial arms that are being compared. Otherwise, leave as `NA`, particularly when data for `Post_M` and `Post_SD`, or `Change_m` and `Change_SD` are available in the same row.
+
+
+The `psyCtrSubsetWide` dataset an example of a correctly formatted database in the "wide" format. You can run `data("psyCtrSubsetWide")` after `metapsyTools` has been loaded to inspect it.
+
+<br></br>
+
+#### Additional Considerations
 
 **Further remarks** concerning the required data structure:
 
 - Often, it will not be possible to calculate the effect size data for all comparisons (e.g. because they reported their results in an "exotic" format, or because only the calculated value of $d$ or $g$ was reported). In this case, leave all effect size data variables in the dataset as `NA`. After using `calculateEffectSizes`, these comparisons will simply be forwarded without any calculations, and have `NA` in the calculated effect size and standard error columns. These gaps can then be filled manually by simply inserting the calculated $g$ and $\sqrt{V_g}$ values in the `es` and `se` columns generated by `calculatedEffectSizes` to "fill the gaps". When the database is updated the next time, this leads to a temporary loss of the manually calculated effect sizes (the rows with manually calculated effect sizes will again be `NA` if the functions are used on the entire updated database). However, this should not be a large issue. The `calculateEffectSizes` function creates a unique `id` variable in the final dataset for each comparison. This ID can be used to match comparisons with their manually calculated effect sizes from the last update again. 
 - The `study` variable should be identical for all arms (and outcomes measured in that arm) provided by the same study. However, there is one exception. When results are consistently reported separately for subgroups within the trial (e.g. M, SD and N for patients with and without a clinical diagnosis, for all trial arms), these subgroups should be treated as _independent_ studies (or alternatively, the results can be pooled to obtain overall data). This means that the `study` variable has to be adapted in this very special case to differentiate between the subgroups. This can be done by adding the subgroup in brackets, e.g. `"Dimidjan, 2005 (no diagnosis)"` and `"Dimidjan, 2005 (diagnosis)"`.
 - Each comparison/row can only contain effect size data for one effect size data type as declared above (Mean, SD, N _or_ Change Scores _or_ Response/Remission), but for the selected effect size data type, **all** required data must be available (e.g. if `Post_M` and `Post_N` are provided, one _must_ also provide data for `Post_SD`).
-- Effect size data should only be added if this specific outcome (e.g. PHQ-9 at post-test) was assessed in _all_ trial arms. It is not possible to add effect size data that was only measured in some arms within one trial, but not all.
+- If the data is in the long format, effect size data should only be added if this specific outcome (e.g. PHQ-9 at post-test) was assessed in _all_ trial arms. It is not possible to add effect size data that was only measured in some arms within one trial, but not all.
 - Please do _not_ include a variable with the name "id", "es", or "se" in the original data file, because these are added later. See "Calculation of Hedges' $g$" for more information.
 
 
@@ -109,6 +154,14 @@ library(metapsyTools)
 data("database2021Subset")
 database2021Subset <- checkDataFormat(database2021Subset)
 ```
+
+The function will then show a **prompt**, asking you to specify the the format of the dataset:
+
+```
+Enter: Is the data set in long [l] or wide [w] format? 
+```
+
+In this case, the dataset is in the "long" format, so `l` should be entered in the console. This gives the following output:
 
 ```
 ## - [OK] data set contains all variables in 'must.contain'.
@@ -134,6 +187,14 @@ database2021Subset <- checkDataFormat(database2021Subset)
 ```
 
 We see that the function has checked the required variables and their class. If divergent, the function will also try to **convert** the variable to the desired format. 
+
+You can avoid the prompt asking for the database format if you specify the `data.format` argument directly in the function:
+
+```{r, eval=F}
+database2021Subset <- checkDataFormat(database2021Subset,
+                                      data.format = "long")
+```
+
 
 <div style="border: 1px solid black; bg-color: gray; padding: 10px; border-radius: 3px;"><strong>Required variables for unique IDs</strong>: To function properly, the `metapsyTools` functions must be able to generate a _unique_ ID for each comparison. By default, this is achieved by combining information of the `study`, `condition`, `Cond_spec`, `is.multiarm`, `no.arms`, `multiple_arms`, `Outc_measure`, `Time`, `primary`, `Time_weeks`, and `sr_clinician` variables. These variables are included by default in the `must.contain` argument in the `checkDataFormat` function. If all required variables are detected, an `OK` message is returned; as is the case in our example.</div>
 
@@ -501,6 +562,7 @@ After all relevant rows have been filtered out (in our case, these relevant comp
 - `"influence"`. Runs a meta-analysis without influential cases (see `influence.rma.uni` for details).
 - `"rob"`. Runs a meta-analysis with only low-RoB studies included. By default, only studies with a value `> 2` in the `rob` variable are considered for this analysis.
 - `"threelevel"`. Runs a multilevel (three-level) meta-analysis model, with effect sizes nested in studies.
+- `"threelevel.che"`. Runs a multilevel (three-level) "correlated and hierarchical effects" (CHE) meta-analysis model. In this model, effect sizes are nested in studies, and effects within studies are assumed to be correlated. This will typically be a plausible modeling assumption in most real-world use cases.
 
 
 
@@ -518,6 +580,9 @@ res <- runMetaAnalysis(ma.data)
 ## - [OK] Calculated effect size with influential cases removed
 ## - [OK] Calculated effect size using only low RoB information
 ## - [OK] Calculated effect size using three-level MA model
+## - [OK] Robust variance estimation (RVE) used for three-level MA model
+## - [OK] Calculated effect size using three-level CHE model (rho=0.5)
+## - [OK] Robust variance estimation (RVE) used for three-level CHE model
 ## - [OK] Done!
 ```
 
@@ -537,14 +602,21 @@ res
 ## 4 One ES/study (highest)    14 -0.62 [-1.09; -0.15] 0.014   84.0 [74.51; 89.92] [-2.11; 0.87]   7.81
 ## 5 Outliers removed          22 -0.56 [-0.74; -0.37] <0.001  41.9 [3.57; 65.02]  [-1.04; -0.07]  8.4 
 ## 6 Influence Analysis        23 -0.54 [-0.77; -0.31] <0.001  73.8 [60.43; 82.58] [-1.42; 0.33]   8.56
-## 7 Only rob > 2               9 -0.28 [-0.59; 0.03]  0.074   80.8 [64.49; 89.63] [-1.19; 0.63]  14.6 
+## 7 Only rob > 2               9 -0.28 [-0.59; 0.03]  0.074   80.8 [64.49; 89.63] [-1.19; 0.63]   14.6 
 ## 8 Three-Level Model         25 -0.8  [-1.23; -0.37] <0.001  88.2 -              [-2.4; 0.81]    6.69
-## 
+## 9 Three-Level Model (CHE)   25 -0.75 [-1.16; -0.34] 0.002   84.9 -              [-2.14; 0.65]   6.95 
+##
 ## Variance components (three-level model) ---------------------- 
 ##                   tau2   i2
 ## Between Studies 0.4767 75.1
 ## Within Studies  0.0830 13.1
 ## Total           0.5597 88.2
+##
+## Variance components (three-level CHE model) ------------------ 
+##                   tau2   i2
+## Between Studies 0.3406 68.5
+## Within Studies  0.0818 16.4
+## Total           0.4224 84.9
 ```
 
 Using the `summary` method, details of the analysis settings can be printed. This function also returns recommended citations for the applied methods and/or packages.
@@ -571,6 +643,9 @@ Analysis settings ----------------------------------------------------------
   likelihood, using the 'rma.mv' function in {metafor}. 
 ✓ [Three-Level Model] Test statistics and CIs of the three-level model 
   calculated based on a t-distribution. 
+✓ [Robust Variance Estimation] Robust variance estimation was used to 
+  guard the three-level model(s) from misspecification. This was done 
+  using functions of the {clubSandwich} package.
 
 
 Cite the following packages/methods: ---------------------------------------
@@ -596,6 +671,12 @@ Cite the following packages/methods: ---------------------------------------
  - Knapp-Hartung: Hartung J, Knapp G (2001a): On tests of the overall treatment
           effect in meta-analysis with normally distributed responses.
           Statistics in Medicine, 20, 1771–82
+ - Three-level CHE model: Pustejovsky, J.E., Tipton, E. Meta-analysis with Robust
+          Variance Estimation: Expanding the Range of Working Models. Prevention
+          Science (2021). https://doi.org/10.1007/s11121-021-01246-3 
+ - Robust variance estimation: Pustejovsky, J.E., Tipton, E. Meta-analysis with Robust
+          Variance Estimation: Expanding the Range of Working Models. Prevention
+          Science (2021). https://doi.org/10.1007/s11121-021-01246-3 
 ```
 
 
@@ -604,7 +685,7 @@ The `runMetaAnalysis` function allows to tweak many, many details of the specifi
 
 - `method.tau`. This argument controls the method to be used for estimating the between-study heterogeneity variance $\tau^2$. The default is `"REML"` (restricted maximum likelihood), but other options such as the DerSimonian-Laird estimator (`"DL"`) are also available (see the `runMetaAnalysis` function documentation for more details). Note that three-level meta-analysis models can only be fitted using (restricted) maximum likelihood.
 - `nnt.cer`. The `runMetaAnalysis` function uses the method by Furukawa and Leucht to calculate the Number Needed to Treat (NNT) for each pooled effect size. This method needs an estimate of the control group event rate (CER). By default, `nnt.cer = 0.2` is used, but you can set this to another value if desired.
-- `rho.within.study`. To combine effect sizes on a study level before pooling (`Combined` model), one has to assume a within-study correlation of effects. By default, `rho.within.study = 0.5` is assumed, but this value can and should be changed based on better approximations.
+- `rho.within.study`. To combine effect sizes on a study level before pooling (`Combined` model), one has to assume a within-study correlation of effects. By default, `rho.within.study = 0.5` is assumed, but this value can and should be changed based on better approximations. This value also controls the assumed within-study correlation in the multilevel CHE mdoel.
 - `low.rob.filter`. By default, the function uses all comparisons for which the risk of bias rating in the `rob` variable has a value greater `2` (`low.rob.filter = "rob > 2"`). If your risk of bias rating is in another variable, or if another threshold should be used, you can change this argument accordingly.
 
 Here is an example of a `runMetaAnalysis` call with non-default settings:
@@ -629,6 +710,7 @@ res$model.outliers
 res$model.influence
 res$model.rob
 res$model.threelevel
+res$model.threelevel.che
 ```
 
 
@@ -658,6 +740,7 @@ plot(res, "lowest.highest") # Lowest and highest ES removed (creates 2 plots)
 plot(res, "outliers")       # Outliers-removed model
 plot(res, "influence")      # Influential cases-removed model
 plot(res, "threelevel")     # Three-level model
+plot(res, "threelevel.che") # Three-level CHE model
 ```
 
 This is what the "overall" model forest plot looks like in our example:
@@ -746,6 +829,15 @@ sg
 ## 6 arm_format_trt1 bat        3 -0.46 [-2.58; 0.75]  -     -     9.66  0.892
 ## 7 arm_format_trt1 cbt       19 -0.82 [-2.57; 0.92]  -     -     6.59  0.892
 ## 8 arm_format_trt1 pst        3 -0.9  [-2.84; 1.03]  -     -     6.28  0.892
+```
+
+When the number of studies in subgroups are small, it is sensible to use a **common estimate** of the between-study heterogeneity variance $\tau^2$ (in lieu of subgroup-specific estimates). This can be done by setting the `.tau.common` argument to `TRUE` in the function:
+
+```{r, eval=FALSE}
+sg <- subgroupAnalysis(res, 
+                       country, arm_format_trt1,
+                       .which.run = "threelevel",
+                       .tau.common = TRUE)
 ```
 
 <br>
