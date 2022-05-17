@@ -23,4 +23,4 @@ Imports:
     gridExtra, kableExtra, knitr, meta (>= 5.0-0),
     metafor, rlang, scales
 Depends: R (>= 3.5.0) 
-URL: https://github.com/MathiasHarrer/metapsyTools
+URL: https://github.com/metapsy-project/metapsyTools
