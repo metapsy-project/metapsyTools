@@ -16,7 +16,7 @@ if (!require("devtools"))
   install.packages("devtools")
 
 devtools::install_github(
-    "MathiasHarrer/metapsyTools",
+    "metapsy-project/metapsyTools",
     build_vignettes = TRUE)
 ```
 
