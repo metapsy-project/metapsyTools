@@ -1,7 +1,7 @@
 <h1>
   <code style="background: white;">metapsyTools</code>
 </h1>
-<a href='https://dplyr.tidyverse.org'><img src='https://metapsytools.protectlab.org/logo.png' align="right" height="139" /></a>
+<a href='https://dplyr.tidyverse.org'><img src='https://tools.metapsy.org/logo.png' align="right" height="139" /></a>
 
 
 ![R CMD Check](https://img.shields.io/badge/R%20CMD%20Check-passing-brightgreen)
