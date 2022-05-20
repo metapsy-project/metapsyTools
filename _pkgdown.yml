@@ -54,6 +54,7 @@ reference:
   desc: "Additional functionality for core functions."
   contents:
   - starts_with("metapsy")
+  - imputeResponse
   - starts_with("plot")
   - starts_with("print")
   - starts_with("summary")
