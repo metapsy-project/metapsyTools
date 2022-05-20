@@ -55,11 +55,11 @@
 #' @examples
 #' \dontrun{
 #'
-#' # Calculate Response using 50% method for one group.
+#' # Calculate response using 50% method for one group.
 #' imputeResponse(m.trt.pre = 20, m.trt.post = 11,
 #'                sd.trt.post = 7, n.trt = 100)
 #' 
-#' # Calculate Response for two groups and calculate effect sizes
+#' # Calculate response for two groups and calculate effect sizes
 #' imputeResponse(m.trt.pre = 20, m.trt.post = 11,
 #'                sd.trt.post = 7, n.trt = 100,
 #'                m.ctr.pre = 20, m.ctr.post = 18,

@@ -11,7 +11,7 @@ createStudyTable(.data, ...,
                  .html = TRUE)
 }
 \arguments{
-\item{.data}{Meta-analysis study data. Typically data created by the
+\item{.data}{Meta-analysis study data; typically data created by the
 \code{\link{expandMultiarmTrials}} or \code{\link{calculateEffectSizes}} function.
 Trial arm-specific information (e.g. sample size in each group) can be added via
 \code{\link{addTrialArmInfo}}. See 'Details'.}
