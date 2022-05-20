@@ -15,7 +15,7 @@ to run a meta-analysis using the output effect sizes.
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://github.com/MathiasHarrer/metapsyTools}
+  \item \url{https://github.com/metapsy-project/metapsyTools}
 }
 
 }

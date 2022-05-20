@@ -3,10 +3,10 @@ citHeader("To cite metapsyTools in publications use:")
 citEntry(
   entry    = "Manual",
   title    = '{metapsyTools}: Several {R} Helper Functions For The {"Metapsy"} Database',
-  author   = "Mathias Harrer and Paula Kuper and Pim Cuijpers",
+  author   = "Mathias Harrer and Paula Kuper and Antonia Sprenger and Pim Cuijpers",
   year     = "2022",
   url      = "https://doi.org/10.5281/zenodo.6448403",
-  textVersion = paste("Harrer, M., Kuper, P. & Cuijpers, P. (2022). metapsyTools: Several R Helper",
+  textVersion = paste("Harrer, M., Kuper, P., Sprenger, A. & Cuijpers, P. (2022). metapsyTools: Several R Helper",
                       'Functions For the "Metapsy" Database. DOI: 10.5281/zenodo.6448403.'
   )
 )
