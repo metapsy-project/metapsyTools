@@ -2,7 +2,7 @@
 #'
 #' This function creates an overview table containing selected study information.
 #'
-#' @param .data Meta-analysis study data. Typically data created by the
+#' @param .data Meta-analysis study data; typically data created by the
 #' \code{\link{expandMultiarmTrials}} or \code{\link{calculateEffectSizes}} function.
 #' Trial arm-specific information (e.g. sample size in each group) can be added via
 #' \code{\link{addTrialArmInfo}}. See 'Details'.
