@@ -1418,7 +1418,7 @@ summary.runMetaAnalysis = function(object, forest = TRUE, ...){
           Cluster-Robust (Sandwich) Variance Estimators with Small-Sample Corrections.
           R package version 0.5.3. https://CRAN.R-project.org/package=clubSandwich \n")}
     if (class(x)[2] == "correctPublicationBias"){
-      cat(" -", crayon::bold(crayon::blue("{metasens}:")), "Schwarzer G, Carpenter J, R&uuml;cker G (2022). 
+      cat(" -", crayon::bold(crayon::blue("{metasens}:")), "Schwarzer G, Carpenter J, R\u00FCcker G (2022). 
           metasens: Statistical Methods for Sensitivity Analysis in Meta-Analysis. 
           R package version 1.0-1, https://CRAN.R-project.org/package=metasens. \n")}
     if ("influence" %in% x$which.run){
@@ -1438,7 +1438,7 @@ summary.runMetaAnalysis = function(object, forest = TRUE, ...){
       cat(" -", crayon::bold(crayon::blue("Trim and fill method:")), "Duval S & Tweedie R (2000a): A nonparametric 'Trim and Fill' 
           method of accounting for publication bias in meta-analysis. Journal 
           of the American Statistical Association, 95, 89-98 \n")
-      cat(" -", crayon::bold(crayon::blue("Limit meta-analysis:")), "R&uuml;cker G, Schwarzer G, Carpenter JR, Binder H, Schumacher M (2011): 
+      cat(" -", crayon::bold(crayon::blue("Limit meta-analysis:")), "R\u00FCcker G, Schwarzer G, Carpenter JR, Binder H, Schumacher M (2011): 
           Treatment-effect estimates adjusted for small-study effects via a 
           limit meta-analysis. Biostatistics, 12, 122-42 \n")
       cat(" -", crayon::bold(crayon::blue("Selection model:")), "Vevea, J. L., & Hedges, L. V. (1995). A general linear model 
@@ -1547,7 +1547,7 @@ summary.runMetaAnalysis = function(object, forest = TRUE, ...){
           Cluster-Robust (Sandwich) Variance Estimators with Small-Sample Corrections.
           R package version 0.5.3. https://CRAN.R-project.org/package=clubSandwich \n")}
     if (class(x)[2] == "correctPublicationBias"){
-      cat(" -", crayon::bold(crayon::blue("{metasens}:")), "Schwarzer G, Carpenter J, R&uuml;cker G (2022). 
+      cat(" -", crayon::bold(crayon::blue("{metasens}:")), "Schwarzer G, Carpenter J, R\u00FCcker G (2022). 
           metasens: Statistical Methods for Sensitivity Analysis in Meta-Analysis. 
           R package version 1.0-1, https://CRAN.R-project.org/package=metasens. \n")}
     if ("influence" %in% x$which.run){
@@ -1573,7 +1573,7 @@ summary.runMetaAnalysis = function(object, forest = TRUE, ...){
       cat(" -", crayon::bold(crayon::blue("Trim and fill method:")), "Duval S & Tweedie R (2000a): A nonparametric 'Trim and Fill' 
           method of accounting for publication bias in meta-analysis. Journal 
           of the American Statistical Association, 95, 89-98 \n")
-      cat(" -", crayon::bold(crayon::blue("Limit meta-analysis:")), "R&uuml;cker G, Schwarzer G, Carpenter JR, Binder H, Schumacher M (2011): 
+      cat(" -", crayon::bold(crayon::blue("Limit meta-analysis:")), "R\u00FCcker G, Schwarzer G, Carpenter JR, Binder H, Schumacher M (2011): 
           Treatment-effect estimates adjusted for small-study effects via a 
           limit meta-analysis. Biostatistics, 12, 122-42 \n")
       cat(" -", crayon::bold(crayon::blue("Selection model:")), "Vevea, J. L., & Hedges, L. V. (1995). A general linear model 

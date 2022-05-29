@@ -92,7 +92,7 @@
 #' Vevea, J. L., & Hedges, L. V. (1995). A general linear model for estimating effect size in the 
 #' presence of publication bias. \emph{Psychometrika, 60}(3), 419–435.  ⁠https://doi.org/10.1007/BF02294384⁠
 #' 
-#' @import dplyr
+#' @import dplyr numDeriv
 #' @importFrom crayon green yellow cyan bold
 #' @importFrom scales pvalue
 #' @importFrom meta trimfill
