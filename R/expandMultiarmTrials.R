@@ -53,6 +53,7 @@
 #' @importFrom magrittr set_rownames
 #' @importFrom purrr map_df
 #' @import magrittr
+#' @importFrom crayon green yellow cyan bold
 #' @importFrom stats dffits model.matrix rnorm rstudent
 #' @importFrom utils combn
 #' @export expandMultiarmTrials
@@ -132,8 +133,8 @@ expandMultiarmTrials = function(data,
     # Set class
     class(data) = c("data.frame", "expandMultiarmTrials", "wide")
 
-    message("- [OK] Data format is wide, so no multiarm expansion is required.")
-    message("- [OK] Added unique ID for each comparison.")
+    message("- ", crayon::green("[OK] "), "Data format is wide, so no multiarm expansion is required.")
+    message("- ", crayon::green("[OK] "), "Added unique ID for each comparison.")
     return(data)
   }
 
@@ -192,7 +193,7 @@ expandMultiarmTrials = function(data,
     if (sum(table(data$id) != 2) != 0){
       stop("'expandMultiarmTrials' could not create unique comparisons. Please check for residual formatting issues.")
     } else {
-      message("- [OK] Multiarm trial expansion successful")
+      message("- ", crayon::green("[OK] "), "Multiarm trial expansion successful.")
       return(data)
     }
   }

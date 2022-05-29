@@ -158,6 +158,7 @@
 #' For more details see the help vignette: \code{vignette("metapsyTools")}.
 #'
 #' @import dplyr
+#' @importFrom crayon green yellow cyan bold
 #' @importFrom scales pvalue
 #' @importFrom purrr map
 #' @importFrom meta update.meta metagen
@@ -205,6 +206,9 @@ runMetaAnalysis = function(data,
   }
 
   warn.end = FALSE
+  
+  # Send message (beginning of analyses)
+  message(crayon::cyan(crayon::bold("- Running meta-analyses...")))
 
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
   #                                                                           #
@@ -268,7 +272,7 @@ runMetaAnalysis = function(data,
 
 
   if ("overall" %in% which.run){
-    message("- [OK] Calculated overall effect size")
+    message("- ", crayon::green("[OK] "), "Calculated overall effect size...")
   }
 
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -324,7 +328,7 @@ runMetaAnalysis = function(data,
 
 
   if ("lowest.highest" %in% which.run){
-    message("- [OK] Calculated effect size using only lowest effect")
+    message("- ", crayon::green("[OK] "), "Calculated effect size using only lowest effect...")
   }
 
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -380,7 +384,7 @@ runMetaAnalysis = function(data,
   rownames(mHighestRes) = "One ES/study (highest)"
 
   if ("lowest.highest" %in% which.run){
-    message("- [OK] Calculated effect size using only highest effect")
+    message("- ", crayon::green("[OK] "), "Calculated effect size using only highest effect...")
   }
 
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -411,14 +415,14 @@ runMetaAnalysis = function(data,
   }
 
   if (rho.within.study[1] >.99){
-    message("- [!] 'rho.within.study' is very close to 1.",
+    message("- ", crayon::yellow("[!] "), "'rho.within.study' is very close to 1.",
         " This can lead to non-positive-definite variance-covariance matrices.",
-        " If the V matrix is not positive-definite, assume a lower value.")
+        " If the V matrix is not positive-definite, assume a lower value...")
     warn.end = TRUE}
   if (rho.within.study[1] <.01){
-    message("- [!] 'rho.within.study' is very close to 0.",
+    message("- ", crayon::yellow("[!] "), "'rho.within.study' is very close to 0.",
         " This can lead to non-positive-definite variance-covariance matrices.",
-        " If the V matrix is not positive-definite, assume a higher value.")
+        " If the V matrix is not positive-definite, assume a higher value...")
     warn.end = TRUE}
 
   data.comb = metafor::aggregate.escalc(data, cluster = svc,
@@ -472,7 +476,7 @@ runMetaAnalysis = function(data,
   class(data) = "data.frame"
 
   if ("combined" %in% which.run){
-    message("- [OK] Calculated effect size using combined effects (rho=", rho.within.study, ")")
+    message("- ", crayon::green("[OK] "), "Calculated effect size using combined effects (rho=", rho.within.study, ")...")
   }
 
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -526,7 +530,7 @@ runMetaAnalysis = function(data,
   }
 
   if ("outliers" %in% which.run){
-    message("- [OK] Calculated effect size with outliers removed")
+    message("- ", crayon::green("[OK] "), "Calculated effect size with outliers removed...")
   }
 
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -578,7 +582,7 @@ runMetaAnalysis = function(data,
                                               collapse = ", "), "none"))
 
   if ("influence" %in% which.run){
-    message("- [OK] Calculated effect size with influential cases removed")
+    message("- ", crayon::green("[OK] "), "Calculated effect size with influential cases removed...")
   }
 
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -607,7 +611,7 @@ runMetaAnalysis = function(data,
     robFilter = paste0("data.for.rob$", low.rob.filter, " & !is.na(data.for.rob$", robVar, ")")
     robMask = eval(parse(text = robFilter))
     if (sum(robMask) == 0){
-      message("- [!] No low risk of bias studies detected! Switching to 'general'.")
+      message("- ", crayon::yellow("[!] "), "No low risk of bias studies detected! Switching to 'general'...")
       robMask = rep(TRUE, nrow(mGeneral$data))
       mRob = meta::update.meta(mGeneral, exclude = !robMask)
       which.run[!which.run == "rob"] -> which.run
@@ -647,7 +651,7 @@ runMetaAnalysis = function(data,
   }
 
   if ("rob" %in% which.run){
-    message("- [OK] Calculated effect size using only low RoB information")
+    message("- ", crayon::green("[OK] "), "Calculated effect size using only low RoB information...")
   }
 
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -657,8 +661,8 @@ runMetaAnalysis = function(data,
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
   if (method.tau != "REML" & "threelevel" %in% which.run){
-    message("- [OK] 3L-model tau(s) estimated using 'REML', since '",
-            method.tau, "' is not applicable.")
+    message("- ", crayon::green("[OK] "), "3L-model tau(s) estimated using 'REML', since '",
+            method.tau, "' is not applicable...")
   }
 
   data$es.id = 1:nrow(data)
@@ -727,11 +731,11 @@ runMetaAnalysis = function(data,
     mThreeLevelRes$excluded = paste("Number of clusters/studies:", mThreeLevel$s.nlevels[1])
 
     if ("threelevel" %in% which.run){
-      message("- [OK] Calculated effect size using three-level MA model")
+      message("- ", crayon::green("[OK] "), "Calculated effect size using three-level MA model...")
     }
 
     if (length(multi.study) == 0 & "threelevel" %in% which.run){
-      message("- [!] All included ES seem to be independent.",
+      message("- ", crayon::yellow("[!] "), "All included ES seem to be independent.",
               " A three-level model is not adequate and tau/I2 estimates are not trustworthy!")
       warn.end = TRUE
       which.run[!which.run == "threelevel"] -> which.run
@@ -776,12 +780,12 @@ runMetaAnalysis = function(data,
     mThreeLevelRes = mThreeLevelRes.RVE
 
     if ("threelevel" %in% which.run){
-      message("- [OK] Calculated effect size using three-level MA model")
-      message("- [OK] Robust variance estimation (RVE) used for three-level MA model")
+      message("- ", crayon::green("[OK] "), "Calculated effect size using three-level MA model...")
+      message("- ", crayon::green("[OK] "), "Robust variance estimation (RVE) used for three-level MA model...")
     }
 
     if (length(multi.study) == 0 & "threelevel" %in% which.run){
-      message("- [!] All included ES seem to be independent.",
+      message("- ", crayon::yellow("[!] "), "All included ES seem to be independent.",
               " A three-level model is not adequate and tau/I2 estimates are not trustworthy!")
       warn.end = TRUE
       which.run[!which.run == "threelevel"] -> which.run
@@ -797,8 +801,8 @@ runMetaAnalysis = function(data,
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
   if (method.tau != "REML" & "threelevel.che" %in% which.run){
-    message("- [OK] Three-level CHE model tau(s) estimated using 'REML', since '",
-            method.tau, "' is not applicable.")
+    message("- ", crayon::green("[OK] "), "Three-level CHE model tau(s) estimated using 'REML', since '",
+            method.tau, "' is not applicable...")
   }
 
   data$es.id = 1:nrow(data)
@@ -871,11 +875,11 @@ runMetaAnalysis = function(data,
     mCHERes$excluded = paste("Number of clusters/studies:", mCHE$s.nlevels[1])
 
     if ("threelevel.che" %in% which.run){
-      message("- [OK] Calculated effect size using three-level CHE model")
+      message("- ", crayon::green("[OK] "), "Calculated effect size using three-level CHE model...")
     }
 
     if (length(multi.study) == 0 & "threelevel.che" %in% which.run){
-      message("- [!] All included ES seem to be independent.",
+      message("- ", crayon::yellow("[!] "), "All included ES seem to be independent.",
               " A three-level CHE model is not adequate and tau/I2 estimates are not trustworthy!")
       warn.end = TRUE
       which.run[!which.run == "threelevel.che"] -> which.run
@@ -919,12 +923,12 @@ runMetaAnalysis = function(data,
     mCHERes = mCHERes.RVE
 
     if ("threelevel.che" %in% which.run){
-      message("- [OK] Calculated effect size using three-level CHE model (rho=", rho.within.study, ")")
-      message("- [OK] Robust variance estimation (RVE) used for three-level CHE model")
+      message("- ", crayon::green("[OK] "), "Calculated effect size using three-level CHE model (rho=", rho.within.study, ")...")
+      message("- ", crayon::green("[OK] "), "Robust variance estimation (RVE) used for three-level CHE model...")
     }
 
     if (length(multi.study) == 0 & "threelevel.che" %in% which.run){
-      message("- [!] All included ES seem to be independent.",
+      message("- ", crayon::yellow("[!] "), "All included ES seem to be independent.",
               " A three-level CHE model is not adequate and tau/I2 estimates are not trustworthy!")
       warn.end = TRUE
       which.run[!which.run == "threelevel.che"] -> which.run
@@ -960,13 +964,14 @@ runMetaAnalysis = function(data,
        which.run = which.run,
        data = data.original,
        html = html,
+       round.digits = round.digits,
        nnt.cer = nnt.cer,
        use.rve = use.rve) -> returnlist
 
   class(returnlist) = c("runMetaAnalysis", "list")
 
   if ("lowest.highest" %in% which.run){
-    message("- [OK] Done!")
+    message("- ", crayon::green("[OK] "), "Done!")
   }
 
   if (warn.end == TRUE){
@@ -999,51 +1004,135 @@ runMetaAnalysis = function(data,
 
 
 print.runMetaAnalysis = function(x, ...){
-
-  models = list("overall" = 1, "lowest.highest" = c(2,3), "outliers" = 4,
-                "influence" = 5, "rob" = 6, "combined" = 7, "threelevel" = 8,
-                "threelevel.che" = 9)
-
-  cat("Model results ")
-  cat("------------------------------------------------ \n")
-  dat = x$summary[unlist(models[x$which.run]),1:8]
-  print(dplyr::as_tibble(cbind(model = rownames(dat), dat)))
-
-  if ("threelevel" %in% x$which.run){
+  
+  if (class(x)[2] == "correctPublicationBias"){
+    
+    # # # # # # # # # # # # # #
+    # If Pubbias is corrected #
+    # # # # # # # # # # # # # # 
+    
+    
+    models = list("overall" = 1, "lowest.highest" = c(2,3), "outliers" = 4,
+                  "influence" = 5, "rob" = 6, "combined" = 7, "threelevel" = 8,
+                  "threelevel.che" = 9)
+    
+    cat("Model results ")
+    cat("------------------------------------------------ \n")
+    dat = x$summary[unlist(models[x$which.run]),1:8]
+    print(dplyr::as_tibble(cbind(model = rownames(dat), dat)))
+    
+    # Add publication bias corrected results
     cat("\n")
-    cat("Variance components (three-level model) ")
-    cat("---------------------- \n")
-    print(x$model.threelevel.var.comp)
+    cat(paste0("Publication bias correction ('", 
+               x$correctPublicationBias$which.run,
+               "' model) "))
+    cat("----------------------- \n")
+    dat.pb = x$correctPublicationBias$summary[,1:8]
+    print(dplyr::as_tibble(cbind(model = rownames(dat.pb), dat.pb)))
+    
+    
+    if ("threelevel" %in% x$which.run){
+      cat("\n")
+      cat("Variance components (three-level model) ")
+      cat("---------------------- \n")
+      print(x$model.threelevel.var.comp)
+    }
+    
+    if ("threelevel.che" %in% x$which.run){
+      cat("\n")
+      cat("Variance components (three-level CHE model) ")
+      cat("------------------ \n")
+      print(x$model.threelevel.che.var.comp)
+    }
+    
+    
+    if (x$html == TRUE){
+      
+      x$summary = x$summary[unlist(models[x$which.run]),]
+      
+      # Add publication bias
+      pub.row = c(rep(" ", nrow(x$summary)-1),
+                  paste0("Corrections were applied to the '",
+                         x$correctPublicationBias$which.run, 
+                         "' model."))
+      rownames(x$correctPublicationBias$summary) = 
+        paste("-", rownames(x$correctPublicationBias$summary))
+      rbind(x$summary, "<i>Publication bias correction</i>" = pub.row,
+            x$correctPublicationBias$summary) -> x$summary
+      
+      # Add footnote labels
+      fn.rows = x$summary$excluded != "none"
+      rownames(x$summary)[fn.rows] = paste0(rownames(x$summary[fn.rows,]), "<sup>",
+                                            letters[1:nrow(x$summary[fn.rows,])], "</sup>")
+      
+      x$summary %>%
+        {.$Analysis = rownames(.); rownames(.) = NULL; .} %>%
+        dplyr::select(Analysis, dplyr::everything(), -excluded) %>%
+        magrittr::set_colnames(c(".", "<i>k</i>", "<i>g</i>", "CI", "<i>p</i>",
+                                 "<i>I</i><sup>2</sup>",
+                                 "CI", "PI", "NNT")) %>%
+        knitr::kable(escape = FALSE) %>%
+        kableExtra::kable_styling(font_size = 8, full_width = FALSE) %>%
+        kableExtra::column_spec(1, bold = TRUE, width_min = "13em") %>%
+        kableExtra::footnote(general = "Excluded effect sizes/studies:",
+                             alphabet = x$summary$excluded[fn.rows]) %>%
+        print()
+    }
+    
+
+  } else {
+    
+    # # # # # # # # # # # # # #
+    # Standard Result Class   #
+    # # # # # # # # # # # # # # 
+    
+    models = list("overall" = 1, "lowest.highest" = c(2,3), "outliers" = 4,
+                  "influence" = 5, "rob" = 6, "combined" = 7, "threelevel" = 8,
+                  "threelevel.che" = 9)
+    
+    cat("Model results ")
+    cat("------------------------------------------------ \n")
+    dat = x$summary[unlist(models[x$which.run]),1:8]
+    print(dplyr::as_tibble(cbind(model = rownames(dat), dat)))
+    
+    if ("threelevel" %in% x$which.run){
+      cat("\n")
+      cat("Variance components (three-level model) ")
+      cat("---------------------- \n")
+      print(x$model.threelevel.var.comp)
+    }
+    
+    if ("threelevel.che" %in% x$which.run){
+      cat("\n")
+      cat("Variance components (three-level CHE model) ")
+      cat("------------------ \n")
+      print(x$model.threelevel.che.var.comp)
+    }
+    
+    if (x$html == TRUE){
+      
+      x$summary = x$summary[unlist(models[x$which.run]),]
+      # Add footnote labels
+      fn.rows = x$summary$excluded != "none"
+      rownames(x$summary)[fn.rows] = paste0(rownames(x$summary[fn.rows,]), "<sup>",
+                                            letters[1:nrow(x$summary[fn.rows,])], "</sup>")
+      
+      x$summary %>%
+        {.$Analysis = rownames(.); rownames(.) = NULL; .} %>%
+        dplyr::select(Analysis, dplyr::everything(), -excluded) %>%
+        magrittr::set_colnames(c(".", "<i>k</i>", "<i>g</i>", "CI", "<i>p</i>",
+                                 "<i>I</i><sup>2</sup>",
+                                 "CI", "PI", "NNT")) %>%
+        knitr::kable(escape = FALSE) %>%
+        kableExtra::kable_styling(font_size = 8, full_width = FALSE) %>%
+        kableExtra::column_spec(1, bold = TRUE, width_min = "13em") %>%
+        kableExtra::footnote(general = "Excluded effect sizes/studies:",
+                             alphabet = x$summary$excluded[fn.rows]) %>%
+        print()
+    }
+
   }
 
-  if ("threelevel.che" %in% x$which.run){
-    cat("\n")
-    cat("Variance components (three-level CHE model) ")
-    cat("------------------ \n")
-    print(x$model.threelevel.che.var.comp)
-  }
-
-  if (x$html == TRUE){
-
-    x$summary = x$summary[unlist(models[x$which.run]),]
-    # Add footnote labels
-    fn.rows = x$summary$excluded != "none"
-    rownames(x$summary)[fn.rows] = paste0(rownames(x$summary[fn.rows,]), "<sup>",
-                                 letters[1:nrow(x$summary[fn.rows,])], "</sup>")
-
-    x$summary %>%
-      {.$Analysis = rownames(.); rownames(.) = NULL; .} %>%
-      dplyr::select(Analysis, dplyr::everything(), -excluded) %>%
-      magrittr::set_colnames(c(".", "<i>k</i>", "<i>g</i>", "CI", "<i>p</i>",
-                               "<i>I</i><sup>2</sup>",
-                               "CI", "PI", "NNT")) %>%
-      knitr::kable(escape = FALSE) %>%
-      kableExtra::kable_styling(font_size = 8, full_width = FALSE) %>%
-      kableExtra::column_spec(1, bold = TRUE, width_min = "13em") %>%
-      kableExtra::footnote(general = "Excluded effect sizes/studies:",
-                           alphabet = x$summary$excluded[fn.rows]) %>%
-      print()
-  }
 }
 
 #' Plot method for objects of class 'runMetaAnalysis'.
@@ -1053,7 +1142,8 @@ print.runMetaAnalysis = function(x, ...){
 #' @param x An object of class \code{runMetaAnalysis}.
 #' @param which Model to be plotted. Can be one of \code{"overall"},
 #' \code{"combined"}, \code{"lowest.highest"}, \code{"outliers"},
-#' \code{"influence"}, \code{"baujat"}, \code{"loo-es"} or \code{"loo-i2"}.
+#' \code{"influence"}, \code{"baujat"}, \code{"loo-es"}, \code{"loo-i2"},
+#' \code{"trimfill"}, \code{"limitmeta"} or \code{"selection"}.
 #' @param ... Additional arguments.
 #'
 #' @author Mathias Harrer \email{mathias.h.harrer@@gmail.com},
@@ -1064,6 +1154,10 @@ print.runMetaAnalysis = function(x, ...){
 #' @importFrom stringr str_replace_all
 #' @importFrom purrr map
 #' @importFrom dplyr mutate
+#' @importFrom metasens funnel.limitmeta
+#' @importFrom meta funnel.meta
+#' @importFrom metafor plot.rma.uni.selmodel
+#' @importFrom crayon green yellow cyan bold
 #'
 #' @export
 #' @method plot runMetaAnalysis
@@ -1084,13 +1178,13 @@ plot.runMetaAnalysis = function(x, which = NULL, ...){
   if (is.null(which)){
     if (models[[x$which.run[1]]][1] != "model.threelevel" &&
         models[[x$which.run[1]]][1] != "model.threelevel.che"){
-      message("- [OK] Generating forest plot ('", x$which.run[1], "' model)")
+      message("- ", crayon::green("[OK] "), "Generating forest plot ('", x$which.run[1], "' model).")
       meta::forest.meta(x[[models[[x$which.run[1]]][1]]], smlab = " ",
                         leftcols = leftCols, leftlabs = leftLabs,
                         text.random = "RE Model", ...)
     }
     if (models[[x$which.run[1]]][1] == "lowest.highest"){
-      message("- [OK] Generating forest plot ('", "highest", "' model)")
+      message("- ", crayon::green("[OK] "), "Generating forest plot ('", "highest", "' model).")
       meta::forest.meta(x$model.highest, smlab = " ",
                         leftcols = leftCols, leftlabs = leftLabs,
                         text.random = "RE Model", ...)
@@ -1105,79 +1199,95 @@ plot.runMetaAnalysis = function(x, which = NULL, ...){
   } else {
 
     if (which[1] == "overall"){
-      message("- [OK] Generating forest plot ('overall' model)")
+      message("- ", crayon::green("[OK] "), "Generating forest plot ('overall' model).")
       meta::forest.meta(x$model.overall, smlab = " ",
                         leftcols = leftCols, leftlabs = leftLabs,
                         text.random = "RE Model", ...)
     }
 
     if (which[1] == "lowest.highest"){
-      message("- [OK] Generating forest plot ('lowest' model)")
+      message("- ", crayon::green("[OK] "), "Generating forest plot ('lowest' model).")
       meta::forest.meta(x$model.lowest, smlab = " ",
                         leftcols = leftCols, leftlabs = leftLabs,
                         text.random = "RE Model", ...)
-      message("- [OK] Generating forest plot ('highest' model)")
+      message("- ", crayon::green("[OK] "), "Generating forest plot ('highest' model).")
       meta::forest.meta(x$model.highest, smlab = " ",
                         leftcols = leftCols, leftlabs = leftLabs,
                         text.random = "RE Model", ...)
     }
 
     if (which[1] == "outliers"){
-      message("- [OK] Generating forest plot ('outliers' model)")
+      message("- ", crayon::green("[OK] "), "Generating forest plot ('outliers' model).")
       meta::forest.meta(x$model.outliers, smlab = " ",
                         leftcols = leftCols, leftlabs = leftLabs,
                         text.random = "RE Model", ...)
     }
 
     if (which[1] == "influence"){
-      message("- [OK] Generating forest plot ('influence' model)")
+      message("- ", crayon::green("[OK] "), "Generating forest plot ('influence' model).")
       meta::forest.meta(x$model.influence, smlab = " ",
                         leftcols = leftCols, leftlabs = leftLabs,
                         text.random = "RE Model", ...)
     }
 
     if (which[1] == "rob"){
-      message("- [OK] Generating forest plot ('rob' model)")
+      message("- ", crayon::green("[OK] "), "Generating forest plot ('rob' model).")
       meta::forest.meta(x$model.rob, smlab = " ",
                         leftcols = leftCols, leftlabs = leftLabs,
                         text.random = "RE Model", ...)
     }
 
     if (which[1] == "combined"){
-      message("- [OK] Generating forest plot ('combined' model)")
+      message("- ", crayon::green("[OK] "), "Generating forest plot ('combined' model).")
       meta::forest.meta(x$model.combined, smlab = " ",
                         leftcols = leftCols, leftlabs = leftLabs,
                         text.random = "RE Model", ...)
     }
 
     if (which[1] == "threelevel"){
-      message("- [OK] Generating forest plot ('threelevel' model)")
+      message("- ", crayon::green("[OK] "), "Generating forest plot ('threelevel' model).")
       metafor::forest.rma(x$model.threelevel, ...)
     }
 
     if (which[1] == "che"){
-      message("- [OK] Generating forest plot ('threelevel.che' model)")
+      message("- ", crayon::green("[OK] "), "Generating forest plot ('threelevel.che' model).")
       metafor::forest.rma(x$model.threelevel.che, ...)
     }
 
     if (which[1] == "threelevel.che"){
-      message("- [OK] Generating forest plot ('threelevel.che' model)")
+      message("- ", crayon::green("[OK] "), "Generating forest plot ('threelevel.che' model).")
       metafor::forest.rma(x$model.threelevel.che, ...)
     }
 
     if (which[1] == "baujat"){
-      message("- [OK] Generating baujat plot")
+      message("- ", crayon::green("[OK] "), "Generating baujat plot.")
       plot(x$influence.analysis$BaujatPlot)
     }
 
     if (which[1] == "loo" | which[1] == "loo-es"){
-      message("- [OK] Generating leave-one-out forest plot")
+      message("- ", crayon::green("[OK] "), "Generating leave-one-out forest plot.")
       suppressWarnings({plot(x$influence.analysis$ForestEffectSize)})
     }
 
     if (which[1] == "loo-i2"){
-      message("- [OK] Generating leave-one-out forest plot (sorted by I2)")
+      message("- ", crayon::green("[OK] "), "Generating leave-one-out forest plot (sorted by I2).")
       suppressWarnings({plot(x$influence.analysis$ForestI2)})
+    }
+    
+    if (which[1] == "trimfill"){
+      message("- ", crayon::green("[OK] "), "Generating funnel plot for the trim-and-fill analysis.")
+      suppressWarnings({meta::funnel.meta(x$correctPublicationBias$model.trimfill)})
+    }
+    
+    if (which[1] == "limitmeta"){
+      message("- ", crayon::green("[OK] "), "Generating funnel plot for the limit meta-analysis.")
+      suppressWarnings({metasens::funnel.limitmeta(x$correctPublicationBias$model.limitmeta)})
+    }
+    
+    if (which[1] == "selection"){
+      message("- ", crayon::green("[OK] "), "Generating selection model likelihood plot.")
+      suppressWarnings({metafor::plot.rma.uni.selmodel(x$correctPublicationBias$model.selection,
+                                                       xlim = c(0, 0.2))})
     }
 
     if (which[1] == "summary"){
@@ -1307,6 +1417,10 @@ summary.runMetaAnalysis = function(object, forest = TRUE, ...){
       cat(" -", crayon::bold(crayon::blue("{clubSandwich}:")), "Pustejovsky, J. (2021). clubSandwich:
           Cluster-Robust (Sandwich) Variance Estimators with Small-Sample Corrections.
           R package version 0.5.3. https://CRAN.R-project.org/package=clubSandwich \n")}
+    if (class(x)[2] == "correctPublicationBias"){
+      cat(" -", crayon::bold(crayon::blue("{metasens}:")), "Schwarzer G, Carpenter J, R&uuml;cker G (2022). 
+          metasens: Statistical Methods for Sensitivity Analysis in Meta-Analysis. 
+          R package version 1.0-1, https://CRAN.R-project.org/package=metasens. \n")}
     if ("influence" %in% x$which.run){
       cat(" -", crayon::bold(crayon::blue("Influential cases:")), "Viechtbauer, W., & Cheung, M. W.-L. (2010). Outlier and influence
           diagnostics for meta-analysis. Research Synthesis Methods, 1(2), 112-125.
@@ -1319,6 +1433,18 @@ summary.runMetaAnalysis = function(object, forest = TRUE, ...){
       cat(" -", crayon::bold(crayon::blue("Robust variance estimation:")), "Pustejovsky, J.E., Tipton, E. Meta-analysis with Robust
           Variance Estimation: Expanding the Range of Working Models. Prevention
           Science (2021). https://doi.org/10.1007/s11121-021-01246-3 \n")}
+    
+    if (class(x)[2] == "correctPublicationBias"){
+      cat(" -", crayon::bold(crayon::blue("Trim and fill method:")), "Duval S & Tweedie R (2000a): A nonparametric 'Trim and Fill' 
+          method of accounting for publication bias in meta-analysis. Journal 
+          of the American Statistical Association, 95, 89-98 \n")
+      cat(" -", crayon::bold(crayon::blue("Limit meta-analysis:")), "R&uuml;cker G, Schwarzer G, Carpenter JR, Binder H, Schumacher M (2011): 
+          Treatment-effect estimates adjusted for small-study effects via a 
+          limit meta-analysis. Biostatistics, 12, 122-42 \n")
+      cat(" -", crayon::bold(crayon::blue("Selection model:")), "Vevea, J. L., & Hedges, L. V. (1995). A general linear model 
+          for estimating effect size in the presence of publication bias. 
+          Psychometrika, 60(3), 419-435. https://doi.org/10.1007/BF02294384. \n")
+    }
 
 
   } else {
@@ -1420,6 +1546,10 @@ summary.runMetaAnalysis = function(object, forest = TRUE, ...){
     cat(" -", crayon::bold(crayon::blue("{clubSandwich}:")), "Pustejovsky, J. (2021). clubSandwich:
           Cluster-Robust (Sandwich) Variance Estimators with Small-Sample Corrections.
           R package version 0.5.3. https://CRAN.R-project.org/package=clubSandwich \n")}
+    if (class(x)[2] == "correctPublicationBias"){
+      cat(" -", crayon::bold(crayon::blue("{metasens}:")), "Schwarzer G, Carpenter J, R&uuml;cker G (2022). 
+          metasens: Statistical Methods for Sensitivity Analysis in Meta-Analysis. 
+          R package version 1.0-1, https://CRAN.R-project.org/package=metasens. \n")}
     if ("influence" %in% x$which.run){
       cat(" -", crayon::bold(crayon::blue("Influential cases:")), "Viechtbauer, W., & Cheung, M. W.-L. (2010). Outlier and influence
           diagnostics for meta-analysis. Research Synthesis Methods, 1(2), 112-125.
@@ -1438,6 +1568,19 @@ summary.runMetaAnalysis = function(object, forest = TRUE, ...){
       cat(" -", crayon::bold(crayon::blue("Robust variance estimation:")), "Pustejovsky, J.E., Tipton, E. Meta-analysis with Robust
           Variance Estimation: Expanding the Range of Working Models. Prevention
           Science (2021). https://doi.org/10.1007/s11121-021-01246-3 \n")}
+    
+    if (class(x)[2] == "correctPublicationBias"){
+      cat(" -", crayon::bold(crayon::blue("Trim and fill method:")), "Duval S & Tweedie R (2000a): A nonparametric 'Trim and Fill' 
+          method of accounting for publication bias in meta-analysis. Journal 
+          of the American Statistical Association, 95, 89-98 \n")
+      cat(" -", crayon::bold(crayon::blue("Limit meta-analysis:")), "R&uuml;cker G, Schwarzer G, Carpenter JR, Binder H, Schumacher M (2011): 
+          Treatment-effect estimates adjusted for small-study effects via a 
+          limit meta-analysis. Biostatistics, 12, 122-42 \n")
+      cat(" -", crayon::bold(crayon::blue("Selection model:")), "Vevea, J. L., & Hedges, L. V. (1995). A general linear model 
+          for estimating effect size in the presence of publication bias. 
+          Psychometrika, 60(3), 419-435. https://doi.org/10.1007/BF02294384. \n")
+    }
+    
   }
 
   if (forest[1]){

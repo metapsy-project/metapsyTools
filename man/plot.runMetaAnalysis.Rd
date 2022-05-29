@@ -11,7 +11,8 @@
 
 \item{which}{Model to be plotted. Can be one of \code{"overall"},
 \code{"combined"}, \code{"lowest.highest"}, \code{"outliers"},
-\code{"influence"}, \code{"baujat"}, \code{"loo-es"} or \code{"loo-i2"}.}
+\code{"influence"}, \code{"baujat"}, \code{"loo-es"}, \code{"loo-i2"},
+\code{"trimfill"}, \code{"limitmeta"} or \code{"selection"}.}
 
 \item{...}{Additional arguments.}
 }

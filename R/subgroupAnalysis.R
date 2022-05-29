@@ -58,6 +58,7 @@
 #' @details For more details see the help vignette: \code{vignette("metapsyTools")}.
 #'
 #' @import dplyr
+#' @importFrom crayon green yellow cyan bold
 #' @importFrom scales pvalue
 #' @importFrom purrr map
 #' @importFrom meta update.meta metagen
@@ -84,7 +85,7 @@ subgroupAnalysis = function(.model, ...,
   # Get model type
   model.type = paste0("model.", .which.run)
   M = .model[[model.type]]
-  message("- [OK] '", model.type, "' used for subgroup analyses.")
+  message("- ", crayon::green("[OK] "), "'", model.type, "' used for subgroup analyses.")
 
   if (.which.run[1] == "combined" & .model$model.combined$k == 1){
     stop("'.which.run' is set to 'combined', but there is only k=1 study/ES.")}
@@ -101,7 +102,8 @@ subgroupAnalysis = function(.model, ...,
   if (class(M)[1] == "metagen"){
     
     if (.tau.common)
-      message("- [OK] Subgroup analyses conducted using a common heterogeneity variance estimate.")
+      message("- ", crayon::green("[OK] "), 
+              "Subgroup analyses conducted using a common heterogeneity variance estimate.")
     
     purrr::map(as.list(variables), function(x){
       
@@ -299,7 +301,8 @@ plot.subgroupAnalysis = function(x, which = NULL, ...){
   }
 
   if (is.null(which)){
-    message("- [OK] '", names(x$subgroup.analysis.list)[1], "' used for forest plot.")
+    message("- ", crayon::green("[OK] "), "'", 
+            names(x$subgroup.analysis.list)[1], "' used for forest plot.")
     meta::forest.meta(x$subgroup.analysis.list[[1]])
   } else {
     meta::forest.meta(x$subgroup.analysis.list[[which[1]]])

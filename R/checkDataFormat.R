@@ -82,6 +82,7 @@
 #'
 #' @seealso \code{\link{expandMultiarmTrials}}
 #' @export checkDataFormat
+#' @importFrom crayon green yellow cyan bold
 #' @importFrom methods as
 #' @importFrom stats dffits model.matrix rnorm rstudent
 #' @importFrom utils combn
@@ -159,7 +160,7 @@ checkDataFormat = function(data,
         message(paste0("! data set does not contain variable(s) ",
                        paste(miss, collapse = ", "), "."))
       } else {
-        message("- [OK] data set contains all variables in 'must.contain'.")
+        message("- ", crayon::green("[OK] "), "Data set contains all variables in 'must.contain'.")
       }
     }
 
@@ -183,12 +184,13 @@ checkDataFormat = function(data,
       }
 
       if (issue == TRUE){
-        message(paste0("[!] ",
+        message(paste0("- ", crayon::yellow("[!] "),
                        paste(names(variable.contains)[issueList == 1],
                              collapse = ", "),
                        " not (only) contains the values specified in 'variable.contains'."))
       } else {
-        message("- [OK] variables contain only the values specified in 'variable.contains'.")
+        message("- ", crayon::green("[OK] "), 
+                "Variables contain only the values specified in 'variable.contains'.")
       }
     }
 
@@ -205,7 +207,7 @@ checkDataFormat = function(data,
     if (length(variable.class) > 0){
       for (i in 1:length(variable.class)){
         if (class(data[[names(variable.class)[i]]]) == variable.class[[i]]){
-          message(paste0("- [OK] '", names(variable.class)[i], "' has desired class ",
+          message(paste0("- ", crayon::green("[OK] "), names(variable.class)[i], "' has desired class ",
                          variable.class[[i]], "."))
         } else {
           try({
@@ -213,7 +215,7 @@ checkDataFormat = function(data,
                                                   variable.class[[i]])},
             silent = TRUE) -> try.convert
 
-          message(paste0("- [OK] '", names(variable.class)[i], "' has been converted to class ",
+          message(paste0("- ", crayon::green("[OK] "), names(variable.class)[i], "' has been converted to class ",
                          variable.class[[i]], "."))
         }
       }
@@ -230,7 +232,7 @@ checkDataFormat = function(data,
         message(paste0("! data set does not contain variable(s) ",
                        paste(miss, collapse = ", "), "."))
       } else {
-        message("- [OK] data set contains all variables in 'must.contain'.")
+        message("- ", crayon::green("[!] "), "data set contains all variables in 'must.contain'.")
       }
     }
 
@@ -250,12 +252,13 @@ checkDataFormat = function(data,
       }
 
       if (issue == TRUE){
-        message(paste0("[!] ",
+        message(paste0("- ", crayon::yellow("[!] "),
                        paste(names(variable.contains)[issueList == 1],
                              collapse = ", "),
                        " not (only) contains the values specified in 'variable.contains'."))
       } else {
-        message("- [OK] variables contain only the values specified in 'variable.contains'.")
+        message("- ", crayon::green("[OK] "), 
+                "Variables contain only the values specified in 'variable.contains'.")
       }
     }
 
@@ -263,7 +266,7 @@ checkDataFormat = function(data,
     if (length(variable.class) > 0){
       for (i in 1:length(variable.class)){
         if (class(data[[names(variable.class)[i]]]) == variable.class[[i]]){
-          message(paste0("- [OK] '", names(variable.class)[i], "' has desired class ",
+          message(paste0("- ", crayon::green("[OK] "), names(variable.class)[i], "' has desired class ",
                          variable.class[[i]], "."))
         } else {
           try({
@@ -271,7 +274,8 @@ checkDataFormat = function(data,
                                                   variable.class[[i]])},
             silent = TRUE) -> try.convert
 
-          message(paste0("- [OK] '", names(variable.class)[i], "' has been converted to class ",
+          message(paste0("- ", crayon::green("[OK] "), 
+                         names(variable.class)[i], "' has been converted to class ",
                          variable.class[[i]], "."))
         }
       }

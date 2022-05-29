@@ -85,6 +85,7 @@
 #' @importFrom stringr str_remove str_replace str_replace_all
 #' @import magrittr
 #' @import dplyr
+#' @importFrom crayon yellow green
 #' @importFrom stats dffits model.matrix rnorm rstudent
 #' @importFrom utils combn
 #' @export calculateEffectSizes
@@ -104,7 +105,7 @@ calculateEffectSizes = function(data,
 
   # check class
   if (data.class[2] != "expandMultiarmTrials"){
-    message(paste("class of 'data' is not 'expandMultiarmTrials'.",
+    message(paste("-", crayon::yellow("[!]"), "Class of 'data' is not 'expandMultiarmTrials'.",
                   "Sure that the data has the right format?"))
   }
 
@@ -150,7 +151,6 @@ calculateEffectSizes = function(data,
   if (format[1] == "wide"){
 
     data.wide = data
-    message("- Calculating effect sizes...")
     es.res = list()
     for (i in 1:length(funcs)){
       es.res[[i]] = try({funcs[[i]](data.wide)}, silent = TRUE)
@@ -175,11 +175,11 @@ calculateEffectSizes = function(data,
     es.res = do.call(cbind, es.res)
 
     if (sum(error.mask) > 0){
-      message("- [!] Function(s) ", paste(names(funcs)[error.mask], collapse = ", "),
+      message("- ", crayon::yellow("[!] "), "Function(s) ", paste(names(funcs)[error.mask], collapse = ", "),
               " not applied. Check for potential data/function problems.")
-      message("- [!] All other effect size calculation functions were applied successfully.")
+      message("- ", crayon::yellow("[!] "), "All other effect size calculation functions were applied successfully.")
     } else {
-      message("- [OK] Effect sizes calculated successfully")
+      message("- ", crayon::green("[OK] "), "Effect sizes calculated successfully.")
     }
 
     # Now, bind all calculated ES together,
@@ -260,11 +260,11 @@ calculateEffectSizes = function(data,
     es.res = do.call(cbind, es.res)
 
     if (sum(error.mask) > 0){
-      message("- [!] Function(s) ", paste(names(funcs)[error.mask], collapse = ", "),
+      message("- ", crayon::yellow("[!] "), "Function(s) ", paste(names(funcs)[error.mask], collapse = ", "),
               " not applied. Check for potential data/function problems.")
-      message("- [!] All other effect size calculation functions were applied successfully.")
+      message("- ", crayon::yellow("[!] "), "All other effect size calculation functions were applied successfully.")
     } else {
-      message("- [OK] Effect sizes calculated successfully")
+      message("- ", crayon::green("[OK] "), "Effect sizes calculated successfully.")
     }
 
     # Now, bind all calculated ES together,

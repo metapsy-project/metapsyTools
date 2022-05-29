@@ -72,6 +72,7 @@
 #' @importFrom purrr map2
 #' @importFrom stats dffits model.matrix rnorm rstudent
 #' @importFrom utils combn
+#' @importFrom crayon green
 #' @export addTrialArmInfo
 
 addTrialArmInfo = function(.data, ...,
@@ -121,7 +122,7 @@ addTrialArmInfo = function(.data, ...,
   }) %>% do.call(cbind, .) %>%
     {cbind(id = .[,1], dplyr::select(., -id))} -> res
 
-  message("- [OK] Attaching trial arm variable(s) ",
+  message("- ", crayon::green("[OK] "), "Attaching trial arm variable(s) ",
           paste(trial.vars, collapse = ", "))
 
   # Merge back with original .data

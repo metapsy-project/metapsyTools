@@ -134,6 +134,7 @@
 #' @details For more details see the help vignette: \code{vignette("metapsyTools")}.
 #'
 #' @importFrom stats dffits model.matrix rnorm rstudent pnorm qnorm
+#' @importFrom crayon green yellow cyan bold
 #' @export imputeResponse
 #' 
 
@@ -161,11 +162,11 @@ imputeResponse = function(m.trt.pre, m.trt.post, sd.trt.post,
       if (lower.is.better[1] == TRUE){
         round(pnorm(((m.trt.pre/2)-m.trt.post)/
                       sd.trt.post)*n.trt) -> n.resp
-        message("50% symptom decrease assumed as clinically relevant threshold.")
+        message("- ", crayon::green("[OK] "), "50% symptom decrease assumed as clinically relevant threshold.")
       } else {
         round(pnorm(((m.trt.pre*2)-m.trt.post)/
                       sd.trt.post)*n.trt) -> n.resp
-        message("50% increase in values assumed as clinically relevant threshold.")
+        message("- ", crayon::green("[OK] "), "50% increase in values assumed as clinically relevant threshold.")
       }
     } else {
       if (missing(m.trt.post) | missing(sd.trt.post) | missing(n.trt)){
@@ -180,13 +181,13 @@ imputeResponse = function(m.trt.pre, m.trt.post, sd.trt.post,
         round(pnorm((cutoff-m.trt.post)/
                       sd.trt.post)*n.trt) -> n.resp
         if (length(cutoff) == 1){
-          message(paste("A value of", cutoff,
+          message("- ", crayon::green("[OK] "), paste("A value of", cutoff,
                         "was assumed as the clinically relevant threshold."))}
       } else {
         round(pnorm((m.trt.post-cutoff)/
                       sd.trt.post)*n.trt) -> n.resp
         if (length(cutoff) == 1){
-          message(paste("A value of", cutoff,
+          message("- ", crayon::green("[OK] "), paste("A value of", cutoff,
                         "was assumed as the clinically relevant threshold",
                         "(higher values indicate better outcomes)."))}
       }
@@ -218,7 +219,8 @@ imputeResponse = function(m.trt.pre, m.trt.post, sd.trt.post,
       round(pnorm((rcrit.m-m.trt.post)/
                     sd.trt.post)*n.trt) -> n.resp
       if (length(rcrit) == 1){
-        message(paste0("A reliable change value of ", round(rcrit, 3),
+        message("- ", crayon::green("[OK] "), 
+                paste0("A reliable change value of ", round(rcrit, 3),
                        " was assumed as the clinically relevant threshold,",
                        " using a reliability of ryy=", rho, "."))}
     } else {
@@ -226,7 +228,8 @@ imputeResponse = function(m.trt.pre, m.trt.post, sd.trt.post,
       round(pnorm((m.trt.post-rcrit.m)/
                     sd.trt.post)*n.trt) -> n.resp
       if (length(rcrit) == 1){
-        message(paste0("A reliable change value of ", round(rcrit, 3),
+        message("- ", crayon::green("[OK] "), 
+                paste0("A reliable change value of ", round(rcrit, 3),
                        " was assumed as the clinically relevant threshold,",
                        " using a reliability of ryy=", rho,
                        " (higher values indicate better outcomes)."))}
@@ -281,7 +284,7 @@ imputeResponse = function(m.trt.pre, m.trt.post, sd.trt.post,
     }
 
     if (missing(sd.ctr.pre)){
-      message("Assuming same pre-test SD in control and treatment group.")
+      message("- ", crayon::green("[OK] "), "Assuming same pre-test SD in control and treatment group.")
       sd.ctr.pre = sd.trt.pre
     }
 

@@ -47,6 +47,7 @@ reference:
   desc: "Functions to run meta-analyses."
   contents:
   - runMetaAnalysis
+  - correctPublicationBias
   - subgroupAnalysis
   - starts_with("metaRegression")
   - createStudyTable

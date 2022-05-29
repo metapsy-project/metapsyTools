@@ -109,6 +109,7 @@
 #' @importFrom knitr kable
 #' @importFrom stats dffits model.matrix rnorm rstudent
 #' @importFrom utils combn
+#' @importFrom crayon green yellow cyan bold
 #' @export createStudyTable
 
 createStudyTable = function(.data, ...,
@@ -193,13 +194,13 @@ createStudyTable = function(.data, ...,
   rownames(data.d) = NULL
 
   if (.html == TRUE){
-    message("- Creating HTML table...")
+    message(crayon::cyan(crayon::bold("- Creating HTML table...")))
     data.d %>% knitr::kable() %>%
       kableExtra::kable_styling(font_size = 8, full_width = FALSE) %>%
       kableExtra::column_spec(1, bold = TRUE, width_min = "13em") %>% print()
   }
 
-  message("- [OK] Study table created successfully")
+  message("- ", crayon::green("[OK] "), "Study table created successfully.")
   return(data.d)
 
 }

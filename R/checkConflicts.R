@@ -84,6 +84,7 @@
 #' @author Mathias Harrer \email{mathias.h.harrer@@gmail.com}, Paula Kuper \email{paula.r.kuper@gmail.com}, Pim Cuijpers \email{p.cuijpers@@vu.nl}
 #'
 #' @seealso \code{\link{expandMultiarmTrials}}
+#' @importFrom crayon green yellow
 #' @importFrom dplyr select filter group_map group_by
 #' @importFrom stringr str_replace_all str_remove_all
 #' @importFrom magrittr set_names
@@ -172,11 +173,11 @@ checkConflicts = function(.data,
     class(returnlist) = c("checkConflicts", "list")
 
     if (nrow(returnlist$idConflicts) == 0){
-      message("- [OK] No data format conflicts detected")
+      message("- ", crayon::green("[OK] "),  "No data format conflicts detected.")
       class(data.return) = c("wide", "data.frame")
       return(data.return)
     } else {
-      message("- [!] Data format conflicts detected!")
+      message("- ", crayon::yellow("[!] "), "Data format conflicts detected!")
       return(returnlist)
     }
   }
@@ -225,11 +226,11 @@ checkConflicts = function(.data,
     class(returnlist) = c("checkConflicts", "list")
 
     if (nrow(returnlist$idConflicts) == 0){
-      message("- [OK] No data format conflicts detected")
+      message("- ", crayon::green("[OK] "), "No data format conflicts detected.")
       class(data.return) = c("long", "data.frame")
       return(data.return)
     } else {
-      message("- [!] Data format conflicts detected!")
+      message("- ", crayon::yellow("[!] "), "Data format conflicts detected!")
       return(returnlist)
     }
   }
