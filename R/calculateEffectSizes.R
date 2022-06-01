@@ -235,7 +235,6 @@ calculateEffectSizes = function(data,
 
 
     # Apply funcs
-    message("- Calculating effect sizes...")
     es.res = list()
     for (i in 1:length(funcs)){
       es.res[[i]] = try({funcs[[i]](data.wide)}, silent = TRUE)

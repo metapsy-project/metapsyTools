@@ -195,7 +195,6 @@ runMetaAnalysis = function(data,
                            ...){
 
 
-  message("- Pooling the data...")
 
 
   # Throw out all NAs/Missings
