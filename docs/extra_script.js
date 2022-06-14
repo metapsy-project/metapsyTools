@@ -30,3 +30,22 @@ imgVuWhite.height = "30";
 imgVuWhite.style = "Padding: 10px 0px 0px 15px;";
 imgVuWhiteContainer.appendChild(imgVuWhite);
 navbarRight.appendChild(imgVuWhiteContainer);
+
+var nav = document.getElementsByTagName('nav');
+var strip = document.createElement('div');
+strip.id = "strip";
+strip.style.backgroundColor = "red";
+strip.style.position = "absolute";
+strip.style.width = "100%";
+strip.style.marginTop = "-50px";
+strip.style.fontSize = "13px";
+strip.style.paddingBottom = "10px";
+strip.style.paddingLeft = "28px";
+strip.style.backgroundImage = "linear-gradient(90deg, rgba(94, 186, 189, 1), rgba(3, 114, 183, 1))";
+strip.style.marginTop = "-78px";
+var container = document.getElementsByClassName('container');
+container[0].style.paddingTop = "13px";
+nav[0].insertBefore(strip, nav[0].firstChild);
+console.log("hello");
+
+
