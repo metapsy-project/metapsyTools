@@ -1074,7 +1074,7 @@ runMetaAnalysis = function(data,
                          " & !is.na(data.for.rob$", robVar, ")")
       robMask = eval(parse(text = robFilter))
       if (sum(robMask) == 0){
-        message("- ", crayon::yellow("[!] "), 
+        message("\n- ", crayon::yellow("[!] "), 
           "No low risk of bias studies detected! Switching to 'general'...")
         robMask = rep(TRUE, nrow(mGeneral$data))
         mRob = meta::update.meta(mGeneral, exclude = !robMask,

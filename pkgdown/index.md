@@ -16,8 +16,10 @@ Databases that are loaded into R using the [`metapsyData`](https://data.metapsy.
 library(metapsyData)
 
 # Load database, filter trials, and analyze
-getData("depression-psyctr") %>% 
-    filterPoolingData(condition_arm1 == "cbt") %>% 
+getData("inpatients") %>% 
+    filterPoolingData(
+      condition_arm1 == "cbt",
+      instrument == "bdi") %>% 
     runMetaAnalysis()
 ```
 
