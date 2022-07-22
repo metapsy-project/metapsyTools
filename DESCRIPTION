@@ -1,18 +1,19 @@
 Package: metapsyTools
 Type: Package
 Title: Several R Helper Functions For The "Metapsy" Database
-Version: 0.3.3
+Version: 1.0.2
 Author: Mathias Harrer[cre], Paula Kuper[cre], Antonia Sprenger[cre], Pim Cuijpers[aut]
 Authors@R: c(
     person("Mathias", "Harrer", email = "mathias.h.harrer@gmail.com", role = "cre", comment = c(ORCID = "0000-0001-7016-2687")),
     person("Paula", "Kuper", email = "paula.kuper@tum.de", role = "aut", comment = c(ORCID = "00000-0002-7481-976X")),
     person("Antonia", "Sprenger", email = "antonia.sprenger@tum.de", role = "aut", comment = c(ORCID = "0000-0002-1180-7702")),
     person("Pim", "Cuijpers", email = "p.cuijpers@vu.nl", role = "aut", comment = c(ORCID = "0000-0001-5497-2743")))
-Description: A companion R package for the metapsy database. It aims to faciliate calculation of meta effect sizes for the included trials. For this purpose, data can be checked and converted into the required format to calculate the effect sizes for all trials. It is then possible to run a meta- analysis over the output effect sizes. 
+Description: A companion R package for the Metapsy database. The package aims to faciliate calculation of meta-analytic effect sizes for the included trials. For this purpose, data can be checked and converted into the required format to calculate the effect sizes for all trials. Various wrapper functions are included to then pool and analyze the results. 
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.2
+Roxygen: list(markdown = TRUE)
 VignetteBuilder: knitr
 Imports: 
     clubSandwich (>= 0.5.3), 

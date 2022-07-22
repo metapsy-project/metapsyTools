@@ -27,31 +27,31 @@ Further filters can be applied using \code{\link{filterPoolingData}}.
 This function filters rows of a dataset based on a priority rule for specific variables
 defined by the user.
 }
-\details{
-For more details see the help vignette: \code{vignette("metapsyTools")}.
-}
 \examples{
 \dontrun{
 # Load data and calculate effect size
-data("psyCtrSubset")
-psyCtrSubset \%>\%
+data("depressionPsyCtr")
+depressionPsyCtr \%>\%
   checkDataFormat() \%>\%
   checkConflicts() \%>\%
-  expandMultiarmTrials() \%>\%
   calculateEffectSizes() -> data
 
-# Filterusing four priority rules
+# Filter using four priority rules
 filterPriorityRule(data,
-                   Cond_spec_trt1 = c("cbt", "pst"),
-                   Cond_spec_trt2 = c("cau", "wl", "cbt"),
-                   Outc_measure = c("cesd", "phq-9", "scl", "hdrs"),
-                   Time = c("post", "fu")) -> res
+                   condition_arm1 = c("cbt", "pst"),
+                   condition_arm2 = c("cau", "wl", "cbt"),
+                   instrument = c("cesd", "phq-9", "scl", "hdrs"),
+                   time = c("post", "fu")) -> res
 }
 
 }
 \seealso{
 \code{\link{filterPoolingData}}
+
+For more details see the \href{https://tools.metapsy.org/articles/metapsytools}{Get Started} vignette.
 }
 \author{
-Mathias Harrer \email{mathias.h.harrer@gmail.com}, Paula Kuper \email{paula.r.kuper@gmail.com}, Pim Cuijpers \email{p.cuijpers@vu.nl}
+Mathias Harrer \email{mathias.h.harrer@gmail.com},
+Paula Kuper \email{paula.r.kuper@gmail.com},
+Pim Cuijpers \email{p.cuijpers@vu.nl}
 }

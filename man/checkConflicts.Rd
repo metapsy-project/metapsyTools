@@ -5,44 +5,37 @@
 \title{Check for (potential) data format conflicts}
 \usage{
 checkConflicts(.data,
-               vars.for.id = c("study", "primary",
-                               "Outc_measure",
-                               "Time", "Time_weeks",
-                               "sr_clinician"),
-               .no.arms = "no.arms",
-               .condition.specification = "Cond_spec",
-               .group.indicator = "condition",
-               .group.names = list("ig" = "ig",
-                                   "cg" = "cg"),
-               .groups.column.indicator = c("_trt1", "_trt2"),
-               data.format = NULL)
+               vars.for.id = c("study", "outcome_type",
+                               "instrument", "time",
+                               "time_weeks",
+                               "rating"),
+               .condition = "condition",
+               .condition.specification = "multi",
+               .groups.column.indicator = c("_arm1", "_arm2"))
 }
 \arguments{
 \item{.data}{Meta-analysis data stored as a \code{data.frame}, to be checked by the function.}
 
-\item{vars.for.id}{\code{character} vector, containing column names of all variables used to construct unique comparison IDs.}
+\item{vars.for.id}{\code{character} vector, containing column names of all
+variables used to construct unique comparison IDs.}
 
-\item{.no.arms}{\code{character}, signifying the name of the variable containing the number of arms included in a study (typically 2).}
+\item{.condition}{\code{character}. The prefix of the two variables in \code{data} in
+which the conditions (e.g. "guided iCBT", "waitlist") of the trial arm comparison are stored.}
 
 \item{.condition.specification}{\code{character}, name of the column containing the specific condition in each trial arm.
 For multiarm trials, these conditions \emph{must} be distinct (e.g. \code{"cbt-guided"} and \code{"cbt-unguided"}).}
 
-\item{.group.indicator}{\code{character}, variable encoding if a row represents an intervention or control/reference arm.}
-
-\item{.group.names}{\code{list}, storing the name of the value in \code{.group.indicator} corresponding to the intervention group (\code{"ig"}) and control group (\code{"cg"}).}
-
-\item{.groups.column.indicator}{\code{character}. If the dataset is in wide format: a character vector with two elements, representing the suffix used to
-differentiate between the first and second treatment in a comparison.}
-
-\item{data.format}{\code{character}. Either \code{"long"} or \code{"wide"}, depending on the format of the dataset in
-\code{data}. \code{NULL} by default, which lets the user define the format after the function has been called.}
+\item{.groups.column.indicator}{\code{character}. A character vector with two elements,
+representing the suffix used to differentiate between the first and second arm in a comparison.}
 }
 \value{
-The type of data returned by \code{checkConflicts} depends on the outcome of the evaluation. When no problems
-have been detected, the function simply returns the dataset provided in \code{.data}.
+The type of data returned by \code{checkConflicts} depends on the outcome of the evaluation.
+When no problems have been detected, the function simply returns the data set
+provided in \code{.data}.
 
-When (potential) formatting formatting issues have been detected, the function throws a message and returns the affected
-studies/\code{data.frame} columns. In particular, results are provided within a \code{list} of three objects:
+When (potential) formatting formatting issues have been detected, the function
+throws a message and returns the affected studies/\code{data.frame} columns.
+In particular, results are provided within a \code{list} of three objects:
 
 \itemize{
 \item{\code{allConflicts}, a \code{data.frame} containing all affected rows, regardless of conflict type.}
@@ -55,49 +48,27 @@ The returned list has class \code{checkConflicts}.
 }
 \description{
 This function checks for potential data formatting conflicts that may produce errors or incorrect
-results when applying the \code{\link{expandMultiarmTrials}} function later on.
+results when applying the \code{\link[=calculateEffectSizes]{calculateEffectSizes()}} or \code{\link[=runMetaAnalysis]{runMetaAnalysis()}} function later on.
 }
 \examples{
 \dontrun{
-data("inpatients")
-data("psyCtrSubset")
+data("depressionPsyCtr")
 
 # Example 1: Use defaults and simply run checks
-psyCtrSubset \%>\%
+depressionPsyCtr \%>\%
   checkDataFormat() \%>\%
-  checkConflicts() -> result
+  checkConflicts() -> res
 
-# Example 2: Use defaults, run check and directly
-# proceed expanding multiarm trials/calculating effects
-inpatients \%>\%
+# Example 2: Overrule defaults; this will produce a conflict
+depressionPsyCtr \%>\%
   checkDataFormat() \%>\%
-  checkConflicts() \%>\%
-  expandMultiarmTrials() \%>\%
-  calculateEffectSizes() -> result
+  checkConflicts(vars.for.id = "study") -> res
 
-# Example 3: Define custom IDs (example generates error)
-vars.for.id = c("study", "primary",
-                "Time", "Time_weeks")
-psyCtrSubset \%>\%
-  checkDataFormat() \%>\%
-  checkConflicts(vars.for.id) \%>\%
-  expandMultiarmTrials(vars.for.id) -> res
-
-# Example 4: Wide format
-data("psyCtrSubsetWide")
-psyCtrSubsetWide \%>\%
-  checkDataFormat() \%>\%
-  checkConflicts()
-
-# Example 4: Wide format; overrule default input prompt
-checkConflicts(psyCtrSubsetWide,
-               data.format = "wide")
 }
-
 
 }
 \seealso{
-\code{\link{expandMultiarmTrials}}
+\code{\link{checkDataFormat}}
 }
 \author{
 Mathias Harrer \email{mathias.h.harrer@gmail.com}, Paula Kuper \email{paula.r.kuper@gmail.com}, Pim Cuijpers \email{p.cuijpers@vu.nl}

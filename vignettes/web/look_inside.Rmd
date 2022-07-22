@@ -10,6 +10,12 @@ vignette: >
 
 <br></br>
 
+::: {style="border: 1px solid #dee2e6; background-color: #f1f3f5 !important; padding: 10px; border-radius: 3px;"}
+Please note that this presentation refers to an older version (0.2.0) of `metapsyTools`.
+:::
+
+<br>
+
 The presentation below provides more technical details on the `metapsyTools` package and its
 functions.
 

@@ -156,8 +156,8 @@ metapsyFindOutliers = function(x, ...){
     }
 
     # Update meta-analysis with outliers removed
-    m.fixed = update.meta(x, exclude = mask.fixed, ...)
-    m.random = update.meta(x, exclude = mask.random, ...)
+    m.fixed = update.meta(x, exclude = mask.fixed, id = NULL, ...)
+    m.random = update.meta(x, exclude = mask.random, id = NULL, ...)
 
     # Select names of outlying studies
     out.study.fixed = x$studlab[mask.fixed]

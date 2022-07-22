@@ -32,30 +32,33 @@
 #'
 #' @examples
 #' \dontrun{
-#' data("inpatients")
-#' library(meta)
-#'
-#' inpatients %>%
-#'    checkDataFormat() %>%
-#'      checkConflicts() %>%
-#'      expandMultiarmTrials() %>%
-#'      calculateEffectSizes() -> data
+#' data("depressionPsyCtr")
+#' 
+#' depressionPsyCtr %>%
+#'   checkDataFormat() %>%
+#'   checkConflicts() %>%
+#'   calculateEffectSizes() %>% 
+#'   filterPoolingData(condition_arm2 %in% 
+#'                       c("wl", "other ctr")) -> data
 #'
 #' # Run the meta-analyses
 #' runMetaAnalysis(data) -> res
 #'
 #' # Subgroup analysis
-#' subgroupAnalysis(res, Outc_measure, country) -> sg
-#' plot(sg, "Outc_measure")
+#' subgroupAnalysis(res, condition_arm2, country,
+#'                  .which.run = "combined",
+#'                  .tau.common = TRUE) -> sg
+#' plot(sg, "condition_arm2")
 #' plot(sg, "country")
 #' }
 #'
 #' @author Mathias Harrer \email{mathias.h.harrer@@gmail.com},
-#' Paula Kuper \email{paula.r.kuper@@gmail.com}, Pim Cuijpers \email{p.cuijpers@@vu.nl}
+#' Paula Kuper \email{paula.r.kuper@@gmail.com}, 
+#' Pim Cuijpers \email{p.cuijpers@@vu.nl}
 #'
 #' @seealso \code{\link{runMetaAnalysis}}
 #'
-#' @details For more details see the help vignette: \code{vignette("metapsyTools")}.
+#' @details For more details see the [Get Started](https://tools.metapsy.org/articles/metapsytools) vignette.
 #'
 #' @import dplyr
 #' @importFrom crayon green yellow cyan bold
@@ -68,35 +71,52 @@
 #' @export subgroupAnalysis
 
 subgroupAnalysis = function(.model, ...,
-                 .which.run = .model$which.run[1],
-                 .round.digits = 2,
-                 .nnt.cer = NULL,
-                 .tau.common = FALSE,
-                 .html = TRUE){
-
+                            .which.run = .model$which.run[1],
+                            .round.digits = 2,
+                            .nnt.cer = NULL,
+                            .tau.common = FALSE,
+                            .html = TRUE){
+  
   if (class(.model)[1] != "runMetaAnalysis"){
     stop("Input must be of class 'runMetaAnalysis'. Did you apply 'runMetaAnalysis' first?")
   }
 
-
   variables = .model$data %>% dplyr::select(...) %>% colnames()
   .round.digits = abs(.round.digits)
+
 
   # Get model type
   model.type = paste0("model.", .which.run)
   M = .model[[model.type]]
-  message("- ", crayon::green("[OK] "), "'", model.type, "' used for subgroup analyses.")
+  message("- ", crayon::green("[OK] "), "'", 
+          model.type, "' used for subgroup analyses.")
 
-  if (.which.run[1] == "combined" & .model$model.combined$k == 1){
-    stop("'.which.run' is set to 'combined', but there is only k=1 study/ES.")}
-  if (.which.run[1] == "lowest" & .model$model.lowest$k == 1){
-    stop("'.which.run' is set to 'lowest', but there is only k=1 study/ES.")}
-  if (.which.run[1] == "highest" & .model$model.highest$k == 1){
-    stop("'.which.run' is set to 'highest', but there is only k=1 study/ES.")}
-  if (.which.run[1] == "influence" & .model$model.influence$k == 1){
-    stop("'.which.run' is set to 'influence', but there is only k=1 study/ES.")}
-  if (.which.run[1] == "rob" & .model$model.rob$k == 1){
-    stop("'.which.run' is set to 'rob', but there is only k=1 study/ES.")}
+  # Throw error if which.run is not included
+  if (which.run[1] == "combined" & model$model.combined$k == 1){
+    if (model$model.combined$k == 1){
+      stop("'which.run' is set to 'combined', but there is only k=1 study/ES.")
+    }
+  }
+  if (which.run[1] == "lowest"){
+    if (model$model.lowest$k == 1){
+      stop("'which.run' is set to 'lowest', but there is only k=1 study/ES.") 
+    }
+  }
+  if (which.run[1] == "highest"){
+    if (model$model.highest$k == 1){
+      stop("'which.run' is set to 'highest', but there is only k=1 study/ES.")
+    }
+  }
+  if (which.run[1] == "influence"){
+    if (model$model.influence$k == 1){
+      stop("'which.run' is set to 'influence', but there is only k=1 study/ES.")
+    }
+  }
+  if (which.run[1] == "rob"){
+    if (model$model.rob$k == 1){
+      stop("'which.run' is set to 'rob', but there is only k=1 study/ES.")
+    }
+  }
 
   # Run all subgroup analyses
   if (class(M)[1] == "metagen"){
@@ -133,16 +153,52 @@ subgroupAnalysis = function(.model, ...,
       purrr::map2(as.list(variables), function(x,y){
 
         # Effect size in each group
-        if (x$comb.fixed == TRUE){g = round(x$TE.fixed.w, .round.digits)} else {
-          g = round(x$TE.random.w, .round.digits)}
+        if (x$comb.fixed == TRUE){
+          g = round(
+                if (identical(.model$.type.es, "RR")){
+                   exp(x$TE.fixed.w)
+                } else {
+                  x$TE.fixed.w
+                }, .round.digits)
+        } else {
+          g = round(
+                if (identical(.model$.type.es, "RR")){
+                  exp(x$TE.random.w)
+                } else {
+                  x$TE.random.w
+                }, .round.digits)
+        }
 
         # Confidence interval for g
         if (x$comb.fixed == TRUE){
-          g.ci = paste0("[", round(x$lower.fixed.w, .round.digits), "; ",
-                        round(x$upper.fixed.w, .round.digits), "]")
+          g.ci = paste0("[", 
+                        round(
+                          if (identical(.model$.type.es, "RR")){
+                            exp(x$lower.fixed.w)
+                          } else {
+                            x$lower.fixed.w
+                          }, .round.digits), "; ",
+                        round(
+                          if (identical(.model$.type.es, "RR")){
+                            exp(x$upper.fixed.w)
+                          } else {
+                            x$upper.fixed.w
+                          }, .round.digits), "]")
         } else {
-          g.ci = paste0("[", round(x$lower.random.w, .round.digits), "; ",
-                        round(x$upper.random.w, .round.digits), "]")}
+          g.ci = paste0("[", 
+                        round(
+                          if (identical(.model$.type.es, "RR")){
+                            exp(x$lower.random.w)
+                          } else {
+                            x$lower.random.w
+                          }, .round.digits), "; ",
+                        round(
+                          if (identical(.model$.type.es, "RR")){
+                            exp(x$upper.random.w)
+                          } else {
+                            x$upper.random.w
+                          }, .round.digits), "]")
+        }
 
         # I-squared
         i2 = ifelse(is.na(x$I2.w), "-", round(x$I2.w*100, .round.digits-1))
@@ -170,6 +226,11 @@ subgroupAnalysis = function(.model, ...,
                    p = ifelse(is.na(x$pval.Q.b.random), NA,
                               scales::pvalue(x$pval.Q.b.random)))
       }) %>% do.call(rbind, .) %>% {rownames(.) = NULL;.} -> summary
+    
+    if (identical(.model$.type.es, "RR")){
+      summary["nnt"] = "-"
+      colnames(summary)[4:5] = c("rr", "rr.ci")
+    }
   }
 
 
@@ -181,32 +242,43 @@ subgroupAnalysis = function(.model, ...,
     dat.mv = data.frame(yi = M$yi,
                         vi = M$vi,
                         slab = M$slab,
-                        study = .model$data[!is.na(.model$data$es), study.id],
+                        study = M$data[[study.id]],
                         es.id = 1:length(M$yi))
-    dat.mv = cbind(dat.mv, .model$data[!is.na(.model$data$es),] %>%
+    dat.mv = cbind(dat.mv, .model$data[!is.na(M$yi),] %>%
                      dplyr::select(dplyr::all_of(variables)) %>%
                      purrr::map_dfr(~as.factor(.)))
 
     purrr::map(as.list(variables), function(x){
       form = as.formula(paste0("~", x))
-      metafor::rma.mv(yi = yi,
-                      V = vi,
-                      data = dat.mv,
-                      random = M$random[[1]],
-                      test = M$test,
-                      method = "REML",
-                      mods = form) -> res.mv
+      tryCatch2({
+        metafor::rma.mv(yi = yi,
+                        V = vi,
+                        data = dat.mv,
+                        random = M$random[[1]],
+                        test = M$test,
+                        method = "REML",
+                        mods = form)}) %>% 
+        {.$value} -> res.mv
       }) -> subgroup.analysis.list
     names(subgroup.analysis.list) = variables
 
 
-    purrr::map2(subgroup.analysis.list, variables, function(x, y){
-
-      g = c(as.numeric(x$b)[1],
-            as.numeric(x$b)[-1] + as.numeric(x$b)[1]) %>% round(.round.digits)
-      g.lower = {as.numeric(x$b)[1] + x$ci.lb} %>% round(.round.digits)
-      g.upper = {as.numeric(x$b)[1] + x$ci.ub} %>% round(.round.digits)
-      g.ci = paste0("[", g.lower, "; ", g.upper, "]")
+    purrr::map2(subgroup.analysis.list, variables, 
+                function(x, y){
+      
+      if (identical(.model$.type.es, "RR")){
+        g = c(exp(as.numeric(x$b)[1]),
+              exp(as.numeric(x$b)[-1] + as.numeric(x$b)[1])) %>% round(.round.digits)
+        g.lower = {exp(as.numeric(x$b)[1] + x$ci.lb)} %>% round(.round.digits)
+        g.upper = {exp(as.numeric(x$b)[1] + x$ci.ub)} %>% round(.round.digits)
+        g.ci = paste0("[", g.lower, "; ", g.upper, "]")
+      } else {
+        g = c(as.numeric(x$b)[1],
+              as.numeric(x$b)[-1] + as.numeric(x$b)[1]) %>% round(.round.digits)
+        g.lower = {as.numeric(x$b)[1] + x$ci.lb} %>% round(.round.digits)
+        g.upper = {as.numeric(x$b)[1] + x$ci.ub} %>% round(.round.digits)
+        g.ci = paste0("[", g.lower, "; ", g.upper, "]")
+      }
 
       if (is.null(.nnt.cer)){
         metapsyNNT(g, .model$nnt.cer) %>%
@@ -226,10 +298,23 @@ subgroupAnalysis = function(.model, ...,
   }
 
 
+  # Replace NAs
+  summary[is.na(summary)] = "-"
+  summary[summary == "[; ]" &
+            !is.na(summary)] = "[-;-]"
+  summary[summary == "" &
+            !is.na(summary)] = "-"
+  
+  if (identical(.model$.type.es, "RR")){
+    summary$nnt = "-"
+  }
+  
   # Return
   returnlist = list(summary = summary,
                     subgroup.analysis.list = subgroup.analysis.list,
-                    html = .html)
+                    html = .html, 
+                    model.type = class(M)[1],
+                    .type.es = .model$.type.es)
   class(returnlist) = c("subgroupAnalysis", "list")
   return(returnlist)
 
@@ -238,7 +323,7 @@ subgroupAnalysis = function(.model, ...,
 
 
 
-#' Print method for objects of class 'subgroupAnalysis'.
+#' Print method for objects of class 'subgroupAnalysis'
 #'
 #' Print S3 method for objects of class \code{subgroupAnalysis}.
 #'
@@ -263,12 +348,19 @@ print.subgroupAnalysis = function(x, ...){
   print(dplyr::as_tibble(x$summary), n = nrow(x$summary))
 
   if (x$html == TRUE){
+    
+    if (identical(x$.type.es, "RR")){
+      colNames = c("Variable", "Level", "<i>n</i><sub>comp</sub>",
+                   "<i>RR</i>", "CI", "<i>I</i><sup>2</sup>",
+                   "CI", "NNT", "<i>p</i>")
+    } else {
+      colNames = c("Variable", "Level", "<i>n</i><sub>comp</sub>",
+                   "<i>g</i>", "CI", "<i>I</i><sup>2</sup>",
+                   "CI", "NNT", "<i>p</i>")
+    }
 
     x$summary %>%
-      magrittr::set_colnames(c("Variable", "Level", "<i>n</i><sub>comp</sub>",
-                               "<i>g</i>", "CI",
-                               "<i>I</i><sup>2</sup>",
-                               "CI", "NNT", "<i>p</i>")) %>%
+      magrittr::set_colnames(colNames) %>%
       knitr::kable(escape = FALSE) %>%
       kableExtra::kable_styling(font_size = 8, full_width = FALSE) %>%
       kableExtra::column_spec(1, bold = TRUE) %>%
@@ -278,7 +370,7 @@ print.subgroupAnalysis = function(x, ...){
 }
 
 
-#' Plot method for objects of class 'runMetaAnalysis'.
+#' Plot method for objects of class 'runMetaAnalysis'
 #'
 #' Plot S3 method for objects of class \code{runMetaAnalysis}.
 #'
@@ -289,22 +381,30 @@ print.subgroupAnalysis = function(x, ...){
 #' @author Mathias Harrer \email{mathias.h.harrer@@gmail.com},
 #' Paula Kuper \email{paula.r.kuper@@gmail.com}, Pim Cuijpers \email{p.cuijpers@@vu.nl}
 #'
-#' @importFrom meta forest.meta
+#' @importFrom meta forest.meta update.meta
 #'
 #' @export
 #' @method plot subgroupAnalysis
 
 plot.subgroupAnalysis = function(x, which = NULL, ...){
 
-  if (class(x$subgroup.analysis.list[[1]])[1] == "rma.mv"){
+  if (x$model.type[1] == "rma.mv"){
     stop("Cannot generate subgroup analysis forest plots for 'threelevel' models.")
   }
 
   if (is.null(which)){
     message("- ", crayon::green("[OK] "), "'", 
             names(x$subgroup.analysis.list)[1], "' used for forest plot.")
-    meta::forest.meta(x$subgroup.analysis.list[[1]])
+    if (identical(x$.type.es, "RR")){
+      x$subgroup.analysis.list[[1]] = meta::update.meta(
+        x$subgroup.analysis.list[[1]], sm = "RR")
+    }
+    meta::forest.meta(x$subgroup.analysis.list[[1]], layout = "JAMA")
   } else {
-    meta::forest.meta(x$subgroup.analysis.list[[which[1]]])
+    if (identical(x$.type.es, "RR")){
+      x$subgroup.analysis.list[[which[1]]] = meta::update.meta(
+        x$subgroup.analysis.list[[which[1]]], sm = "RR")
+    }
+    meta::forest.meta(x$subgroup.analysis.list[[which[1]]], layout = "JAMA")
   }
 }

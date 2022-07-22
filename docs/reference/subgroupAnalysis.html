@@ -12,7 +12,7 @@ runMetaAnalysis objects."><meta property="og:image" content="/logo.png"><!-- mat
     
     <a class="navbar-brand me-2" href="../index.html">metapsyTools</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.2</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -101,7 +101,7 @@ This allows to conduct further operations on some subgroup analysis specifically
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>For more details see the help vignette: <code><a href="../articles/metapsyTools.html">vignette("metapsyTools")</a></code>.</p>
+    <p>For more details see the <a href="https://tools.metapsy.org/articles/metapsytools" class="external-link">Get Started</a> vignette.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
@@ -110,27 +110,30 @@ This allows to conduct further operations on some subgroup analysis specifically
     <div class="section level2">
     <h2 id="author">Author<a class="anchor" aria-label="anchor" href="#author"></a></h2>
     <p>Mathias Harrer <a href="mailto:mathias.h.harrer@gmail.com">mathias.h.harrer@gmail.com</a>,
-Paula Kuper <a href="mailto:paula.r.kuper@gmail.com">paula.r.kuper@gmail.com</a>, Pim Cuijpers <a href="mailto:p.cuijpers@vu.nl">p.cuijpers@vu.nl</a></p>
+Paula Kuper <a href="mailto:paula.r.kuper@gmail.com">paula.r.kuper@gmail.com</a>,
+Pim Cuijpers <a href="mailto:p.cuijpers@vu.nl">p.cuijpers@vu.nl</a></p>
     </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"inpatients"</span><span class="op">)</span></span>
-<span class="r-in"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/guido-s/meta/" class="external-link">meta</a></span><span class="op">)</span></span>
+<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"depressionPsyCtr"</span><span class="op">)</span></span>
 <span class="r-in"></span>
-<span class="r-in"><span class="va">inpatients</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
-<span class="r-in">   <span class="fu"><a href="checkDataFormat.html">checkDataFormat</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
-<span class="r-in">     <span class="fu"><a href="checkConflicts.html">checkConflicts</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
-<span class="r-in">     <span class="fu"><a href="expandMultiarmTrials.html">expandMultiarmTrials</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
-<span class="r-in">     <span class="fu"><a href="calculateEffectSizes.html">calculateEffectSizes</a></span><span class="op">(</span><span class="op">)</span> <span class="op">-&gt;</span> <span class="va">data</span></span>
+<span class="r-in"><span class="va">depressionPsyCtr</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
+<span class="r-in">  <span class="fu"><a href="checkDataFormat.html">checkDataFormat</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
+<span class="r-in">  <span class="fu"><a href="checkConflicts.html">checkConflicts</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
+<span class="r-in">  <span class="fu"><a href="calculateEffectSizes.html">calculateEffectSizes</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span> </span>
+<span class="r-in">  <span class="fu"><a href="filterPoolingData.html">filterPoolingData</a></span><span class="op">(</span><span class="va">condition_arm2</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> </span>
+<span class="r-in">                      <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"wl"</span>, <span class="st">"other ctr"</span><span class="op">)</span><span class="op">)</span> <span class="op">-&gt;</span> <span class="va">data</span></span>
 <span class="r-in"></span>
 <span class="r-in"><span class="co"># Run the meta-analyses</span></span>
 <span class="r-in"><span class="fu"><a href="runMetaAnalysis.html">runMetaAnalysis</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span> <span class="op">-&gt;</span> <span class="va">res</span></span>
 <span class="r-in"></span>
 <span class="r-in"><span class="co"># Subgroup analysis</span></span>
-<span class="r-in"><span class="fu">subgroupAnalysis</span><span class="op">(</span><span class="va">res</span>, <span class="va">Outc_measure</span>, <span class="va">country</span><span class="op">)</span> <span class="op">-&gt;</span> <span class="va">sg</span></span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">sg</span>, <span class="st">"Outc_measure"</span><span class="op">)</span></span>
+<span class="r-in"><span class="fu">subgroupAnalysis</span><span class="op">(</span><span class="va">res</span>, <span class="va">condition_arm2</span>, <span class="va">country</span>,</span>
+<span class="r-in">                 .which.run <span class="op">=</span> <span class="st">"combined"</span>,</span>
+<span class="r-in">                 .tau.common <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">-&gt;</span> <span class="va">sg</span></span>
+<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">sg</span>, <span class="st">"condition_arm2"</span><span class="op">)</span></span>
 <span class="r-in"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">sg</span>, <span class="st">"country"</span><span class="op">)</span></span>
 <span class="r-in"><span class="op">}</span></span>
 <span class="r-in"></span>

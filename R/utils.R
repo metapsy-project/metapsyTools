@@ -1,88 +1,242 @@
-#' Calculate Hedges' g using Mean and Standard Deviation.
+#' Calculate Hedges' g using means and standard deviations
 #'
 #' Calculate Hedges' g using Mean and Standard Deviation. Only meant to be used as
 #' part of \code{\link{calculateEffectSizes}}.
 #'
 #' @param x data
-#' @param ... Effect size data. Must be \code{Post_M_trt1}, \code{Post_M_trt2}, \code{Post_SD_trt1},
-#' \code{Post_SD_trt2}, \code{Post_N_trt1}, \code{Post_N_trt2} (all \code{numeric}).
-#' @usage meanSD(x, ...)
+#' @param ... Effect size data. Data frame must include columns `mean_arm1`, `mean_arm2`, 
+#' `sd_arm1`, `sd_arm2`, `n_arm1`, `n_arm2`. See the [Metapsy data standard](https://docs.metapsy.org/data-preparation/format/).
+#' @usage g.m.sd(x, ...)
 #' @importFrom dplyr select
 #' @importFrom purrr pmap_dfr
 #' @importFrom esc esc_mean_sd
 #' @importFrom stats dffits model.matrix rnorm rstudent
 #' @importFrom utils combn
-#' @export meanSD
+#' @export g.m.sd
 #' @keywords internal
 
-meanSD = function(x, ...){
+g.m.sd = function(x, ...){
   x %>%
-    purrr::pmap_dfr(function(Post_M_trt1, Post_M_trt2, Post_SD_trt1,
-                             Post_SD_trt2, Post_N_trt1, Post_N_trt2, ...)
-    {esc::esc_mean_sd(Post_M_trt1, Post_SD_trt1, Post_N_trt1,
-                      Post_M_trt2, Post_SD_trt2, Post_N_trt2, es.type = "g") %>%
+    purrr::pmap_dfr(function(mean_arm1, mean_arm2, sd_arm1,
+                             sd_arm2, n_arm1, n_arm2, ...)
+    {esc::esc_mean_sd(mean_arm1, sd_arm1, n_arm1,
+                      mean_arm2, sd_arm2, n_arm2, es.type = "g") %>%
         as.data.frame() %>% dplyr::select(es, se) %>%
         suppressWarnings()})
 }
 
-#' Calculate Hedges' g binary outcome data.
+#' Calculate Hedges' g using binary outcome data
 #'
-#' Calculate Hedges' g binary outcome data. Only meant to be used as
-#' part of \code{\link{calculateEffectSizes}}.
+#' Calculates Hedges' g from binary outcome data. Only meant to be used as
+#' part of \code{\link{calculateEffectSizes}}. 
 #'
 #' @param x data
-#' @param ... Binary effect size data. Must be \code{Improved_N_trt1}, \code{Improved_N_trt2}, \code{Rand_N_trt1},
-#' \code{Rand_N_trt2} (all \code{numeric}).
-#' @usage binaryES(x, ...)
+#' @param cc Should a continuity correction for zero cells be applied? 
+#' Either `FALSE` or the increment to be added. Default is 0.5.
+#' @param ... Binary effect size data. Data frame must include columns `event_arm1`, `event_arm2`, 
+#' `totaln_arm1`, `totaln_arm2`. See the [Metapsy data standard](https://docs.metapsy.org/data-preparation/format/).
+#' @usage g.binary(x, cc = 0.5, ...)
 #' @importFrom dplyr select mutate
 #' @importFrom purrr pmap_dfr
 #' @importFrom esc esc_2x2
 #' @importFrom stats dffits model.matrix rnorm rstudent
 #' @importFrom utils combn
-#' @export binaryES
+#' @export g.binary
 #' @keywords internal
 
-
-binaryES = function(x, ...){
-  x %>%
-    purrr::pmap_dfr(function(Improved_N_trt1, Improved_N_trt2, Rand_N_trt1, Rand_N_trt2, ...)
-    {esc::esc_2x2(Improved_N_trt1,
-                  Rand_N_trt1 - Improved_N_trt1,
-                  Improved_N_trt2,
-                  Rand_N_trt2 - Improved_N_trt2,
-                  es.type = "g") %>%
-        as.data.frame() %>% dplyr::select(es, se) %>%
-        suppressWarnings() %>%
-        dplyr::mutate(es = es*-1)})
+g.binary = function(x, cc = 0.5, ...){
+  
+  if (identical(cc, FALSE)){
+    x %>%
+      purrr::pmap_dfr(function(event_arm1, event_arm2, 
+                               totaln_arm1, totaln_arm2, ...)
+      {esc::esc_2x2(event_arm1,
+                    totaln_arm1 - event_arm1,
+                    event_arm2,
+                    totaln_arm2 - event_arm2,
+                    es.type = "g") %>%
+          as.data.frame() %>% dplyr::select(es, se) %>%
+          suppressWarnings() %>%
+          dplyr::mutate(es = es*-1)})
+  } else {
+    x %>%
+      purrr::pmap_dfr(function(event_arm1, event_arm2, 
+                               totaln_arm1, totaln_arm2, ...)
+      {
+        if (identical(event_arm1, 0) ||
+            identical(event_arm2, 0)) {
+          esc::esc_2x2(event_arm1 + cc,
+                       totaln_arm1 - event_arm1 + cc,
+                       event_arm2 + cc,
+                       totaln_arm2 - event_arm2 + cc,
+                       es.type = "g") %>%
+            as.data.frame() %>% dplyr::select(es, se) %>%
+            suppressWarnings() %>%
+            dplyr::mutate(es = es*-1)
+        } else {
+          esc::esc_2x2(event_arm1,
+                       totaln_arm1 - event_arm1,
+                       event_arm2,
+                       totaln_arm2 - event_arm2,
+                       es.type = "g") %>%
+            as.data.frame() %>% dplyr::select(es, se) %>%
+            suppressWarnings() %>%
+            dplyr::mutate(es = es*-1)
+        }
+      })
   }
+}
 
 
-#' Calculate Hedges' g based on change data.
+#' Forward pre-calculated values of Hedges' g
 #'
-#' Calculate Hedges' g based on change data. Only meant to be used as
+#' Forwards pre-calculated values of Hedges' g. Only meant to be used as
+#' part of \code{\link{calculateEffectSizes}}. 
+#'
+#' @param x data
+#' @param ... Pre-calculated effect size data. Data frame must include columns \code{precalc_g} and 
+#' \code{precalc_g_se}. See the [Metapsy data standard](https://docs.metapsy.org/data-preparation/format/).
+#' @usage g.precalc(x, ...)
+#' @importFrom purrr pmap_dfr
+#' @importFrom stats dffits model.matrix rnorm rstudent
+#' @importFrom utils combn
+#' @export g.precalc
+#' @keywords internal
+
+g.precalc = function(x, ...){
+  if (is.null(x$precalc_g) | is.null(x$precalc_g_se)){
+    return(data.frame(es = NA, se = NA))
+  }
+  x %>%
+    purrr::pmap_dfr(function(precalc_g, precalc_g_se, ...)
+    {data.frame(es = precalc_g, se = precalc_g_se) %>%
+        suppressWarnings()})
+}
+
+
+#' Forward pre-calculated log-risk ratios
+#'
+#' Forwards pre-calculated log-risk ratios. Only meant to be used as
 #' part of \code{\link{calculateEffectSizes}}.
 #'
 #' @param x data
-#' @param ... Change score effect size data. Must be \code{Change_m_trt1}, \code{Change_m_trt2}, \code{Change_SD_trt1},
-#' \code{Change_SD_trt2}, \code{Change_N_trt1}, \code{Change_N_trt2} (all \code{numeric}).
-#' @usage changeES(x, ...)
+#' @param ... Pre-calculated effect size data. Data frame must include columns  
+#' \code{precalc_log_rr} and \code{precalc_log_rr_se}. See the [Metapsy data standard](https://docs.metapsy.org/data-preparation/format/).
+#' @usage rr.precalc(x, ...)
+#' @importFrom purrr pmap_dfr
+#' @importFrom stats dffits model.matrix rnorm rstudent
+#' @importFrom utils combn
+#' @export rr.precalc
+#' @keywords internal
+
+rr.precalc = function(x, ...){
+  if (is.null(x$precalc_log_rr) | is.null(x$precalc_log_rr_se)){
+    return(data.frame(es = NA, se = NA))
+  }
+  x %>%
+    purrr::pmap_dfr(function(precalc_log_rr, precalc_log_rr_se, ...)
+    {data.frame(es = precalc_log_rr, se = precalc_log_rr_se) %>%
+        suppressWarnings()})
+}
+
+
+
+#' Calculate the log-risk ratio using binary outcome data
+#'
+#' Calculate the log risk ratio using binary outcome data. Only meant to be used as
+#' part of \code{\link{calculateEffectSizes}}.
+#'
+#' @param x data
+#' @param cc Should a continuity correction for zero cells be applied? 
+#' Either `FALSE` or the increment to be added. Default is 0.5.
+#' @param ... Binary effect size data. Data frame must include columns `event_arm1`, `event_arm2`, 
+#' `totaln_arm1`, `totaln_arm2`. See the [Metapsy data standard](https://docs.metapsy.org/data-preparation/format/).
+#' @usage rr.binary(x, cc = 0.5, ...)
+#' @importFrom dplyr select mutate
+#' @importFrom purrr pmap_dfr
+#' @importFrom esc esc_2x2
+#' @importFrom stats dffits model.matrix rnorm rstudent
+#' @importFrom utils combn
+#' @export rr.binary
+#' @keywords internal
+
+rr.binary = function(x, cc = 0.5, ...){
+  
+  if (identical(cc, FALSE)){
+    x %>%
+      purrr::pmap_dfr(function(event_arm1, event_arm2, 
+                               totaln_arm1, totaln_arm2, ...)
+      {data.frame(es = log((event_arm1/totaln_arm1)/
+                             (event_arm2/totaln_arm2)),
+                  se = sqrt((1/event_arm1) + (1/event_arm2) - 
+                              (1/totaln_arm1) - (1/totaln_arm2)),
+                  .event_arm1 = event_arm1,
+                  .event_arm2 = event_arm2,
+                  .totaln_arm1 = totaln_arm1,
+                  .totaln_arm2 = totaln_arm2) %>% 
+          suppressWarnings()})
+  } else {
+    x %>%
+      purrr::pmap_dfr(function(event_arm1, event_arm2, 
+                               totaln_arm1, totaln_arm2, ...)
+      {
+        if (identical(event_arm1, 0) ||
+            identical(event_arm2, 0)) {
+          data.frame(es = log(((event_arm1 + cc)/(totaln_arm1 + cc))/
+                                ((event_arm2 + cc)/(totaln_arm2 + cc))),
+                     se = sqrt((1/(event_arm1 + cc)) + 
+                                 (1/(event_arm2 + cc)) - 
+                                 (1/(totaln_arm1 + cc)) - 
+                                 (1/(totaln_arm2 + cc))),
+                     .event_arm1 = event_arm1,
+                     .event_arm2 = event_arm2,
+                     .totaln_arm1 = totaln_arm1,
+                     .totaln_arm2 = totaln_arm2) %>% 
+            suppressWarnings()
+        } else {
+          data.frame(es = log((event_arm1/totaln_arm1)/
+                                (event_arm2/totaln_arm2)),
+                     se = sqrt((1/event_arm1) + (1/event_arm2) - 
+                                 (1/totaln_arm1) - (1/totaln_arm2)),
+                     .event_arm1 = event_arm1,
+                     .event_arm2 = event_arm2,
+                     .totaln_arm1 = totaln_arm1,
+                     .totaln_arm2 = totaln_arm2) %>% 
+            suppressWarnings()
+        }
+      })
+  }
+}
+
+
+#' Calculate Hedges' g using within-group change data
+#'
+#' Calculate Hedges' g based on change data. Only meant to be used as
+#' part of \code{\link{calculateEffectSizes}}. 
+#'
+#' @param x data
+#' @param ... Change score effect size data. Data frame must include columns `mean_change_arm1`, 
+#' `mean_change_arm2`, `sd_change_arm1`, `sd_change_arm2`, 
+#' `n_change_arm1`, `n_change_arm2`. See the [Metapsy data standard](https://docs.metapsy.org/data-preparation/format/).
+#' @usage g.change.m.sd(x, ...)
 #' @importFrom dplyr select
 #' @importFrom purrr pmap_dfr
 #' @importFrom esc esc_mean_sd
 #' @importFrom stats dffits model.matrix rnorm rstudent
 #' @importFrom utils combn
-#' @export changeES
+#' @export g.change.m.sd
 #' @keywords internal
 
-changeES = function(x, ...){
+g.change.m.sd = function(x, ...){
   x %>%
-    purrr::pmap_dfr(function(Change_m_trt1, Change_m_trt2, Change_SD_trt1,
-                             Change_SD_trt2, Change_N_trt1, Change_N_trt2, ...)
-    {esc::esc_mean_sd(Change_m_trt1, Change_SD_trt1, Change_N_trt1,
-                      Change_m_trt2, Change_SD_trt2, Change_N_trt2, es.type = "g") %>%
+    purrr::pmap_dfr(function(mean_change_arm1, mean_change_arm2, sd_change_arm1,
+                             sd_change_arm2, n_change_arm1, n_change_arm2, ...)
+    {esc::esc_mean_sd(mean_change_arm1, sd_change_arm1, n_change_arm1,
+                      mean_change_arm2, sd_change_arm2, n_change_arm2, 
+                      es.type = "g") %>%
         as.data.frame() %>% dplyr::select(es, se) %>%
         suppressWarnings()})
-  }
+}
 
 
 #' Calculate NNTs
@@ -274,18 +428,50 @@ Detect = function(...){
 includeSwitchedArms = function(dat, ...){
   dat.orig = dat
   stringr::str_replace_all(colnames(dat),
-                           c("_trt1" = "_trtX", "_trt2" = "_trt1",
-                             "_trtX" = "_trt2")) -> colnames(dat)
+                           c("_arm1" = "_armX", "_arm2" = "_arm1",
+                             "_armX" = "_arm2")) -> colnames(dat)
 
   dat %>% dplyr::select(colnames(dat.orig)) %>%
-    dplyr::mutate(es = es*-1,
-           id = paste0(id, "_arm_switched")) %>%
+    dplyr::mutate(.g = .g*-1,
+                  .log_rr = .log_rr*-1,
+                  .id = paste0(.id, "_arm_switched")) %>%
     rbind(., dat.orig) -> dat.expand
 
-  dat.expand = dat.expand[order(dat.expand$id),]
+  dat.expand = dat.expand[order(dat.expand$.id),]
   rownames(dat.expand) = NULL
 
   return(dat.expand)
+}
+
+
+#' `tryCatch` alternative that saves the error message
+#'
+#' @param expr R expression.
+#' @usage tryCatch2(expr)
+#' @export 
+#' @keywords internal
+tryCatch2 = function(expr) {
+  warn = err = NULL
+  value = withCallingHandlers(
+    tryCatch(expr, error=function(e) {
+      err <<- e
+      NULL
+    }), warning=function(w) {
+      warn <<- w
+      invokeRestart("muffleWarning")
+    })
+  list(value=value, warning=warn, error=err)
+}
+
+
+#' Tests if value is `NA` or `NaN`
+#'
+#' @param expr R expression.
+#' @usage isNAorNaN(x)
+#' @export 
+#' @keywords internal
+isNAorNaN = function(x){
+  is.na(x) | is.nan(x)
 }
 
 

@@ -2,18 +2,18 @@
 % Please edit documentation in R/correctPublicationBias.R
 \name{correctPublicationBias}
 \alias{correctPublicationBias}
-\title{Correct the effect size for publication bias/small-study effects.}
+\title{Correct the effect size for publication bias/small-study effects}
 \usage{
 correctPublicationBias(model, 
                        which.run = model$which.run[1],
                        lower.is.better = TRUE,
-                       selmodel.steps = c(0.025, 0.05),
+                       selmodel.steps = 0.05,
                        ...)
 }
 \arguments{
 \item{model}{An object of class \code{runMetaAnalysis}, created by the \code{runMetaAnalysis} function.}
 
-\item{which.run}{The model in \code{model} that should be used for the publication bias analyses. 
+\item{which.run}{The model in \code{model} that should be used for the publication bias analyses.
 Uses the default analysis in \code{model} if no value is specified by the user. Possible values are
 \code{"overall"}, \code{"combined"}, \code{"lowest"}, \code{"highest"}, \code{"outliers"},
 \code{"influence"} and \code{"rob"}.}
@@ -22,14 +22,14 @@ Uses the default analysis in \code{model} if no value is specified by the user. 
 
 \item{selmodel.steps}{Thresholds to be assumed for the step function in the selection model. Must be a vector
 of numbers referring to the cut-points in the selection models. If two-sided testing is assumed for the
-included studies, the cut-point must be doubled to obtain the assumed \emph{p}-value 
+included studies, the cut-point must be doubled to obtain the assumed \emph{p}-value
 (e.g. \code{selmodel.steps = c(0.03, 0.05)} means that \emph{p}=0.06 and \emph{p}=0.10 are assumed as selection thresholds).
-The default is \code{c(0.025, 0.05)}.}
+The default is \code{0.05}.}
 
 \item{...}{Additional arguments. See \link[meta]{trimfill.default} and \link[metasens]{limitmeta}.}
 }
 \value{
-Returns an object of class \code{"runMetaAnalysis"} and \code{"correctPublicationBias"}. 
+Returns an object of class \code{"runMetaAnalysis"} and \code{"correctPublicationBias"}.
 This object includes all original objects included in \code{model}, but adds a \code{list} object
 with the name \code{correctPublicationBias}. This list object includes all three fitted publication
 bias analysis models, as well as the generated results.
@@ -39,40 +39,37 @@ This function allows to add effect sizes estimates corrected for publication bia
 small-study effects to results of the \code{runMetaAnalysis} function.
 }
 \details{
-The \code{runMetaAnalysis} function is a wrapper running three meta-analytic 
+The \code{correctPublicationBias} function is a wrapper running three meta-analytic
 methods to control the pooled effect size for publication bias and/or small-study effects:
 
 \itemize{
-  \item \code{"trimfill"}. Applies Duval and Tweedie's (2000a, 2000b) trim-and-fill algorithm, using the 
-  \link[meta]{trimfill} method in the \code{meta} package.
-  \item \code{"limitmeta"}. Runs a limit meta-analysis as described in Rücker et al. (2011),
-  using the implementation in the \code{limitmeta} package.
-  \item \code{"selection"}. Runs a step function selection model using the \link[metafor]{selmodel}
-  function in \code{metafor}. For details see e.g. Vevea and Hedges (1995).
+\item \code{"trimfill"}. Applies Duval and Tweedie's (2000a, 2000b) trim-and-fill algorithm, using the
+\link[meta]{trimfill} method in the \code{meta} package.
+\item \code{"limitmeta"}. Runs a limit meta-analysis as described in Rücker et al. (2011),
+using the implementation in the \code{limitmeta} package.
+\item \code{"selection"}. Runs a step function selection model using the \link[metafor]{selmodel}
+function in \code{metafor}. For details see e.g. Vevea and Hedges (1995).
 }
 }
 \examples{
 \dontrun{
-# Run meta-analysis
-data("psyCtrSubsetWide")
-psyCtrSubsetWide \%>\%
+data("depressionPsyCtr")
+depressionPsyCtr \%>\%
   checkDataFormat() \%>\%
   checkConflicts() \%>\%
-  expandMultiarmTrials() \%>\%
   calculateEffectSizes() \%>\%
-  filterPoolingData(year > 2010) \%>\%
+  filterPoolingData(condition_arm1 \%in\% c("cbt", "pst")) \%>\%
   runMetaAnalysis() -> res
 
 # Correct for small-study-effects/publication bias
 res \%>\% correctPublicationBias()
-
 # Use additional arguments to control settings of the trim-and-fill
 # and limit meta-analysis
 correctPublicationBias(res,
                        which.run = "combined",
                        type = "R",
                        method.adjust = "mulim") 
-
+ 
 # Generate plots
 correctPublicationBias(res) \%>\% plot("trimfill")
 correctPublicationBias(res) \%>\% plot("limitmeta")
@@ -82,21 +79,21 @@ correctPublicationBias(res) \%>\% plot("selection")
 # all S3 methods are available:
 res \%>\% 
   correctPublicationBias() \%>\% 
-  subgroupAnalysis(country)
+  metaRegression(country)
 }
 
 }
 \references{
-Duval S & Tweedie R (2000a): A nonparametric "Trim and Fill" method of accounting for 
+Duval S & Tweedie R (2000a): A nonparametric "Trim and Fill" method of accounting for
 publication bias in meta-analysis. \emph{Journal of the American Statistical Association, 95}, 89–98
 
-Duval S & Tweedie R (2000b): Trim and Fill: A simple funnel-plot-based method of 
+Duval S & Tweedie R (2000b): Trim and Fill: A simple funnel-plot-based method of
 testing and adjusting for publication bias in meta-analysis. \emph{Biometrics, 56}, 455–63
 
-Rücker G, Schwarzer G, Carpenter JR, Binder H, Schumacher M (2011): Treatment-effect estimates adjusted for 
+Rücker G, Schwarzer G, Carpenter JR, Binder H, Schumacher M (2011): Treatment-effect estimates adjusted for
 small-study effects via a limit meta-analysis. \emph{Biostatistics, 12}, 122–42
 
-Vevea, J. L., & Hedges, L. V. (1995). A general linear model for estimating effect size in the 
+Vevea, J. L., & Hedges, L. V. (1995). A general linear model for estimating effect size in the
 presence of publication bias. \emph{Psychometrika, 60}(3), 419–435.  ⁠https://doi.org/10.1007/BF02294384⁠
 }
 \seealso{

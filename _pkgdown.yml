@@ -38,10 +38,8 @@ reference:
   contents:
   - checkDataFormat
   - checkConflicts
-  - expandMultiarmTrials
   - filterPoolingData
   - filterPriorityRule
-  - addTrialArmInfo
   - calculateEffectSizes
 - title: "Analysis Module"
   desc: "Functions to run meta-analyses."
@@ -59,11 +57,17 @@ reference:
   - starts_with("plot")
   - starts_with("print")
   - starts_with("summary")
+- title: "Effect Size Calculators"
+  desc: "Default plug-in functions used by `calculateEffectSizes`."
+  contents:
+  - g.m.sd
+  - g.change.m.sd
+  - g.binary
+  - g.precalc
+  - rr.precalc
+  - rr.binary
 - title: "Datasets"
   contents:
-  - database2021Subset
-  - inpatients
-  - psyCtrSubset
-  - psyCtrSubsetWide
+  - depressionPsyCtr
 
 

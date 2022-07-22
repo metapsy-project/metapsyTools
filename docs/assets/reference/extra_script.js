@@ -46,4 +46,7 @@ strip.style.marginTop = "-78px";
 var container = document.getElementsByClassName('container');
 container[0].style.paddingTop = "13px";
 nav[0].insertBefore(strip, nav[0].firstChild);
-console.log("hello");
+
+
+
+

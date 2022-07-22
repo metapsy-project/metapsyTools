@@ -15,41 +15,39 @@
 #' @param .es.column Name of the column in \code{.data} to be used for filtering out rows with no effect sizes. Default is \code{es}.
 #'
 #' @return \code{filterPoolingData} returns the filtered data set as class \code{data.frame}.
-#' The filtered data set should then be ready for meta-analytic pooling, for example using \link[meta]{metagen}.
+#' The filtered data set should then be ready for meta-analytic pooling, for example 
+#' using [runMetaAnalysis()].
 #'
 #' @examples
 #' \dontrun{
 #'
 #' # Example 1: calculate effect sizes and then use multiple AND filters.
-#' data("inpatients")
-#' inpatients %>%
-#'     expandMultiarmTrials() %>%
-#'     calculateEffectSizes() %>%
-#'     filterPoolingData(primary == 1, Outc_measure == "hamd")
+#' data("depressionPsyCtr")
+#' depressionPsyCtr %>%
+#'   calculateEffectSizes() %>%
+#'   filterPoolingData(time == "post", instrument == "hdrs")
 #'
 #' # Example 2: use OR filter
-#' inpatients %>%
-#'     expandMultiarmTrials() %>%
-#'     calculateEffectSizes() %>%
-#'     filterPoolingData(primary == 1 | Outc_measure == "hamd")
+#' data("depressionPsyCtr")
+#' depressionPsyCtr %>%
+#'   calculateEffectSizes() %>%
+#'   filterPoolingData(time == "post" | instrument == "hdrs")
 #'
 #' # Example 3: use %in% operator
-#' inpatients %>%
-#'     expandMultiarmTrials() %>%
-#'     calculateEffectSizes() %>%
-#'     filterPoolingData(Outc_measure %in% c("hamd", "bdi-ii"))
+#' data("depressionPsyCtr")
+#' depressionPsyCtr %>%
+#'   calculateEffectSizes() %>%
+#'   filterPoolingData(instrument %in% c("hdrs", "phq-9"))
 #'
 #' # Example 4: Search for studies using "fuzzy-ish" matching
-#' data("psyCtrSubset")
-#' psyCtrSubset %>%
-#'   expandMultiarmTrials() %>%
+#' data("depressionPsyCtr")
+#' depressionPsyCtr %>%
 #'   calculateEffectSizes() %>%
-#'   filterPoolingData(Detect(Cond_spec_trt1 , "cbt|sup"),
-#'                     Detect(Cond_spec_trt2 , "wl|cau"),
-#'                     !study %in% "Heckman, 2011")
+#'   filterPoolingData(Detect(instrument, "bdi"))
 #' }
 #'
-#' @author Mathias Harrer \email{mathias.h.harrer@@gmail.com}, Paula Kuper \email{paula.r.kuper@@gmail.com}, Pim Cuijpers \email{p.cuijpers@@vu.nl}
+#' @author Mathias Harrer \email{mathias.h.harrer@@gmail.com}, 
+#' Paula Kuper \email{paula.r.kuper@@gmail.com}, Pim Cuijpers \email{p.cuijpers@@vu.nl}
 #'
 #' @seealso \code{\link{filterPriorityRule}}
 #'
@@ -65,7 +63,7 @@
 #' we can use \code{Detect(Cond_spect_trt2, "cbt|wl|cau")}. This will also filter out elements like \code{"cbt (online)"}, because "cbt" is
 #' included.
 #'
-#' For more details see the help vignette: \code{vignette("metapsyTools")}.
+#' For more details see the [Get Started](https://tools.metapsy.org/articles/metapsytools) vignette.
 #'
 #' @import dplyr
 #' @importFrom stats dffits model.matrix rnorm rstudent
@@ -75,6 +73,16 @@
 filterPoolingData = function(.data, ...,
                              .filter.missing.rows = FALSE,
                              .es.column = es){
+  
+  # Check class
+  if (!inherits(.data, "data.frame") & 
+      !inherits(.data, "metapsyDatabase")){
+    stop("'.data' must be a data.frame or 'metapsyDatabase' R6 object.")
+  }
+  
+  if (inherits(.data, "metapsyDatabase")){
+    .data = .data[["data"]]
+  }
 
   es = enquo(.es.column)
 

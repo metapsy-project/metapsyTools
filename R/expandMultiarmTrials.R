@@ -74,6 +74,9 @@ expandMultiarmTrials = function(data,
                                 data.format = NULL){
 
 
+  warning("This function is deprecated as of version 1.0.0.")
+  
+  
   # Check for data conflicts flagged in checkConflicts
   if ("checkConflicts" %in% class(data)){
     stop("Data format conflicts were detected. Run 'checkConflicts' to diagnose potential problems.")

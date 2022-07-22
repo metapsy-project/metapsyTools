@@ -50,29 +50,30 @@ depression)? \code{TRUE} by default.}
 If only values for the treatment arm are specified, \code{imputeResponse}
 returns a \code{data.frame} with two columns:
 \itemize{
- \item{\code{trtResponder}: }{Number of responders}
- \item{\code{nTrt}: }{Total sample size of the treatment arm}
+\item \code{trtResponder}: Number of responders
+\item \code{nTrt}: Total sample size of the treatment arm
 }
+
 If values are also specified for the control group, six additional columns are
 returned:
 \itemize{
- \item{\code{ctrResponder}: }{Number of responders in the control group}
- \item{\code{nCtr}: }{Total sample size of the treatment arm}
- \item{\code{logRR}: }{Log-risk ratio of the difference in response rates in both arms}
- \item{\code{seLogRR}: }{Standard error of the log-risk ratio}
- \item{\code{logOR}: }{Log-odds ratio of the difference in response rates in both arms}
- \item{\code{seLogOR}: }{Standard error of the log-odds ratio}
+\item \code{ctrResponder}: Number of responders in the control group
+\item \code{nCtr}: Total sample size of the treatment arm
+\item \code{logRR}: Log-risk ratio of the difference in response rates in both arms
+\item \code{seLogRR}: Standard error of the log-risk ratio
+\item \code{logOR}: Log-odds ratio of the difference in response rates in both arms
+\item \code{seLogOR}: Standard error of the log-odds ratio
 }
 }
 \description{
-This function allows to impute response rates based on the post-test 
-means, standard deviations and sample size using the normal-approximation 
-method by Furukawa et al. (2005). Response rates can be imputed using the 50\% 
-symptom decrease threshold, user-defined cut-off values, or the reliable 
+This function allows to impute response rates based on the post-test
+means, standard deviations and sample size using the normal-approximation
+method by Furukawa et al. (2005). Response rates can be imputed using the 50\%
+symptom decrease threshold, user-defined cut-off values, or the reliable
 change index (Jacobson & Truax, 1991).
 }
 \details{
-For more details see the help vignette: \code{vignette("metapsyTools")}.
+For more details see the \href{https://tools.metapsy.org/articles/metapsytools}{Get Started} vignette.
 }
 \examples{
 \dontrun{
@@ -140,13 +141,13 @@ imputeResponse(m.trt.pre = runif(10, 10, 30), m.trt.post = runif(10, 8, 14),
 
 }
 \references{
-Furukawa, T. A., Cipriani, A., Barbui, C., Brambilla, P., & Watanabe, N. (2005). 
-Imputing response rates from means and standard deviations in meta-analyses. 
+Furukawa, T. A., Cipriani, A., Barbui, C., Brambilla, P., & Watanabe, N. (2005).
+Imputing response rates from means and standard deviations in meta-analyses.
 \emph{International Clinical Psychopharmacology, 20}(1), 49-52.
 
-Jacobson, N. S., & Truax, P. (1991). Clinical significance: a statistical 
-approach to defining meaningful change in psychotherapy research. \emph{Journal of 
-Consulting and Clinical Psychology, 59}(1), 12–19. 
+Jacobson, N. S., & Truax, P. (1991). Clinical significance: a statistical
+approach to defining meaningful change in psychotherapy research. \emph{Journal of
+Consulting and Clinical Psychology, 59}(1), 12–19.
 https://doi.org/10.1037//0022-006x.59.1.12
 }
 \seealso{

@@ -12,7 +12,7 @@ to be used for meta-analytic pooling."><meta property="og:image" content="/logo.
     
     <a class="navbar-brand me-2" href="../index.html">metapsyTools</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.2</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -81,7 +81,8 @@ provided using the <code>|</code> operator. Multiple filter statements separated
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p><code>filterPoolingData</code> returns the filtered data set as class <code>data.frame</code>.
-The filtered data set should then be ready for meta-analytic pooling, for example using <a href="https://rdrr.io/pkg/meta/man/metagen.html" class="external-link">metagen</a>.</p>
+The filtered data set should then be ready for meta-analytic pooling, for example
+using <code><a href="runMetaAnalysis.html">runMetaAnalysis()</a></code>.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -94,7 +95,7 @@ that contain one of several values in a variable, use <code>%in%</code>; e.g. <c
 selected words (separated by <code>|</code>). To include all rows which contain the word "cbt" or "wl" or "cau" in the "Cond_spec_trt2" variable,
 we can use <code>Detect(Cond_spect_trt2, "cbt|wl|cau")</code>. This will also filter out elements like <code>"cbt (online)"</code>, because "cbt" is
 included.</p>
-<p>For more details see the help vignette: <code><a href="../articles/metapsyTools.html">vignette("metapsyTools")</a></code>.</p>
+<p>For more details see the <a href="https://tools.metapsy.org/articles/metapsytools" class="external-link">Get Started</a> vignette.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
@@ -102,7 +103,8 @@ included.</p>
     </div>
     <div class="section level2">
     <h2 id="author">Author<a class="anchor" aria-label="anchor" href="#author"></a></h2>
-    <p>Mathias Harrer <a href="mailto:mathias.h.harrer@gmail.com">mathias.h.harrer@gmail.com</a>, Paula Kuper <a href="mailto:paula.r.kuper@gmail.com">paula.r.kuper@gmail.com</a>, Pim Cuijpers <a href="mailto:p.cuijpers@vu.nl">p.cuijpers@vu.nl</a></p>
+    <p>Mathias Harrer <a href="mailto:mathias.h.harrer@gmail.com">mathias.h.harrer@gmail.com</a>,
+Paula Kuper <a href="mailto:paula.r.kuper@gmail.com">paula.r.kuper@gmail.com</a>, Pim Cuijpers <a href="mailto:p.cuijpers@vu.nl">p.cuijpers@vu.nl</a></p>
     </div>
 
     <div class="section level2">
@@ -110,32 +112,28 @@ included.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span>
 <span class="r-in"></span>
 <span class="r-in"><span class="co"># Example 1: calculate effect sizes and then use multiple AND filters.</span></span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"inpatients"</span><span class="op">)</span></span>
-<span class="r-in"><span class="va">inpatients</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
-<span class="r-in">    <span class="fu"><a href="expandMultiarmTrials.html">expandMultiarmTrials</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
-<span class="r-in">    <span class="fu"><a href="calculateEffectSizes.html">calculateEffectSizes</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
-<span class="r-in">    <span class="fu">filterPoolingData</span><span class="op">(</span><span class="va">primary</span> <span class="op">==</span> <span class="fl">1</span>, <span class="va">Outc_measure</span> <span class="op">==</span> <span class="st">"hamd"</span><span class="op">)</span></span>
+<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"depressionPsyCtr"</span><span class="op">)</span></span>
+<span class="r-in"><span class="va">depressionPsyCtr</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
+<span class="r-in">  <span class="fu"><a href="calculateEffectSizes.html">calculateEffectSizes</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
+<span class="r-in">  <span class="fu">filterPoolingData</span><span class="op">(</span><span class="va">time</span> <span class="op">==</span> <span class="st">"post"</span>, <span class="va">instrument</span> <span class="op">==</span> <span class="st">"hdrs"</span><span class="op">)</span></span>
 <span class="r-in"></span>
 <span class="r-in"><span class="co"># Example 2: use OR filter</span></span>
-<span class="r-in"><span class="va">inpatients</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
-<span class="r-in">    <span class="fu"><a href="expandMultiarmTrials.html">expandMultiarmTrials</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
-<span class="r-in">    <span class="fu"><a href="calculateEffectSizes.html">calculateEffectSizes</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
-<span class="r-in">    <span class="fu">filterPoolingData</span><span class="op">(</span><span class="va">primary</span> <span class="op">==</span> <span class="fl">1</span> <span class="op">|</span> <span class="va">Outc_measure</span> <span class="op">==</span> <span class="st">"hamd"</span><span class="op">)</span></span>
+<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"depressionPsyCtr"</span><span class="op">)</span></span>
+<span class="r-in"><span class="va">depressionPsyCtr</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
+<span class="r-in">  <span class="fu"><a href="calculateEffectSizes.html">calculateEffectSizes</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
+<span class="r-in">  <span class="fu">filterPoolingData</span><span class="op">(</span><span class="va">time</span> <span class="op">==</span> <span class="st">"post"</span> <span class="op">|</span> <span class="va">instrument</span> <span class="op">==</span> <span class="st">"hdrs"</span><span class="op">)</span></span>
 <span class="r-in"></span>
 <span class="r-in"><span class="co"># Example 3: use %in% operator</span></span>
-<span class="r-in"><span class="va">inpatients</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
-<span class="r-in">    <span class="fu"><a href="expandMultiarmTrials.html">expandMultiarmTrials</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
-<span class="r-in">    <span class="fu"><a href="calculateEffectSizes.html">calculateEffectSizes</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
-<span class="r-in">    <span class="fu">filterPoolingData</span><span class="op">(</span><span class="va">Outc_measure</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"hamd"</span>, <span class="st">"bdi-ii"</span><span class="op">)</span><span class="op">)</span></span>
+<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"depressionPsyCtr"</span><span class="op">)</span></span>
+<span class="r-in"><span class="va">depressionPsyCtr</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
+<span class="r-in">  <span class="fu"><a href="calculateEffectSizes.html">calculateEffectSizes</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
+<span class="r-in">  <span class="fu">filterPoolingData</span><span class="op">(</span><span class="va">instrument</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"hdrs"</span>, <span class="st">"phq-9"</span><span class="op">)</span><span class="op">)</span></span>
 <span class="r-in"></span>
 <span class="r-in"><span class="co"># Example 4: Search for studies using "fuzzy-ish" matching</span></span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"psyCtrSubset"</span><span class="op">)</span></span>
-<span class="r-in"><span class="va">psyCtrSubset</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
-<span class="r-in">  <span class="fu"><a href="expandMultiarmTrials.html">expandMultiarmTrials</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
+<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"depressionPsyCtr"</span><span class="op">)</span></span>
+<span class="r-in"><span class="va">depressionPsyCtr</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
 <span class="r-in">  <span class="fu"><a href="calculateEffectSizes.html">calculateEffectSizes</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
-<span class="r-in">  <span class="fu">filterPoolingData</span><span class="op">(</span><span class="fu"><a href="Detect.html">Detect</a></span><span class="op">(</span><span class="va">Cond_spec_trt1</span> , <span class="st">"cbt|sup"</span><span class="op">)</span>,</span>
-<span class="r-in">                    <span class="fu"><a href="Detect.html">Detect</a></span><span class="op">(</span><span class="va">Cond_spec_trt2</span> , <span class="st">"wl|cau"</span><span class="op">)</span>,</span>
-<span class="r-in">                    <span class="op">!</span><span class="va">study</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="st">"Heckman, 2011"</span><span class="op">)</span></span>
+<span class="r-in">  <span class="fu">filterPoolingData</span><span class="op">(</span><span class="fu"><a href="Detect.html">Detect</a></span><span class="op">(</span><span class="va">instrument</span>, <span class="st">"bdi"</span><span class="op">)</span><span class="op">)</span></span>
 <span class="r-in"><span class="op">}</span></span>
 <span class="r-in"></span>
 </code></pre></div>

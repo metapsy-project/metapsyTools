@@ -56,7 +56,6 @@ use \code{\link{addTrialArmInfo}} first. This ensures that individual columns ar
 for both the intervention and control group (e.g. \code{N_ig} and \code{N_cg}),
 which can then be included in the call to \code{createStudyTable}.
 
-
 \strong{Changing Values}: The function also allows to change specified values within a variable. Factor levels
 encoded as numbers, for example (e.g. \code{country = 1} for European studies, and so
 forth) can be changed by adding a concatenated (\code{\link[base]{c}}) vector to the
@@ -74,39 +73,36 @@ For more details see the help vignette: \code{vignette("metapsyTools")}.
 \examples{
 \dontrun{
 # Filter out all primary outcomes, check data,
-# expand multiarm trials, calculate effect sizes,
-# expand information that differs between trial arms;
-# then produce study table using selected information.
+# calculate effect sizes, then produce study table 
+# using selected information.
+data("depressionPsyCtr")
 
-inpatients \%>\%
-  filter(primary == 1) \%>\%
-  checkDataFormat() \%>\%
-  checkConflicts() \%>\%
-  expandMultiarmTrials() \%>\%
-  calculateEffectSizes() \%>\%
-  createStudyTable(
-    study,
-    diag = c("Cutoff" = "3", "Mood" = "2",
-             "MDD" = "1"),
-    agegrp2,
-    ADD_setting = c("Nursing" = "nursing",
-                    "Other" = "other",
-                    "Psychiatric" = "psych"),
-    meanage, propwomen,
-    type_trt1 = c("CBT" = "cbt", "Other" = "other", "PST" = "pst",
-                  "BA" = "bat", "LR" = "lrt",
-                  "PDT" = "dyn", "IPT" = "ipt"),
-    nsess_trt1, Post_N_trt1, Post_N_trt2, Cond_spec_trt1, Cond_spec_trt2,
-    country = c("Canada" = "4", "Europe" = "3", "USA" = "1",
-                "Asia" = "6", "Middle East" = "7", "Australia" = "5"),
-    sg, ac, ba, itt,
-    .round.by.digits = list(meanage = 0, Post_N_trt1 = 0,
-                            Post_N_trt2 = 0),
-    .column.names = list(agegrp2 = "age group",
-                         ADD_setting = "setting",
-                         Post_N_trt1 = "N_ig", Post_N_trt2 = "N_cg",
-                         Cond_spec_trt1 = "format_ig",
-                         Cond_spec_trt2 = "format_cg")) -> table
+#' depressionPsyCtr \%>\%
+ filterPriorityRule(
+   instrument = c("phq-9", "bdi-1", 
+                  "hdrs", "ces-d")) \%>\%
+ checkDataFormat() \%>\%
+ checkConflicts() \%>\%
+ calculateEffectSizes() \%>\%
+ createStudyTable(
+   study,
+   diagnosis = c("Cutoff" = "3", "Mood" = "2",
+                 "MDD" = "1"),
+   age_group, instrument,
+   mean_age, percent_women,
+   condition_arm1 = c("CBT" = "cbt", "PST" = "pst",
+                      "BA" = "bat", "LR" = "lrt",
+                      "PDT" = "dyn", "IPT" = "ipt"),
+   condition_arm2, n_arm1, n_arm2,
+   country = c("Canada" = "4", "Europe" = "3", "USA" = "1",
+               "Middle East" = "7"),
+   sg, ac, ba, itt,
+   .round.by.digits = list(mean_age = 0, n_arm1 = 0, 
+                           n_arm2 = 0),
+   .column.names = list(age_group = "age group",
+                        n_arm1 = "N (arm1)",
+                        n_arm2 = "N (arm2)",
+                        percent_women = "\% female")) -> table
 }
 
 }

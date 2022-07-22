@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">metapsyTools</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.2</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -72,11 +72,6 @@
         <dd>Check for (potential) data format conflicts</dd>
       </dl><dl><dt>
           
-          <code><a href="expandMultiarmTrials.html">expandMultiarmTrials()</a></code> 
-        </dt>
-        <dd>Expand multiarm trials</dd>
-      </dl><dl><dt>
-          
           <code><a href="filterPoolingData.html">filterPoolingData()</a></code> 
         </dt>
         <dd>Filter data to be pooled for meta-analysis</dd>
@@ -85,11 +80,6 @@
           <code><a href="filterPriorityRule.html">filterPriorityRule()</a></code> 
         </dt>
         <dd>Filter data based on a priority rule</dd>
-      </dl><dl><dt>
-          
-          <code><a href="addTrialArmInfo.html">addTrialArmInfo()</a></code> 
-        </dt>
-        <dd>Add information that varies between trial arms as extra columns to your meta-analysis dataset</dd>
       </dl><dl><dt>
           
           <code><a href="calculateEffectSizes.html">calculateEffectSizes()</a></code> 
@@ -115,7 +105,7 @@
           
           <code><a href="correctPublicationBias.html">correctPublicationBias()</a></code> 
         </dt>
-        <dd>Correct the effect size for publication bias/small-study effects.</dd>
+        <dd>Correct the effect size for publication bias/small-study effects</dd>
       </dl><dl><dt>
           
           <code><a href="subgroupAnalysis.html">subgroupAnalysis()</a></code> 
@@ -125,17 +115,22 @@
           
           <code><a href="metaRegression.html">metaRegression()</a></code> 
         </dt>
-        <dd>Meta-Regression method for objects of class 'runMetaAnalysis'.</dd>
+        <dd>Meta-Regression method for objects of class 'runMetaAnalysis'</dd>
       </dl><dl><dt>
           
           <code><a href="metaRegression.meta.html">metaRegression(<i>&lt;meta&gt;</i>)</a></code> 
         </dt>
-        <dd>Meta-Regression method for objects of class 'runMetaAnalysis'.</dd>
+        <dd>Meta-Regression method for objects of class 'runMetaAnalysis'</dd>
       </dl><dl><dt>
           
           <code><a href="metaRegression.rma.html">metaRegression(<i>&lt;rma&gt;</i>)</a></code> 
         </dt>
-        <dd>Meta-Regression method for objects of class 'runMetaAnalysis'.</dd>
+        <dd>Meta-Regression method for objects of class 'runMetaAnalysis'</dd>
+      </dl><dl><dt>
+          
+          <code><a href="metaRegression.runMetaAnalysis.html">metaRegression(<i>&lt;runMetaAnalysis&gt;</i>)</a></code> 
+        </dt>
+        <dd>Meta-Regression method for objects of class 'runMetaAnalysis'</dd>
       </dl><dl><dt>
           
           <code><a href="createStudyTable.html">createStudyTable()</a></code> 
@@ -171,12 +166,12 @@
           
           <code><a href="plot.runMetaAnalysis.html">plot(<i>&lt;runMetaAnalysis&gt;</i>)</a></code> 
         </dt>
-        <dd>Plot method for objects of class 'runMetaAnalysis'.</dd>
+        <dd>Plot method for objects of class 'runMetaAnalysis'</dd>
       </dl><dl><dt>
           
           <code><a href="plot.subgroupAnalysis.html">plot(<i>&lt;subgroupAnalysis&gt;</i>)</a></code> 
         </dt>
-        <dd>Plot method for objects of class 'runMetaAnalysis'.</dd>
+        <dd>Plot method for objects of class 'runMetaAnalysis'</dd>
       </dl><dl><dt>
           
           <code><a href="print.checkConflicts.html">print(<i>&lt;checkConflicts&gt;</i>)</a></code> 
@@ -186,17 +181,59 @@
           
           <code><a href="print.runMetaAnalysis.html">print(<i>&lt;runMetaAnalysis&gt;</i>)</a></code> 
         </dt>
-        <dd>Print method for objects of class 'runMetaAnalysis'.</dd>
+        <dd>Print method for objects of class 'runMetaAnalysis'</dd>
       </dl><dl><dt>
           
           <code><a href="print.subgroupAnalysis.html">print(<i>&lt;subgroupAnalysis&gt;</i>)</a></code> 
         </dt>
-        <dd>Print method for objects of class 'subgroupAnalysis'.</dd>
+        <dd>Print method for objects of class 'subgroupAnalysis'</dd>
       </dl><dl><dt>
           
           <code><a href="summary.runMetaAnalysis.html">summary(<i>&lt;runMetaAnalysis&gt;</i>)</a></code> 
         </dt>
-        <dd>Show details of 'runMetaAnalysis' class objects.</dd>
+        <dd>Show details of 'runMetaAnalysis' class objects</dd>
+      </dl></div><div class="section level2">
+      <h2 id="effect-size-calculators">Effect Size Calculators<a class="anchor" aria-label="anchor" href="#effect-size-calculators"></a></h2>
+      
+      <p class="section-desc"></p><p>Default plug-in functions used by
+<code>calculateEffectSizes</code>.</p>
+
+      
+    </div><div id="" class="section level2">
+      
+      
+      
+
+      <dl><dt>
+          
+          <code><a href="g.m.sd.html">g.m.sd()</a></code> 
+        </dt>
+        <dd>Calculate Hedges' g using means and standard deviations</dd>
+      </dl><dl><dt>
+          
+          <code><a href="g.change.m.sd.html">g.change.m.sd()</a></code> 
+        </dt>
+        <dd>Calculate Hedges' g using within-group change data</dd>
+      </dl><dl><dt>
+          
+          <code><a href="g.binary.html">g.binary()</a></code> 
+        </dt>
+        <dd>Calculate Hedges' g using binary outcome data</dd>
+      </dl><dl><dt>
+          
+          <code><a href="g.precalc.html">g.precalc()</a></code> 
+        </dt>
+        <dd>Forward pre-calculated values of Hedges' g</dd>
+      </dl><dl><dt>
+          
+          <code><a href="rr.precalc.html">rr.precalc()</a></code> 
+        </dt>
+        <dd>Forward pre-calculated log-risk ratios</dd>
+      </dl><dl><dt>
+          
+          <code><a href="rr.binary.html">rr.binary()</a></code> 
+        </dt>
+        <dd>Calculate the log-risk ratio using binary outcome data</dd>
       </dl></div><div class="section level2">
       <h2 id="datasets">Datasets<a class="anchor" aria-label="anchor" href="#datasets"></a></h2>
       
@@ -210,24 +247,9 @@
 
       <dl><dt>
           
-          <code><a href="database2021Subset.html">database2021Subset</a></code> 
+          <code><a href="depressionPsyCtr.html">depressionPsyCtr</a></code> 
         </dt>
-        <dd>The 'database2021Subset' dataset</dd>
-      </dl><dl><dt>
-          
-          <code><a href="inpatients.html">inpatients</a></code> 
-        </dt>
-        <dd>The 'inpatients' dataset with 32 clinical trials</dd>
-      </dl><dl><dt>
-          
-          <code><a href="psyCtrSubset.html">psyCtrSubset</a></code> 
-        </dt>
-        <dd>The 'psyCtrSubset' dataset</dd>
-      </dl><dl><dt>
-          
-          <code><a href="psyCtrSubsetWide.html">psyCtrSubsetWide</a></code> 
-        </dt>
-        <dd>The 'psyCtrSubset' dataset (wide format)</dd>
+        <dd>The 'depressionPsyCtr' dataset</dd>
       </dl></div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside></div>

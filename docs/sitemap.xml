@@ -40,6 +40,9 @@
     <loc>/reference/binaryES.html</loc>
   </url>
   <url>
+    <loc>/reference/binaryRR.html</loc>
+  </url>
+  <url>
     <loc>/reference/calculateEffectSizes.html</loc>
   </url>
   <url>
@@ -61,6 +64,9 @@
     <loc>/reference/database2021Subset.html</loc>
   </url>
   <url>
+    <loc>/reference/depressionPsyCtr.html</loc>
+  </url>
+  <url>
     <loc>/reference/expandMultiarmTrials.html</loc>
   </url>
   <url>
@@ -68,6 +74,18 @@
   </url>
   <url>
     <loc>/reference/filterPriorityRule.html</loc>
+  </url>
+  <url>
+    <loc>/reference/g.binary.html</loc>
+  </url>
+  <url>
+    <loc>/reference/g.change.m.sd.html</loc>
+  </url>
+  <url>
+    <loc>/reference/g.m.sd.html</loc>
+  </url>
+  <url>
+    <loc>/reference/g.precalc.html</loc>
   </url>
   <url>
     <loc>/reference/imputeResponse.html</loc>
@@ -82,6 +100,9 @@
     <loc>/reference/inpatients.html</loc>
   </url>
   <url>
+    <loc>/reference/isNAorNaN.html</loc>
+  </url>
+  <url>
     <loc>/reference/meanSD.html</loc>
   </url>
   <url>
@@ -92,6 +113,9 @@
   </url>
   <url>
     <loc>/reference/metaRegression.rma.html</loc>
+  </url>
+  <url>
+    <loc>/reference/metaRegression.runMetaAnalysis.html</loc>
   </url>
   <url>
     <loc>/reference/metapsyFindOutliers.html</loc>
@@ -133,6 +157,12 @@
     <loc>/reference/psyCtrSubsetWide.html</loc>
   </url>
   <url>
+    <loc>/reference/rr.binary.html</loc>
+  </url>
+  <url>
+    <loc>/reference/rr.precalc.html</loc>
+  </url>
+  <url>
     <loc>/reference/runMetaAnalysis.html</loc>
   </url>
   <url>
@@ -140,5 +170,8 @@
   </url>
   <url>
     <loc>/reference/summary.runMetaAnalysis.html</loc>
+  </url>
+  <url>
+    <loc>/reference/tryCatch2.html</loc>
   </url>
 </urlset>

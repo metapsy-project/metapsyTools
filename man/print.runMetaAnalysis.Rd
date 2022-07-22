@@ -2,7 +2,7 @@
 % Please edit documentation in R/runMetaAnalysis.R
 \name{print.runMetaAnalysis}
 \alias{print.runMetaAnalysis}
-\title{Print method for objects of class 'runMetaAnalysis'.}
+\title{Print method for objects of class 'runMetaAnalysis'}
 \usage{
 \method{print}{runMetaAnalysis}(x, ...)
 }
@@ -16,5 +16,6 @@ Print S3 method for objects of class \code{runMetaAnalysis}.
 }
 \author{
 Mathias Harrer \email{mathias.h.harrer@gmail.com},
-Paula Kuper \email{paula.r.kuper@gmail.com}, Pim Cuijpers \email{p.cuijpers@vu.nl}
+Paula Kuper \email{paula.r.kuper@gmail.com}, Pim Cuijpers
+\email{p.cuijpers@vu.nl}
 }

@@ -1,4 +1,4 @@
-#' Meta-Regression method for objects of class 'runMetaAnalysis'.
+#' Meta-Regression method for objects of class 'runMetaAnalysis'
 #'
 #' Serves as a wrapper for \code{metareg} or \code{update.rma}, depending
 #' on the class of the fitted model.
@@ -19,7 +19,7 @@ metaRegression = function(x, ...){
 }
 
 
-#' Meta-Regression method for objects of class 'runMetaAnalysis'.
+#' Meta-Regression method for objects of class 'runMetaAnalysis'
 #'
 #' Serves as a wrapper for \code{metareg}.
 #'
@@ -36,12 +36,43 @@ metaRegression = function(x, ...){
 #' @method metaRegression meta
 
 metaRegression.meta = function(x, formula = NULL, ...){
+  if (identical(x$.type.es, "RR")){
+    message("- ", crayon::green("[OK] "), 
+     "Coefficent estimates are based on log-transformed risk ratios.")
+    message("- ", crayon::green("[OK] "), 
+     "Use the exp() function to transform estimates into regular RR values.")
+  }
   m.rerun = meta::metareg(x, as.formula(formula), ...)
   return(m.rerun)
 }
 
 
-#' Meta-Regression method for objects of class 'runMetaAnalysis'.
+
+#' Meta-Regression method for objects of class 'runMetaAnalysis'
+#'
+#' Prints information that models have to be extracted from \code{runMetaAnalysis}
+#' results objects to run meta-regression.s
+#'
+#' @param x An object of class \code{runMetaAnalysis}.
+#' @param formula not used.
+#' @param ... Additional arguments.
+#'
+#' @author Mathias Harrer \email{mathias.h.harrer@@gmail.com},
+#' Paula Kuper \email{paula.r.kuper@@gmail.com}, Pim Cuijpers \email{p.cuijpers@@vu.nl}
+#'
+#' @export
+#' @method metaRegression runMetaAnalysis
+
+
+metaRegression.runMetaAnalysis = function(x, formula = NULL, ...){
+  stop("It seems like you have supplied a 'runMetaAnalysis' result. ",
+       "To run a meta-regression, please extract a specific model ",
+       "(e.g. x$model.overall).")
+}
+
+
+
+#' Meta-Regression method for objects of class 'runMetaAnalysis'
 #'
 #' Serves as a wrapper for \code{update.rma}.
 #'
@@ -58,6 +89,13 @@ metaRegression.meta = function(x, formula = NULL, ...){
 #' @method metaRegression rma
 
 metaRegression.rma = function(x, formula = NULL, ...){
+  
+  if (identical(x$.type.es, "RR")){
+    message("- ", crayon::green("[OK] "), 
+     "Coefficent estimates are based on log-transformed risk ratios.")
+    message("- ", crayon::green("[OK] "), 
+     "Use the exp() function to transform estimates into regular RR values.")
+  }
 
   if (class(x$V)[1] == "dgCMatrix"){
 

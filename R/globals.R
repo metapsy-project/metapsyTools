@@ -4,5 +4,7 @@ utils::globalVariables(c("es", "se", ".", "condition", "study", "NNT",
                          "tau2.del", "QE.del", "weight",
                          "lower", "upper", "value", "y",
                          "group.names", "which.run",
-                         "g", "model", "Analysis",
-                         "excluded", "yi", "vi", "error"))
+                         "g", "model", "Analysis", "funcs2",
+                         "excluded", "yi", "vi", "error", ".g",
+                         ".log_rr", ".id", "rr", "m.ThreeLevel.g",
+                         "mCHE.g"))

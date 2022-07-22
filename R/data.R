@@ -1,3 +1,19 @@
+#'  The 'depressionPsyCtr' dataset
+#'
+#' An example data set containing a subset of the 2021 depression trials database.
+#' The data set has been formatted following the 
+#' \href{https://docs.metapsy.org/data-preparation/format/}{Metapsy data standard}.
+#' 
+#' The dataset can be used by the \code{runMetaAnalysis} function without any
+#' additional preparation required.
+#'
+#'
+#' @format A \code{data.frame} with 102 rows and 46 variables.
+#' @author Mathias Harrer, Paula Kuper, Clara Miguel, Pim Cuijpers
+#' @usage data("depressionPsyCtr")
+"depressionPsyCtr"
+
+
 #'  The 'inpatients' dataset with 32 clinical trials
 #'
 #' An example dataset containing data of 32 clinical trials. Its format equals
@@ -70,4 +86,7 @@
 #' @author Mathias Harrer, Paula Kuper, Pim Cuijpers
 #' @usage data("database2021Subset")
 "database2021Subset"
+
+
+
 

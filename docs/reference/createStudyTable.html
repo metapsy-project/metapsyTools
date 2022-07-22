@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">metapsyTools</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.2</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -109,7 +109,6 @@ between the (two or more) trial arms (e.g. the sample size of each group) as sep
 use <code><a href="addTrialArmInfo.html">addTrialArmInfo</a></code> first. This ensures that individual columns are created
 for both the intervention and control group (e.g. <code>N_ig</code> and <code>N_cg</code>),
 which can then be included in the call to <code>createStudyTable</code>.</p>
-
 <p><strong>Changing Values</strong>: The function also allows to change specified values within a variable. Factor levels
 encoded as numbers, for example (e.g. <code>country = 1</code> for European studies, and so
 forth) can be changed by adding a concatenated (<code><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></code>) vector to the
@@ -136,39 +135,36 @@ Paula Kuper <a href="mailto:paula.r.kuper@gmail.com">paula.r.kuper@gmail.com</a>
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span>
 <span class="r-in"><span class="co"># Filter out all primary outcomes, check data,</span></span>
-<span class="r-in"><span class="co"># expand multiarm trials, calculate effect sizes,</span></span>
-<span class="r-in"><span class="co"># expand information that differs between trial arms;</span></span>
-<span class="r-in"><span class="co"># then produce study table using selected information.</span></span>
+<span class="r-in"><span class="co"># calculate effect sizes, then produce study table </span></span>
+<span class="r-in"><span class="co"># using selected information.</span></span>
+<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"depressionPsyCtr"</span><span class="op">)</span></span>
 <span class="r-in"></span>
-<span class="r-in"><span class="va">inpatients</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
-<span class="r-in">  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">primary</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
-<span class="r-in">  <span class="fu"><a href="checkDataFormat.html">checkDataFormat</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
-<span class="r-in">  <span class="fu"><a href="checkConflicts.html">checkConflicts</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
-<span class="r-in">  <span class="fu"><a href="expandMultiarmTrials.html">expandMultiarmTrials</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
-<span class="r-in">  <span class="fu"><a href="calculateEffectSizes.html">calculateEffectSizes</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
-<span class="r-in">  <span class="fu">createStudyTable</span><span class="op">(</span></span>
-<span class="r-in">    <span class="va">study</span>,</span>
-<span class="r-in">    diag <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Cutoff"</span> <span class="op">=</span> <span class="st">"3"</span>, <span class="st">"Mood"</span> <span class="op">=</span> <span class="st">"2"</span>,</span>
-<span class="r-in">             <span class="st">"MDD"</span> <span class="op">=</span> <span class="st">"1"</span><span class="op">)</span>,</span>
-<span class="r-in">    <span class="va">agegrp2</span>,</span>
-<span class="r-in">    ADD_setting <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Nursing"</span> <span class="op">=</span> <span class="st">"nursing"</span>,</span>
-<span class="r-in">                    <span class="st">"Other"</span> <span class="op">=</span> <span class="st">"other"</span>,</span>
-<span class="r-in">                    <span class="st">"Psychiatric"</span> <span class="op">=</span> <span class="st">"psych"</span><span class="op">)</span>,</span>
-<span class="r-in">    <span class="va">meanage</span>, <span class="va">propwomen</span>,</span>
-<span class="r-in">    type_trt1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"CBT"</span> <span class="op">=</span> <span class="st">"cbt"</span>, <span class="st">"Other"</span> <span class="op">=</span> <span class="st">"other"</span>, <span class="st">"PST"</span> <span class="op">=</span> <span class="st">"pst"</span>,</span>
-<span class="r-in">                  <span class="st">"BA"</span> <span class="op">=</span> <span class="st">"bat"</span>, <span class="st">"LR"</span> <span class="op">=</span> <span class="st">"lrt"</span>,</span>
-<span class="r-in">                  <span class="st">"PDT"</span> <span class="op">=</span> <span class="st">"dyn"</span>, <span class="st">"IPT"</span> <span class="op">=</span> <span class="st">"ipt"</span><span class="op">)</span>,</span>
-<span class="r-in">    <span class="va">nsess_trt1</span>, <span class="va">Post_N_trt1</span>, <span class="va">Post_N_trt2</span>, <span class="va">Cond_spec_trt1</span>, <span class="va">Cond_spec_trt2</span>,</span>
-<span class="r-in">    country <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Canada"</span> <span class="op">=</span> <span class="st">"4"</span>, <span class="st">"Europe"</span> <span class="op">=</span> <span class="st">"3"</span>, <span class="st">"USA"</span> <span class="op">=</span> <span class="st">"1"</span>,</span>
-<span class="r-in">                <span class="st">"Asia"</span> <span class="op">=</span> <span class="st">"6"</span>, <span class="st">"Middle East"</span> <span class="op">=</span> <span class="st">"7"</span>, <span class="st">"Australia"</span> <span class="op">=</span> <span class="st">"5"</span><span class="op">)</span>,</span>
-<span class="r-in">    <span class="va">sg</span>, <span class="va">ac</span>, <span class="va">ba</span>, <span class="va">itt</span>,</span>
-<span class="r-in">    .round.by.digits <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>meanage <span class="op">=</span> <span class="fl">0</span>, Post_N_trt1 <span class="op">=</span> <span class="fl">0</span>,</span>
-<span class="r-in">                            Post_N_trt2 <span class="op">=</span> <span class="fl">0</span><span class="op">)</span>,</span>
-<span class="r-in">    .column.names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>agegrp2 <span class="op">=</span> <span class="st">"age group"</span>,</span>
-<span class="r-in">                         ADD_setting <span class="op">=</span> <span class="st">"setting"</span>,</span>
-<span class="r-in">                         Post_N_trt1 <span class="op">=</span> <span class="st">"N_ig"</span>, Post_N_trt2 <span class="op">=</span> <span class="st">"N_cg"</span>,</span>
-<span class="r-in">                         Cond_spec_trt1 <span class="op">=</span> <span class="st">"format_ig"</span>,</span>
-<span class="r-in">                         Cond_spec_trt2 <span class="op">=</span> <span class="st">"format_cg"</span><span class="op">)</span><span class="op">)</span> <span class="op">-&gt;</span> <span class="va">table</span></span>
+<span class="r-in"><span class="co">#' depressionPsyCtr %&gt;%</span></span>
+<span class="r-in"> <span class="fu"><a href="filterPriorityRule.html">filterPriorityRule</a></span><span class="op">(</span></span>
+<span class="r-in">   instrument <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"phq-9"</span>, <span class="st">"bdi-1"</span>, </span>
+<span class="r-in">                  <span class="st">"hdrs"</span>, <span class="st">"ces-d"</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
+<span class="r-in"> <span class="fu"><a href="checkDataFormat.html">checkDataFormat</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
+<span class="r-in"> <span class="fu"><a href="checkConflicts.html">checkConflicts</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
+<span class="r-in"> <span class="fu"><a href="calculateEffectSizes.html">calculateEffectSizes</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
+<span class="r-in"> <span class="fu">createStudyTable</span><span class="op">(</span></span>
+<span class="r-in">   <span class="va">study</span>,</span>
+<span class="r-in">   diagnosis <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Cutoff"</span> <span class="op">=</span> <span class="st">"3"</span>, <span class="st">"Mood"</span> <span class="op">=</span> <span class="st">"2"</span>,</span>
+<span class="r-in">                 <span class="st">"MDD"</span> <span class="op">=</span> <span class="st">"1"</span><span class="op">)</span>,</span>
+<span class="r-in">   <span class="va">age_group</span>, <span class="va">instrument</span>,</span>
+<span class="r-in">   <span class="va">mean_age</span>, <span class="va">percent_women</span>,</span>
+<span class="r-in">   condition_arm1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"CBT"</span> <span class="op">=</span> <span class="st">"cbt"</span>, <span class="st">"PST"</span> <span class="op">=</span> <span class="st">"pst"</span>,</span>
+<span class="r-in">                      <span class="st">"BA"</span> <span class="op">=</span> <span class="st">"bat"</span>, <span class="st">"LR"</span> <span class="op">=</span> <span class="st">"lrt"</span>,</span>
+<span class="r-in">                      <span class="st">"PDT"</span> <span class="op">=</span> <span class="st">"dyn"</span>, <span class="st">"IPT"</span> <span class="op">=</span> <span class="st">"ipt"</span><span class="op">)</span>,</span>
+<span class="r-in">   <span class="va">condition_arm2</span>, <span class="va">n_arm1</span>, <span class="va">n_arm2</span>,</span>
+<span class="r-in">   country <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Canada"</span> <span class="op">=</span> <span class="st">"4"</span>, <span class="st">"Europe"</span> <span class="op">=</span> <span class="st">"3"</span>, <span class="st">"USA"</span> <span class="op">=</span> <span class="st">"1"</span>,</span>
+<span class="r-in">               <span class="st">"Middle East"</span> <span class="op">=</span> <span class="st">"7"</span><span class="op">)</span>,</span>
+<span class="r-in">   <span class="va">sg</span>, <span class="va">ac</span>, <span class="va">ba</span>, <span class="va">itt</span>,</span>
+<span class="r-in">   .round.by.digits <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>mean_age <span class="op">=</span> <span class="fl">0</span>, n_arm1 <span class="op">=</span> <span class="fl">0</span>, </span>
+<span class="r-in">                           n_arm2 <span class="op">=</span> <span class="fl">0</span><span class="op">)</span>,</span>
+<span class="r-in">   .column.names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>age_group <span class="op">=</span> <span class="st">"age group"</span>,</span>
+<span class="r-in">                        n_arm1 <span class="op">=</span> <span class="st">"N (arm1)"</span>,</span>
+<span class="r-in">                        n_arm2 <span class="op">=</span> <span class="st">"N (arm2)"</span>,</span>
+<span class="r-in">                        percent_women <span class="op">=</span> <span class="st">"% female"</span><span class="op">)</span><span class="op">)</span> <span class="op">-&gt;</span> <span class="va">table</span></span>
 <span class="r-in"><span class="op">}</span></span>
 <span class="r-in"></span>
 </code></pre></div>

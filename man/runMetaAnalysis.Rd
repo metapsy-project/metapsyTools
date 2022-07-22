@@ -9,21 +9,28 @@ runMetaAnalysis(data,
                               "lowest.highest", "outliers",
                               "influence", "rob", "threelevel",
                               "threelevel.che"),
+                es.measure = c("g", "RR"),
+                es.type = c("precalculated", "raw"),
+                es.var = ifelse(identical(es.measure[1], "g"), 
+                                ".g", ".log_rr"),
+                se.var = ifelse(identical(es.measure[1], "g"), 
+                                ".g_se", ".log_rr_se"),
+                es.binary.raw.vars = 
+                  c(".event_arm1", ".event_arm2",
+                    ".totaln_arm1", ".totaln_arm2"),
                 method.tau = "REML",
                 hakn = TRUE,
                 study.var = "study",
                 extra.grouping.var = NULL,
-                arm.var.1 = "Cond_spec_trt1",
-                arm.var.2 = "Cond_spec_trt2",
-                measure.var = "Outc_measure",
-                es.var = "es",
-                se.var = "se",
+                arm.var.1 = "condition_arm1",
+                arm.var.2 = "condition_arm2",
+                measure.var = "instrument",
                 low.rob.filter = "rob > 2",
                 method.tau.ci = "Q-Profile",
                 round.digits = 2,
-                which.outliers = c("general", "combined"),
-                which.influence = c("general", "combined"),
-                which.rob = c("general", "combined"),
+                which.outliers = c("overall", "combined"),
+                which.influence = c("overall", "combined"),
+                which.rob = c("overall", "combined"),
                 nnt.cer = 0.2,
                 rho.within.study = 0.5,
                 use.rve = TRUE,
@@ -31,12 +38,41 @@ runMetaAnalysis(data,
                 ...)
 }
 \arguments{
-\item{data}{\code{data.frame}. Effect size data in the wide format, as created by \code{\link{calculateEffectSizes}}.}
+\item{data}{\code{data.frame}. Effect size data in the wide format, as
+created by \code{\link{calculateEffectSizes}}.}
 
-\item{which.run}{\code{character}. Selection of models to be calculated. See 'Details'.}
+\item{which.run}{\code{character}. Selection of models to be calculated.
+See 'Details'.}
 
-\item{method.tau}{\code{character}. A character string indicating which method is used to estimate the
-between-study variance (tau-squared) and its square root (tau). Either \code{"REML"} (default), \code{"DL"},
+\item{es.measure}{\code{character}. Should meta-analyses be calculated using the
+bias-corrected standardized mean difference (\code{"g"}; default), or using
+risk ratios (\code{"RR"})? Meta-analyses will only be conducted using comparisons
+that contain non \code{NA} values in the \code{es.var} and \code{se.var} columns.}
+
+\item{es.type}{\code{character}. Should pre-calculated or raw event data (i.e.
+the Mantel-Haenszel method) be used for meta-analyses of risk ratios?
+Can be set to \code{"precalculated"} (default) or \code{"raw"}.}
+
+\item{es.var}{\code{character}. Specifies the name of the variable containing the (pre-
+calculated) effect size data in \code{data}. When \code{es.measure = "g"}, this is set to
+\code{.g} by default; \code{".log_rr"} is used when \code{es.measure = "RR"}. The default settings
+correspond with the standard output of \code{\link[=calculateEffectSizes]{calculateEffectSizes()}}.}
+
+\item{se.var}{\code{character}. Specifies the name of the variable containing the (pre-calculated)
+standard errors (square root of the variance) of the effect size metric defined
+in \code{es.var}. If \code{es.measure = "g"}, this is automatically set to \code{.g_se}; if
+\code{es.measure = "RR"}, \code{".log_rr_se"} is used. The default settings
+correspond with the standard output of \code{\link[=calculateEffectSizes]{calculateEffectSizes()}}.}
+
+\item{es.binary.raw.vars}{\code{character} vector, defining the column names in
+which the (1) raw event counts in the experimental group, (2) raw event counts in the
+control/reference group, (3) sample size in the experimental group, and (4) sample size
+of the control/reference group are stored.
+Defaults correspond with the standard output of \code{\link[=calculateEffectSizes]{calculateEffectSizes()}}.}
+
+\item{method.tau}{\code{character}. A character string indicating
+which method is used to estimate the between-study variance (tau-squared)
+and its square root (tau). Either \code{"REML"} (default), \code{"DL"},
 \code{"PM"}, \code{"ML"}, \code{"HS"}, \code{"SJ"}, \code{"HE"}, or \code{"EB"}, can be abbreviated (see
 \code{\link[meta]{metagen}}). Use \code{"FE"} to use a fixed-effect/"common effect" model.}
 
@@ -54,16 +90,12 @@ of the \emph{first} arm within a comparison are stored.}
 \item{arm.var.2}{\code{character}. The name of the variable in \code{data} in which the condition (e.g. "wlc")
 of the \emph{second} arm within a comparison are stored.}
 
-\item{measure.var}{\code{character}. The name of the variable in \code{data} in which the instrument used for the comparison is stored.}
+\item{measure.var}{\code{character}. The name of the variable in \code{data}
+in which the instrument used for the comparison is stored.}
 
-\item{es.var}{\code{character}. The name of the variable in \code{data} in which the calculated effect sizes (i.e. Hedges' \emph{g})
-are stored.}
-
-\item{se.var}{\code{character}. The name of the variable in \code{data} in which the standard error of the calculated effect sizes (i.e. Hedges' \emph{g})
-are stored.}
-
-\item{low.rob.filter}{\code{character}. A filtering statement by which to include studies for the "low RoB only" analysis.
-Please note that the name of the variable must be included as a column in \code{data}.}
+\item{low.rob.filter}{\code{character}. A filtering statement by which to
+include studies for the "low RoB only" analysis. Please note that the name of
+the variable must be included as a column in \code{data}.}
 
 \item{method.tau.ci}{\code{character}. A character string indicating which method is used to estimate the
 confidence interval of tau/tau-squared. Either \code{"Q-Profile"} (default and recommended),
@@ -72,13 +104,13 @@ confidence interval of tau/tau-squared. Either \code{"Q-Profile"} (default and r
 \item{round.digits}{\code{numeric}. Number of digits to round the (presented) results by. Default is \code{2}.}
 
 \item{which.outliers}{\code{character}. Which model should be used to conduct outlier analyses? Must be
-\code{"general"} or \code{"combined"}, with \code{"general"} being the default.}
+\code{"overall"} or \code{"combined"}, with \code{"overall"} being the default.}
 
 \item{which.influence}{\code{character}. Which model should be used to conduct influence analyses? Must be
-\code{"general"} or \code{"combined"}, with \code{"general"} being the default.}
+\code{"overall"} or \code{"combined"}, with \code{"overall"} being the default.}
 
 \item{which.rob}{\code{character}. Which model should be used to conduct the "low risk of bias only" analyses? Must be
-\code{"general"} or \code{"combined"}, with \code{"general"} being the default.}
+\code{"overall"} or \code{"combined"}, with \code{"overall"} being the default.}
 
 \item{nnt.cer}{\code{numeric}. Value between 0 and 1, indicating the assumed control group event rate to be used
 for calculating NNTs via the Furukawa-Leucht method.}
@@ -113,39 +145,41 @@ that are somewhat closer to being "publication-ready".
 By default, the following models are calculated:
 
 \itemize{
-  \item \code{"overall"}. Runs a generic inverse-variance (random-effects) model. All included
-  effect sizes are treated as independent.
-  \item \code{"combined"}. Pools all effect sizes within one study (defined by \code{study.var}) before
-  pooling. This ensures that all effect sizes are independent (i.e., unit-of-analysis error &
-  double-counting is avoided). To combine the effects, one has to assume a correlation of effect sizes
-  within studies, empirical estimates of which are typically not available.
-  \item \code{"lowest.highest"}. Runs a meta-analysis, but with only (i) the lowest and (ii) highest
-  effect size within each study included.
-  \item \code{"outlier"}. Runs a meta-analysis without statistical outliers (i.e. effect sizes for which
-  the confidence interval does not overlap with the confidence intervall of the overall effect).
-  \item \code{"influence"}. Runs a meta-analysis without influential cases (see \code{\link[metafor]{influence.rma.uni}} for
-  details).
-  \item \code{"rob"}. Runs a meta-analysis with only low-RoB studies included.
-  \item \code{"threelevel"}. Runs a multilevel (three-level) meta-analysis model, with effect sizes nested
-  in studies.
-  \item \code{"threelevel.che"}. Runs a multilevel (three-level) meta-analysis model, with effect sizes nested
-  in studies. Variance-covariance matrices of each study with two or more effect sizes are estimated using
-  \code{rho.within.study} as the assumed overall within-study correlation. This imputation allows to run a "correlated and
-  hierarchical effects" (CHE) model, which is typically a good approximation for data sets with unknown and/or
-  complex dependence structures.
+\item \code{"overall"}. Runs a generic inverse-variance (random-effects) model. All included
+effect sizes are treated as independent. When \code{es.measure = "RR"} and \code{es.type = "raw"},
+the Mantel-Haenszel method is used for pooling instead.
+\item \code{"combined"}. Pools all effect sizes within one study (defined by \code{study.var}) before
+pooling. This ensures that all effect sizes are independent (i.e., unit-of-analysis error &
+double-counting is avoided). To combine the effects, one has to assume a correlation of effect sizes
+within studies, empirical estimates of which are typically not available.
+\item \code{"lowest.highest"}. Runs a meta-analysis, but with only (i) the lowest and (ii) highest
+effect size within each study included.
+\item \code{"outlier"}. Runs a meta-analysis without statistical outliers (i.e. effect sizes for which
+the confidence interval does not overlap with the confidence intervall of the overall effect).
+\item \code{"influence"}. Runs a meta-analysis without influential cases (see \code{\link[metafor]{influence.rma.uni}} for
+details).
+\item \code{"rob"}. Runs a meta-analysis with only low-RoB studies included.
+\item \code{"threelevel"}. Runs a multilevel (three-level) meta-analysis model, with effect sizes nested
+in studies.
+\item \code{"threelevel.che"}. Runs a multilevel (three-level) meta-analysis model, with effect sizes nested
+in studies. Variance-covariance matrices of each study with two or more effect sizes are estimated using
+\code{rho.within.study} as the assumed overall within-study correlation. This imputation allows to run a "correlated and
+hierarchical effects" (CHE) model, which is typically a good approximation for data sets with unknown and/or
+complex dependence structures.
 }
-For more details see the help vignette: \code{vignette("metapsyTools")}.
+For more details see the \href{https://tools.metapsy.org/articles/metapsytools}{Get Started} vignette.
 }
 \examples{
 \dontrun{
-data("inpatients")
+data("depressionPsyCtr")
 library(meta)
 
-inpatients \%>\%
-   checkDataFormat() \%>\%
-     checkConflicts() \%>\%
-     expandMultiarmTrials() \%>\%
-     calculateEffectSizes() -> data
+depressionPsyCtr \%>\%
+  checkDataFormat() \%>\%
+  checkConflicts() \%>\%
+  calculateEffectSizes() \%>\% 
+  filterPoolingData(condition_arm2 \%in\% 
+                      c("wl", "other ctr")) -> data
 
 # Run the meta-analyses
 runMetaAnalysis(data) -> res
@@ -153,7 +187,7 @@ runMetaAnalysis(data) -> res
 # Show summary
 res
 
-# Show forest plot (by default, "general" is used)
+# Show forest plot (by default, "overall" is used)
 plot(res)
 
 # Show forest plot of specific analysis
@@ -165,23 +199,32 @@ plot(res, "lowest.highest")
 
 # Extract specific model and do further calculations
 # (e.g. meta-regression on 'year')
-metareg(res$model.overall, ~year)
+metaRegression(res$model.overall, ~ scale(year))
 
-# For the combined analysis, use provide an extra variable
-# so that different treatment arm comparisons in multiarm trials are NOT pooled
-data("psyCtrSubsetWide")
-psyCtrSubsetWide \%>\%
-  checkDataFormat() \%>\%
-  checkConflicts() \%>\%
-  expandMultiarmTrials() \%>\%
-  calculateEffectSizes() \%>\%
-  filterPoolingData(year > 2010) \%>\%
-  runMetaAnalysis(extra.grouping.var = "Cond_spec_trt1")
+# Conduct a subgroup analysis
+subgroupAnalysis(res, country)
+
+# Correct for publication bias/small-study effects
+correctPublicationBias(res)
+
+# For the combined analysis, we provide an extra variable to
+# 'extra.grouping.var' so that different treatment arm 
+# comparisons in multiarm trials are NOT pooled
+data \%>\% 
+  runMetaAnalysis(extra.grouping.var = "condition_arm1") \%>\% 
+  plot("combined")
+
+# Run meta-analysis using raw response rate data
+data \%>\% 
+  runMetaAnalysis(es.measure = "RR",
+                  es.type = "raw")
 }
 
 }
 \seealso{
-\code{\link{calculateEffectSizes}}
+\code{\link{calculateEffectSizes}},
+\code{\link{subgroupAnalysis}}. \code{\link{correctPublicationBias}},
+\code{\link{metaRegression}}
 }
 \author{
 Mathias Harrer \email{mathias.h.harrer@gmail.com},

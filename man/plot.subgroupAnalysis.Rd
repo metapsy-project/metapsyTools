@@ -2,7 +2,7 @@
 % Please edit documentation in R/subgroupAnalysis.R
 \name{plot.subgroupAnalysis}
 \alias{plot.subgroupAnalysis}
-\title{Plot method for objects of class 'runMetaAnalysis'.}
+\title{Plot method for objects of class 'runMetaAnalysis'}
 \usage{
 \method{plot}{subgroupAnalysis}(x, which = NULL, ...)
 }

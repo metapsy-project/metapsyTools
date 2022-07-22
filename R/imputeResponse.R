@@ -2,7 +2,7 @@
 #'
 #' This function allows to impute response rates based on the post-test 
 #' means, standard deviations and sample size using the normal-approximation 
-#' method by Furukawa et al. (2005). Response rates can be imputed using the 50\% 
+#' method by Furukawa et al. (2005). Response rates can be imputed using the 50% 
 #' symptom decrease threshold, user-defined cut-off values, or the reliable 
 #' change index (Jacobson & Truax, 1991).
 #'
@@ -27,29 +27,28 @@
 #' @param rho Reliability coefficient, used to calculate the reliable change when
 #' \code{method = "rci"}. Set to 0.8 by default.
 #' @param cutoff User defined cut-off score for response. \code{NULL} by default,
-#' which means that 50\% symptom decrease is used as the response criterion.
+#' which means that 50% symptom decrease is used as the response criterion.
 #' @param lower.is.better Do lower values indicate better outcomes (e.g. less
 #' depression)? \code{TRUE} by default.
 #' @param method Method to define response. Either \code{"cutpoint"} (default; uses
-#' 50\% symptom decrease as criterion, or a user-specified score in \code{cutoff}) or
+#' 50% symptom decrease as criterion, or a user-specified score in \code{cutoff}) or
 #' \code{"rci"}, which means that the reliable change index (Jacobson & Truax, 1991) is used.
 #'
 #' @return If only values for the treatment arm are specified, \code{imputeResponse}
 #' returns a \code{data.frame} with two columns:
-#' \itemize{
-#'  \item{\code{trtResponder}: }{Number of responders}
-#'  \item{\code{nTrt}: }{Total sample size of the treatment arm}
-#' }
+#' 
+#' - \code{trtResponder}: Number of responders
+#' - \code{nTrt}: Total sample size of the treatment arm
+#' 
 #' If values are also specified for the control group, six additional columns are
 #' returned:
-#' \itemize{
-#'  \item{\code{ctrResponder}: }{Number of responders in the control group}
-#'  \item{\code{nCtr}: }{Total sample size of the treatment arm}
-#'  \item{\code{logRR}: }{Log-risk ratio of the difference in response rates in both arms}
-#'  \item{\code{seLogRR}: }{Standard error of the log-risk ratio}
-#'  \item{\code{logOR}: }{Log-odds ratio of the difference in response rates in both arms}
-#'  \item{\code{seLogOR}: }{Standard error of the log-odds ratio}
-#' }
+#' 
+#' - \code{ctrResponder}: Number of responders in the control group
+#' - \code{nCtr}: Total sample size of the treatment arm
+#' - \code{logRR}: Log-risk ratio of the difference in response rates in both arms
+#' - \code{seLogRR}: Standard error of the log-risk ratio
+#' - \code{logOR}: Log-odds ratio of the difference in response rates in both arms
+#' - \code{seLogOR}: Standard error of the log-odds ratio
 #' 
 #'
 #' @examples
@@ -131,7 +130,7 @@
 #' https://doi.org/10.1037//0022-006x.59.1.12
 #' 
 #'
-#' @details For more details see the help vignette: \code{vignette("metapsyTools")}.
+#' @details For more details see the [Get Started](https://tools.metapsy.org/articles/metapsytools) vignette.
 #'
 #' @importFrom stats dffits model.matrix rnorm rstudent pnorm qnorm
 #' @importFrom crayon green yellow cyan bold

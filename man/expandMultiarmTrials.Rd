@@ -55,7 +55,7 @@ This is a function to expand the format of meta-analysis data for its applicabil
 }
 \details{
 This function expands multiarm studies in a meta-analysis data set, thereby ensuring that each comparison (intervention group vs. control group in \code{condition}) is unique for a specific outcome, and thus has two rows. For this purpose, it duplicates the corresponding row of the control group condition if required. A specific study indicator variable is created that enables further use, e.g. in 3-level models.
- For more details see the help vignette: \code{vignette("metapsyTools")}.
+For more details see the help vignette: \code{vignette("metapsyTools")}.
 }
 \examples{
 \dontrun{

@@ -44,25 +44,27 @@ This function allows to simultaneously conduct different subgroup analyses using
 \code{runMetaAnalysis} objects.
 }
 \details{
-For more details see the help vignette: \code{vignette("metapsyTools")}.
+For more details see the \href{https://tools.metapsy.org/articles/metapsytools}{Get Started} vignette.
 }
 \examples{
 \dontrun{
-data("inpatients")
-library(meta)
+data("depressionPsyCtr")
 
-inpatients \%>\%
-   checkDataFormat() \%>\%
-     checkConflicts() \%>\%
-     expandMultiarmTrials() \%>\%
-     calculateEffectSizes() -> data
+depressionPsyCtr \%>\%
+  checkDataFormat() \%>\%
+  checkConflicts() \%>\%
+  calculateEffectSizes() \%>\% 
+  filterPoolingData(condition_arm2 \%in\% 
+                      c("wl", "other ctr")) -> data
 
 # Run the meta-analyses
 runMetaAnalysis(data) -> res
 
 # Subgroup analysis
-subgroupAnalysis(res, Outc_measure, country) -> sg
-plot(sg, "Outc_measure")
+subgroupAnalysis(res, condition_arm2, country,
+                 .which.run = "combined",
+                 .tau.common = TRUE) -> sg
+plot(sg, "condition_arm2")
 plot(sg, "country")
 }
 
@@ -72,5 +74,6 @@ plot(sg, "country")
 }
 \author{
 Mathias Harrer \email{mathias.h.harrer@gmail.com},
-Paula Kuper \email{paula.r.kuper@gmail.com}, Pim Cuijpers \email{p.cuijpers@vu.nl}
+Paula Kuper \email{paula.r.kuper@gmail.com},
+Pim Cuijpers \email{p.cuijpers@vu.nl}
 }

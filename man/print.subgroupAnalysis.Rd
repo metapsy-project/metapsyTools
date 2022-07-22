@@ -2,7 +2,7 @@
 % Please edit documentation in R/subgroupAnalysis.R
 \name{print.subgroupAnalysis}
 \alias{print.subgroupAnalysis}
-\title{Print method for objects of class 'subgroupAnalysis'.}
+\title{Print method for objects of class 'subgroupAnalysis'}
 \usage{
 \method{print}{subgroupAnalysis}(x, ...)
 }

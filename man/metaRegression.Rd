@@ -2,7 +2,7 @@
 % Please edit documentation in R/metaRegression.R
 \name{metaRegression}
 \alias{metaRegression}
-\title{Meta-Regression method for objects of class 'runMetaAnalysis'.}
+\title{Meta-Regression method for objects of class 'runMetaAnalysis'}
 \usage{
 metaRegression(x, ...)
 }

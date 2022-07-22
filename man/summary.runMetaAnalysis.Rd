@@ -2,7 +2,7 @@
 % Please edit documentation in R/runMetaAnalysis.R
 \name{summary.runMetaAnalysis}
 \alias{summary.runMetaAnalysis}
-\title{Show details of 'runMetaAnalysis' class objects.}
+\title{Show details of 'runMetaAnalysis' class objects}
 \usage{
 \method{summary}{runMetaAnalysis}(object, forest = TRUE, ...)
 }

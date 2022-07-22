@@ -82,6 +82,8 @@ addTrialArmInfo = function(.data, ...,
                            .vars.for.id = c("study", "primary",
                                            "Outc_measure",
                                            "Time", "Time_weeks")){
+  
+  warning("This function is deprecated as of version 1.0.0.")
 
   if (class(.data) != "data.frame"){
     stop("object provided in '.data' must be of class 'data.frame'.")

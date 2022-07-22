@@ -2,7 +2,7 @@
 % Please edit documentation in R/runMetaAnalysis.R
 \name{plot.runMetaAnalysis}
 \alias{plot.runMetaAnalysis}
-\title{Plot method for objects of class 'runMetaAnalysis'.}
+\title{Plot method for objects of class 'runMetaAnalysis'}
 \usage{
 \method{plot}{runMetaAnalysis}(x, which = NULL, ...)
 }

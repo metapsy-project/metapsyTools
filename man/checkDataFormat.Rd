@@ -5,89 +5,83 @@
 \title{Check data format}
 \usage{
 checkDataFormat(data,
-           must.contain = c("study", "condition",
-                            "Cond_spec", "is.multiarm",
-                            "no.arms", "multiple_arms",
-                            "Outc_measure", "Time", "primary",
-                            "Time_weeks", "sr_clinician"),
-           variable.contains = list("condition" = c("ig", "cg"),
-                                    "is.multiarm" = c(0,1)),
-           variable.class = list("study" = "character",
-                                 "condition" = "character",
-                                 "Cond_spec" = "character",
-                                 "is.multiarm" = "numeric",
-                                 "no.arms" = "numeric",
-                                 "multiple_arms" = "character",
-                                 "primary" = "numeric",
-                                 "Time" = "character",
-                                 "Time_weeks" = "character",
-                                 "sr_clinician" = "character",
-                                 "Post_M" = "numeric",
-                                 "Post_SD" = "numeric",
-                                 "Post_N" = "numeric",
-                                 "Rand_N" = "numeric",
-                                 "Improved_N" = "numeric",
-                                 "Change_m" = "numeric",
-                                 "Change_SD" = "numeric",
-                                 "Change_N" = "numeric"),
-           groups.column.indicator = c("_trt1", "_trt2"),
-           data.format = NULL)
+                must.contain = c("study", "condition_arm1",
+                                 "condition_arm2", 
+                                 "multi_arm1", 
+                                 "multi_arm2",
+                                 "outcome_type", "instrument",
+                                 "time", "time_weeks",
+                                 "rating", "mean_arm1", "mean_arm2",
+                                 "sd_arm1", "sd_arm2",
+                                 "n_arm1", "n_arm2",
+                                 "event_arm1", "event_arm2",
+                                 "totaln_arm1", "totaln_arm2"),
+                variable.class = list("study" = "character", 
+                                      "condition_arm1" = "character",
+                                      "condition_arm2" = "character", 
+                                      "multi_arm1" = "character", 
+                                      "multi_arm2" = "character",
+                                      "outcome_type" = "character", 
+                                      "instrument" = "character",
+                                      "time" = "character", 
+                                      "time_weeks" = "numeric",
+                                      "rating" = "character", 
+                                      "mean_arm1" = "numeric", 
+                                      "mean_arm2" = "numeric",
+                                      "sd_arm1" = "numeric", 
+                                      "sd_arm2" = "numeric",
+                                      "n_arm1" = "numeric", 
+                                      "n_arm2" = "numeric",
+                                      "event_arm1" = "numeric", 
+                                      "event_arm2" = "numeric",
+                                      "totaln_arm1" = "numeric", 
+                                      "totaln_arm2" = "numeric"))
 }
 \arguments{
-\item{data}{Meta-analysis data stored as a data.frame.}
+\item{data}{A \code{data.frame} containint meta-analysis data.}
 
-\item{must.contain}{\code{character} vector, containing all the variable names the data set should contain.}
+\item{must.contain}{\code{character} vector, containing all the variable names
+the data set should contain. Defaults correspond with the Metapsy data standard.}
 
-\item{variable.contains}{\code{list}, defining which values should only be contained in a variable.}
-
-\item{variable.class}{\code{list}, defining the required data class for some or all variables. If the class differs, the function will try to convert the variable to the desired class.}
-
-\item{groups.column.indicator}{\code{character}. If the dataset is in wide format: a character vector with two elements, representing the suffix used to
-differentiate between the first and second treatment in a comparison.}
-
-\item{data.format}{\code{character}. Either \code{"long"} or \code{"wide"}, depending on the format of the dataset in
-\code{data}. \code{NULL} by default, which lets the user define the format after the function has been called.}
+\item{variable.class}{\code{list}, defining the required class
+for some or all variables. If the class differs in \code{data}, the function will try to
+convert the variable to the desired class. Defaults correspond with the
+Metapsy data standard.}
 }
 \value{
-\code{checkDataFormat} returns messages that specify if input variables, values and classes of the variables are as defined.
+\code{checkDataFormat} returns messages that specify if input variables,
+values and classes of the variables are as defined.
+
+If default settings are used, \code{checkDataFormat()} can be used in combination
+with \code{\link[=checkConflicts]{checkConflicts()}} to determine if a dataset follows the \href{https://docs.metapsy.org/data-preparation/format/}{Metapsy data standard}.
+Datasets that are formatted using this standard can be directly used in
+the \href{https://tools.metapsy.org/articles/metapsytools#the-analysis-module}{analysis module} in \code{metapsyTools};
+for example the \code{\link[=runMetaAnalysis]{runMetaAnalysis()}} function.
 }
 \description{
-This is a function to check the format of meta-analysis data with class \code{data.frame} for its further applicability to the \code{expandMultiarmTrials} function.
+This function checks if a \code{data.frame} object conforms with the
+\href{https://docs.metapsy.org/data-preparation/format/}{Metapsy data standard}.
 }
 \details{
-The function ckecks if:
- \itemize{
- \item{the data set contains all relevant variables}
- \item{variables contain desired values only and}
- \item{variables are of desired type (if not, it tries to convert them).}
- }
- If the dataset format is wide, please specify all variable/column names
- \emph{without} the group indicator suffix (e.g. for \code{"Cond_spec_trt1"} and
- \code{"Cond_spec_trt2"}, simply use \code{"Cond_spec"}).
+The function checks if:
+\itemize{
+\item{the data set contains all relevant variables and}
+\item{variables have the desired class (if not, it tries to convert).}
+}
 }
 \examples{
 \dontrun{
-data("inpatients")
+data("depressionPsyCtr")
 
-# Example 1: Check data with default arguments
-checkDataFormat(inpatients)
+# Example 1: Check with default arguments
+checkDataFormat(depressionPsyCtr)
 
-#Example 2: Check for specified variables and corresponding values and classes
-checkDataFormat(inpatients,
+#Example 2: Check for non-default arguments
+checkDataFormat(depressionPsyCtr,
                 must.contain = c("study", "condition",
                                  "primary", "year"),
-                variable.contains = list("condition" = c("ig","cg")),
                 variable.class = list(study = "character",
                                       no.arms = "numeric"))
-
-#Example 3: Convert variable class as predefined
-checkDataFormat(inpatients,
-                must.contain = c("primary", "study"),
-                variable.class = list(primary = "integer"))
-
-#Example 4: Wide format
-data("psyCtrSubsetWide")
-checkDataFormat(psyCtrSubsetWide)
 }
 
 
@@ -96,5 +90,7 @@ checkDataFormat(psyCtrSubsetWide)
 \code{\link{expandMultiarmTrials}}
 }
 \author{
-Mathias Harrer \email{mathias.h.harrer@gmail.com}, Paula Kuper \email{paula.r.kuper@gmail.com}, Pim Cuijpers \email{p.cuijpers@vu.nl}
+Mathias Harrer \email{mathias.h.harrer@gmail.com},
+Paula Kuper \email{paula.r.kuper@gmail.com},
+Pim Cuijpers \email{p.cuijpers@vu.nl}
 }

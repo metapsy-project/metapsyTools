@@ -2,9 +2,7 @@
   packageStartupMessage(crayon::green("\u2713"),
                         crayon::cyan(" Loading "),
                         crayon::cyan$bold("{metapsyTools}"),
-                        crayon::cyan(" 0.3.3 [BETA]. \n \u2192 For help, run "),
-                        crayon::green("vignette('metapsyTools')"),
-                        crayon::cyan(" in the R console."),
+                        crayon::cyan(" 1.0.1 [BETA]."),
                         crayon::cyan("\n \u2192 Package documentation: "),
                         crayon::green("tools.metapsy.org")) 
 }

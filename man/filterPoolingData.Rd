@@ -21,7 +21,8 @@ provided using the \code{|} operator. Multiple filter statements separated using
 }
 \value{
 \code{filterPoolingData} returns the filtered data set as class \code{data.frame}.
-The filtered data set should then be ready for meta-analytic pooling, for example using \link[meta]{metagen}.
+The filtered data set should then be ready for meta-analytic pooling, for example
+using \code{\link[=runMetaAnalysis]{runMetaAnalysis()}}.
 }
 \description{
 This convenience function allows to create a filtered data set, which is then ready
@@ -40,38 +41,34 @@ selected words (separated by \code{|}). To include all rows which contain the wo
 we can use \code{Detect(Cond_spect_trt2, "cbt|wl|cau")}. This will also filter out elements like \code{"cbt (online)"}, because "cbt" is
 included.
 
-For more details see the help vignette: \code{vignette("metapsyTools")}.
+For more details see the \href{https://tools.metapsy.org/articles/metapsytools}{Get Started} vignette.
 }
 \examples{
 \dontrun{
 
 # Example 1: calculate effect sizes and then use multiple AND filters.
-data("inpatients")
-inpatients \%>\%
-    expandMultiarmTrials() \%>\%
-    calculateEffectSizes() \%>\%
-    filterPoolingData(primary == 1, Outc_measure == "hamd")
+data("depressionPsyCtr")
+depressionPsyCtr \%>\%
+  calculateEffectSizes() \%>\%
+  filterPoolingData(time == "post", instrument == "hdrs")
 
 # Example 2: use OR filter
-inpatients \%>\%
-    expandMultiarmTrials() \%>\%
-    calculateEffectSizes() \%>\%
-    filterPoolingData(primary == 1 | Outc_measure == "hamd")
+data("depressionPsyCtr")
+depressionPsyCtr \%>\%
+  calculateEffectSizes() \%>\%
+  filterPoolingData(time == "post" | instrument == "hdrs")
 
 # Example 3: use \%in\% operator
-inpatients \%>\%
-    expandMultiarmTrials() \%>\%
-    calculateEffectSizes() \%>\%
-    filterPoolingData(Outc_measure \%in\% c("hamd", "bdi-ii"))
+data("depressionPsyCtr")
+depressionPsyCtr \%>\%
+  calculateEffectSizes() \%>\%
+  filterPoolingData(instrument \%in\% c("hdrs", "phq-9"))
 
 # Example 4: Search for studies using "fuzzy-ish" matching
-data("psyCtrSubset")
-psyCtrSubset \%>\%
-  expandMultiarmTrials() \%>\%
+data("depressionPsyCtr")
+depressionPsyCtr \%>\%
   calculateEffectSizes() \%>\%
-  filterPoolingData(Detect(Cond_spec_trt1 , "cbt|sup"),
-                    Detect(Cond_spec_trt2 , "wl|cau"),
-                    !study \%in\% "Heckman, 2011")
+  filterPoolingData(Detect(instrument, "bdi"))
 }
 
 }
@@ -79,5 +76,6 @@ psyCtrSubset \%>\%
 \code{\link{filterPriorityRule}}
 }
 \author{
-Mathias Harrer \email{mathias.h.harrer@gmail.com}, Paula Kuper \email{paula.r.kuper@gmail.com}, Pim Cuijpers \email{p.cuijpers@vu.nl}
+Mathias Harrer \email{mathias.h.harrer@gmail.com},
+Paula Kuper \email{paula.r.kuper@gmail.com}, Pim Cuijpers \email{p.cuijpers@vu.nl}
 }

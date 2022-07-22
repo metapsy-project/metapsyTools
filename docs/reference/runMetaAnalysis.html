@@ -12,7 +12,7 @@ different meta-analytic approaches."><meta property="og:image" content="/logo.pn
     
     <a class="navbar-brand me-2" href="../index.html">metapsyTools</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.2</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -65,21 +65,28 @@ different meta-analytic approaches.</p>
                               <span class="st">"lowest.highest"</span>, <span class="st">"outliers"</span>,
                               <span class="st">"influence"</span>, <span class="st">"rob"</span>, <span class="st">"threelevel"</span>,
                               <span class="st">"threelevel.che"</span><span class="op">)</span>,
+                es.measure <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"g"</span>, <span class="st">"RR"</span><span class="op">)</span>,
+                es.type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"precalculated"</span>, <span class="st">"raw"</span><span class="op">)</span>,
+                es.var <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical</a></span><span class="op">(</span><span class="va">es.measure</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="st">"g"</span><span class="op">)</span>, 
+                                <span class="st">".g"</span>, <span class="st">".log_rr"</span><span class="op">)</span>,
+                se.var <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical</a></span><span class="op">(</span><span class="va">es.measure</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="st">"g"</span><span class="op">)</span>, 
+                                <span class="st">".g_se"</span>, <span class="st">".log_rr_se"</span><span class="op">)</span>,
+                es.binary.raw.vars <span class="op">=</span> 
+                  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">".event_arm1"</span>, <span class="st">".event_arm2"</span>,
+                    <span class="st">".totaln_arm1"</span>, <span class="st">".totaln_arm2"</span><span class="op">)</span>,
                 method.tau <span class="op">=</span> <span class="st">"REML"</span>,
                 hakn <span class="op">=</span> <span class="cn">TRUE</span>,
                 study.var <span class="op">=</span> <span class="st">"study"</span>,
                 extra.grouping.var <span class="op">=</span> <span class="cn">NULL</span>,
-                arm.var.1 <span class="op">=</span> <span class="st">"Cond_spec_trt1"</span>,
-                arm.var.2 <span class="op">=</span> <span class="st">"Cond_spec_trt2"</span>,
-                measure.var <span class="op">=</span> <span class="st">"Outc_measure"</span>,
-                es.var <span class="op">=</span> <span class="st">"es"</span>,
-                se.var <span class="op">=</span> <span class="st">"se"</span>,
+                arm.var.1 <span class="op">=</span> <span class="st">"condition_arm1"</span>,
+                arm.var.2 <span class="op">=</span> <span class="st">"condition_arm2"</span>,
+                measure.var <span class="op">=</span> <span class="st">"instrument"</span>,
                 low.rob.filter <span class="op">=</span> <span class="st">"rob &gt; 2"</span>,
                 method.tau.ci <span class="op">=</span> <span class="st">"Q-Profile"</span>,
                 round.digits <span class="op">=</span> <span class="fl">2</span>,
-                which.outliers <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"general"</span>, <span class="st">"combined"</span><span class="op">)</span>,
-                which.influence <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"general"</span>, <span class="st">"combined"</span><span class="op">)</span>,
-                which.rob <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"general"</span>, <span class="st">"combined"</span><span class="op">)</span>,
+                which.outliers <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"overall"</span>, <span class="st">"combined"</span><span class="op">)</span>,
+                which.influence <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"overall"</span>, <span class="st">"combined"</span><span class="op">)</span>,
+                which.rob <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"overall"</span>, <span class="st">"combined"</span><span class="op">)</span>,
                 nnt.cer <span class="op">=</span> <span class="fl">0.2</span>,
                 rho.within.study <span class="op">=</span> <span class="fl">0.5</span>,
                 use.rve <span class="op">=</span> <span class="cn">TRUE</span>,
@@ -90,12 +97,41 @@ different meta-analytic approaches.</p>
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
     <dl><dt>data</dt>
-<dd><p><code>data.frame</code>. Effect size data in the wide format, as created by <code><a href="calculateEffectSizes.html">calculateEffectSizes</a></code>.</p></dd>
+<dd><p><code>data.frame</code>. Effect size data in the wide format, as
+created by <code><a href="calculateEffectSizes.html">calculateEffectSizes</a></code>.</p></dd>
 <dt>which.run</dt>
-<dd><p><code>character</code>. Selection of models to be calculated. See 'Details'.</p></dd>
+<dd><p><code>character</code>. Selection of models to be calculated.
+See 'Details'.</p></dd>
+<dt>es.measure</dt>
+<dd><p><code>character</code>. Should meta-analyses be calculated using the
+bias-corrected standardized mean difference (<code>"g"</code>; default), or using
+risk ratios (<code>"RR"</code>)? Meta-analyses will only be conducted using comparisons
+that contain non <code>NA</code> values in the <code>es.var</code> and <code>se.var</code> columns.</p></dd>
+<dt>es.type</dt>
+<dd><p><code>character</code>. Should pre-calculated or raw event data (i.e.
+the Mantel-Haenszel method) be used for meta-analyses of risk ratios?
+Can be set to <code>"precalculated"</code> (default) or <code>"raw"</code>.</p></dd>
+<dt>es.var</dt>
+<dd><p><code>character</code>. Specifies the name of the variable containing the (pre-
+calculated) effect size data in <code>data</code>. When <code>es.measure = "g"</code>, this is set to
+<code>.g</code> by default; <code>".log_rr"</code> is used when <code>es.measure = "RR"</code>. The default settings
+correspond with the standard output of <code><a href="calculateEffectSizes.html">calculateEffectSizes()</a></code>.</p></dd>
+<dt>se.var</dt>
+<dd><p><code>character</code>. Specifies the name of the variable containing the (pre-calculated)
+standard errors (square root of the variance) of the effect size metric defined
+in <code>es.var</code>. If <code>es.measure = "g"</code>, this is automatically set to <code>.g_se</code>; if
+<code>es.measure = "RR"</code>, <code>".log_rr_se"</code> is used. The default settings
+correspond with the standard output of <code><a href="calculateEffectSizes.html">calculateEffectSizes()</a></code>.</p></dd>
+<dt>es.binary.raw.vars</dt>
+<dd><p><code>character</code> vector, defining the column names in
+which the (1) raw event counts in the experimental group, (2) raw event counts in the
+control/reference group, (3) sample size in the experimental group, and (4) sample size
+of the control/reference group are stored.
+Defaults correspond with the standard output of <code><a href="calculateEffectSizes.html">calculateEffectSizes()</a></code>.</p></dd>
 <dt>method.tau</dt>
-<dd><p><code>character</code>. A character string indicating which method is used to estimate the
-between-study variance (tau-squared) and its square root (tau). Either <code>"REML"</code> (default), <code>"DL"</code>,
+<dd><p><code>character</code>. A character string indicating
+which method is used to estimate the between-study variance (tau-squared)
+and its square root (tau). Either <code>"REML"</code> (default), <code>"DL"</code>,
 <code>"PM"</code>, <code>"ML"</code>, <code>"HS"</code>, <code>"SJ"</code>, <code>"HE"</code>, or <code>"EB"</code>, can be abbreviated (see
 <code><a href="https://rdrr.io/pkg/meta/man/metagen.html" class="external-link">metagen</a></code>). Use <code>"FE"</code> to use a fixed-effect/"common effect" model.</p></dd>
 <dt>hakn</dt>
@@ -113,16 +149,12 @@ of the <em>first</em> arm within a comparison are stored.</p></dd>
 <dd><p><code>character</code>. The name of the variable in <code>data</code> in which the condition (e.g. "wlc")
 of the <em>second</em> arm within a comparison are stored.</p></dd>
 <dt>measure.var</dt>
-<dd><p><code>character</code>. The name of the variable in <code>data</code> in which the instrument used for the comparison is stored.</p></dd>
-<dt>es.var</dt>
-<dd><p><code>character</code>. The name of the variable in <code>data</code> in which the calculated effect sizes (i.e. Hedges' <em>g</em>)
-are stored.</p></dd>
-<dt>se.var</dt>
-<dd><p><code>character</code>. The name of the variable in <code>data</code> in which the standard error of the calculated effect sizes (i.e. Hedges' <em>g</em>)
-are stored.</p></dd>
+<dd><p><code>character</code>. The name of the variable in <code>data</code>
+in which the instrument used for the comparison is stored.</p></dd>
 <dt>low.rob.filter</dt>
-<dd><p><code>character</code>. A filtering statement by which to include studies for the "low RoB only" analysis.
-Please note that the name of the variable must be included as a column in <code>data</code>.</p></dd>
+<dd><p><code>character</code>. A filtering statement by which to
+include studies for the "low RoB only" analysis. Please note that the name of
+the variable must be included as a column in <code>data</code>.</p></dd>
 <dt>method.tau.ci</dt>
 <dd><p><code>character</code>. A character string indicating which method is used to estimate the
 confidence interval of tau/tau-squared. Either <code>"Q-Profile"</code> (default and recommended),
@@ -131,13 +163,13 @@ confidence interval of tau/tau-squared. Either <code>"Q-Profile"</code> (default
 <dd><p><code>numeric</code>. Number of digits to round the (presented) results by. Default is <code>2</code>.</p></dd>
 <dt>which.outliers</dt>
 <dd><p><code>character</code>. Which model should be used to conduct outlier analyses? Must be
-<code>"general"</code> or <code>"combined"</code>, with <code>"general"</code> being the default.</p></dd>
+<code>"overall"</code> or <code>"combined"</code>, with <code>"overall"</code> being the default.</p></dd>
 <dt>which.influence</dt>
 <dd><p><code>character</code>. Which model should be used to conduct influence analyses? Must be
-<code>"general"</code> or <code>"combined"</code>, with <code>"general"</code> being the default.</p></dd>
+<code>"overall"</code> or <code>"combined"</code>, with <code>"overall"</code> being the default.</p></dd>
 <dt>which.rob</dt>
 <dd><p><code>character</code>. Which model should be used to conduct the "low risk of bias only" analyses? Must be
-<code>"general"</code> or <code>"combined"</code>, with <code>"general"</code> being the default.</p></dd>
+<code>"overall"</code> or <code>"combined"</code>, with <code>"overall"</code> being the default.</p></dd>
 <dt>nnt.cer</dt>
 <dd><p><code>numeric</code>. Value between 0 and 1, indicating the assumed control group event rate to be used
 for calculating NNTs via the Furukawa-Leucht method.</p></dd>
@@ -168,30 +200,33 @@ that are typically used. It allows to run all of these models in one step in ord
 that are somewhat closer to being "publication-ready".</p>
 <p>By default, the following models are calculated:</p>
 <ul><li><p><code>"overall"</code>. Runs a generic inverse-variance (random-effects) model. All included
-  effect sizes are treated as independent.</p></li>
+effect sizes are treated as independent. When <code>es.measure = "RR"</code> and <code>es.type = "raw"</code>,
+the Mantel-Haenszel method is used for pooling instead.</p></li>
 <li><p><code>"combined"</code>. Pools all effect sizes within one study (defined by <code>study.var</code>) before
-  pooling. This ensures that all effect sizes are independent (i.e., unit-of-analysis error &amp;
-  double-counting is avoided). To combine the effects, one has to assume a correlation of effect sizes
-  within studies, empirical estimates of which are typically not available.</p></li>
+pooling. This ensures that all effect sizes are independent (i.e., unit-of-analysis error &amp;
+double-counting is avoided). To combine the effects, one has to assume a correlation of effect sizes
+within studies, empirical estimates of which are typically not available.</p></li>
 <li><p><code>"lowest.highest"</code>. Runs a meta-analysis, but with only (i) the lowest and (ii) highest
-  effect size within each study included.</p></li>
+effect size within each study included.</p></li>
 <li><p><code>"outlier"</code>. Runs a meta-analysis without statistical outliers (i.e. effect sizes for which
-  the confidence interval does not overlap with the confidence intervall of the overall effect).</p></li>
+the confidence interval does not overlap with the confidence intervall of the overall effect).</p></li>
 <li><p><code>"influence"</code>. Runs a meta-analysis without influential cases (see <code><a href="https://wviechtb.github.io/metafor/reference/influence.rma.uni.html" class="external-link">influence.rma.uni</a></code> for
-  details).</p></li>
+details).</p></li>
 <li><p><code>"rob"</code>. Runs a meta-analysis with only low-RoB studies included.</p></li>
 <li><p><code>"threelevel"</code>. Runs a multilevel (three-level) meta-analysis model, with effect sizes nested
-  in studies.</p></li>
+in studies.</p></li>
 <li><p><code>"threelevel.che"</code>. Runs a multilevel (three-level) meta-analysis model, with effect sizes nested
-  in studies. Variance-covariance matrices of each study with two or more effect sizes are estimated using
-  <code>rho.within.study</code> as the assumed overall within-study correlation. This imputation allows to run a "correlated and
-  hierarchical effects" (CHE) model, which is typically a good approximation for data sets with unknown and/or
-  complex dependence structures.</p></li>
-</ul><p>For more details see the help vignette: <code><a href="../articles/metapsyTools.html">vignette("metapsyTools")</a></code>.</p>
+in studies. Variance-covariance matrices of each study with two or more effect sizes are estimated using
+<code>rho.within.study</code> as the assumed overall within-study correlation. This imputation allows to run a "correlated and
+hierarchical effects" (CHE) model, which is typically a good approximation for data sets with unknown and/or
+complex dependence structures.</p></li>
+</ul><p>For more details see the <a href="https://tools.metapsy.org/articles/metapsytools" class="external-link">Get Started</a> vignette.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p><code><a href="calculateEffectSizes.html">calculateEffectSizes</a></code></p></div>
+    <div class="dont-index"><p><code><a href="calculateEffectSizes.html">calculateEffectSizes</a></code>,
+<code><a href="subgroupAnalysis.html">subgroupAnalysis</a></code>. <code><a href="correctPublicationBias.html">correctPublicationBias</a></code>,
+<code><a href="metaRegression.html">metaRegression</a></code></p></div>
     </div>
     <div class="section level2">
     <h2 id="author">Author<a class="anchor" aria-label="anchor" href="#author"></a></h2>
@@ -202,14 +237,15 @@ Paula Kuper <a href="mailto:paula.r.kuper@gmail.com">paula.r.kuper@gmail.com</a>
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"inpatients"</span><span class="op">)</span></span>
+<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"depressionPsyCtr"</span><span class="op">)</span></span>
 <span class="r-in"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/guido-s/meta/" class="external-link">meta</a></span><span class="op">)</span></span>
 <span class="r-in"></span>
-<span class="r-in"><span class="va">inpatients</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
-<span class="r-in">   <span class="fu"><a href="checkDataFormat.html">checkDataFormat</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
-<span class="r-in">     <span class="fu"><a href="checkConflicts.html">checkConflicts</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
-<span class="r-in">     <span class="fu"><a href="expandMultiarmTrials.html">expandMultiarmTrials</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
-<span class="r-in">     <span class="fu"><a href="calculateEffectSizes.html">calculateEffectSizes</a></span><span class="op">(</span><span class="op">)</span> <span class="op">-&gt;</span> <span class="va">data</span></span>
+<span class="r-in"><span class="va">depressionPsyCtr</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
+<span class="r-in">  <span class="fu"><a href="checkDataFormat.html">checkDataFormat</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
+<span class="r-in">  <span class="fu"><a href="checkConflicts.html">checkConflicts</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
+<span class="r-in">  <span class="fu"><a href="calculateEffectSizes.html">calculateEffectSizes</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span> </span>
+<span class="r-in">  <span class="fu"><a href="filterPoolingData.html">filterPoolingData</a></span><span class="op">(</span><span class="va">condition_arm2</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> </span>
+<span class="r-in">                      <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"wl"</span>, <span class="st">"other ctr"</span><span class="op">)</span><span class="op">)</span> <span class="op">-&gt;</span> <span class="va">data</span></span>
 <span class="r-in"></span>
 <span class="r-in"><span class="co"># Run the meta-analyses</span></span>
 <span class="r-in"><span class="fu">runMetaAnalysis</span><span class="op">(</span><span class="va">data</span><span class="op">)</span> <span class="op">-&gt;</span> <span class="va">res</span></span>
@@ -217,7 +253,7 @@ Paula Kuper <a href="mailto:paula.r.kuper@gmail.com">paula.r.kuper@gmail.com</a>
 <span class="r-in"><span class="co"># Show summary</span></span>
 <span class="r-in"><span class="va">res</span></span>
 <span class="r-in"></span>
-<span class="r-in"><span class="co"># Show forest plot (by default, "general" is used)</span></span>
+<span class="r-in"><span class="co"># Show forest plot (by default, "overall" is used)</span></span>
 <span class="r-in"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span>
 <span class="r-in"></span>
 <span class="r-in"><span class="co"># Show forest plot of specific analysis</span></span>
@@ -229,18 +265,25 @@ Paula Kuper <a href="mailto:paula.r.kuper@gmail.com">paula.r.kuper@gmail.com</a>
 <span class="r-in"></span>
 <span class="r-in"><span class="co"># Extract specific model and do further calculations</span></span>
 <span class="r-in"><span class="co"># (e.g. meta-regression on 'year')</span></span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/pkg/meta/man/metareg.html" class="external-link">metareg</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">model.overall</span>, <span class="op">~</span><span class="va">year</span><span class="op">)</span></span>
+<span class="r-in"><span class="fu"><a href="metaRegression.html">metaRegression</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">model.overall</span>, <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/scale.html" class="external-link">scale</a></span><span class="op">(</span><span class="va">year</span><span class="op">)</span><span class="op">)</span></span>
 <span class="r-in"></span>
-<span class="r-in"><span class="co"># For the combined analysis, use provide an extra variable</span></span>
-<span class="r-in"><span class="co"># so that different treatment arm comparisons in multiarm trials are NOT pooled</span></span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"psyCtrSubsetWide"</span><span class="op">)</span></span>
-<span class="r-in"><span class="va">psyCtrSubsetWide</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
-<span class="r-in">  <span class="fu"><a href="checkDataFormat.html">checkDataFormat</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
-<span class="r-in">  <span class="fu"><a href="checkConflicts.html">checkConflicts</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
-<span class="r-in">  <span class="fu"><a href="expandMultiarmTrials.html">expandMultiarmTrials</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
-<span class="r-in">  <span class="fu"><a href="calculateEffectSizes.html">calculateEffectSizes</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
-<span class="r-in">  <span class="fu"><a href="filterPoolingData.html">filterPoolingData</a></span><span class="op">(</span><span class="va">year</span> <span class="op">&gt;</span> <span class="fl">2010</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
-<span class="r-in">  <span class="fu">runMetaAnalysis</span><span class="op">(</span>extra.grouping.var <span class="op">=</span> <span class="st">"Cond_spec_trt1"</span><span class="op">)</span></span>
+<span class="r-in"><span class="co"># Conduct a subgroup analysis</span></span>
+<span class="r-in"><span class="fu"><a href="subgroupAnalysis.html">subgroupAnalysis</a></span><span class="op">(</span><span class="va">res</span>, <span class="va">country</span><span class="op">)</span></span>
+<span class="r-in"></span>
+<span class="r-in"><span class="co"># Correct for publication bias/small-study effects</span></span>
+<span class="r-in"><span class="fu"><a href="correctPublicationBias.html">correctPublicationBias</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span>
+<span class="r-in"></span>
+<span class="r-in"><span class="co"># For the combined analysis, we provide an extra variable to</span></span>
+<span class="r-in"><span class="co"># 'extra.grouping.var' so that different treatment arm </span></span>
+<span class="r-in"><span class="co"># comparisons in multiarm trials are NOT pooled</span></span>
+<span class="r-in"><span class="va">data</span> <span class="op"><a href="pipe.html">%&gt;%</a></span> </span>
+<span class="r-in">  <span class="fu">runMetaAnalysis</span><span class="op">(</span>extra.grouping.var <span class="op">=</span> <span class="st">"condition_arm1"</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span> </span>
+<span class="r-in">  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="st">"combined"</span><span class="op">)</span></span>
+<span class="r-in"></span>
+<span class="r-in"><span class="co"># Run meta-analysis using raw response rate data</span></span>
+<span class="r-in"><span class="va">data</span> <span class="op"><a href="pipe.html">%&gt;%</a></span> </span>
+<span class="r-in">  <span class="fu">runMetaAnalysis</span><span class="op">(</span>es.measure <span class="op">=</span> <span class="st">"RR"</span>,</span>
+<span class="r-in">                  es.type <span class="op">=</span> <span class="st">"raw"</span><span class="op">)</span></span>
 <span class="r-in"><span class="op">}</span></span>
 <span class="r-in"></span>
 </code></pre></div>
