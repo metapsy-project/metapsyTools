@@ -12,7 +12,7 @@ different meta-analytic approaches."><meta property="og:image" content="/logo.pn
     
     <a class="navbar-brand me-2" href="../index.html">metapsyTools</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.3</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -77,13 +77,14 @@ different meta-analytic approaches.</p>
                 method.tau <span class="op">=</span> <span class="st">"REML"</span>,
                 hakn <span class="op">=</span> <span class="cn">TRUE</span>,
                 study.var <span class="op">=</span> <span class="st">"study"</span>,
-                extra.grouping.var <span class="op">=</span> <span class="cn">NULL</span>,
                 arm.var.1 <span class="op">=</span> <span class="st">"condition_arm1"</span>,
                 arm.var.2 <span class="op">=</span> <span class="st">"condition_arm2"</span>,
                 measure.var <span class="op">=</span> <span class="st">"instrument"</span>,
                 low.rob.filter <span class="op">=</span> <span class="st">"rob &gt; 2"</span>,
                 method.tau.ci <span class="op">=</span> <span class="st">"Q-Profile"</span>,
                 round.digits <span class="op">=</span> <span class="fl">2</span>,
+                which.combine <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"arms"</span>, <span class="st">"studies"</span><span class="op">)</span>,
+                which.combine.var <span class="op">=</span> <span class="st">"multi_arm1"</span>,
                 which.outliers <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"overall"</span>, <span class="st">"combined"</span><span class="op">)</span>,
                 which.influence <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"overall"</span>, <span class="st">"combined"</span><span class="op">)</span>,
                 which.rob <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"overall"</span>, <span class="st">"combined"</span><span class="op">)</span>,
@@ -138,10 +139,6 @@ and its square root (tau). Either <code>"REML"</code> (default), <code>"DL"</cod
 <dd><p><code>logical</code>. Should the Knapp-Hartung adjustment for effect size significance tests be used? Default is <code>TRUE</code>.</p></dd>
 <dt>study.var</dt>
 <dd><p><code>character</code>. The name of the variable in <code>data</code> in which the study IDs are stored.</p></dd>
-<dt>extra.grouping.var</dt>
-<dd><p><code>character</code>. Additional grouping variable within studies to be used for the <code>"combined"</code>
-analysis. This is useful, for example, to <em>not</em> pool the effects of different treatment arms within multi-arm trials.
-<code>NULL</code> by default.</p></dd>
 <dt>arm.var.1</dt>
 <dd><p><code>character</code>. The name of the variable in <code>data</code> in which the condition (e.g. "guided iCBT")
 of the <em>first</em> arm within a comparison are stored.</p></dd>
@@ -161,6 +158,19 @@ confidence interval of tau/tau-squared. Either <code>"Q-Profile"</code> (default
 <code>"BJ"</code>, <code>"J"</code>, or <code>"PL"</code> can be abbreviated. See <code><a href="https://rdrr.io/pkg/meta/man/metagen.html" class="external-link">metagen</a></code> for details.</p></dd>
 <dt>round.digits</dt>
 <dd><p><code>numeric</code>. Number of digits to round the (presented) results by. Default is <code>2</code>.</p></dd>
+<dt>which.combine</dt>
+<dd><p><code>character</code>. Should multiple effect sizes within one study be pooled
+on an <code>"arms"</code> (default) or <code>"study"</code> level? When a study is a multi-arm trial, setting
+<code>which.combine = "arms"</code> will aggregate the effect sizes for each trial arm individually before pooling;
+the <code>which.combine.var</code> argument can be used to control which effects within a study should be aggregated.
+When <code>which.combine = "study"</code>, one overall aggregated effect is created for each study. This setting is preferable
+from a statistical perspective, since it ensures that all pooled effects can be assumed to be independent.</p></dd>
+<dt>which.combine.var</dt>
+<dd><p><code>character</code>. Additional grouping variable within studies to be used for the <code>"combined"</code>
+analysis when <code>which.combine = "arms"</code>. If the specified variable differs within one study (as defined
+by <code>study.var</code>), effects will be aggregated separately for each unique value in <code>which.combine.var</code>.
+Defaults to <code>"multi_arm1"</code>, the variable which encodes multi-arm intervention conditions in the
+<a href="https://docs.metapsy.org/data-preparation/format/#standard-variables" class="external-link">Metapsy data standard</a>.</p></dd>
 <dt>which.outliers</dt>
 <dd><p><code>character</code>. Which model should be used to conduct outlier analyses? Must be
 <code>"overall"</code> or <code>"combined"</code>, with <code>"overall"</code> being the default.</p></dd>
@@ -273,11 +283,11 @@ Paula Kuper <a href="mailto:paula.r.kuper@gmail.com">paula.r.kuper@gmail.com</a>
 <span class="r-in"><span class="co"># Correct for publication bias/small-study effects</span></span>
 <span class="r-in"><span class="fu"><a href="correctPublicationBias.html">correctPublicationBias</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span>
 <span class="r-in"></span>
-<span class="r-in"><span class="co"># For the combined analysis, we provide an extra variable to</span></span>
-<span class="r-in"><span class="co"># 'extra.grouping.var' so that different treatment arm </span></span>
-<span class="r-in"><span class="co"># comparisons in multiarm trials are NOT pooled</span></span>
+<span class="r-in"><span class="co"># For the combined analysis, set which.combine to</span></span>
+<span class="r-in"><span class="co"># "studies" here, so that all effects in a study are aggregated</span></span>
+<span class="r-in"><span class="co"># first before pooling</span></span>
 <span class="r-in"><span class="va">data</span> <span class="op"><a href="pipe.html">%&gt;%</a></span> </span>
-<span class="r-in">  <span class="fu">runMetaAnalysis</span><span class="op">(</span>extra.grouping.var <span class="op">=</span> <span class="st">"condition_arm1"</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span> </span>
+<span class="r-in">  <span class="fu">runMetaAnalysis</span><span class="op">(</span>which.combine <span class="op">=</span> <span class="st">"studies"</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span> </span>
 <span class="r-in">  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="st">"combined"</span><span class="op">)</span></span>
 <span class="r-in"></span>
 <span class="r-in"><span class="co"># Run meta-analysis using raw response rate data</span></span>

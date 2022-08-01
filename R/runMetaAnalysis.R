@@ -20,13 +20,14 @@
 #'                 method.tau = "REML",
 #'                 hakn = TRUE,
 #'                 study.var = "study",
-#'                 extra.grouping.var = NULL,
 #'                 arm.var.1 = "condition_arm1",
 #'                 arm.var.2 = "condition_arm2",
 #'                 measure.var = "instrument",
 #'                 low.rob.filter = "rob > 2",
 #'                 method.tau.ci = "Q-Profile",
 #'                 round.digits = 2,
+#'                 which.combine = c("arms", "studies"),
+#'                 which.combine.var = "multi_arm1",
 #'                 which.outliers = c("overall", "combined"),
 #'                 which.influence = c("overall", "combined"),
 #'                 which.rob = c("overall", "combined"),
@@ -68,9 +69,6 @@
 #' \code{\link[meta]{metagen}}). Use \code{"FE"} to use a fixed-effect/"common effect" model.
 #' @param hakn \code{logical}. Should the Knapp-Hartung adjustment for effect size significance tests be used? Default is \code{TRUE}.
 #' @param study.var \code{character}. The name of the variable in \code{data} in which the study IDs are stored.
-#' @param extra.grouping.var \code{character}. Additional grouping variable within studies to be used for the \code{"combined"}
-#' analysis. This is useful, for example, to \emph{not} pool the effects of different treatment arms within multi-arm trials.
-#' \code{NULL} by default.
 #' @param arm.var.1 \code{character}. The name of the variable in \code{data} in which the condition (e.g. "guided iCBT")
 #' of the \emph{first} arm within a comparison are stored.
 #' @param arm.var.2 \code{character}. The name of the variable in \code{data} in which the condition (e.g. "wlc")
@@ -84,6 +82,17 @@
 #' confidence interval of tau/tau-squared. Either \code{"Q-Profile"} (default and recommended),
 #' \code{"BJ"}, \code{"J"}, or \code{"PL"} can be abbreviated. See \code{\link[meta]{metagen}} for details.
 #' @param round.digits \code{numeric}. Number of digits to round the (presented) results by. Default is \code{2}.
+#' @param which.combine `character`. Should multiple effect sizes within one study be pooled
+#' on an `"arms"` (default) or `"study"` level? When a study is a multi-arm trial, setting
+#' `which.combine = "arms"` will aggregate the effect sizes for each trial arm individually before pooling;
+#' the `which.combine.var` argument can be used to control which effects within a study should be aggregated.
+#' When `which.combine = "study"`, one overall aggregated effect is created for each study. This setting is preferable
+#' from a statistical perspective, since it ensures that all pooled effects can be assumed to be independent.
+#' @param which.combine.var \code{character}. Additional grouping variable within studies to be used for the \code{"combined"}
+#' analysis when `which.combine = "arms"`. If the specified variable differs within one study (as defined
+#' by `study.var`), effects will be aggregated separately for each unique value in `which.combine.var`.
+#' Defaults to `"multi_arm1"`, the variable which encodes multi-arm intervention conditions in the
+#' [Metapsy data standard](https://docs.metapsy.org/data-preparation/format/#standard-variables).
 #' @param which.outliers \code{character}. Which model should be used to conduct outlier analyses? Must be
 #' \code{"overall"} or \code{"combined"}, with \code{"overall"} being the default.
 #' @param which.influence \code{character}. Which model should be used to conduct influence analyses? Must be
@@ -146,11 +155,11 @@
 #' # Correct for publication bias/small-study effects
 #' correctPublicationBias(res)
 #' 
-#' # For the combined analysis, we provide an extra variable to
-#' # 'extra.grouping.var' so that different treatment arm 
-#' # comparisons in multiarm trials are NOT pooled
+#' # For the combined analysis, set which.combine to
+#' # "studies" here, so that all effects in a study are aggregated
+#' # first before pooling
 #' data %>% 
-#'   runMetaAnalysis(extra.grouping.var = "condition_arm1") %>% 
+#'   runMetaAnalysis(which.combine = "studies") %>% 
 #'   plot("combined")
 #' 
 #' # Run meta-analysis using raw response rate data
@@ -225,13 +234,14 @@ runMetaAnalysis = function(data,
                            method.tau = "REML",
                            hakn = TRUE,
                            study.var = "study",
-                           extra.grouping.var = NULL,
                            arm.var.1 = "condition_arm1",
                            arm.var.2 = "condition_arm2",
                            measure.var = "instrument",
                            low.rob.filter = "rob > 2",
                            method.tau.ci = "Q-Profile",
                            round.digits = 2,
+                           which.combine = c("arms", "studies"),
+                           which.combine.var = "multi_arm1",
                            which.outliers = c("overall", "combined"),
                            which.influence = c("overall", "combined"),
                            which.rob = c("overall", "combined"),
@@ -241,6 +251,12 @@ runMetaAnalysis = function(data,
                            html = TRUE,
                            ...){
 
+  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+  #                                                                           #
+  #  0. Input Checks                                                          #
+  #                                                                           #
+  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+  
   # Check class
   if (!inherits(data, "data.frame") & 
       !inherits(data, "metapsyDatabase")){
@@ -277,6 +293,11 @@ runMetaAnalysis = function(data,
     
   if (nrow(data) < 3){
     stop("Meta-analyses can only be run with at least 3 effect sizes.")
+  }
+  
+  if (!identical(which.combine[1], "studies") &&
+      !identical(which.combine[1], "arms")){
+    stop("'which.combine' must be either 'arms' or 'studies'.")
   }
 
   warn.end = FALSE
@@ -624,19 +645,34 @@ runMetaAnalysis = function(data,
   if ("combined" %in% which.run){
     message("- ", crayon::green("[OK] "), 
             "Calculating effect size using combined effects (rho=", 
-            rho.within.study, ")... ",
+            rho.within.study,
             appendLF = FALSE)
-
   
-    if (!is.null(extra.grouping.var)){
-      data$study.var.comb = paste(data[[study.var]], 
-                                  data[[extra.grouping.var]])
-      study.var.comb = "study.var.comb"
-    } else {
+    # Aggregate arm-wise or trial-wise
+    if (identical(which.combine[1], "arms")){
+      if (!is.null(which.combine.var)){
+        data$study.var.comb = 
+          paste(data[[study.var]],
+                ifelse(is.na(data[[which.combine.var]]), "", 
+                       data[[which.combine.var]]))
+        study.var.comb = "study.var.comb"
+      } else {
+        data$study.var.comb = data[[study.var]]
+        study.var.comb = study.var
+      }
+    }
+    if (identical(which.combine[1], "studies")){
       data$study.var.comb = data[[study.var]]
       study.var.comb = study.var
     }
+    
+    # Second part of message
+    message("; ", ifelse(
+              identical(study.var.comb[1], "study.var.comb"),
+              "arm-wise", "study-wise"), ")... ",
+            appendLF = FALSE)
   
+    
     # Define study ID variable
     svc = data[[study.var.comb]]
     multi.study.comb = names(table(data[[study.var.comb]])
@@ -768,13 +804,21 @@ runMetaAnalysis = function(data,
         excluded = "none")
     })
     rownames(mCombRes) = "Combined"
-    mCombRes$excluded = paste("combined:", 
-                              ifelse(length(multi.study.comb) > 0,
-                                     paste(multi.study.comb, collapse = "; "), 
-                                     "none"))
+    mCombRes$excluded = 
+      paste(
+        "combined",
+        ifelse(identical(study.var.comb[1], "study.var.comb"),
+               "(arm-level):", "(study-level):"),
+        ifelse(length(multi.study.comb) > 0,
+               paste(multi.study.comb, collapse = "; "), 
+               "none"))
   
-    # Add rho to mComb model
+    # Add rho, which.combine, combine var to mComb model
     mComb$rho = rho.within.study
+    mComb$which.combine = 
+      ifelse(identical(study.var.comb[1], "study.var.comb"), "arms", "studies")
+    mComb$which.combine.var = which.combine.var
+    
     class(data) = "data.frame"
     if ("combined" %in% which.run){
       message(crayon::green("DONE"))
@@ -1746,6 +1790,7 @@ runMetaAnalysis = function(data,
        round.digits = round.digits,
        nnt.cer = nnt.cer,
        use.rve = use.rve,
+       call = match.call(),
        .type.es = .type.es,
        .raw.bin.es = .raw.bin.es) -> returnlist
   
@@ -2375,7 +2420,8 @@ summary.runMetaAnalysis = function(object, forest = TRUE, ...){
 
     if ("combined" %in% x$which.run){
       cat(crayon::green("\u2713"), crayon::bold(crayon::magenta("[Combined]")),
-          "'Combined' analysis: ES combined on study level assuming a correlation of rho =", paste0(x$model.combined$rho, ". \n"))}
+          "'Combined' analysis: ES combined on", x$model.combined$which.combine,
+          "level assuming a correlation of rho =", paste0(x$model.combined$rho, ". \n"))}
 
     if ("threelevel" %in% x$which.run || "threelevel.che" %in% x$which.run){
       cat(crayon::green("\u2713"), crayon::bold(crayon::magenta("[Three-Level Model]")),
@@ -2515,7 +2561,8 @@ summary.runMetaAnalysis = function(object, forest = TRUE, ...){
 
     if ("combined" %in% x$which.run){
       cat(crayon::green("\u2713"), crayon::bold(crayon::magenta("[Combined]")),
-          "'Combined' analysis: ES combined on study level assuming a correlation of rho =", paste0(x$model.combined$rho, ". \n"))}
+          "'Combined' analysis: ES combined on", x$model.combined$which.combine,
+          "level assuming a correlation of rho =", paste0(x$model.combined$rho, ". \n"))}
 
     if ("threelevel" %in% x$which.run || "threelevel.che" %in% x$which.run){
       cat(crayon::green("\u2713"), crayon::bold(crayon::magenta("[Three-Level Model]")),

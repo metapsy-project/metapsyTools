@@ -475,3 +475,24 @@ isNAorNaN = function(x){
 }
 
 
+#' Extract Hedges _g_ values
+#'
+#' @param x `data.frame` with effect size results.
+#' @usage extractG(x)
+#' @export 
+#' @keywords internal
+extractG = function(x){
+  mask = apply(
+    x, 1, function(f) !isNAorNaN(f), simplify = FALSE) %>% 
+    do.call(rbind, .)
+  index = apply(mask, 1, which, simplify = FALSE)
+  lapply(as.list(1:length(index)), 
+         function(i) {
+           y = x[i, index[[i]]]
+           if (length(y) <= 1) { return(c(es = NA, se = NA)) } 
+           else {return(y)}}) %>% 
+    do.call(rbind, .) -> x.select
+  return(x.select)
+}
+
+

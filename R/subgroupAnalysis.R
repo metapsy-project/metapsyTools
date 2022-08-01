@@ -84,7 +84,6 @@ subgroupAnalysis = function(.model, ...,
   variables = .model$data %>% dplyr::select(...) %>% colnames()
   .round.digits = abs(.round.digits)
 
-
   # Get model type
   model.type = paste0("model.", .which.run)
   M = .model[[model.type]]
@@ -92,34 +91,35 @@ subgroupAnalysis = function(.model, ...,
           model.type, "' used for subgroup analyses.")
 
   # Throw error if which.run is not included
-  if (which.run[1] == "combined" & model$model.combined$k == 1){
-    if (model$model.combined$k == 1){
+  if (.which.run[1] == "combined" & .model$model.combined$k == 1){
+    if (.model$model.combined$k == 1){
       stop("'which.run' is set to 'combined', but there is only k=1 study/ES.")
     }
   }
-  if (which.run[1] == "lowest"){
-    if (model$model.lowest$k == 1){
+  if (.which.run[1] == "lowest"){
+    if (.model$model.lowest$k == 1){
       stop("'which.run' is set to 'lowest', but there is only k=1 study/ES.") 
     }
   }
-  if (which.run[1] == "highest"){
-    if (model$model.highest$k == 1){
+  if (.which.run[1] == "highest"){
+    if (.model$model.highest$k == 1){
       stop("'which.run' is set to 'highest', but there is only k=1 study/ES.")
     }
   }
-  if (which.run[1] == "influence"){
-    if (model$model.influence$k == 1){
+  if (.which.run[1] == "influence"){
+    if (.model$model.influence$k == 1){
       stop("'which.run' is set to 'influence', but there is only k=1 study/ES.")
     }
   }
-  if (which.run[1] == "rob"){
-    if (model$model.rob$k == 1){
+  if (.which.run[1] == "rob"){
+    if (.model$model.rob$k == 1){
       stop("'which.run' is set to 'rob', but there is only k=1 study/ES.")
     }
   }
 
   # Run all subgroup analyses
-  if (class(M)[1] == "metagen"){
+  if (class(M)[1] == "metagen" ||
+      class(M)[1] == "metabin"){
     
     if (.tau.common)
       message("- ", crayon::green("[OK] "), 

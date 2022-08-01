@@ -240,12 +240,7 @@ calculateEffectSizes = function(data,
   # Now, bind all calculated ES together,
   # then bind together with wide dataset
   es.res %>%
-    apply(., 1, function(x){
-      if (length(x[!isNAorNaN(x)]) <= 1){
-        return(c(NA, NA))} else {
-        return(x[!isNAorNaN(x)])}}) %>% 
-    lapply(., function(x) x[1:2]) %>% 
-    do.call(rbind, .) %>% 
+    extractG() %>% 
     cbind(data.wide, .) -> dat.final
   
   colnames(dat.final)[c(ncol(dat.final)-1, 

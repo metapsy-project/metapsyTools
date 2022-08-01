@@ -21,13 +21,14 @@ runMetaAnalysis(data,
                 method.tau = "REML",
                 hakn = TRUE,
                 study.var = "study",
-                extra.grouping.var = NULL,
                 arm.var.1 = "condition_arm1",
                 arm.var.2 = "condition_arm2",
                 measure.var = "instrument",
                 low.rob.filter = "rob > 2",
                 method.tau.ci = "Q-Profile",
                 round.digits = 2,
+                which.combine = c("arms", "studies"),
+                which.combine.var = "multi_arm1",
                 which.outliers = c("overall", "combined"),
                 which.influence = c("overall", "combined"),
                 which.rob = c("overall", "combined"),
@@ -80,10 +81,6 @@ and its square root (tau). Either \code{"REML"} (default), \code{"DL"},
 
 \item{study.var}{\code{character}. The name of the variable in \code{data} in which the study IDs are stored.}
 
-\item{extra.grouping.var}{\code{character}. Additional grouping variable within studies to be used for the \code{"combined"}
-analysis. This is useful, for example, to \emph{not} pool the effects of different treatment arms within multi-arm trials.
-\code{NULL} by default.}
-
 \item{arm.var.1}{\code{character}. The name of the variable in \code{data} in which the condition (e.g. "guided iCBT")
 of the \emph{first} arm within a comparison are stored.}
 
@@ -102,6 +99,19 @@ confidence interval of tau/tau-squared. Either \code{"Q-Profile"} (default and r
 \code{"BJ"}, \code{"J"}, or \code{"PL"} can be abbreviated. See \code{\link[meta]{metagen}} for details.}
 
 \item{round.digits}{\code{numeric}. Number of digits to round the (presented) results by. Default is \code{2}.}
+
+\item{which.combine}{\code{character}. Should multiple effect sizes within one study be pooled
+on an \code{"arms"} (default) or \code{"study"} level? When a study is a multi-arm trial, setting
+\code{which.combine = "arms"} will aggregate the effect sizes for each trial arm individually before pooling;
+the \code{which.combine.var} argument can be used to control which effects within a study should be aggregated.
+When \code{which.combine = "study"}, one overall aggregated effect is created for each study. This setting is preferable
+from a statistical perspective, since it ensures that all pooled effects can be assumed to be independent.}
+
+\item{which.combine.var}{\code{character}. Additional grouping variable within studies to be used for the \code{"combined"}
+analysis when \code{which.combine = "arms"}. If the specified variable differs within one study (as defined
+by \code{study.var}), effects will be aggregated separately for each unique value in \code{which.combine.var}.
+Defaults to \code{"multi_arm1"}, the variable which encodes multi-arm intervention conditions in the
+\href{https://docs.metapsy.org/data-preparation/format/#standard-variables}{Metapsy data standard}.}
 
 \item{which.outliers}{\code{character}. Which model should be used to conduct outlier analyses? Must be
 \code{"overall"} or \code{"combined"}, with \code{"overall"} being the default.}
@@ -207,11 +217,11 @@ subgroupAnalysis(res, country)
 # Correct for publication bias/small-study effects
 correctPublicationBias(res)
 
-# For the combined analysis, we provide an extra variable to
-# 'extra.grouping.var' so that different treatment arm 
-# comparisons in multiarm trials are NOT pooled
+# For the combined analysis, set which.combine to
+# "studies" here, so that all effects in a study are aggregated
+# first before pooling
 data \%>\% 
-  runMetaAnalysis(extra.grouping.var = "condition_arm1") \%>\% 
+  runMetaAnalysis(which.combine = "studies") \%>\% 
   plot("combined")
 
 # Run meta-analysis using raw response rate data

@@ -1,7 +1,7 @@
 Package: metapsyTools
 Type: Package
 Title: Several R Helper Functions For The "Metapsy" Database
-Version: 1.0.2
+Version: 1.0.3
 Author: Mathias Harrer[cre], Paula Kuper[cre], Antonia Sprenger[cre], Pim Cuijpers[aut]
 Authors@R: c(
     person("Mathias", "Harrer", email = "mathias.h.harrer@gmail.com", role = "cre", comment = c(ORCID = "0000-0001-7016-2687")),
