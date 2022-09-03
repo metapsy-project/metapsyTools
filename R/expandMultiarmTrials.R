@@ -50,9 +50,7 @@
 #' @seealso \code{\link{calculateEffectSizes}}
 #' @importFrom dplyr filter arrange pull all_of
 #' @importFrom stringr str_replace_all str_remove_all
-#' @importFrom magrittr set_rownames
 #' @importFrom purrr map_df
-#' @import magrittr
 #' @importFrom crayon green yellow cyan bold
 #' @importFrom stats dffits model.matrix rnorm rstudent
 #' @importFrom utils combn

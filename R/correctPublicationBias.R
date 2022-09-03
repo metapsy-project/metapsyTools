@@ -124,6 +124,11 @@ correctPublicationBias = function(model,
     stop("'", which.run[1], "' model has not been fitted using runMetaAnalysis.")
   }
   
+  if (which.run[1] %in% unlist(model$error.model.list)){
+    stop("There was an error fitting the '", which.run[1], "' model using runMetaAnalysis;",
+         " the correctPublicationBias function cannot be applied.")
+  }
+  
   # Throw error if which.run is not included
   if (which.run[1] == "combined"){
     if (model$model.combined$k == 1){

@@ -79,6 +79,39 @@
     <loc>/reference/filterPriorityRule.html</loc>
   </url>
   <url>
+    <loc>/reference/fitCombinedHACEModel.html</loc>
+  </url>
+  <url>
+    <loc>/reference/fitCombinedModel.html</loc>
+  </url>
+  <url>
+    <loc>/reference/fitHighestModel.html</loc>
+  </url>
+  <url>
+    <loc>/reference/fitInfluenceModel.html</loc>
+  </url>
+  <url>
+    <loc>/reference/fitLowestModel.html</loc>
+  </url>
+  <url>
+    <loc>/reference/fitOutliersModel.html</loc>
+  </url>
+  <url>
+    <loc>/reference/fitOverallModel.html</loc>
+  </url>
+  <url>
+    <loc>/reference/fitRobModel.html</loc>
+  </url>
+  <url>
+    <loc>/reference/fitThreeLevelCHEModel.html</loc>
+  </url>
+  <url>
+    <loc>/reference/fitThreeLevelHACEModel.html</loc>
+  </url>
+  <url>
+    <loc>/reference/fitThreeLevelModel.html</loc>
+  </url>
+  <url>
     <loc>/reference/g.binary.html</loc>
   </url>
   <url>
@@ -167,6 +200,18 @@
   </url>
   <url>
     <loc>/reference/runMetaAnalysis.html</loc>
+  </url>
+  <url>
+    <loc>/reference/selectArguments.html</loc>
+  </url>
+  <url>
+    <loc>/reference/selectOutlierModel.html</loc>
+  </url>
+  <url>
+    <loc>/reference/sendMessage.html</loc>
+  </url>
+  <url>
+    <loc>/reference/setColnames.html</loc>
   </url>
   <url>
     <loc>/reference/subgroupAnalysis.html</loc>

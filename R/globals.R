@@ -7,4 +7,7 @@ utils::globalVariables(c("es", "se", ".", "condition", "study", "NNT",
                          "g", "model", "Analysis", "funcs2",
                          "excluded", "yi", "vi", "error", ".g",
                          ".log_rr", ".id", "rr", "m.ThreeLevel.g",
-                         "mCHE.g"))
+                         "mCHE.g", "event", "mCombined", "method.tau.meta",
+                         "multi.study", "TE", "condition_arm1", 
+                         "condition_arm2", "multi_arm1", "n.var.arm1", 
+                         "n.var.arm2", "seTE"))

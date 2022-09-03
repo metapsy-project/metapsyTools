@@ -33,7 +33,14 @@ runMetaAnalysis(data,
                 which.influence = c("overall", "combined"),
                 which.rob = c("overall", "combined"),
                 nnt.cer = 0.2,
-                rho.within.study = 0.5,
+                rho.within.study = 0.6,
+                phi.within.study = 0.9,
+                w1.var = ifelse(identical(es.measure[1], "g"), 
+                                "n_arm1", "totaln_arm1"),
+                                w2.var = ifelse(identical(es.measure[1], "g"), 
+                                                "n_arm2", "totaln_arm2"),
+                time.var = "time_weeks",
+                vcov = c("simple", "complex"),
                 use.rve = TRUE,
                 html = TRUE,
                 ...)
@@ -127,7 +134,25 @@ for calculating NNTs via the Furukawa-Leucht method.}
 
 \item{rho.within.study}{\code{numeric}. Value between 0 and 1, indicating the assumed correlation of effect sizes
 within studies. This is relevant to combine effect sizes for the \code{"combined"} analysis type, and used to estimate
-the variance-covariance matrices needed for the conditional and hierarchical effects three-level model. Default is \code{0.5}.}
+the variance-covariance matrices needed for the conditional and hierarchical effects three-level model. Default is \code{0.6}.}
+
+\item{phi.within.study}{\code{numeric}. Value between 0 and 1, indicating the assumed one-week autocorrelation of effect sizes.
+This is only used when \code{vcov="complex"} to approximate the variance-covariance matrices needed for the \code{"combined"} and
+\code{"threelevel.che"} model. Default is 0.9. See "Details".}
+
+\item{w1.var}{\code{character}. Name of the variable in \code{data} in which the sample
+sizes of the first arm are stored. See "Details".}
+
+\item{w2.var}{\code{character}. Name of the variable in \code{data} in which
+the sample sizes of the second arm are stored. See "Details".}
+
+\item{time.var}{\code{character} Name of the variable in \code{data} in which the assessment time point is stored.
+Should be expressed as weeks since randomization; other units (e.g. days, months) are also possible if \code{phi.within.study}
+is specified accordingly. See "Details".}
+
+\item{vcov}{\code{character} For the \code{"combined"} and \code{"threelevel.che"} model, should variance-covariance matrices
+(representing the dependency structure of the data) be approximated using a heterogeneous compound symmetry (\code{"simple"}; default)
+or unstructured matrix structure (\code{"complex"})? See "Details".}
 
 \item{use.rve}{\code{logical}. Should robust variance estimation be used to calculate confidence intervals and tests of three-level models?
 \code{TRUE} by default.}
@@ -146,6 +171,7 @@ run a meta-regression by plugging one of the model objects in \code{update.meta}
 \description{
 This wrapper function allows to simultaneously pool effect sizes using
 different meta-analytic approaches.
+\loadmathjax
 }
 \details{
 The \code{runMetaAnalysis} function is a wrapper for several types of meta-analytic models
@@ -177,7 +203,43 @@ in studies. Variance-covariance matrices of each study with two or more effect s
 hierarchical effects" (CHE) model, which is typically a good approximation for data sets with unknown and/or
 complex dependence structures.
 }
+\subsection{Simple or complex variance-covariance approximation}{
+
+The \code{vcov} argument controls if the effect size dependencies within the data
+should be approximated using a \code{"simple"} (default) or more \code{"complex"} (but potentially more accurate)
+method. This argument is only relevant for the \code{"combined"} and \code{threelevel.che} models. The default
+"simple" method constructs variance-covariance matrices \mjeqn{V_k}{V_k} for each study using a
+constant sampling correlation \mjeqn{\rho}{\rho} (defined by \code{rho.within.study}), which is identical across all studies, outcomes, and time points.
+This simplifying assumption is part of the formulation of the CHE model originally provided by
+Pustejovsky and Tipton (\href{https://link.springer.com/article/10.1007/s11121-021-01246-3}{2022}).
+
+Naturally, employing a common value of \mjeqn{\rho}{\rho} across all studies may not be reasonable
+in some analyses, and other information may be available to better approximate the effect size dependencies
+in the collected data. Setting \code{vcov} to \code{"complex"} allows to assume that correlations between effect
+sizes may differ conditional on the type of dependency. This means that the variance-covariance matrix \mjeqn{V_k}{V_k} of some study \mjeqn{k}{k} is
+approximated by an unstructured matrix with varying \mjeqn{\rho_{ij}}{\rho_{ij}} (instead of a
+heterogeneous compound symmetry matrix with fixed \mjeqn{\rho}{\rho}, as is used when \code{vcov="simple"}).
+
+\mjtdeqn{\small \begin{array}{ccc} \texttt{vcov="simple"} & \texttt{vcov="complex"} & \\\ V_k =\left\link[= \\begin{array}{cccc} v_1 & & & \\\\\\ \\rho v_2 v_1 & v_2 & & \\\\\\ \\rho v_3 v_1 & \\rho v_3 v_2 & v_3 & \\\\\\ \\rho v_4 v_1 & \\rho v_4 v_2 & \\rho v_4 v_3 & v_4 \\end{array} \\right]{ \begin{array}{cccc} v_1 & & & \\\ \rho v_2 v_1 & v_2 & & \\\ \rho v_3 v_1 & \rho v_3 v_2 & v_3 & \\\ \rho v_4 v_1 & \rho v_4 v_2 & \rho v_4 v_3 & v_4 \end{array} \right} & \left\link[= \\begin{array}{cccc} v_1 & & & \\\\\\ \\rho_{21} v_2 v_1 & v_2 & & \\\\\\ \\rho_{31} v_3 v_1 & \\rho_{32} v_3 v_2 & v_3 & \\\\\\ \\rho_{41} v_4 v_1 & \\rho_{42} v_4 v_2 & \\rho_{43} v_4 v_3 & v_4 \\end{array} \\right]{ \begin{array}{cccc} v_1 & & & \\\ \rho_{21} v_2 v_1 & v_2 & & \\\ \rho_{31} v_3 v_1 & \rho_{32} v_3 v_2 & v_3 & \\\ \rho_{41} v_4 v_1 & \rho_{42} v_4 v_2 & \rho_{43} v_4 v_3 & v_4 \end{array} \right} &  \end{array}}{\begin{array}{ccc}\texttt{vcov="simple"} & \texttt{vcov="complex"} & \\\\\ V_k = \begin{bmatrix} v_1 \\\\\ \rho v_2 v_1 & v_2 & & \\\\\ \rho v_3 v_1 & \rho v_3 v_2 & v_3 & \\\\\ \rho v_4 v_1 & \rho v_4 v_2 & \rho v_4 v_3 & v_4 \end{bmatrix} & V_k = \begin{bmatrix} v_1 & & & \\\\\ \rho_{21} v_2 v_1 & v_2 & & \\\\\ \rho_{31} v_3 v_1 & \rho_{32} v_3 v_2 & v_3 & \\\\\ \rho_{41} v_4 v_1 & \rho_{42} v_4 v_2 & \rho_{43} v_4 v_3 & v_4 \end{bmatrix} &  \end{array}}{}
+
+Setting \code{vcov = "complex"} allows to additionally incorporate assumed correlations specific to multiple testing over time
+(e.g. correlations between effects at post-test and long-term follow-up). The value provided in
+\code{phi.within.study} represents the (auto-)correlation coefficient \mjeqn{\phi}{\phi}, which serves
+as a rough estimate of the re-test correlation after 1 week. When a vector of follow-up lengths
+is provided in \code{time.var}, this allows to model the gradual decrease in correlation between measurements
+over time. Furthermore, it is possible to calculate a correlation coefficient \mjeqn{\rho_w}{\rho_w} for
+multi-arm trials, which is directly proportional to the size of each individual trial arm. When all trial
+arms have the same size, meaning that each arm's weight \mjeqn{w}{w} is identical,
+\mjeqn{\rho_w}{\rho_w} is known to be 0.5. Multiarm weights \mjeqn{w}{w} can be
+derived if the \code{w1.var} and \code{w2.var} variables,
+containing the sample size of each study arm, are provided.
+
+Using the complex approximation method increases the risk that at least one studies' \mjeqn{V_k}{V_k} matrix
+is positive definite. In this case, the function automatically switches back to the
+constant sampling correlation approximation.
+
 For more details see the \href{https://tools.metapsy.org/articles/metapsytools}{Get Started} vignette.
+}
 }
 \examples{
 \dontrun{

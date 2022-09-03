@@ -1,7 +1,8 @@
 #' Run different types of meta-analyses
 #'
-#' This wrapper function allows to simultaneously pool effect sizes using
+#' @description  This wrapper function allows to simultaneously pool effect sizes using
 #' different meta-analytic approaches.
+#' \loadmathjax
 #'
 #' @usage runMetaAnalysis(data,
 #'                 which.run = c("overall", "combined",
@@ -32,7 +33,14 @@
 #'                 which.influence = c("overall", "combined"),
 #'                 which.rob = c("overall", "combined"),
 #'                 nnt.cer = 0.2,
-#'                 rho.within.study = 0.5,
+#'                 rho.within.study = 0.6,
+#'                 phi.within.study = 0.9,
+#'                 w1.var = ifelse(identical(es.measure[1], "g"), 
+#'                                 "n_arm1", "totaln_arm1"),
+#'                                 w2.var = ifelse(identical(es.measure[1], "g"), 
+#'                                                 "n_arm2", "totaln_arm2"),
+#'                 time.var = "time_weeks",
+#'                 vcov = c("simple", "complex"),
 #'                 use.rve = TRUE,
 #'                 html = TRUE,
 #'                 ...)
@@ -103,7 +111,20 @@
 #' for calculating NNTs via the Furukawa-Leucht method.
 #' @param rho.within.study \code{numeric}. Value between 0 and 1, indicating the assumed correlation of effect sizes
 #' within studies. This is relevant to combine effect sizes for the \code{"combined"} analysis type, and used to estimate
-#' the variance-covariance matrices needed for the conditional and hierarchical effects three-level model. Default is \code{0.5}.
+#' the variance-covariance matrices needed for the conditional and hierarchical effects three-level model. Default is \code{0.6}.
+#' @param phi.within.study \code{numeric}. Value between 0 and 1, indicating the assumed one-week autocorrelation of effect sizes. 
+#' This is only used when `vcov="complex"` to approximate the variance-covariance matrices needed for the `"combined"` and 
+#' `"threelevel.che"` model. Default is 0.9. See "Details".
+#' @param w1.var `character`. Name of the variable in `data` in which the sample 
+#' sizes of the first arm are stored. See "Details".
+#' @param w2.var `character`. Name of the variable in `data` in which 
+#' the sample sizes of the second arm are stored. See "Details".
+#' @param time.var `character` Name of the variable in `data` in which the assessment time point is stored.
+#' Should be expressed as weeks since randomization; other units (e.g. days, months) are also possible if `phi.within.study`
+#' is specified accordingly. See "Details".
+#' @param vcov `character` For the `"combined"` and `"threelevel.che"` model, should variance-covariance matrices
+#' (representing the dependency structure of the data) be approximated using a heterogeneous compound symmetry (`"simple"`; default)
+#' or unstructured matrix structure (`"complex"`)? See "Details".
 #' @param use.rve \code{logical}. Should robust variance estimation be used to calculate confidence intervals and tests of three-level models?
 #' \code{TRUE} by default.
 #' @param html \code{logical}. Should an HTML table be created for the results? Default is \code{TRUE}.
@@ -204,16 +225,55 @@
 #'   hierarchical effects" (CHE) model, which is typically a good approximation for data sets with unknown and/or
 #'   complex dependence structures.
 #' }
+#' 
+#' ## Simple or complex variance-covariance approximation
+#' 
+#' The `vcov` argument controls if the effect size dependencies within the data
+#' should be approximated using a `"simple"` (default) or more `"complex"` (but potentially more accurate)
+#' method. This argument is only relevant for the `"combined"` and `threelevel.che` models. The default 
+#' "simple" method constructs variance-covariance matrices \mjeqn{V_k}{V_k} for each study using a 
+#' constant sampling correlation \mjeqn{\rho}{\rho} (defined by `rho.within.study`), which is identical across all studies, outcomes, and time points.
+#' This simplifying assumption is part of the formulation of the CHE model originally provided by 
+#' Pustejovsky and Tipton ([2022](https://link.springer.com/article/10.1007/s11121-021-01246-3)). 
+#' 
+#' Naturally, employing a common value of \mjeqn{\rho}{\rho} across all studies may not be reasonable
+#' in some analyses, and other information may be available to better approximate the effect size dependencies
+#' in the collected data. Setting `vcov` to `"complex"` allows to assume that correlations between effect 
+#' sizes may differ conditional on the type of dependency. This means that the variance-covariance matrix \mjeqn{V_k}{V_k} of some study \mjeqn{k}{k} is
+#' approximated by an unstructured matrix with varying \mjeqn{\rho_{ij}}{\rho_{ij}} (instead of a 
+#' heterogeneous compound symmetry matrix with fixed \mjeqn{\rho}{\rho}, as is used when `vcov="simple"`).
+#' 
+#' 
+#' \mjtdeqn{\small \begin{array}{ccc} \texttt{vcov="simple"} & \texttt{vcov="complex"} & \\\ V_k =\left[ \begin{array}{cccc} v_1 & & & \\\ \rho v_2 v_1 & v_2 & & \\\ \rho v_3 v_1 & \rho v_3 v_2 & v_3 & \\\ \rho v_4 v_1 & \rho v_4 v_2 & \rho v_4 v_3 & v_4 \end{array} \right] & \left[ \begin{array}{cccc} v_1 & & & \\\ \rho_{21} v_2 v_1 & v_2 & & \\\ \rho_{31} v_3 v_1 & \rho_{32} v_3 v_2 & v_3 & \\\ \rho_{41} v_4 v_1 & \rho_{42} v_4 v_2 & \rho_{43} v_4 v_3 & v_4 \end{array} \right] &  \end{array}}{\begin{array}{ccc}\texttt{vcov="simple"} & \texttt{vcov="complex"} & \\\\\ V_k = \begin{bmatrix} v_1 \\\\\ \rho v_2 v_1 & v_2 & & \\\\\ \rho v_3 v_1 & \rho v_3 v_2 & v_3 & \\\\\ \rho v_4 v_1 & \rho v_4 v_2 & \rho v_4 v_3 & v_4 \end{bmatrix} & V_k = \begin{bmatrix} v_1 & & & \\\\\ \rho_{21} v_2 v_1 & v_2 & & \\\\\ \rho_{31} v_3 v_1 & \rho_{32} v_3 v_2 & v_3 & \\\\\ \rho_{41} v_4 v_1 & \rho_{42} v_4 v_2 & \rho_{43} v_4 v_3 & v_4 \end{bmatrix} &  \end{array}}{}
+#' 
+#' Setting `vcov = "complex"` allows to additionally incorporate assumed correlations specific to multiple testing over time 
+#' (e.g. correlations between effects at post-test and long-term follow-up). The value provided in
+#' `phi.within.study` represents the (auto-)correlation coefficient \mjeqn{\phi}{\phi}, which serves
+#' as a rough estimate of the re-test correlation after 1 week. When a vector of follow-up lengths 
+#' is provided in `time.var`, this allows to model the gradual decrease in correlation between measurements 
+#' over time. Furthermore, it is possible to calculate a correlation coefficient \mjeqn{\rho_w}{\rho_w} for 
+#' multi-arm trials, which is directly proportional to the size of each individual trial arm. When all trial 
+#' arms have the same size, meaning that each arm's weight \mjeqn{w}{w} is identical, 
+#' \mjeqn{\rho_w}{\rho_w} is known to be 0.5. Multiarm weights \mjeqn{w}{w} can be 
+#' derived if the `w1.var` and `w2.var` variables,
+#' containing the sample size of each study arm, are provided. 
+#' 
+#' 
+#' Using the complex approximation method increases the risk that at least one studies' \mjeqn{V_k}{V_k} matrix
+#' is positive definite. In this case, the function automatically switches back to the 
+#' constant sampling correlation approximation.
+#' 
 #' For more details see the [Get Started](https://tools.metapsy.org/articles/metapsytools) vignette.
 #'
 #' @import dplyr
+#' @import mathjaxr
 #' @importFrom crayon green yellow cyan bold
 #' @importFrom scales pvalue
 #' @importFrom purrr map
 #' @importFrom meta update.meta metagen
-#' @importFrom metafor escalc aggregate.escalc rma.mv
+#' @importFrom metafor escalc aggregate.escalc rma.mv vcalc blsplit
 #' @importFrom clubSandwich coef_test conf_int
-#' @importFrom stats dffits model.matrix rnorm rstudent
+#' @importFrom stats dffits model.matrix rnorm rstudent complete.cases
 #' @importFrom utils combn
 #' @export runMetaAnalysis
 
@@ -246,11 +306,18 @@ runMetaAnalysis = function(data,
                            which.influence = c("overall", "combined"),
                            which.rob = c("overall", "combined"),
                            nnt.cer = 0.2,
-                           rho.within.study = 0.5,
+                           rho.within.study = 0.6,
+                           phi.within.study = 0.9,
+                           w1.var = ifelse(identical(es.measure[1], "g"), 
+                                           "n_arm1", "totaln_arm1"),
+                           w2.var = ifelse(identical(es.measure[1], "g"), 
+                                           "n_arm2", "totaln_arm2"),
+                           time.var = "time_weeks",
+                           vcov = c("simple", "complex"),
                            use.rve = TRUE,
                            html = TRUE,
                            ...){
-
+  
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
   #                                                                           #
   #  0. Input Checks                                                          #
@@ -279,8 +346,8 @@ runMetaAnalysis = function(data,
   # Throw out all NAs/Missings
   if (identical(es.type[1], "raw")){
     data = data[rowSums(is.na(data[es.binary.raw.vars])) == 0 &
-                rowSums(data[es.binary.raw.vars] == Inf) == 0 &
-                rowSums(data[es.binary.raw.vars] == -Inf) == 0,]
+                  rowSums(data[es.binary.raw.vars] == Inf) == 0 &
+                  rowSums(data[es.binary.raw.vars] == -Inf) == 0,]
     .type.es = ifelse(identical(es.measure[1], "g"), "g", "RR")
     .raw.bin.es = TRUE
   } else {
@@ -290,7 +357,7 @@ runMetaAnalysis = function(data,
     .type.es = ifelse(identical(es.measure[1], "g"), "g", "RR")
     .raw.bin.es = FALSE
   }
-    
+  
   if (nrow(data) < 3){
     stop("Meta-analyses can only be run with at least 3 effect sizes.")
   }
@@ -299,922 +366,210 @@ runMetaAnalysis = function(data,
       !identical(which.combine[1], "arms")){
     stop("'which.combine' must be either 'arms' or 'studies'.")
   }
-
+  
+  # Get three-dots arguments;
+  # Initialize error model list
+  dots = list(...)
+  error.model.list = list()
   warn.end = FALSE
+  data.original = data
   
   # Send message (beginning of analyses)
-  message(crayon::cyan(crayon::bold("- Running meta-analyses...")))
-  message("- ", crayon::green("[OK] "), 
-          "Using ", ifelse(identical(.type.es, "RR"), 
-                    ifelse(identical(es.type[1], "precalculated"), 
-                      crayon::bold(crayon::magenta(
-                        "risk ratio (pre-calculated)")), 
-                      crayon::bold(crayon::magenta(
-                        "risk ratio (raw event data)"))), 
-                    crayon::bold(crayon::magenta("Hedges' g"))),
-          " as effect size metric... ")
-
+  sendMessage("start", .type.es = .type.es, 
+              es.type = es.type)
+  
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
   #                                                                           #
   #  1. Overall Model                                                         #
   #                                                                           #
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
-  data.original = data
-  round.digits = abs(round.digits)
-
-  # Create comparison variable
-  paste0(data[[study.var]], " (",
-         data[[arm.var.1]], " vs. ",
-         data[[arm.var.2]], "; ",
-         data[[measure.var]], ")") -> data$comparison
-
-  paste0(data[[arm.var.1]], " vs. ",
-         data[[arm.var.2]]) -> data$comparison.only
-
-  data[[measure.var]] -> data$instrument
   
-  # Define multi.study
-  multi.study = names(table(data[[study.var]])
-                      [table(data[[study.var]]) > 1])
-
-  # Select methods
-  method.tau.ci = ifelse(identical(method.tau.ci,"Q-Profile"), 
-                         "QP", method.tau.ci)
-  method.tau.meta = ifelse(identical(method.tau[1], "FE"),
-                           "REML", method.tau[1])
+  # Fit model
+  mGeneral =
+    fitOverallModel(data, es.var, se.var, arm.var.1, arm.var.2,
+                    measure.var, study.var, .raw.bin.es, .type.es, hakn,
+                    method.tau.meta, method.tau.ci, method.tau,
+                    dots, es.binary.raw.vars, round.digits,
+                    nnt.cer, which.run)
+  rownames(mGeneral$res) = "Overall"
+  sendMessage(mGeneral, "overall", which.run)
   
-  if ("overall" %in% which.run){
-    message("- ", crayon::green("[OK] "), 
-            "Calculating overall effect size... ", 
-            appendLF = FALSE);
+  # If model failed, add to error model list
+  if (mGeneral$has.error){
+    error.model.list = append(error.model.list, "overall")
   }
-
-  if (!isTRUE(.raw.bin.es)){
-    mGeneral = meta::metagen(TE = data[[es.var[1]]],
-                seTE = data[[se.var[1]]],
-                studlab = data[[study.var]],
-                data = data,
-                sm = .type.es,
-                hakn = hakn,
-                method.tau = method.tau.meta,
-                method.tau.ci = method.tau.ci,
-                prediction = TRUE,
-                fixed = ifelse(method.tau == "FE", TRUE, FALSE),
-                random = ifelse(method.tau == "FE", FALSE, TRUE),
-                ...)
-  } else {
-    mGeneral = meta::metabin(event.e = data[[es.binary.raw.vars[1]]],
-                n.e = data[[es.binary.raw.vars[3]]],
-                event.c = data[[es.binary.raw.vars[2]]],
-                n.c = data[[es.binary.raw.vars[4]]],
-                studlab = data[[study.var]],
-                data = data,
-                sm = "RR",
-                hakn = hakn,
-                method.tau = method.tau.meta,
-                method.tau.ci = method.tau.ci,
-                prediction = TRUE,
-                fixed = ifelse(method.tau == "FE", TRUE, FALSE),
-                random = ifelse(method.tau == "FE", FALSE, TRUE),
-                ...)
-    with(meta::update.meta(mGeneral, sm="RD"), {
-      ifelse(isTRUE(fixed) & isTRUE(random),
-              abs(TE.fixed)^-1, abs(TE.random)^-1)
-    }) -> nnt.raw.bin.es
-  }
-
-
-  mGeneralRes = with(mGeneral, {
-
-    data.frame(
-      k = k,
-      g = ifelse(
-        isTRUE(fixed) & isTRUE(random), 
-        TE.fixed, TE.random) %>% 
-        ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
-        round(round.digits),
-      g.ci = paste0("[", 
-                    ifelse(isTRUE(fixed) & isTRUE(random),
-                    lower.fixed, lower.random) %>% 
-                      ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
-                      round(round.digits), "; ",
-                    ifelse(isTRUE(fixed) & isTRUE(random),
-                    upper.fixed, upper.random) %>% 
-                      ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
-                      round(round.digits), "]"),
-      p = ifelse(isTRUE(fixed) & isTRUE(random), 
-                 pval.fixed, pval.random) %>% 
-                 scales::pvalue(),
-      i2 = round(I2*100, 2),
-      i2.ci = paste0("[", round(lower.I2*100, 2), "; ", 
-                     round(upper.I2*100, 2), "]"),
-      prediction.ci = paste0("[", 
-                             round(
-                               ifelse(identical(.type.es, "RR"), 
-                                      exp(lower.predict), lower.predict), 
-                               round.digits), "; ",
-                             round(
-                               ifelse(identical(.type.es, "RR"), 
-                                      exp(upper.predict), upper.predict), 
-                               round.digits), "]"),
-      nnt = metapsyNNT(
-        ifelse(isTRUE(fixed) & isTRUE(random), 
-               TE.fixed, TE.random), nnt.cer) %>%
-        ifelse(identical(.type.es, "RR"), NA, .) %>% 
-        ifelse(isTRUE(.raw.bin.es), 
-               nnt.raw.bin.es, .) %>% 
-        round(round.digits) %>% abs(),
-      excluded = "none"
-    )
-  })
-  rownames(mGeneralRes) = "Overall"
-
-  if ("overall" %in% which.run){
-    message(crayon::green("DONE"))
-  }
-
-
+  
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
   #                                                                           #
   #  2. Lowest Only                                                           #
   #                                                                           #
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
+  
   if ("lowest.highest" %in% which.run){
     
-    message("- ", crayon::green("[OK] "), 
-              "Calculating effect size using only lowest effect... ",
-              appendLF = FALSE)
+    mLowest = fitLowestModel(data, study.var, multi.study,
+                             mGeneral, .type.es, round.digits,
+                             .raw.bin.es, nnt.cer)
+    rownames(mLowest$res) = "One ES/study (lowest)"
     
-    multi.study = names(table(data[[study.var]])
-                        [table(data[[study.var]]) > 1])
-  
-    if (length(multi.study) > 0){
-      if (length(multi.study) > 0){
-        data$.TE = mGeneral$TE
-        data %>%
-          split(.[[study.var]]) %>%
-          purrr::map(function(x){
-            tiebreaker = rnorm(nrow(x), sd=1e-10)
-            x$.TE + tiebreaker == min(x$.TE + tiebreaker)}) %>%
-          do.call(c,.) -> lowest
-        data$.TE = NULL
-      } else {
-        lowest = NULL
+    # If model failed, add to error model list
+    if (mLowest$has.error){
+      error.model.list = append(error.model.list, "lowest")
+      if ("overall" %in% error.model.list){
+        mLowest$message = mGeneral$message
       }
-  
-      mLowest = meta::update.meta(mGeneral, exclude = !lowest, 
-                                  id = NULL)
-      with(update.meta(mLowest, sm="RD"), {
-        ifelse(isTRUE(fixed) & isTRUE(random),
-               abs(TE.fixed)^-1, abs(TE.random)^-1)
-      }) -> nnt.raw.bin.es
-      
-      mLowestRes = with(mLowest,{
-        data.frame(
-          k = k,
-          g = ifelse(
-            isTRUE(fixed) & isTRUE(random), 
-            TE.fixed, TE.random) %>% 
-            ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
-            round(round.digits),
-          g.ci = paste0("[", 
-                        ifelse(isTRUE(fixed) & isTRUE(random),
-                               lower.fixed, lower.random) %>% 
-                          ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
-                          round(round.digits), "; ",
-                        ifelse(isTRUE(fixed) & isTRUE(random),
-                               upper.fixed, upper.random) %>% 
-                          ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
-                          round(round.digits), "]"),
-          p = ifelse(isTRUE(fixed) & isTRUE(random), 
-                     pval.fixed, pval.random) %>% 
-            scales::pvalue(),
-          i2 = round(I2*100, 2),
-          i2.ci = paste0("[", round(lower.I2*100, 2), "; ", 
-                         round(upper.I2*100, 2), "]"),
-          prediction.ci = paste0("[", 
-                                 round(
-                                   ifelse(identical(.type.es, "RR"), 
-                                          exp(lower.predict), lower.predict), 
-                                   round.digits), "; ",
-                                 round(
-                                   ifelse(identical(.type.es, "RR"), 
-                                          exp(upper.predict), upper.predict), 
-                                   round.digits), "]"),
-          nnt = metapsyNNT(
-            ifelse(isTRUE(fixed) & isTRUE(random), 
-                   TE.fixed, TE.random), nnt.cer) %>%
-            ifelse(identical(.type.es, "RR"), NA, .) %>% 
-            ifelse(isTRUE(.raw.bin.es), 
-                   nnt.raw.bin.es, .) %>% 
-            round(round.digits) %>% abs(),
-          excluded = "none")
-      })
-    } else {
-      mLowest = mGeneral
-      mLowestRes = mGeneralRes
     }
-  
-    if (is.null(mLowest$exclude[1])){
-      mLowestRes$excluded = "none"
-    } else {
-      mLowestRes$excluded = paste(data$comparison[mLowest$exclude],
-                                  collapse = "; ")
-    }
-    rownames(mLowestRes) = "One ES/study (lowest)"
-  
-    if ("lowest.highest" %in% which.run){
-      message(crayon::green("DONE"))
-    }
-  
+    sendMessage(mLowest, "lowest.highest", which.run)
   } else {
     mLowest = NULL
-    mLowestRes = NULL
   }
-
+  
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
   #                                                                           #
   #  3. Highest Only                                                          #
   #                                                                           #
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
+  
   if ("lowest.highest" %in% which.run){
-    
-    message("- ", crayon::green("[OK] "), 
-            "Calculating effect size using only highest effect... ",
-            appendLF = FALSE)
-  
-  
-    multi.study = names(table(data[[study.var]])
-                        [table(data[[study.var]]) > 1])
-  
-    if (length(multi.study) > 0){
-      if (length(multi.study) > 0){
-        data$.TE = mGeneral$TE
-        data %>%
-          split(.[[study.var]]) %>%
-          purrr::map(function(x){
-            tiebreaker = rnorm(nrow(x), sd=1e-10)
-            x$.TE + tiebreaker == max(x$.TE + tiebreaker)}) %>%
-          do.call(c,.) -> highest
-        data$.TE = NULL
-      } else {
-        highest = NULL
+    mHighest = 
+      fitHighestModel(
+        data, study.var, multi.study,
+        mGeneral, .type.es, round.digits,
+        .raw.bin.es, nnt.cer)
+    rownames(mHighest$res) = "One ES/study (highest)"
+    # If model failed, add to error model list
+    if (mHighest$has.error){
+      error.model.list = append(error.model.list, "highest")
+      if ("overall" %in% error.model.list){
+        mHighest$message = mGeneral$message
       }
-  
-      mHighest = meta::update.meta(mGeneral, exclude = !highest,
-                                   id = NULL)
-      with(update.meta(mHighest, sm="RD",
-                       id = NULL), {
-        ifelse(isTRUE(fixed) & isTRUE(random),
-               abs(TE.fixed)^-1, abs(TE.random)^-1)
-      }) -> nnt.raw.bin.es
-      
-      mHighestRes = with(mHighest,{
-        data.frame(
-          k = k,
-          g = ifelse(
-            isTRUE(fixed) & isTRUE(random), 
-            TE.fixed, TE.random) %>% 
-            ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
-            round(round.digits),
-          g.ci = paste0("[", 
-                        ifelse(isTRUE(fixed) & isTRUE(random),
-                               lower.fixed, lower.random) %>% 
-                          ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
-                          round(round.digits), "; ",
-                        ifelse(isTRUE(fixed) & isTRUE(random),
-                               upper.fixed, upper.random) %>% 
-                          ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
-                          round(round.digits), "]"),
-          p = ifelse(isTRUE(fixed) & isTRUE(random), 
-                     pval.fixed, pval.random) %>% 
-            scales::pvalue(),
-          i2 = round(I2*100, 2),
-          i2.ci = paste0("[", round(lower.I2*100, 2), "; ", 
-                         round(upper.I2*100, 2), "]"),
-          prediction.ci = paste0("[", 
-                                 round(
-                                   ifelse(identical(.type.es, "RR"), 
-                                          exp(lower.predict), lower.predict), 
-                                   round.digits), "; ",
-                                 round(
-                                   ifelse(identical(.type.es, "RR"), 
-                                          exp(upper.predict), upper.predict), 
-                                   round.digits), "]"),
-          nnt = metapsyNNT(
-            ifelse(isTRUE(fixed) & isTRUE(random), 
-                   TE.fixed, TE.random), nnt.cer) %>%
-            ifelse(identical(.type.es, "RR"), NA, .) %>% 
-            ifelse(isTRUE(.raw.bin.es), 
-                   nnt.raw.bin.es, .) %>% 
-            round(round.digits) %>% abs(),
-          excluded = "none")
-      })
-    } else {
-      mHighest = mGeneral
-      mHighestRes = mGeneralRes
     }
-  
-    if (is.null(mHighest$exclude[1])){
-      mHighestRes$excluded = "none"
-    } else {
-      mHighestRes$excluded = 
-        paste(data$comparison[mHighest$exclude],
-              collapse = "; ")}
-    rownames(mHighestRes) = "One ES/study (highest)"
-  
-    if ("lowest.highest" %in% which.run){
-      message(crayon::green("DONE"))
-    }
-    
+    sendMessage(mHighest, "lowest.highest", which.run)
   } else {
     mHighest = NULL
-    mHighestRes = NULL
   }
-
+  
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
   #                                                                           #
   #  4. Combined Effect Sizes                                                 #
   #                                                                           #
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
   
   if ("combined" %in% which.run){
-    message("- ", crayon::green("[OK] "), 
-            "Calculating effect size using combined effects (rho=", 
-            rho.within.study,
-            appendLF = FALSE)
-  
-    # Aggregate arm-wise or trial-wise
-    if (identical(which.combine[1], "arms")){
-      if (!is.null(which.combine.var)){
-        data$study.var.comb = 
-          paste(data[[study.var]],
-                ifelse(is.na(data[[which.combine.var]]), "", 
-                       data[[which.combine.var]]))
-        study.var.comb = "study.var.comb"
-      } else {
-        data$study.var.comb = data[[study.var]]
-        study.var.comb = study.var
+    mCombHasError = FALSE
+    if (identical(vcov[1], "complex")){
+      mComb = fitCombinedHACEModel(which.combine, which.combine.var, measure.var,
+                                   data, study.var, multi.study, es.var, se.var,
+                                   mGeneral, .type.es, round.digits, hakn,
+                                   .raw.bin.es, nnt.cer, rho.within.study,
+                                   method.tau, method.tau.ci, dots,
+                                   es.binary.raw.vars, arm.var.1, arm.var.2,
+                                   phi.within.study, n.var.arm1, 
+                                   n.var.arm2, w1.var, w2.var, time.var)
+      sendMessage(mComb, "combined", which.run)
+      if (mComb$has.error){
+        message("- ", crayon::yellow("[!] "), 
+                "model could not be fitted using",
+                " vcov='complex'. Switching to 'simple'...")
+        mCombHasError = TRUE
       }
     }
-    if (identical(which.combine[1], "studies")){
-      data$study.var.comb = data[[study.var]]
-      study.var.comb = study.var
-    }
-    
-    # Second part of message
-    message("; ", ifelse(
-              identical(study.var.comb[1], "study.var.comb"),
-              "arm-wise", "study-wise"), ")... ",
-            appendLF = FALSE)
-  
-    
-    # Define study ID variable
-    svc = data[[study.var.comb]]
-    multi.study.comb = names(table(data[[study.var.comb]])
-                             [table(data[[study.var.comb]]) > 1])
-    if (identical(.type.es, "g")){
-      data = metafor::escalc("SMD", yi = data[[es.var[1]]],
-                             sei = data[[se.var[1]]], data = data)
-    } else {
-      if (isTRUE(.raw.bin.es)){
-       data = metafor::escalc("RR", 
-                        ai = data[[es.binary.raw.vars[1]]], 
-                        ci = data[[es.binary.raw.vars[2]]], 
-                        n1i = data[[es.binary.raw.vars[3]]], 
-                        n2i = data[[es.binary.raw.vars[4]]], 
-                        data = data)
-      } else {
-        data = metafor::escalc("RR", yi = data[[es.var[1]]],
-                               sei = data[[se.var[1]]], data = data)
+    if (identical(vcov[1], "simple") ||
+        mCombHasError){
+      mComb = fitCombinedModel(which.combine, which.combine.var,
+                               data, study.var, multi.study, es.var, se.var,
+                               mGeneral, .type.es, round.digits, hakn,
+                               .raw.bin.es, nnt.cer, rho.within.study,
+                               method.tau, method.tau.ci, dots,
+                               es.binary.raw.vars, phi.within.study)
+      # If model failed, add to error model list
+      if (mComb$has.error){
+        error.model.list = append(error.model.list, "combined")
+        if ("combined" %in% error.model.list){
+          mComb$message = mComb$message
+        }
       }
+      sendMessage(mComb, "combined", which.run)
     }
-    
-    rho.within.study = abs(rho.within.study[1])
-    if (rho.within.study[1] > 1){
-      stop("'rho.within.study' must be in [-1,1].")
-    }
-    if (rho.within.study[1] >.99){
-      message("- ", crayon::yellow("[!] "), 
-          "'rho.within.study' is very close to 1.",
-          " This can lead to non-positive-definite variance-covariance matrices.",
-          " If the V matrix is not positive-definite, assume a lower value...")
-      warn.end = TRUE}
-    if (rho.within.study[1] <.01){
-      message("- ", crayon::yellow("[!] "), 
-          "'rho.within.study' is very close to 0.",
-          " This can lead to non-positive-definite variance-covariance matrices.",
-          " If the V matrix is not positive-definite, assume a higher value...")
-      warn.end = TRUE
-    }
-    
-    data.comb = metafor::aggregate.escalc(data, cluster = svc,
-                                          rho = rho.within.study)
-  
-    # Get studlabs of studies with multiple arms
-    table(data.comb[[study.var]], 
-          data.comb[[study.var.comb]]) %>%
-      {names(rowSums(.)[rowSums(.) > 1])} -> multi.entries
-    
-    mComb = meta::metagen(TE = data.comb$yi,
-                          seTE = sqrt(data.comb$vi),
-                          studlab = with(data.comb,{
-                            ifelse(study %in% multi.entries,
-                                   study.var.comb, study)}),
-                          data = data.comb,
-                          sm = .type.es,
-                          hakn = hakn,
-                          method.tau = method.tau.meta,
-                          method.tau.ci = method.tau.ci,
-                          prediction = TRUE,
-                          fixed = ifelse(method.tau == "FE", TRUE, FALSE),
-                          random = ifelse(method.tau == "FE", FALSE, TRUE),
-                          ...)
-    
-    if (isTRUE(.raw.bin.es)){
-      meta::metabin(
-       event.e = data.comb[[es.binary.raw.vars[1]]],
-       n.e = data.comb[[es.binary.raw.vars[3]]],
-       event.c = data.comb[[es.binary.raw.vars[2]]],
-       n.c = data.comb[[es.binary.raw.vars[4]]],
-       studlab = data.comb[[study.var]],
-       data = data.comb,
-       sm = "RD",
-       hakn = hakn,
-       method.tau = method.tau.meta,
-       method.tau.ci = method.tau.ci,
-       prediction = TRUE,
-       fixed = ifelse(method.tau == "FE", TRUE, FALSE),
-       random = ifelse(method.tau == "FE", FALSE, TRUE)) %>% 
-        with(., {
-          ifelse(isTRUE(fixed) & isTRUE(random),
-                 abs(TE.fixed)^-1, abs(TE.random)^-1)
-        }) -> nnt.raw.bin.es
-    }
-    mComb$data$.event.e = data.comb[[es.binary.raw.vars[1]]]
-    mComb$data$.n.e = data.comb[[es.binary.raw.vars[3]]]
-    mComb$data$.event.c = data.comb[[es.binary.raw.vars[2]]]
-    mComb$data$.n.c = data.comb[[es.binary.raw.vars[4]]]
-  
-    
-    mCombRes = with(mComb,{
-  
-      data.frame(
-        k = k,
-        g = ifelse(
-          isTRUE(fixed) & isTRUE(random), 
-          TE.fixed, TE.random) %>% 
-          ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
-          round(round.digits),
-        g.ci = paste0("[", 
-                      ifelse(isTRUE(fixed) & isTRUE(random),
-                             lower.fixed, lower.random) %>% 
-                        ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
-                        round(round.digits), "; ",
-                      ifelse(isTRUE(fixed) & isTRUE(random),
-                             upper.fixed, upper.random) %>% 
-                        ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
-                        round(round.digits), "]"),
-        p = ifelse(isTRUE(fixed) & isTRUE(random), 
-                   pval.fixed, pval.random) %>% 
-          scales::pvalue(),
-        i2 = round(I2*100, 2),
-        i2.ci = paste0("[", round(lower.I2*100, 2), "; ", 
-                       round(upper.I2*100, 2), "]"),
-        prediction.ci = paste0("[", 
-                               round(
-                                 ifelse(identical(.type.es, "RR"), 
-                                        exp(lower.predict), lower.predict), 
-                                 round.digits), "; ",
-                               round(
-                                 ifelse(identical(.type.es, "RR"), 
-                                        exp(upper.predict), upper.predict), 
-                                 round.digits), "]"),
-        nnt = metapsyNNT(
-          ifelse(isTRUE(fixed) & isTRUE(random), 
-                 TE.fixed, TE.random), nnt.cer) %>%
-          ifelse(identical(.type.es, "RR"), NA, .) %>% 
-          ifelse(isTRUE(.raw.bin.es), 
-                 nnt.raw.bin.es, .) %>% 
-          round(round.digits) %>% abs(),
-        excluded = "none")
-    })
-    rownames(mCombRes) = "Combined"
-    mCombRes$excluded = 
-      paste(
-        "combined",
-        ifelse(identical(study.var.comb[1], "study.var.comb"),
-               "(arm-level):", "(study-level):"),
-        ifelse(length(multi.study.comb) > 0,
-               paste(multi.study.comb, collapse = "; "), 
-               "none"))
-  
-    # Add rho, which.combine, combine var to mComb model
-    mComb$rho = rho.within.study
-    mComb$which.combine = 
-      ifelse(identical(study.var.comb[1], "study.var.comb"), "arms", "studies")
-    mComb$which.combine.var = which.combine.var
-    
-    class(data) = "data.frame"
-    if ("combined" %in% which.run){
-      message(crayon::green("DONE"))
-    }
-    
   } else {
     mComb = NULL
-    mCombRes = NULL
   }
-  
   
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
   #                                                                           #
   #  5. Outliers Removed                                                      #
   #                                                                           #
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
+  
   if ("outliers" %in% which.run){
-    message("- ", crayon::green("[OK] "), 
-            "Calculating effect size with outliers removed... ",
-            appendLF = FALSE)
-  
-    if (!("overall" %in% which.run) && 
-        ("combined" %in% which.run)){
-      which.outliers[1] = "combined"
-    }
-  
-    if (which.outliers[1] %in% c("general", "overall")){
-      if (is.null(mGeneral)) {
-        stop("If which.outliers = 'overall', the 'overall' model must be",
-             " included in which.run.", call. = FALSE)
-      }
-      m.for.outliers = mGeneral
-    }
-
-    if (which.outliers[1] == "combined"){
-      if (is.null(mComb)) {
-        stop("If which.outliers = 'combined', the 'combined' model must be",
-             " included in which.run.", call. = FALSE)
-      }
-      m.for.outliers = mComb
-    }
-
-    if (!(which.outliers[1] %in% c("general", "combined", "overall"))){
-      stop("'which.outliers' must either be 'overall' or 'combined'.")
-    }
-
-    if (method.tau == "FE"){
-      mOutliers = metapsyFindOutliers(m.for.outliers)$m.fixed
-    } else {
-      mOutliers = metapsyFindOutliers(m.for.outliers)$m.random
-    }
-  
-    if (isTRUE(.raw.bin.es)){
-      with(update.meta(mOutliers, sm="RD",
-                       id = NULL), {
-        ifelse(isTRUE(fixed) & isTRUE(random),
-               abs(TE.fixed)^-1, abs(TE.random)^-1)
-      }) -> nnt.raw.bin.es
-    }
-
-    mOutliersRes = with(mOutliers,{
-
-      data.frame(
-        k = k,
-        g = ifelse(
-          isTRUE(fixed) & isTRUE(random), 
-          TE.fixed, TE.random) %>% 
-          ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
-          round(round.digits),
-        g.ci = paste0("[", 
-                      ifelse(isTRUE(fixed) & isTRUE(random),
-                             lower.fixed, lower.random) %>% 
-                        ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
-                        round(round.digits), "; ",
-                      ifelse(isTRUE(fixed) & isTRUE(random),
-                             upper.fixed, upper.random) %>% 
-                        ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
-                        round(round.digits), "]"),
-        p = ifelse(isTRUE(fixed) & isTRUE(random), 
-                   pval.fixed, pval.random) %>% 
-          scales::pvalue(),
-        i2 = round(I2*100, 2),
-        i2.ci = paste0("[", round(lower.I2*100, 2), "; ", 
-                       round(upper.I2*100, 2), "]"),
-        prediction.ci = paste0("[", 
-                               round(
-                                 ifelse(identical(.type.es, "RR"), 
-                                        exp(lower.predict), lower.predict), 
-                                 round.digits), "; ",
-                               round(
-                                 ifelse(identical(.type.es, "RR"), 
-                                        exp(upper.predict), upper.predict), 
-                                 round.digits), "]"),
-        nnt = metapsyNNT(
-          ifelse(isTRUE(fixed) & isTRUE(random), 
-                 TE.fixed, TE.random), nnt.cer) %>%
-          ifelse(identical(.type.es, "RR"), NA, .) %>% 
-          ifelse(isTRUE(.raw.bin.es), 
-            nnt.raw.bin.es, .) %>% 
-          round(round.digits) %>% abs(),
-        excluded = "none")
-    })
-    rownames(mOutliersRes) = "Outliers removed"
-
-    if (length(mOutliers$data$comparison
-               [mOutliers$exclude]) != 0){
-      if (identical(which.outliers[1], "combined")){
-        mOutliersRes$excluded = paste(mOutliers$studlab
-                                      [mOutliers$exclude], collapse = "; ")
-      } else {
-        mOutliersRes$excluded = paste(mOutliers$data$comparison
-                                      [mOutliers$exclude], collapse = "; ")
-      }
-    } else {
-      mOutliersRes$excluded = "no outliers detected"
-    }
-
-    if ("outliers" %in% which.run){
-      message(crayon::green("DONE"))
-    }
     
+    outlier.settings = 
+      selectOutlierModel(
+        which.run, mGeneral, mComb, which.outliers)
+    m.for.outliers = outlier.settings$m.for.outliers
+    which.outliers = which.outliers
+    
+    mOutliers = fitOutliersModel(data, study.var, multi.study,
+                                 mGeneral, .type.es, round.digits,
+                                 .raw.bin.es, nnt.cer, which.run,
+                                 which.outliers, method.tau,
+                                 m.for.outliers)
+    # If model failed, add to error model list
+    if (mOutliers$has.error){
+      error.model.list = append(error.model.list, "outliers")
+    }
+    sendMessage(mOutliers, "outliers", which.run)
   } else {
     mOutliers = NULL
-    mOutliersRes = NULL
   }
-
-
+  
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
   #                                                                           #
   #  6. Influential Cases                                                     #
   #                                                                           #
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
+  
   if ("influence" %in% which.run){
-    message("- ", crayon::green("[OK] "), 
-            "Calculating effect size with influential cases removed... ",
-            appendLF = FALSE)
-    
-    if (!("overall" %in% which.run) && 
-        ("combined" %in% which.run)){
-      which.influence[1] = "combined"
+    mInfluence = fitInfluenceModel(which.influence, mComb, mGeneral,
+                                   which.run, method.tau,
+                                   .raw.bin.es, .type.es, round.digits,
+                                   nnt.cer)
+    influenceRes = mInfluence$influenceRes
+    sendMessage(mInfluence, "influence", which.run)
+    # If model failed, add to error model list
+    if (mInfluence$has.error){
+      error.model.list = append(error.model.list, "influence")
     }
-    
-    if (which.influence[1] %in% c("general", "overall")){
-      if (is.null(mGeneral)) {
-        stop("If which.influence = 'overall', the 'overall' model must be",
-             " included in which.run.", call. = FALSE)
-      }
-      m.for.influence = mGeneral
-    }
-  
-    if (which.influence[1] == "combined"){
-      if (is.null(mComb)) {
-        stop("If which.influence = 'combined', the 'combined' model must be",
-             " included in which.run.", call. = FALSE)
-      }
-      m.for.influence = mComb
-    }
-  
-    if (!(which.influence[1] %in% c("general", "combined", "overall"))){
-      stop("'which.influence' must either be 'overall' or 'combined'.")
-    }
-  
-    influenceRes = 
-      metapsyInfluenceAnalysis(
-        m.for.influence,
-        random = ifelse(method.tau == "FE",
-                        FALSE, TRUE))
-    mInfluence = 
-      meta::update.meta(
-        m.for.influence,
-        exclude = influenceRes$Data$is.infl == "yes",
-        id = NULL)
-    
-    if (isTRUE(.raw.bin.es)){
-      with(update.meta(mInfluence, sm="RD",
-                       id = NULL), {
-        ifelse(isTRUE(fixed) & isTRUE(random),
-               abs(TE.fixed)^-1, abs(TE.random)^-1)
-      }) -> nnt.raw.bin.es
-    }
-    
-    mInfluenceRes = with(mInfluence,{
-  
-      data.frame(
-        k = k,
-        g = ifelse(
-          isTRUE(fixed) & isTRUE(random), 
-          TE.fixed, TE.random) %>% 
-          ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
-          round(round.digits),
-        g.ci = paste0("[", 
-                      ifelse(isTRUE(fixed) & isTRUE(random),
-                             lower.fixed, lower.random) %>% 
-                        ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
-                        round(round.digits), "; ",
-                      ifelse(isTRUE(fixed) & isTRUE(random),
-                             upper.fixed, upper.random) %>% 
-                        ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
-                        round(round.digits), "]"),
-        p = ifelse(isTRUE(fixed) & isTRUE(random), 
-                   pval.fixed, pval.random) %>% 
-          scales::pvalue(),
-        i2 = round(I2*100, 2),
-        i2.ci = paste0("[", round(lower.I2*100, 2), "; ", 
-                       round(upper.I2*100, 2), "]"),
-        prediction.ci = paste0("[", 
-                               round(
-                                 ifelse(identical(.type.es, "RR"), 
-                                        exp(lower.predict), lower.predict), 
-                                 round.digits), "; ",
-                               round(
-                                 ifelse(identical(.type.es, "RR"), 
-                                        exp(upper.predict), upper.predict), 
-                                 round.digits), "]"),
-        nnt = metapsyNNT(
-          ifelse(isTRUE(fixed) & isTRUE(random), 
-                 TE.fixed, TE.random), nnt.cer) %>%
-          ifelse(identical(.type.es, "RR"), NA, .) %>% 
-          ifelse(isTRUE(.raw.bin.es), 
-                 nnt.raw.bin.es, .) %>% 
-            round(round.digits) %>% abs(),
-        excluded = "none")
-    })
-    rownames(mInfluenceRes) = "Influence Analysis"
-    
-    if (identical(which.influence[1], "combined")){
-      mInfluenceRes$excluded = 
-        paste("removed as influential cases:",
-              ifelse(sum(influenceRes$Data$is.infl == "yes") > 0,
-                     paste(mInfluence$studlab[influenceRes$Data$is.infl == "yes"],
-                           collapse = "; "), "none"))
-    } else {
-      mInfluenceRes$excluded = 
-        paste("removed as influential cases:",
-              ifelse(sum(influenceRes$Data$is.infl == "yes") > 0,
-                     paste(mInfluence$data$comparison[influenceRes$Data$is.infl == "yes"],
-                           collapse = "; "), "none"))
-    }
-    
-    if ("influence" %in% which.run){
-      message(crayon::green("DONE"))
-    }
-    
   } else {
     mInfluence = NULL
-    mInfluenceRes = NULL
     influenceRes = NULL
   }
-
-
-
+  
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
   #                                                                           #
   #  7. (Low) risk of bias                                                    #
   #                                                                           #
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
+  
   if ("rob" %in% which.run){
-    message("- ", crayon::green("[OK] "), 
-            "Calculating effect size using only low RoB information... ",
-            appendLF = FALSE)
-  
-    if (!("overall" %in% which.run) && 
-        ("combined" %in% which.run)){
-      which.rob[1] = "combined"
-    }
-    
-    if (which.rob[1] %in% c("general", "overall")){
-      if (is.null(mGeneral)) {
-        stop("If which.influence = 'overall', the 'overall' model must be",
-             " included in which.run.", call. = FALSE)
-      }
-      m.for.rob = mGeneral
-      data.for.rob = mGeneral$data
-    }
-  
-    if (which.rob[1] == "combined"){
-      if (is.null(mComb)) {
-        stop("If which.influence = 'overall', the 'overall' model must be",
-             " included in which.run.", call. = FALSE)
-      }
-      m.for.rob = mComb
-      data.for.rob = mComb$data
-    }
-  
-    if (!(which.rob[1] %in% c("general", "combined", "overall"))){
-      stop("'which.rob' must either be 'general' or 'combined'.")
-    }
-  
-    if ("rob" %in% which.run){
-      robVar = strsplit(low.rob.filter, " ")[[1]][1]
-      m.for.rob$data[[robVar]] = 
-        as.numeric(m.for.rob$data[[robVar]])
-      robFilter = paste0("data.for.rob$", low.rob.filter, 
-                         " & !is.na(data.for.rob$", robVar, ")")
-      robMask = eval(parse(text = robFilter))
-      if (sum(robMask) == 0){
-        message("\n- ", crayon::yellow("[!] "), 
-          "No low risk of bias studies detected! Switching to 'general'...")
-        robMask = rep(TRUE, nrow(mGeneral$data))
-        mRob = meta::update.meta(mGeneral, exclude = !robMask,
-                                 id = NULL)
-        which.run[!which.run == "rob"] -> which.run
-        warn.end = TRUE
-      } else {
-        mRob = meta::update.meta(m.for.rob, exclude = !robMask,
-                                 id = NULL)
-      }
-    } else {
-      robMask = rep(TRUE, nrow(mGeneral$data))
-      mRob = meta::update.meta(mGeneral, exclude = !robMask,
-                               id = NULL)
-    }
-    
-    if (isTRUE(.raw.bin.es)) {
-     with(update.meta(mRob, sm="RD",
-                      id = NULL), {
-       ifelse(isTRUE(fixed) & isTRUE(random),
-              abs(TE.fixed)^-1, abs(TE.random)^-1)
-     }) -> nnt.raw.bin.es
-    }
-  
-    mRobRes = with(mRob,{
-  
-      data.frame(
-        k = k,
-        g = ifelse(
-          isTRUE(fixed) & isTRUE(random), 
-          TE.fixed, TE.random) %>% 
-          ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
-          round(round.digits),
-        g.ci = paste0("[", 
-                      ifelse(isTRUE(fixed) & isTRUE(random),
-                             lower.fixed, lower.random) %>% 
-                        ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
-                        round(round.digits), "; ",
-                      ifelse(isTRUE(fixed) & isTRUE(random),
-                             upper.fixed, upper.random) %>% 
-                        ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
-                        round(round.digits), "]"),
-        p = ifelse(isTRUE(fixed) & isTRUE(random), 
-                   pval.fixed, pval.random) %>% 
-          scales::pvalue(),
-        i2 = round(I2*100, 2),
-        i2.ci = paste0("[", round(lower.I2*100, 2), "; ", 
-                       round(upper.I2*100, 2), "]"),
-        prediction.ci = paste0("[", 
-                               round(
-                                 ifelse(identical(.type.es, "RR"), 
-                                        exp(lower.predict), lower.predict), 
-                                 round.digits), "; ",
-                               round(
-                                 ifelse(identical(.type.es, "RR"), 
-                                        exp(upper.predict), upper.predict), 
-                                 round.digits), "]"),
-        nnt = metapsyNNT(
-          ifelse(isTRUE(fixed) & isTRUE(random), 
-                 TE.fixed, TE.random), nnt.cer) %>%
-          ifelse(identical(.type.es, "RR"), NA, .) %>% 
-          ifelse(isTRUE(.raw.bin.es), 
-                 nnt.raw.bin.es, .) %>% 
-          round(round.digits) %>% abs(),
-        excluded = "none")
-    })
-    rownames(mRobRes) = paste("Only", low.rob.filter)
-  
-    if (length(mRob$data$comparison[!robMask]) != 0){
-      if (identical(which.outliers[1], "combined")){
-        mRobRes$excluded = paste(mRob$studlab[!robMask], collapse = "; ")
-      } else {
-        mRobRes$excluded = 
-          paste(mRob$data$comparison[!robMask], collapse = "; ")
-      }
-    } else {
-      mRobRes$excluded = paste0("no studies removed; ", 
-                                low.rob.filter, " applies to all studies")
-    }
-    
-    if ("rob" %in% which.run){
-      message(crayon::green("DONE"))
+    mRob = fitRobModel(which.run, which.rob, which.outliers,
+                       mGeneral, mComb, low.rob.filter, method.tau,
+                       .raw.bin.es, .type.es, round.digits, nnt.cer)
+    sendMessage(mRob, "rob", which.run)
+    # If model failed, add to error model list
+    if (mRob$has.error){
+      error.model.list = append(error.model.list, "rob")
     }
   } else {
     mRob = NULL
-    mRobRes = NULL
   }
-
-
-
+  
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
   #                                                                           #
   #  8. Three-Level Model                                                     #
   #                                                                           #
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
+  
   if (method.tau != "REML" & "threelevel" %in% which.run){
     message("- ", crayon::green("[OK] "), 
             "3L-model tau(s) estimated using 'REML', since '",
@@ -1222,259 +577,28 @@ runMetaAnalysis = function(data,
   }
   
   if ("threelevel" %in% which.run){
-    
-
-    data$es.id = 1:nrow(data)
-    formula = paste0("~ 1 | ", colnames(data[study.var]), " / es.id")
-  
-    mThreeLevel = metafor::rma.mv(
-                   yi = mGeneral[["TE"]],
-                   V = mGeneral[["seTE"]]^2,
-                   slab = mGeneral[["studlab"]],
-                   data = data,
-                   random = as.formula(formula),
-                   test = ifelse(hakn == TRUE, "t", "z"),
-                   method = "REML",
-                   ...)
-    
-    model.threelevel.legacy = list(
-      slab = data[[study.var]],
-      data = data,
-      es.var = es.var[1],
-      se.var = se.var[1],
-      yi = mGeneral[["TE"]],
-      V = mGeneral[["seTE"]]*mGeneral[["seTE"]],
-      formula.rnd = as.formula(formula))
-    mThreeLevel$legacy = model.threelevel.legacy
-    
-    if (isTRUE(.raw.bin.es)){
-      # For RR analyses: re-run analyses using g
-      # This is needed for NNTs
-      meta::metaprop(
-        event = data[[es.binary.raw.vars[2]]],
-        n = data[[es.binary.raw.vars[4]]],
-        fixed = ifelse(method.tau == "FE", 
-                       TRUE, FALSE),
-        random = ifelse(method.tau == "FE", 
-                        FALSE, TRUE)) %>%
-        {ifelse(isTRUE(.$fixed) & isTRUE(.$random), 
-                .$TE.fixed, .$TE.random)} %>% 
-        {exp(.)/(1+exp(.))} -> cer          
-      
-      apply(data, 1, function(x){
-        esc::esc_2x2(grp1yes = as.numeric(x[[es.binary.raw.vars[1]]]), 
-                     grp1no = as.numeric(x[[es.binary.raw.vars[3]]]) - 
-                       as.numeric(x[[es.binary.raw.vars[1]]]),
-                     grp2yes = as.numeric(x[[es.binary.raw.vars[2]]]),
-                     grp2no = as.numeric(x[[es.binary.raw.vars[4]]]) -
-                       as.numeric(x[[es.binary.raw.vars[2]]]),
-                     es.type = "g") %>% 
-          {data.frame(es = .$es, se = .$se)}
-      }) %>% 
-        do.call(rbind, .) -> data.g
-      
-      metafor::rma.mv(
-        yi = data.g$es, V = data.g$se^2, 
-        data = data, random = as.formula(formula),
-        test = ifelse(hakn == TRUE, "t", "z"),
-        method = "REML") -> mThreeLevel.g
-      
-      mThreeLevel.g %>% 
-        {.[["b"]][1]} %>% 
-        {ifelse(.==0, Inf, 
-                metapsyNNT(., cer))} -> nnt.g
-    } else {
-      nnt.g = NA
-    }
-  
-    # Calculate total I2
-    W = diag(1/(mGeneral[["seTE"]]^2))
-    X = model.matrix(mThreeLevel)
-    P = W - W %*% X %*% 
-      solve(t(X) %*% W %*% X) %*% 
-      t(X) %*% W
-    with(mThreeLevel, {
-      100 * sum(sigma2) / 
-        (sum(sigma2) + (k-p)/sum(diag(P)))
-    }) -> mThreeLevel$I2
-    
-    # Calculate I2 per level
-    with(mThreeLevel, {
-      (100 * sigma2 / 
-       (sum(sigma2) + (k-p)/sum(diag(P))))
-    }) -> I2.bw
-    mThreeLevel$I2.between.studies = I2.bw[1]
-    mThreeLevel$I2.within.studies = I2.bw[2]
-  
-    # Get tau and I2
-    with(mThreeLevel, 
-         {data.frame(tau2 = c(sigma2, sum(sigma2)),
-                     i2 = c(I2.between.studies, 
-                            I2.within.studies,
-                            I2))}) -> mThreeLevel$variance.components
-    
-    mThreeLevel$variance.components$tau2 = 
-      round(mThreeLevel$variance.components$tau2, 4)
-    mThreeLevel$variance.components$i2 = 
-      round(mThreeLevel$variance.components$i2, 1)
-    rownames(mThreeLevel$variance.components) = 
-      c("Between Studies", "Within Studies", "Total")
-  
-    if (use.rve[1] == FALSE){
-      
-      if ("threelevel" %in% which.run){
-        message("- ", crayon::green("[OK] "), 
-                "Calculating effect size using three-level MA model... ",
-                appendLF = FALSE)
-      }
-      
-      mThreeLevelRes = with(mThreeLevel, {
-        data.frame(k = k.all,
-                   g = as.numeric(b[,1]) %>%
-                     ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
-                     round(round.digits),
-                   g.ci = paste0("[", 
-                                 ci.lb %>% 
-                                   ifelse(identical(.type.es, "RR"), 
-                                          exp(.), .) %>% 
-                                   round(round.digits), "; ",
-                                 ci.ub %>% 
-                                   ifelse(identical(.type.es, "RR"), 
-                                          exp(.), .) %>% 
-                                   round(round.digits), "]"),
-                   p = pval %>% scales::pvalue(),
-                   i2 = round(I2, 1),
-                   i2.ci = "-",
-                   prediction.ci = paste0("[", 
-                         round(predict(mThreeLevel)$pi.lb %>% 
-                                 ifelse(identical(.type.es, "RR"), exp(.), .), 
-                               round.digits), "; ",
-                         round(predict(mThreeLevel)$pi.ub %>% 
-                                 ifelse(identical(.type.es, "RR"), exp(.), .), 
-                               round.digits), "]"),
-                   nnt = ifelse(identical(.type.es, "RR"), 
-                                NA, metapsyNNT(as.numeric(b[,1]), nnt.cer)) %>% 
-                         ifelse(isTRUE(.raw.bin.es), nnt.g, .) %>% 
-                         round(round.digits) %>% abs(),
-                   excluded = "none")
-      })
-      rownames(mThreeLevelRes) = "Three-Level Model"
-      mThreeLevelRes$excluded = 
-        paste("Number of clusters/studies:", 
-              mThreeLevel$s.nlevels[1])
-  
-      if ("threelevel" %in% which.run){
-        message(crayon::green("DONE"))
-      }
-  
-      if (length(multi.study) == 0 & 
-          "threelevel" %in% which.run){
-        message("- ", crayon::yellow("[!] "), 
-                "All included ES seem to be independent.",
-                " A three-level model is not adequate and ",
-                " tau/I2 estimates are not trustworthy!")
-        warn.end = TRUE
-        which.run[!which.run == "threelevel"] -> which.run
-      }
-  
-    } else {
-      
-      if ("threelevel" %in% which.run){
-        message("- ", crayon::green("[OK] "),
-          "Calculating effect size using three-level MA model... ",
-          appendLF = FALSE)
-        message(crayon::green("DONE"))
-        message("- ", crayon::green("[OK] "),
-          "Robust variance estimation (RVE) used for three-level MA model... ",
-          appendLF = FALSE)
-      }
-  
-      # Get results: RVE used
-      crit = qt(0.025, mThreeLevel$ddf[[1]], lower.tail = FALSE)
-      tau2 = sum(mThreeLevel$sigma2)
-      SE = clubSandwich::conf_int(mThreeLevel, vcov = "CR2")[["SE"]]
-      pi.lb.rve = 
-        clubSandwich::conf_int(mThreeLevel, "CR2")[["beta"]] -
-        crit * sqrt(tau2 + (SE^2))
-      pi.ub.rve = 
-        clubSandwich::conf_int(mThreeLevel, "CR2")[["beta"]] +
-        crit * sqrt(tau2 + (SE^2))
-      if (isTRUE(.raw.bin.es)){
-        as.numeric(clubSandwich::conf_int(
-          mThreeLevel.g, "CR2")[["beta"]]) %>% 
-          {ifelse(.==0, Inf, metapsyNNT(., cer))} -> nnt.g
-      }
-  
-      mThreeLevelRes.RVE = with(mThreeLevel, {
-        data.frame(k = k.all,
-                   g = as.numeric(
-                     clubSandwich::conf_int(
-                       mThreeLevel, "CR2")[["beta"]]) %>%
-                     ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
-                     round(round.digits),
-                   g.ci = paste0(
-                     "[",
-                     clubSandwich::conf_int(
-                       mThreeLevel, "CR2")[["CI_L"]] %>%
-                      ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
-                      round(round.digits), "; ",
-                     clubSandwich::conf_int(
-                       mThreeLevel, "CR2")[["CI_U"]] %>%
-                      ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
-                      round(round.digits), "]"),
-                   p = clubSandwich::coef_test(
-                     mThreeLevel, "CR2")[["p_Satt"]] %>%
-                     scales::pvalue(),
-                   i2 = round(I2, 1),
-                   i2.ci = "-",
-                   prediction.ci = paste0(
-                     "[", 
-                     round(pi.lb.rve %>% 
-                           ifelse(identical(.type.es, "RR"), exp(.), .), 
-                          round.digits), "; ",
-                     round(pi.ub.rve %>% 
-                           ifelse(identical(.type.es, "RR"), exp(.), .), 
-                           round.digits), "]"),
-                   nnt = ifelse(identical(.type.es, "RR"), 
-                          NA, metapsyNNT(as.numeric(
-                            clubSandwich::conf_int(
-                              mThreeLevel, "CR2")[["beta"]]), nnt.cer)) %>% 
-                     ifelse(isTRUE(.raw.bin.es), nnt.g, .) %>% 
-                     round(round.digits) %>% abs(),
-                   excluded = "none")
-      })
-      rownames(mThreeLevelRes.RVE) = "Three-Level Model"
-      mThreeLevelRes.RVE$excluded = 
-        paste0("Number of clusters/studies: ", 
-               mThreeLevel$s.nlevels[1], 
-               "; robust variance estimation (RVE) used.")
-      mThreeLevelRes = mThreeLevelRes.RVE
-  
-      if ("threelevel" %in% which.run){
-        message(crayon::green("DONE"))
-      }
-  
-      if (length(multi.study) == 0 & "threelevel" %in% which.run){
-        message("- ", crayon::yellow("[!] "), 
-                "All included ES seem to be independent.",
-                " A three-level model is not adequate and ",
-                " tau/I2 estimates are not trustworthy!")
-        warn.end = TRUE
-        which.run[!which.run == "threelevel"] -> which.run
-      }
+    mThreeLevel = 
+      fitThreeLevelModel(data, es.var, se.var, arm.var.1, arm.var.2,
+                         measure.var, study.var, .raw.bin.es, .type.es, hakn,
+                         method.tau.meta, method.tau.ci, method.tau,
+                         dots, es.binary.raw.vars, round.digits,
+                         nnt.cer, which.run, mGeneral, mCombined,
+                         use.rve)
+    sendMessage(mThreeLevel, "threelevel", which.run)
+    # If model failed, add to error model list
+    if (mThreeLevel$has.error){
+      error.model.list = append(error.model.list, "threelevel")
     }
   } else {
     mThreeLevel = NULL
-    mThreeLevelRes = NULL
   }
-
-
+  
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
   #                                                                           #
   #  9. Three-Level CHE Model                                                 #
   #                                                                           #
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
+  
   if (method.tau != "REML" & "threelevel.che" %in% which.run){
     message("- ", crayon::green("[OK] "), 
             "Three-level CHE model tau(s) estimated using 'REML', since '",
@@ -1482,275 +606,56 @@ runMetaAnalysis = function(data,
   }
   
   if ("threelevel.che" %in% which.run){
-
-    data$es.id = 1:nrow(data)
-    formula.fixed = as.formula("TE ~ 1")
-    formula.rnd = as.formula(paste0("~ 1 | ", 
-                     colnames(data[study.var]), "/ es.id"))
-    data.che = data
-    data.che$TE = mGeneral[["TE"]]
-  
-    Vmat = clubSandwich::impute_covariance_matrix(
-              mGeneral[["seTE"]]^2,
-              cluster = data[[study.var]],
-              r = rho.within.study,
-              smooth_vi = TRUE)
-  
-    mCHE = metafor::rma.mv(
-      formula.fixed,
-      V = Vmat,
-      slab = data[[study.var]],
-      data = data.che,
-      random = formula.rnd,
-      test = ifelse(hakn == TRUE, "t", "z"),
-      method = "REML", 
-      sparse = TRUE,
-      ...)
-  
-    model.threelevel.che.legacy = list(
-      slab = data.che[[study.var]],
-      data = data.che,
-      formula.rnd = formula.rnd,
-      formula.fixed = formula.fixed,
-      Vmat = Vmat)
-    mCHE$legacy = model.threelevel.che.legacy
-    
-    if (isTRUE(.raw.bin.es)){
-      # For RR analyses: re-run analyses using g
-      # This is needed for NNTs
-      meta::metaprop(
-        event = data.che[[es.binary.raw.vars[2]]],
-        n = data.che[[es.binary.raw.vars[4]]],
-        fixed = ifelse(method.tau == "FE", 
-                       TRUE, FALSE),
-        random = ifelse(method.tau == "FE", 
-                        FALSE, TRUE)) %>%
-        {ifelse(isTRUE(.$fixed) & isTRUE(.$random), 
-                .$TE.fixed, .$TE.random)} %>% 
-        {exp(.)/(1+exp(.))} -> cer          
-      
-      apply(data.che, 1, function(x){
-        esc::esc_2x2(grp1yes = as.numeric(x[[es.binary.raw.vars[1]]]), 
-                     grp1no = as.numeric(x[[es.binary.raw.vars[3]]]) - 
-                       as.numeric(x[[es.binary.raw.vars[1]]]),
-                     grp2yes = as.numeric(x[[es.binary.raw.vars[2]]]),
-                     grp2no = as.numeric(x[[es.binary.raw.vars[4]]]) -
-                       as.numeric(x[[es.binary.raw.vars[2]]]),
-                     es.type = "g") %>% 
-          {data.frame(es = .$es, se = .$se)}
-      }) %>% 
-        do.call(rbind, .) -> data.g
-      
-      Vmat.g = clubSandwich::impute_covariance_matrix(
-        data.g$se^2,
-        cluster = data.che[[study.var]],
-        r = rho.within.study,
-        smooth_vi = TRUE)
-      
-      data.che$TE = data.g$es
-      metafor::rma.mv(
-        formula.fixed,
-        V = Vmat.g,
-        slab = data.che[[study.var]],
-        data = data.che,
-        random = formula.rnd,
-        test = ifelse(hakn == TRUE, "t", "z"),
-        method = "REML", 
-        sparse = TRUE) -> mCHE.g
-      
-      mCHE.g %>% 
-        {.[["b"]][1]} %>% 
-        {ifelse(.==0, Inf, 
-                metapsyNNT(., cer))} -> nnt.g
-    } else {
-      nnt.g = NA
-    }
-  
-    # Calculate total I2
-    W = diag(1/(data[[se.var]]^2))
-    X = model.matrix(mCHE)
-    P = W - W %*% X %*% solve(t(X) %*% W %*% X) %*% t(X) %*% W
-    mCHE$I2 = 100 * sum(mCHE$sigma2) /
-      (sum(mCHE$sigma2) + (mCHE$k-mCHE$p)/sum(diag(P)))
-  
-    # Calculate I2 per level
-    with(mCHE, {
-      (100 * sigma2 / 
-         (sum(sigma2) + (k-p)/sum(diag(P))))
-    }) -> I2.bw
-    mCHE$I2.between.studies = I2.bw[1]
-    mCHE$I2.within.studies = I2.bw[2]
-  
-    # Get tau and I2
-    with(mCHE, 
-         {data.frame(tau2 = c(sigma2, sum(sigma2)),
-                     i2 = c(I2.between.studies, 
-                            I2.within.studies,
-                            I2))}) -> mCHE$variance.components
-    
-    mCHE$variance.components$tau2 = 
-      round(mCHE$variance.components$tau2, 4)
-    mCHE$variance.components$i2 = 
-      round(mCHE$variance.components$i2, 1)
-    rownames(mCHE$variance.components) = 
-      c("Between Studies", "Within Studies", "Total")
-  
-    # Get results: no RVE
-    if (use.rve[1] == FALSE){
-      if ("threelevel.che" %in% which.run){
-        message("- ", crayon::green("[OK] "), 
-                "Calculating effect size using three-level CHE model... ",
-                appendLF = FALSE)
-      }
-      mCHERes = with(mCHE, {
-        data.frame(k = k.all,
-                   g = as.numeric(b[,1]) %>%
-                     ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
-                     round(round.digits),
-                   g.ci = paste0("[", 
-                                 ci.lb %>% 
-                                   ifelse(identical(.type.es, "RR"), 
-                                          exp(.), .) %>% 
-                                   round(round.digits), "; ",
-                                 ci.ub %>% 
-                                   ifelse(identical(.type.es, "RR"), 
-                                          exp(.), .) %>% 
-                                   round(round.digits), "]"),
-                   p = pval %>% scales::pvalue(),
-                   i2 = round(I2, 1),
-                   i2.ci = "-",
-                   prediction.ci = paste0(
-                     "[", 
-                     round(predict(mCHE)$pi.lb %>% 
-                             ifelse(identical(.type.es, "RR"), exp(.), .), 
-                           round.digits), "; ",
-                     round(predict(mCHE)$pi.ub %>% 
-                             ifelse(identical(.type.es, "RR"), exp(.), .), 
-                           round.digits), "]"),
-                   nnt = ifelse(identical(.type.es, "RR"), 
-                                NA, metapsyNNT(as.numeric(b[,1]), nnt.cer)) %>% 
-                     ifelse(isTRUE(.raw.bin.es), nnt.g, .) %>% 
-                     round(round.digits) %>% abs(),
-                   excluded = "none")
-      })
-      rownames(mCHERes) = "Three-Level Model (CHE)"
-      mCHERes$excluded = paste("Number of clusters/studies:", 
-                               mCHE$s.nlevels[1])
-  
-      if ("threelevel.che" %in% which.run){
-        message(crayon::green("DONE"))
-      }
-  
-      if (length(multi.study) == 0 & "threelevel.che" %in% which.run){
+    mCHEHasError = FALSE
+    if (identical(vcov[1], "complex")){
+      mCHE = 
+        fitThreeLevelHACEModel(data, es.var, se.var, arm.var.1, arm.var.2,
+                               measure.var, study.var, .raw.bin.es, .type.es, hakn,
+                               method.tau.meta, method.tau.ci, method.tau,
+                               dots, es.binary.raw.vars, round.digits,
+                               nnt.cer, which.run, mGeneral, mCombined,
+                               use.rve, rho.within.study, which.combine.var,
+                               phi.within.study, n.var.arm1, 
+                               n.var.arm2, w1.var, w2.var, time.var)
+      sendMessage(mCHE, "threelevel.che", which.run)
+      if (mCHE$has.error){
         message("- ", crayon::yellow("[!] "), 
-                "All included ES seem to be independent.",
-                " A three-level CHE model is not adequate and ",
-                "tau/I2 estimates are not trustworthy!")
-        warn.end = TRUE
-        which.run[!which.run == "threelevel.che"] -> which.run
+                "model could not be fitted using",
+                " vcov='complex'. Switching to 'simple'...")
+        mCHEHasError = TRUE
       }
-    } else {
-      
-      if ("threelevel.che" %in% which.run){
-        message("- ", crayon::green("[OK] "), 
-          "Calculating effect size using three-level CHE model (rho=", 
-                rho.within.study, ")... ",
-          appendLF = FALSE)
-        message(crayon::green("DONE"))
-        message("- ", crayon::green("[OK] "), 
-          "Robust variance estimation (RVE) used for three-level CHE model... ",
-          appendLF = FALSE)
-      }
-  
-      # Get results: RVE used
-      crit = qt(0.025, mCHE$ddf[[1]], lower.tail = FALSE)
-      tau2 = sum(mCHE$sigma2)
-      SE = clubSandwich::conf_int(mCHE, vcov = "CR2")[["SE"]]
-      pi.lb.rve = clubSandwich::conf_int(mCHE, "CR2")[["beta"]] -
-        crit * sqrt(tau2 + (SE^2))
-      pi.ub.rve = clubSandwich::conf_int(mCHE, "CR2")[["beta"]] +
-        crit * sqrt(tau2 + (SE^2))
-      if (isTRUE(.raw.bin.es)){
-        as.numeric(clubSandwich::conf_int(
-          mCHE.g, "CR2")[["beta"]]) %>% 
-          {ifelse(.==0, Inf, metapsyNNT(., cer))} -> nnt.g
-      }
-  
-      mCHERes.RVE = with(mCHE, {
-        data.frame(k = k.all,
-                   g = as.numeric(
-                     clubSandwich::conf_int(
-                       mCHE, "CR2")[["beta"]]) %>%
-                     ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
-                     round(round.digits),
-                   g.ci = paste0(
-                     "[",
-                     clubSandwich::conf_int(
-                       mCHE, "CR2")[["CI_L"]] %>%
-                       ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
-                       round(round.digits), "; ",
-                     clubSandwich::conf_int(
-                       mCHE, "CR2")[["CI_U"]] %>%
-                       ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
-                       round(round.digits), "]"),
-                   p = clubSandwich::coef_test(
-                     mCHE, "CR2")[["p_Satt"]] %>%
-                     scales::pvalue(),
-                   i2 = round(I2, 1),
-                   i2.ci = "-",
-                   prediction.ci = paste0(
-                     "[", 
-                     round(pi.lb.rve %>% 
-                             ifelse(identical(.type.es, "RR"), exp(.), .), 
-                           round.digits), "; ",
-                     round(pi.ub.rve %>% 
-                             ifelse(identical(.type.es, "RR"), exp(.), .), 
-                           round.digits), "]"),
-                   nnt = ifelse(identical(.type.es, "RR"), 
-                                NA, metapsyNNT(as.numeric(
-                                  clubSandwich::conf_int(
-                                    mCHE, "CR2")[["beta"]]), nnt.cer)) %>% 
-                     ifelse(isTRUE(.raw.bin.es), nnt.g, .) %>% 
-                     round(round.digits) %>% abs(),
-                   excluded = "none")
-      })
-      rownames(mCHERes.RVE) = "Three-Level Model (CHE)"
-      mCHERes.RVE$excluded = 
-        paste0("Number of clusters/studies: ", mCHE$s.nlevels[1],
-               "; robust variance estimation (RVE) used.")
-      mCHERes = mCHERes.RVE
-  
-      if ("threelevel.che" %in% which.run){
-        message(crayon::green("DONE"))
-      }
-  
-      if (length(multi.study) == 0 & "threelevel.che" %in% which.run){
-        message("- ", crayon::yellow("[!] "), 
-                "All included ES seem to be independent.",
-                " A three-level CHE model is not adequate and ",
-                "tau/I2 estimates are not trustworthy!")
-        warn.end = TRUE
-        which.run[!which.run == "threelevel.che"] -> which.run
+    } 
+    if (identical(vcov[1], "simple") ||
+        mCHEHasError){
+      mCHE = 
+        fitThreeLevelCHEModel(data, es.var, se.var, arm.var.1, arm.var.2,
+                              measure.var, study.var, .raw.bin.es, .type.es, hakn,
+                              method.tau.meta, method.tau.ci, method.tau,
+                              dots, es.binary.raw.vars, round.digits,
+                              nnt.cer, which.run, mGeneral, mCombined,
+                              use.rve, rho.within.study, phi.within.study)
+      sendMessage(mCHE, "threelevel.che", which.run)
+      # If model failed, add to error model list
+      if (mCHE$has.error){
+        error.model.list = append(error.model.list, "threelevel.che")
       }
     }
   } else {
     mCHE = NULL
-    mCHERes = NULL
   }
-
-
+  
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
   #                                                                           #
   #  RETURN                                                                   #
   #                                                                           #
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
-
+  
+  
   # Combine everything
-  rbind(mGeneralRes, mLowestRes, 
-        mHighestRes, mOutliersRes,
-        mInfluenceRes, mRobRes, 
-        mCombRes, mThreeLevelRes, mCHERes) -> summary
+  rbind(mGeneral$res, mLowest$res, 
+        mHighest$res, mOutliers$res,
+        mInfluence$res, mRob$res, 
+        mComb$res, mThreeLevel$res, mCHE$res) -> summary
   
   # Fill NAs 
   summary[summary == "[NA; NA]"] = "[-; -]"
@@ -1758,31 +663,31 @@ runMetaAnalysis = function(data,
   if (identical(.type.es, "RR")){
     colnames(summary)[2:3] = c("rr", "rr.ci")
   }
-
+  
   # Define ES type for all models
-  mGeneral$.type.es = .type.es
-  mComb$.type.es = .type.es
-  mLowest$.type.es = .type.es
-  mHighest$.type.es = .type.es
-  mOutliers$.type.es = .type.es
-  mInfluence$.type.es = .type.es
-  mRob$.type.es = .type.es
-  mThreeLevel$.type.es = .type.es
-  mCHE$.type.es = .type.es
+  mGeneral$m$.type.es = .type.es
+  mComb$m$.type.es = .type.es
+  mLowest$m$.type.es = .type.es
+  mHighest$m$.type.es = .type.es
+  mOutliers$m$.type.es = .type.es
+  mInfluence$m$.type.es = .type.es
+  mRob$m$.type.es = .type.es
+  mThreeLevel$m$.type.es = .type.es
+  mCHE$m$.type.es = .type.es
   
   # Return
   list(summary = summary,
-       model.overall = mGeneral,
-       model.combined = mComb,
-       model.lowest = mLowest,
-       model.highest = mHighest,
-       model.outliers = mOutliers,
-       model.influence = mInfluence,
-       model.rob = mRob,
-       model.threelevel = mThreeLevel,
-       model.threelevel.var.comp = mThreeLevel$variance.components,
-       model.threelevel.che = mCHE,
-       model.threelevel.che.var.comp = mCHE$variance.components,
+       model.overall = mGeneral$m,
+       model.combined = mComb$m,
+       model.lowest = mLowest$m,
+       model.highest = mHighest$m,
+       model.outliers = mOutliers$m,
+       model.influence = mInfluence$m,
+       model.rob = mRob$m,
+       model.threelevel = mThreeLevel$m,
+       model.threelevel.var.comp = mThreeLevel$m$variance.components,
+       model.threelevel.che = mCHE$m,
+       model.threelevel.che.var.comp = mCHE$m$variance.components,
        influence.analysis = influenceRes,
        which.run = which.run,
        data = data.original,
@@ -1792,23 +697,20 @@ runMetaAnalysis = function(data,
        use.rve = use.rve,
        call = match.call(),
        .type.es = .type.es,
-       .raw.bin.es = .raw.bin.es) -> returnlist
-  
-
+       .raw.bin.es = .raw.bin.es,
+       error.model.list = error.model.list) -> returnlist
   class(returnlist) = c("runMetaAnalysis", "list")
-
+  
   if ("lowest.highest" %in% which.run){
     message("- ", crayon::green("[OK] "), "Done!")
   }
-
-  if (warn.end == TRUE){
+  if (!identical(as.numeric(length(error.model.list)), 0) ||
+      warn.end){
     warning("There were some issues during the ",
             "calculations. Please check the report above.", 
             call. = FALSE)
   }
-
   return(returnlist)
-
 }
 
 
@@ -1824,10 +726,10 @@ runMetaAnalysis = function(data,
 #' \email{p.cuijpers@@vu.nl}
 #'
 #' @importFrom knitr kable
-#' @importFrom magrittr set_colnames
 #' @importFrom dplyr as_tibble
 #' @importFrom kableExtra kable_styling column_spec footnote
-#' @importFrom crayon green blue magenta
+#' @importFrom crayon green blue magenta bold
+#' @importFrom stringr str_sub
 #'
 #' @export
 #' @method print runMetaAnalysis
@@ -1858,34 +760,56 @@ print.runMetaAnalysis = function(x, ...){
         rownames(x$summary)[grepl("Only", rownames(x$summary))]
     }
     
-    
-    cat("Model results ")
-    cat("------------------------------------------------ \n")
-    dat = x$summary[run.models,1:8]
-    print(dplyr::as_tibble(cbind(model = rownames(dat), dat)))
+    cat(crayon::blue$bold("Model results "))
+    cat(crayon::blue$bold(
+      "------------------------------------------------ \n"))
+    dat = x$summary[run.models, 1:8]
+    tbl = dplyr::as_tibble(cbind(Model = rownames(dat), dat))
+    old = options(pillar.bold=TRUE)
+    tbl.format = format(tbl)[-c(1,3)]
+    tbl.format[-1] = lapply(tbl.format[-1], 
+                            function(x) stringr::str_sub(x, 19))
+    tbl.format[1] = stringr::str_sub(tbl.format[1], 3)
+    cat(do.call(c, tbl.format), sep="\n")
+    options(old)
     
     # Add publication bias corrected results
     cat("\n")
-    cat(paste0("Publication bias correction ('", 
+    cat(crayon::blue$bold(paste0("Publication bias correction ('", 
                x$correctPublicationBias$which.run,
-               "' model) "))
-    cat("----------------------- \n")
+               "' model) ")))
+    cat(crayon::blue$bold("----------------------- \n"))
     dat.pb = x$correctPublicationBias$summary[,1:8]
-    print(dplyr::as_tibble(cbind(model = rownames(dat.pb), dat.pb)))
+    tbl.pb = dplyr::as_tibble(cbind(Model = rownames(dat.pb), dat.pb))
+    old = options(pillar.bold=TRUE)
+    tbl.format.pb = format(tbl.pb)[-c(1,3)]
+    tbl.format.pb[-1] = lapply(tbl.format.pb[-1], 
+                            function(x) stringr::str_sub(x, 19))
+    tbl.format.pb[1] = stringr::str_sub(tbl.format.pb[1], 3)
+    cat(do.call(c, tbl.format.pb), sep="\n")
+    options(old)
     
     
     if ("threelevel" %in% x$which.run){
       cat("\n")
-      cat("Variance components (three-level model) ")
-      cat("---------------------- \n")
-      print(x$model.threelevel.var.comp)
+      cat(crayon::blue$bold("Variance components (three-level model) "))
+      cat(crayon::blue$bold("---------------------- \n"))
+      if (is.na(x$model.threelevel.var.comp)[1]){
+        cat("-")
+      } else {
+        print(x$model.threelevel.var.comp)
+      }
     }
     
     if ("threelevel.che" %in% x$which.run){
       cat("\n")
-      cat("Variance components (three-level CHE model) ")
-      cat("------------------ \n")
-      print(x$model.threelevel.che.var.comp)
+      cat(crayon::blue$bold("Variance components (three-level CHE model) "))
+      cat(crayon::blue$bold("------------------ \n"))
+      if (is.na(x$model.threelevel.che.var.comp)[1]){
+        cat("-")
+      } else {
+        print(x$model.threelevel.che.var.comp)
+      }
     }
     
     
@@ -1918,7 +842,7 @@ print.runMetaAnalysis = function(x, ...){
       x$summary %>%
         {.$Analysis = rownames(.); rownames(.) = NULL; .} %>%
         dplyr::select(Analysis, dplyr::everything(), -excluded) %>%
-        magrittr::set_colnames(c(".", "<i>k</i>", 
+        setColnames(c(".", "<i>k</i>", 
                                  ifelse(identical(x$.type.es, "RR"), 
                                         "<i>RR</i>",
                                         "<i>g</i>"), 
@@ -1956,23 +880,39 @@ print.runMetaAnalysis = function(x, ...){
         rownames(x$summary)[grepl("Only", rownames(x$summary))]
     }
     
-    cat("Model results ")
-    cat("------------------------------------------------ \n")
+    cat(crayon::blue$bold("Model results "))
+    cat(crayon::blue$bold(
+      "------------------------------------------------ \n"))
     dat = x$summary[run.models, 1:8]
-    print(dplyr::as_tibble(cbind(model = rownames(dat), dat)))
+    tbl = dplyr::as_tibble(cbind(Model = rownames(dat), dat))
+    old = options(pillar.bold=TRUE)
+    tbl.format = format(tbl)[-c(1,3)]
+    tbl.format[-1] = lapply(tbl.format[-1], 
+                            function(x) stringr::str_sub(x, 19))
+    tbl.format[1] = stringr::str_sub(tbl.format[1], 3)
+    cat(do.call(c, tbl.format), sep="\n")
+    options(old)
     
     if ("threelevel" %in% x$which.run){
       cat("\n")
-      cat("Variance components (three-level model) ")
-      cat("---------------------- \n")
-      print(x$model.threelevel.var.comp)
+      cat(crayon::blue$bold("Variance components (three-level model) "))
+      cat(crayon::blue$bold("---------------------- \n"))
+      if (is.na(x$model.threelevel.var.comp)[1]){
+        cat("-")
+      } else {
+        print(x$model.threelevel.var.comp) 
+      }
     }
     
     if ("threelevel.che" %in% x$which.run){
       cat("\n")
-      cat("Variance components (three-level CHE model) ")
-      cat("------------------ \n")
-      print(x$model.threelevel.che.var.comp)
+      cat(crayon::blue$bold("Variance components (three-level CHE model) "))
+      cat(crayon::blue$bold("------------------ \n"))
+      if (is.na(x$model.threelevel.che.var.comp)[1]){
+        cat("-")
+      } else {
+        print(x$model.threelevel.che.var.comp) 
+      }
     }
     
     if (x$html == TRUE){
@@ -1993,7 +933,7 @@ print.runMetaAnalysis = function(x, ...){
       x$summary %>%
         {.$Analysis = rownames(.); rownames(.) = NULL; .} %>%
         dplyr::select(Analysis, dplyr::everything(), -excluded) %>%
-        magrittr::set_colnames(c(".", "<i>k</i>", 
+        setColnames(c(".", "<i>k</i>", 
                                  ifelse(identical(x$.type.es, "RR"), 
                                         "<i>RR</i>",
                                         "<i>g</i>"), 
@@ -2378,7 +1318,6 @@ plot.runMetaAnalysis = function(x, which = NULL, ...){
 #'
 #' @importFrom knitr kable
 #' @importFrom meta metagen forest.meta
-#' @importFrom magrittr set_colnames
 #' @importFrom dplyr as_tibble
 #' @importFrom kableExtra kable_styling column_spec footnote
 #' @importFrom stringr str_replace_all

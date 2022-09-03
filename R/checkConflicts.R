@@ -61,7 +61,6 @@
 #' @importFrom crayon green yellow
 #' @importFrom dplyr select filter group_map group_by
 #' @importFrom stringr str_replace_all str_remove_all
-#' @importFrom magrittr set_names
 #' @importFrom stats dffits model.matrix rnorm rstudent
 #' @importFrom utils combn
 #' @export checkConflicts

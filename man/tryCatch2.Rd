@@ -5,11 +5,15 @@
 \title{\code{tryCatch} alternative that saves the error message}
 \usage{
 tryCatch2(expr)
+
+tryCatch2(expr)
 }
 \arguments{
 \item{expr}{R expression.}
 }
 \description{
 \code{tryCatch} alternative that saves the error message
+
+Try function and catch errors
 }
 \keyword{internal}

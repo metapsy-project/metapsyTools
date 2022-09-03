@@ -144,7 +144,6 @@
 #' @importFrom purrr pmap_dfr map
 #' @importFrom esc esc_mean_sd
 #' @importFrom stringr str_remove str_replace str_replace_all
-#' @import magrittr
 #' @import dplyr
 #' @importFrom crayon yellow green
 #' @importFrom stats dffits model.matrix rnorm rstudent

@@ -334,7 +334,6 @@ subgroupAnalysis = function(.model, ...,
 #' Paula Kuper \email{paula.r.kuper@@gmail.com}, Pim Cuijpers \email{p.cuijpers@@vu.nl}
 #'
 #' @importFrom knitr kable
-#' @importFrom magrittr set_colnames
 #' @importFrom dplyr as_tibble
 #' @importFrom kableExtra kable_styling column_spec collapse_rows
 #'
@@ -360,7 +359,7 @@ print.subgroupAnalysis = function(x, ...){
     }
 
     x$summary %>%
-      magrittr::set_colnames(colNames) %>%
+      setColnames(colNames) %>%
       knitr::kable(escape = FALSE) %>%
       kableExtra::kable_styling(font_size = 8, full_width = FALSE) %>%
       kableExtra::column_spec(1, bold = TRUE) %>%
