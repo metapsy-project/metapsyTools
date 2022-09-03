@@ -231,12 +231,23 @@ over time. Furthermore, it is possible to calculate a correlation coefficient \m
 multi-arm trials, which is directly proportional to the size of each individual trial arm. When all trial
 arms have the same size, meaning that each arm's weight \mjeqn{w}{w} is identical,
 \mjeqn{\rho_w}{\rho_w} is known to be 0.5. Multiarm weights \mjeqn{w}{w} (and thus
-\mjeqn{\rho_w}{\rho_w}) can be derived if the \code{w1.var} and \code{w2.var} variables,
+\mjeqn{\rho_w}{w}) can be derived if the \code{w1.var} and \code{w2.var} variables,
 containing the sample size of each study arm, are provided.
 
 Using the complex approximation method increases the risk that at least one studies' \mjeqn{V_k}{V_k} matrix
 is positive definite. In this case, the function automatically switches back to the
 constant sampling correlation approximation.
+}
+
+\subsection{Replacement functions}{
+
+Once a model has been fitted using \code{runMetaAnalysis}, \strong{replacement functions}
+are defined for each function argument. This allows to quickly tweak one or
+more analysis settings, which are implemented once the \code{rerun} function is called.
+Say that we saved the results of \code{runMetaAnalysis} in an object \code{m}. If, for example, we want
+to check the results using a different estimator of \mjeqn{\tau^2}{\tau^2}, leaving
+all other settings the same, we could run e.g. \code{method.tau(m) = "PM"}, followed by
+\code{rerun(m)}. This would provides using the Paule-Mandel estimator.
 
 For more details see the \href{https://tools.metapsy.org/articles/metapsytools}{Get Started} vignette.
 }
@@ -255,6 +266,12 @@ depressionPsyCtr \%>\%
 
 # Run the meta-analyses
 runMetaAnalysis(data) -> res
+
+# Use replacement function to show results for
+# differing settings
+method.tau(res) <- "PM"
+vcov(res) <- "complex"
+rerun(res)
 
 # Show summary
 res

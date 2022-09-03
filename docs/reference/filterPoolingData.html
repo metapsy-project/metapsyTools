@@ -112,25 +112,25 @@ Paula Kuper <a href="mailto:paula.r.kuper@gmail.com">paula.r.kuper@gmail.com</a>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span>
 <span class="r-in"></span>
 <span class="r-in"><span class="co"># Example 1: calculate effect sizes and then use multiple AND filters.</span></span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"depressionPsyCtr"</span><span class="op">)</span></span>
+<span class="r-in"><span class="fu"><a href="Replacement-functions.html">data</a></span><span class="op">(</span><span class="st">"depressionPsyCtr"</span><span class="op">)</span></span>
 <span class="r-in"><span class="va">depressionPsyCtr</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
 <span class="r-in">  <span class="fu"><a href="calculateEffectSizes.html">calculateEffectSizes</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
 <span class="r-in">  <span class="fu">filterPoolingData</span><span class="op">(</span><span class="va">time</span> <span class="op">==</span> <span class="st">"post"</span>, <span class="va">instrument</span> <span class="op">==</span> <span class="st">"hdrs"</span><span class="op">)</span></span>
 <span class="r-in"></span>
 <span class="r-in"><span class="co"># Example 2: use OR filter</span></span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"depressionPsyCtr"</span><span class="op">)</span></span>
+<span class="r-in"><span class="fu"><a href="Replacement-functions.html">data</a></span><span class="op">(</span><span class="st">"depressionPsyCtr"</span><span class="op">)</span></span>
 <span class="r-in"><span class="va">depressionPsyCtr</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
 <span class="r-in">  <span class="fu"><a href="calculateEffectSizes.html">calculateEffectSizes</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
 <span class="r-in">  <span class="fu">filterPoolingData</span><span class="op">(</span><span class="va">time</span> <span class="op">==</span> <span class="st">"post"</span> <span class="op">|</span> <span class="va">instrument</span> <span class="op">==</span> <span class="st">"hdrs"</span><span class="op">)</span></span>
 <span class="r-in"></span>
 <span class="r-in"><span class="co"># Example 3: use %in% operator</span></span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"depressionPsyCtr"</span><span class="op">)</span></span>
+<span class="r-in"><span class="fu"><a href="Replacement-functions.html">data</a></span><span class="op">(</span><span class="st">"depressionPsyCtr"</span><span class="op">)</span></span>
 <span class="r-in"><span class="va">depressionPsyCtr</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
 <span class="r-in">  <span class="fu"><a href="calculateEffectSizes.html">calculateEffectSizes</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
 <span class="r-in">  <span class="fu">filterPoolingData</span><span class="op">(</span><span class="va">instrument</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"hdrs"</span>, <span class="st">"phq-9"</span><span class="op">)</span><span class="op">)</span></span>
 <span class="r-in"></span>
 <span class="r-in"><span class="co"># Example 4: Search for studies using "fuzzy-ish" matching</span></span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"depressionPsyCtr"</span><span class="op">)</span></span>
+<span class="r-in"><span class="fu"><a href="Replacement-functions.html">data</a></span><span class="op">(</span><span class="st">"depressionPsyCtr"</span><span class="op">)</span></span>
 <span class="r-in"><span class="va">depressionPsyCtr</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
 <span class="r-in">  <span class="fu"><a href="calculateEffectSizes.html">calculateEffectSizes</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
 <span class="r-in">  <span class="fu">filterPoolingData</span><span class="op">(</span><span class="fu"><a href="Detect.html">Detect</a></span><span class="op">(</span><span class="va">instrument</span>, <span class="st">"bdi"</span><span class="op">)</span><span class="op">)</span></span>

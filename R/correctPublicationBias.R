@@ -570,7 +570,8 @@ correctPublicationBias = function(model,
        model.trimfill = mTrimFill$value,
        model.limitmeta = mLimit$value,
        model.selection = mSelmodel,
-       which.run = which.run) -> returnlist[["correctPublicationBias"]]
+       which.run = which.run,
+       call = match.call()) -> returnlist[["correctPublicationBias"]]
   
   class(returnlist) = c("runMetaAnalysis", "correctPublicationBias", "list")
   

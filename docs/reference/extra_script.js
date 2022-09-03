@@ -47,6 +47,7 @@ var container = document.getElementsByClassName('container');
 container[0].style.paddingTop = "13px";
 nav[0].insertBefore(strip, nav[0].firstChild);
 
-
+var ghLink = document.getElementsByClassName('dont-index')[0];
+ghLink.style.display = 'none';
 
 

@@ -49,14 +49,6 @@ reference:
   - subgroupAnalysis
   - starts_with("metaRegression")
   - createStudyTable
-- title: "S3 Methods & Helper Functions"
-  desc: "Additional functionality for core functions."
-  contents:
-  - starts_with("metapsy")
-  - imputeResponse
-  - starts_with("plot")
-  - starts_with("print")
-  - starts_with("summary")
 - title: "Effect Size Calculators"
   desc: "Default plug-in functions used by `calculateEffectSizes`."
   contents:
@@ -66,6 +58,15 @@ reference:
   - g.precalc
   - rr.precalc
   - rr.binary
+- title: "S3 Methods & Helper Functions"
+  desc: "Additional functionality for core functions."
+  contents:
+  - starts_with("metapsy")
+  - imputeResponse
+  - starts_with("plot")
+  - starts_with("print")
+  - starts_with("summary")
+  - starts_with("Replacement")
 - title: "Datasets"
   contents:
   - depressionPsyCtr

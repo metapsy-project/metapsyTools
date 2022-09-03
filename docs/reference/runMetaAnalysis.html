@@ -290,6 +290,19 @@ containing the sample size of each study arm, are provided.</p>
 <p>Using the complex approximation method increases the risk that at least one studies' <em></em>\(V_k\) matrix
 is positive definite. In this case, the function automatically switches back to the
 constant sampling correlation approximation.</p>
+</div>
+
+<div class="section">
+<h3 id="replacement-functions">Replacement functions<a class="anchor" aria-label="anchor" href="#replacement-functions"></a></h3>
+
+
+<p>Once a model has been fitted using <code>runMetaAnalysis</code>, <strong>replacement functions</strong>
+are defined for each function argument. This allows to quickly tweak one or
+more analysis settings, which are implemented once the <code>rerun</code> function is called.
+Say that we saved the results of <code>runMetaAnalysis</code> in an object <code>m</code>. If, for example, we want
+to check the results using a different estimator of <em></em>\(\tau^2\), leaving
+all other settings the same, we could run e.g. <code>method.tau(m) = "PM"</code>, followed by
+<code>rerun(m)</code>. This would provides using the Paule-Mandel estimator.</p>
 <p>For more details see the <a href="https://tools.metapsy.org/articles/metapsytools" class="external-link">Get Started</a> vignette.</p>
 </div>
 
@@ -309,7 +322,7 @@ Paula Kuper <a href="mailto:paula.r.kuper@gmail.com">paula.r.kuper@gmail.com</a>
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"depressionPsyCtr"</span><span class="op">)</span></span>
+<span class="r-in"><span class="fu"><a href="Replacement-functions.html">data</a></span><span class="op">(</span><span class="st">"depressionPsyCtr"</span><span class="op">)</span></span>
 <span class="r-in"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/guido-s/meta/" class="external-link">meta</a></span><span class="op">)</span></span>
 <span class="r-in"></span>
 <span class="r-in"><span class="va">depressionPsyCtr</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
@@ -321,6 +334,12 @@ Paula Kuper <a href="mailto:paula.r.kuper@gmail.com">paula.r.kuper@gmail.com</a>
 <span class="r-in"></span>
 <span class="r-in"><span class="co"># Run the meta-analyses</span></span>
 <span class="r-in"><span class="fu">runMetaAnalysis</span><span class="op">(</span><span class="va">data</span><span class="op">)</span> <span class="op">-&gt;</span> <span class="va">res</span></span>
+<span class="r-in"></span>
+<span class="r-in"><span class="co"># Use replacement function to show results for</span></span>
+<span class="r-in"><span class="co"># differing settings</span></span>
+<span class="r-in"><span class="fu"><a href="Replacement-functions.html">method.tau</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">"PM"</span></span>
+<span class="r-in"><span class="fu"><a href="Replacement-functions.html">vcov</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">"complex"</span></span>
+<span class="r-in"><span class="fu"><a href="Replacement-functions.html">rerun</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span>
 <span class="r-in"></span>
 <span class="r-in"><span class="co"># Show summary</span></span>
 <span class="r-in"><span class="va">res</span></span>
