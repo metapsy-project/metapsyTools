@@ -37,8 +37,8 @@ runMetaAnalysis(data,
                 phi.within.study = 0.9,
                 w1.var = ifelse(identical(es.measure[1], "g"), 
                                 "n_arm1", "totaln_arm1"),
-                                w2.var = ifelse(identical(es.measure[1], "g"), 
-                                                "n_arm2", "totaln_arm2"),
+                w2.var = ifelse(identical(es.measure[1], "g"), 
+                                "n_arm2", "totaln_arm2"),
                 time.var = "time_weeks",
                 vcov = c("simple", "complex"),
                 use.rve = TRUE,
@@ -207,7 +207,7 @@ complex dependence structures.
 
 The \code{vcov} argument controls if the effect size dependencies within the data
 should be approximated using a \code{"simple"} (default) or more \code{"complex"} (but potentially more accurate)
-method. This argument is only relevant for the \code{"combined"} and \code{threelevel.che} models. The default
+method. This argument is only relevant for the \code{"combined"} and \code{"threelevel.che"} models. The default
 "simple" method constructs variance-covariance matrices \mjeqn{V_k}{V_k} for each study using a
 constant sampling correlation \mjeqn{\rho}{\rho} (defined by \code{rho.within.study}), which is identical across all studies, outcomes, and time points.
 This simplifying assumption is part of the formulation of the CHE model originally provided by
@@ -222,7 +222,7 @@ heterogeneous compound symmetry matrix with fixed \mjeqn{\rho}{\rho}, as is used
 
 \mjtdeqn{\small \begin{array}{ccc} \texttt{vcov="simple"} & \texttt{vcov="complex"} & \\\ V_k =\left\link[= \\begin{array}{cccc} v_1 & & & \\\\\\ \\rho v_2 v_1 & v_2 & & \\\\\\ \\rho v_3 v_1 & \\rho v_3 v_2 & v_3 & \\\\\\ \\rho v_4 v_1 & \\rho v_4 v_2 & \\rho v_4 v_3 & v_4 \\end{array} \\right]{ \begin{array}{cccc} v_1 & & & \\\ \rho v_2 v_1 & v_2 & & \\\ \rho v_3 v_1 & \rho v_3 v_2 & v_3 & \\\ \rho v_4 v_1 & \rho v_4 v_2 & \rho v_4 v_3 & v_4 \end{array} \right} & \left\link[= \\begin{array}{cccc} v_1 & & & \\\\\\ \\rho_{21} v_2 v_1 & v_2 & & \\\\\\ \\rho_{31} v_3 v_1 & \\rho_{32} v_3 v_2 & v_3 & \\\\\\ \\rho_{41} v_4 v_1 & \\rho_{42} v_4 v_2 & \\rho_{43} v_4 v_3 & v_4 \\end{array} \\right]{ \begin{array}{cccc} v_1 & & & \\\ \rho_{21} v_2 v_1 & v_2 & & \\\ \rho_{31} v_3 v_1 & \rho_{32} v_3 v_2 & v_3 & \\\ \rho_{41} v_4 v_1 & \rho_{42} v_4 v_2 & \rho_{43} v_4 v_3 & v_4 \end{array} \right} &  \end{array}}{\begin{array}{ccc}\texttt{vcov="simple"} & \texttt{vcov="complex"} & \\\\\ V_k = \begin{bmatrix} v_1 \\\\\ \rho v_2 v_1 & v_2 & & \\\\\ \rho v_3 v_1 & \rho v_3 v_2 & v_3 & \\\\\ \rho v_4 v_1 & \rho v_4 v_2 & \rho v_4 v_3 & v_4 \end{bmatrix} & V_k = \begin{bmatrix} v_1 & & & \\\\\ \rho_{21} v_2 v_1 & v_2 & & \\\\\ \rho_{31} v_3 v_1 & \rho_{32} v_3 v_2 & v_3 & \\\\\ \rho_{41} v_4 v_1 & \rho_{42} v_4 v_2 & \rho_{43} v_4 v_3 & v_4 \end{bmatrix} &  \end{array}}{}
 
-Setting \code{vcov = "complex"} allows to additionally incorporate assumed correlations specific to multiple testing over time
+For example, setting \code{vcov = "complex"} allows to additionally incorporate assumed correlations specific to multiple testing over time
 (e.g. correlations between effects at post-test and long-term follow-up). The value provided in
 \code{phi.within.study} represents the (auto-)correlation coefficient \mjeqn{\phi}{\phi}, which serves
 as a rough estimate of the re-test correlation after 1 week. When a vector of follow-up lengths
@@ -230,8 +230,8 @@ is provided in \code{time.var}, this allows to model the gradual decrease in cor
 over time. Furthermore, it is possible to calculate a correlation coefficient \mjeqn{\rho_w}{\rho_w} for
 multi-arm trials, which is directly proportional to the size of each individual trial arm. When all trial
 arms have the same size, meaning that each arm's weight \mjeqn{w}{w} is identical,
-\mjeqn{\rho_w}{\rho_w} is known to be 0.5. Multiarm weights \mjeqn{w}{w} can be
-derived if the \code{w1.var} and \code{w2.var} variables,
+\mjeqn{\rho_w}{\rho_w} is known to be 0.5. Multiarm weights \mjeqn{w}{w} (and thus
+\mjeqn{\rho_w}{\rho_w}) can be derived if the \code{w1.var} and \code{w2.var} variables,
 containing the sample size of each study arm, are provided.
 
 Using the complex approximation method increases the risk that at least one studies' \mjeqn{V_k}{V_k} matrix

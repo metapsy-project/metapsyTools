@@ -96,8 +96,8 @@ different meta-analytic approaches.
                 phi.within.study <span class="op">=</span> <span class="fl">0.9</span>,
                 w1.var <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical</a></span><span class="op">(</span><span class="va">es.measure</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="st">"g"</span><span class="op">)</span>, 
                                 <span class="st">"n_arm1"</span>, <span class="st">"totaln_arm1"</span><span class="op">)</span>,
-                                w2.var <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical</a></span><span class="op">(</span><span class="va">es.measure</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="st">"g"</span><span class="op">)</span>, 
-                                                <span class="st">"n_arm2"</span>, <span class="st">"totaln_arm2"</span><span class="op">)</span>,
+                w2.var <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical</a></span><span class="op">(</span><span class="va">es.measure</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="st">"g"</span><span class="op">)</span>, 
+                                <span class="st">"n_arm2"</span>, <span class="st">"totaln_arm2"</span><span class="op">)</span>,
                 time.var <span class="op">=</span> <span class="st">"time_weeks"</span>,
                 vcov <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"simple"</span>, <span class="st">"complex"</span><span class="op">)</span>,
                 use.rve <span class="op">=</span> <span class="cn">TRUE</span>,
@@ -264,7 +264,7 @@ complex dependence structures.</p></li>
 
 <p>The <code>vcov</code> argument controls if the effect size dependencies within the data
 should be approximated using a <code>"simple"</code> (default) or more <code>"complex"</code> (but potentially more accurate)
-method. This argument is only relevant for the <code>"combined"</code> and <code>threelevel.che</code> models. The default
+method. This argument is only relevant for the <code>"combined"</code> and <code>"threelevel.che"</code> models. The default
 "simple" method constructs variance-covariance matrices <em></em>\(V_k\) for each study using a
 constant sampling correlation <em></em>\(\rho\) (defined by <code>rho.within.study</code>), which is identical across all studies, outcomes, and time points.
 This simplifying assumption is part of the formulation of the CHE model originally provided by
@@ -276,7 +276,7 @@ sizes may differ conditional on the type of dependency. This means that the vari
 approximated by an unstructured matrix with varying <em></em>\(\rho_{ij}\) (instead of a
 heterogeneous compound symmetry matrix with fixed <em></em>\(\rho\), as is used when <code>vcov="simple"</code>).</p>
 <p>\[\begin{array}{ccc}\texttt{vcov="simple"} &amp; \texttt{vcov="complex"} &amp; \\ V_k = \begin{bmatrix} v_1 \\ \rho v_2 v_1 &amp; v_2 &amp; &amp; \\ \rho v_3 v_1 &amp; \rho v_3 v_2 &amp; v_3 &amp; \\ \rho v_4 v_1 &amp; \rho v_4 v_2 &amp; \rho v_4 v_3 &amp; v_4 \end{bmatrix} &amp; V_k = \begin{bmatrix} v_1 &amp; &amp; &amp; \\ \rho_{21} v_2 v_1 &amp; v_2 &amp; &amp; \\ \rho_{31} v_3 v_1 &amp; \rho_{32} v_3 v_2 &amp; v_3 &amp; \\ \rho_{41} v_4 v_1 &amp; \rho_{42} v_4 v_2 &amp; \rho_{43} v_4 v_3 &amp; v_4 \end{bmatrix} &amp;  \end{array}\]</p>
-<p>Setting <code>vcov = "complex"</code> allows to additionally incorporate assumed correlations specific to multiple testing over time
+<p>For example, setting <code>vcov = "complex"</code> allows to additionally incorporate assumed correlations specific to multiple testing over time
 (e.g. correlations between effects at post-test and long-term follow-up). The value provided in
 <code>phi.within.study</code> represents the (auto-)correlation coefficient <em></em>\(\phi\), which serves
 as a rough estimate of the re-test correlation after 1 week. When a vector of follow-up lengths
@@ -284,8 +284,8 @@ is provided in <code>time.var</code>, this allows to model the gradual decrease 
 over time. Furthermore, it is possible to calculate a correlation coefficient <em></em>\(\rho_w\) for
 multi-arm trials, which is directly proportional to the size of each individual trial arm. When all trial
 arms have the same size, meaning that each arm's weight <em></em>\(w\) is identical,
-<em></em>\(\rho_w\) is known to be 0.5. Multiarm weights <em></em>\(w\) can be
-derived if the <code>w1.var</code> and <code>w2.var</code> variables,
+<em></em>\(\rho_w\) is known to be 0.5. Multiarm weights <em></em>\(w\) (and thus
+<em></em>\(\rho_w\)) can be derived if the <code>w1.var</code> and <code>w2.var</code> variables,
 containing the sample size of each study arm, are provided.</p>
 <p>Using the complex approximation method increases the risk that at least one studies' <em></em>\(V_k\) matrix
 is positive definite. In this case, the function automatically switches back to the
