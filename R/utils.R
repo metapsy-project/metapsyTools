@@ -1509,8 +1509,8 @@ fitOutliersModel = function(data, study.var, multi.study,
     })
   }
   rownames(mOutliersRes) = "Outliers removed"
-  if (length(mOutliers$value$data$comparison
-             [mOutliers$value$exclude]) != 0){
+  if (length(mOutliers$value$data$comparison[mOutliers$value$exclude]) != 0 ||
+      sum(mOutliers$value$exclude) > 0){
     if (identical(which.outliers[1], "combined")){
       mOutliersRes$excluded = paste(mOutliers$value$studlab
                                     [mOutliers$value$exclude], collapse = "; ")

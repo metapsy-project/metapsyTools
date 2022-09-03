@@ -524,7 +524,7 @@ runMetaAnalysis = function(data,
       selectOutlierModel(
         which.run, mGeneral, mComb, which.outliers)
     m.for.outliers = outlier.settings$m.for.outliers
-    which.outliers = which.outliers
+    which.outliers = outlier.settings$which.outliers
     
     mOutliers = fitOutliersModel(data, study.var, multi.study,
                                  mGeneral, .type.es, round.digits,
