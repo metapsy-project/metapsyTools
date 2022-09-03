@@ -78,7 +78,7 @@
 #' 
 #' m <- runMetaAnalysis(data, "combined")
 #' 
-#' # Compare results which other tau-estimator is used
+#' # Compare results when other tau^2 estimator is used
 #' method.tau(m) <- "DL"
 #' rerun(m)
 #' }

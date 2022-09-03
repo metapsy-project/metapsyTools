@@ -301,8 +301,9 @@ are defined for each function argument. This allows to quickly tweak one or
 more analysis settings, which are implemented once the <code>rerun</code> function is called.
 Say that we saved the results of <code>runMetaAnalysis</code> in an object <code>m</code>. If, for example, we want
 to check the results using a different estimator of <em></em>\(\tau^2\), leaving
-all other settings the same, we could run e.g. <code>method.tau(m) = "PM"</code>, followed by
-<code>rerun(m)</code>. This would provides using the Paule-Mandel estimator.</p>
+all other settings the same, we could run e.g. <code>method.tau(m) &lt;- "PM"</code>, followed by
+<code>rerun(m)</code>. This would provide results using the Paule-Mandel estimator. A list of all available
+setting replacement functions is provided <a href="https://tools.metapsy.org/reference/replacement-functions" class="external-link">here</a>.</p>
 <p>For more details see the <a href="https://tools.metapsy.org/articles/metapsytools" class="external-link">Get Started</a> vignette.</p>
 </div>
 

@@ -246,8 +246,9 @@ are defined for each function argument. This allows to quickly tweak one or
 more analysis settings, which are implemented once the \code{rerun} function is called.
 Say that we saved the results of \code{runMetaAnalysis} in an object \code{m}. If, for example, we want
 to check the results using a different estimator of \mjeqn{\tau^2}{\tau^2}, leaving
-all other settings the same, we could run e.g. \code{method.tau(m) = "PM"}, followed by
-\code{rerun(m)}. This would provides using the Paule-Mandel estimator.
+all other settings the same, we could run e.g. \code{method.tau(m) <- "PM"}, followed by
+\code{rerun(m)}. This would provide results using the Paule-Mandel estimator. A list of all available
+setting replacement functions is provided \href{https://tools.metapsy.org/reference/replacement-functions}{here}.
 
 For more details see the \href{https://tools.metapsy.org/articles/metapsytools}{Get Started} vignette.
 }

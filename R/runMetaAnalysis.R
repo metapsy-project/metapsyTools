@@ -274,8 +274,9 @@
 #' more analysis settings, which are implemented once the `rerun` function is called.
 #' Say that we saved the results of `runMetaAnalysis` in an object `m`. If, for example, we want 
 #' to check the results using a different estimator of \mjeqn{\tau^2}{\tau^2}, leaving
-#' all other settings the same, we could run e.g. `method.tau(m) = "PM"`, followed by
-#' `rerun(m)`. This would provides using the Paule-Mandel estimator.
+#' all other settings the same, we could run e.g. `method.tau(m) <- "PM"`, followed by
+#' `rerun(m)`. This would provide results using the Paule-Mandel estimator. A list of all available
+#' setting replacement functions is provided [here](https://tools.metapsy.org/reference/replacement-functions).
 #' 
 #' 
 #' For more details see the [Get Started](https://tools.metapsy.org/articles/metapsytools) vignette.
