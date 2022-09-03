@@ -271,7 +271,7 @@ runMetaAnalysis(data) -> res
 # Use replacement function to show results for
 # differing settings
 method.tau(res) <- "PM"
-vcov(res) <- "complex"
+hakn(res) <- FALSE
 rerun(res)
 
 # Show summary
