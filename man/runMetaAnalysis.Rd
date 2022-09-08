@@ -41,6 +41,7 @@ runMetaAnalysis(data,
                                 "n_arm2", "totaln_arm2"),
                 time.var = "time_weeks",
                 vcov = c("simple", "complex"),
+                near.pd = FALSE,
                 use.rve = TRUE,
                 html = TRUE,
                 ...)
@@ -146,13 +147,17 @@ sizes of the first arm are stored. See "Details".}
 \item{w2.var}{\code{character}. Name of the variable in \code{data} in which
 the sample sizes of the second arm are stored. See "Details".}
 
-\item{time.var}{\code{character} Name of the variable in \code{data} in which the assessment time point is stored.
+\item{time.var}{\code{character}. Name of the variable in \code{data} in which the assessment time point is stored.
 Should be expressed as weeks since randomization; other units (e.g. days, months) are also possible if \code{phi.within.study}
 is specified accordingly. See "Details".}
 
-\item{vcov}{\code{character} For the \code{"combined"} and \code{"threelevel.che"} model, should variance-covariance matrices
+\item{vcov}{\code{character}. For the \code{"combined"} and \code{"threelevel.che"} model, should variance-covariance matrices
 (representing the dependency structure of the data) be approximated using a heterogeneous compound symmetry (\code{"simple"}; default)
 or unstructured matrix structure (\code{"complex"})? See "Details".}
+
+\item{near.pd}{\code{logical}. If at least one of the study variance-covariance matrices constructed
+when \code{vcov="complex"} is not positive definite/invertible, should the \code{\link[Matrix]{nearPD}} function
+be used to compute the nearest positive definite matrix? Default is \code{FALSE}.}
 
 \item{use.rve}{\code{logical}. Should robust variance estimation be used to calculate confidence intervals and tests of three-level models?
 \code{TRUE} by default.}

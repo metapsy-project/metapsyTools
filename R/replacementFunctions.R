@@ -1,10 +1,3 @@
-#d = metapsyData::getData("depression-inpatients")
-#
-#
-#runMetaAnalysis(d, "combined") -> m
-#method.tau(m) = "REML"
-#correctPublicationBias(m) -> m
-
 #' Replacement functions for "runMetaAnalysis" results objects
 #'
 #' Once a model has been fitted using `runMetaAnalysis`,
@@ -45,14 +38,15 @@
 #' w1.var(x) <- value
 #' w2.var(x) <- value
 #' vcov(x) <- value
+#' near.pd(x) <- value
 #' use.rve(x) <- value
 #' html(x) <- value
 #' lower.is.better(x) <- value
 #' selmodel.steps(x) <- value
 #' rerun(m)
 #' 
-#' @export data<- which.run<- which.run es.measure es.measure<- es.type es.type<- es.var es.var<- se.var se.var<- es.binary.raw.vars es.binary.raw.vars<- method.tau method.tau<- hakn hakn<- study.var study.var<- arm.var.1 arm.var.1<- arm.var.2 arm.var.2<- measure.var measure.var<- low.rob.filter low.rob.filter<- method.tau.ci method.tau.ci<- which.combine which.combine<- which.combine.var which.combine.var<- which.outliers which.outliers<- which.influence which.influence<- which.rob which.rob<- nnt.cer nnt.cer<- rho.within.study rho.within.study<- phi.within.study phi.within.study<- w1.var w1.var<- w2.var w2.var<- vcov<- use.rve use.rve<- html html<- lower.is.better lower.is.better<- selmodel.steps selmodel.steps<- rerun
-#' @aliases data which.run es.measure es.type es.var se.var es.binary.raw.vars 
+#' @export data<- which.run<- which.run near.pd near.pd<- es.measure es.measure<- es.type es.type<- es.var es.var<- se.var se.var<- es.binary.raw.vars es.binary.raw.vars<- method.tau method.tau<- hakn hakn<- study.var study.var<- arm.var.1 arm.var.1<- arm.var.2 arm.var.2<- measure.var measure.var<- low.rob.filter low.rob.filter<- method.tau.ci method.tau.ci<- which.combine which.combine<- which.combine.var which.combine.var<- which.outliers which.outliers<- which.influence which.influence<- which.rob which.rob<- nnt.cer nnt.cer<- rho.within.study rho.within.study<- phi.within.study phi.within.study<- w1.var w1.var<- w2.var w2.var<- vcov<- use.rve use.rve<- html html<- lower.is.better lower.is.better<- selmodel.steps selmodel.steps<- rerun
+#' @aliases data which.run near.pd es.measure es.type es.var se.var es.binary.raw.vars 
 #' method.tau hakn study.var arm.var.1 arm.var.2 measure.var low.rob.filter 
 #' method.tau.ci round.digits which.combine which.combine.var which.outliers 
 #' which.influence which.rob nnt.cer rho.within.study phi.within.study 
@@ -64,7 +58,7 @@
 #' which.combine<- which.combine.var<- which.outliers<- 
 #' which.influence<- which.rob<- nnt.cer<- rho.within.study<- 
 #' phi.within.study<- w1.var<- w2.var<- time.var<- vcov<- 
-#' use.rve<- html<- lower.is.better<- selmodel.steps<-
+#' use.rve<- html<- lower.is.better<- selmodel.steps<- near.pd near.pd<-
 #' @seealso \code{\link{runMetaAnalysis}}, \code{\link{correctPublicationBias}}
 #' @examples 
 #' \dontrun{
@@ -303,6 +297,14 @@ time.var = `time.var<-`
   return(x)
 }
 vcov = `vcov<-`
+
+`near.pd<-` = function(x, value){
+  origArgs = as.list(x$call)
+  origArgs$near.pd = value[1]
+  x$call = as.call(as.call(origArgs))
+  return(x)
+}
+near.pd = `near.pd<-`
 
 `use.rve<-` = function(x, value){
   origArgs = as.list(x$call)

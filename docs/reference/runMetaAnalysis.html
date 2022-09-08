@@ -100,6 +100,7 @@ different meta-analytic approaches.
                                 <span class="st">"n_arm2"</span>, <span class="st">"totaln_arm2"</span><span class="op">)</span>,
                 time.var <span class="op">=</span> <span class="st">"time_weeks"</span>,
                 vcov <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"simple"</span>, <span class="st">"complex"</span><span class="op">)</span>,
+                near.pd <span class="op">=</span> <span class="cn">FALSE</span>,
                 use.rve <span class="op">=</span> <span class="cn">TRUE</span>,
                 html <span class="op">=</span> <span class="cn">TRUE</span>,
                 <span class="va">...</span><span class="op">)</span></code></pre></div>
@@ -208,13 +209,17 @@ sizes of the first arm are stored. See "Details".</p></dd>
 <dd><p><code>character</code>. Name of the variable in <code>data</code> in which
 the sample sizes of the second arm are stored. See "Details".</p></dd>
 <dt>time.var</dt>
-<dd><p><code>character</code> Name of the variable in <code>data</code> in which the assessment time point is stored.
+<dd><p><code>character</code>. Name of the variable in <code>data</code> in which the assessment time point is stored.
 Should be expressed as weeks since randomization; other units (e.g. days, months) are also possible if <code>phi.within.study</code>
 is specified accordingly. See "Details".</p></dd>
 <dt>vcov</dt>
-<dd><p><code>character</code> For the <code>"combined"</code> and <code>"threelevel.che"</code> model, should variance-covariance matrices
+<dd><p><code>character</code>. For the <code>"combined"</code> and <code>"threelevel.che"</code> model, should variance-covariance matrices
 (representing the dependency structure of the data) be approximated using a heterogeneous compound symmetry (<code>"simple"</code>; default)
 or unstructured matrix structure (<code>"complex"</code>)? See "Details".</p></dd>
+<dt>near.pd</dt>
+<dd><p><code>logical</code>. If at least one of the study variance-covariance matrices constructed
+when <code>vcov="complex"</code> is not positive definite/invertible, should the <code><a href="https://rdrr.io/pkg/Matrix/man/nearPD.html" class="external-link">nearPD</a></code> function
+be used to compute the nearest positive definite matrix? Default is <code>FALSE</code>.</p></dd>
 <dt>use.rve</dt>
 <dd><p><code>logical</code>. Should robust variance estimation be used to calculate confidence intervals and tests of three-level models?
 <code>TRUE</code> by default.</p></dd>

@@ -5,6 +5,7 @@
 \alias{data<-}
 \alias{data}
 \alias{which.run}
+\alias{near.pd}
 \alias{es.measure}
 \alias{es.type}
 \alias{es.var}
@@ -67,6 +68,7 @@
 \alias{html<-}
 \alias{lower.is.better<-}
 \alias{selmodel.steps<-}
+\alias{near.pd<-}
 \title{Replacement functions for "runMetaAnalysis" results objects}
 \usage{
 data(x) <- value
@@ -95,6 +97,7 @@ phi.within.study(x) <- value
 w1.var(x) <- value
 w2.var(x) <- value
 vcov(x) <- value
+near.pd(x) <- value
 use.rve(x) <- value
 html(x) <- value
 lower.is.better(x) <- value

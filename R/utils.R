@@ -1163,7 +1163,8 @@ fitCombinedHACEModel = function(which.combine, which.combine.var, measure.var,
                                 method.tau, method.tau.ci, dots,
                                 es.binary.raw.vars, arm.var.1, arm.var.2,
                                 phi.within.study, n.var.arm1, 
-                                n.var.arm2, w1.var, w2.var, time.var){
+                                n.var.arm2, w1.var, w2.var, time.var,
+                                near.pd){
   
   message("- ", crayon::green("[OK] "), 
           "Calculating effect size using combined effects (rho=", 
@@ -1272,7 +1273,7 @@ fitCombinedHACEModel = function(which.combine, which.combine.var, measure.var,
       study, condition_arm1, multi_arm1, "arm1")
     vcalc_arm2 = paste(
       study, condition_arm2, "arm2") 
-    time_weeks[is.na(time_weeks)] = mean(time_weeks, na.rm=T)
+    time_weeks[is.na(time_weeks)] = median(time_weeks, na.rm=T)
     n_arm1[is.na(n_arm1)] = 20
     n_arm2[is.na(n_arm2)] = 20
     es = TE; V = seTE^2
@@ -1285,7 +1286,7 @@ fitCombinedHACEModel = function(which.combine, which.combine.var, measure.var,
                  w1 = n_arm1, w2 = n_arm2, 
                  rho = rho.within.study, 
                  phi = phi.within.study, data = dat.che, 
-                 nearpd = TRUE) -> Vcov
+                 nearpd = near.pd) -> Vcov
   tryCatch2(
     metafor::aggregate.escalc(data, cluster = svc, V = Vcov)) -> data.comb
   
@@ -2503,7 +2504,8 @@ fitThreeLevelHACEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
                                   nnt.cer, which.run, mGeneral, mCombined,
                                   use.rve, rho.within.study, which.combine.var,
                                   phi.within.study, n.var.arm1, 
-                                  n.var.arm2, w1.var, w2.var, time.var){
+                                  n.var.arm2, w1.var, w2.var, time.var,
+                                  near.pd){
   
   if (rho.within.study[1] >.99){
     message("- ", crayon::yellow("[!] "), 
@@ -2559,21 +2561,26 @@ fitThreeLevelHACEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
       study, condition_arm1, multi_arm1, "arm1")
     vcalc_arm2 = paste(
       study, condition_arm2, "arm2") 
-    time_weeks[is.na(time_weeks)] = mean(time_weeks, na.rm=T)
+    time_weeks[is.na(time_weeks)] = median(time_weeks, na.rm=T)
     n_arm1[is.na(n_arm1)] = 20
     n_arm2[is.na(n_arm2)] = 20
     es = TE; V = seTE^2
   }) -> dat.che
   
   # Approximate Vcovs
-  metafor::vcalc(vi = V, cluster = study, 
-                 obs = instrument, time1 = time_weeks,
-                 grp1 = vcalc_arm1, grp2 = vcalc_arm2,
-                 w1 = n_arm1, w2 = n_arm2, 
-                 rho = rho.within.study, 
-                 phi = phi.within.study, data = dat.che, 
-                 nearpd = TRUE) %>% 
-    metafor::blsplit(., dat.che$study) -> Vcov
+  tryCatch2(metafor::vcalc(vi = V, cluster = study, 
+                           obs = instrument, time1 = time_weeks,
+                           grp1 = vcalc_arm1, grp2 = vcalc_arm2,
+                           w1 = n_arm1, w2 = n_arm2, 
+                           rho = rho.within.study, 
+                           phi = phi.within.study, data = dat.che, 
+                           nearpd = near.pd)) -> vcalc.res
+  if (!is.null(vcalc.res$warning[1])){
+    append.error = TRUE
+  } else {
+    append.error = FALSE
+  }
+  metafor::blsplit(vcalc.res$value, dat.che$study) -> Vcov
   
   mCHEArgs = list(
     formula.fixed,
@@ -2632,14 +2639,20 @@ fitThreeLevelHACEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
       do.call(rbind, .) -> data.g
     
     # Approximate Vcovs
+    tryCatch2(
     metafor::vcalc(vi = data.g$se^2, cluster = study, 
                    obs = instrument, time1 = time_weeks,
                    grp1 = vcalc_arm1, grp2 = vcalc_arm2,
                    w1 = n_arm1, w2 = n_arm2, 
                    rho = rho.within.study, 
                    phi = phi.within.study, data = dat.che, 
-                   nearpd = TRUE) %>% 
-      metafor::blsplit(., dat.che$study) -> Vmat.g
+                   nearpd = near.pd)) -> vcalc.res
+    if (!is.null(vcalc.res$warning[1])){
+      append.error = TRUE
+    } else {
+      append.error = FALSE
+    }
+    metafor::blsplit(vcalc.res$value, dat.che$study) -> Vmat.g
     
     data.che$TE = data.g$es
     tryCatch2(
@@ -2860,6 +2873,13 @@ fitThreeLevelHACEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
       which.run[!which.run == "threelevel.che"] -> which.run
     }
   }
+  
+  # If non-PD was found, append error 
+  if (append.error){
+    mCHE$has.error = TRUE
+    mCHE$error$message = paste(vcalc.res$warning) 
+  }
+  
   return(list(m = mCHE$value, 
               res = mCHERes,
               has.error = mCHE$has.error,
@@ -2892,8 +2912,6 @@ setColnames = function (x, value)
   }
   x
 }
-
-
 
 
 

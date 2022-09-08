@@ -33,7 +33,8 @@ fitThreeLevelHACEModel(
   n.var.arm2,
   w1.var,
   w2.var,
-  time.var
+  time.var,
+  near.pd
 )
 }
 \description{

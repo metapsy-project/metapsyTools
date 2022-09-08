@@ -41,6 +41,7 @@
 #'                                 "n_arm2", "totaln_arm2"),
 #'                 time.var = "time_weeks",
 #'                 vcov = c("simple", "complex"),
+#'                 near.pd = FALSE,
 #'                 use.rve = TRUE,
 #'                 html = TRUE,
 #'                 ...)
@@ -119,12 +120,15 @@
 #' sizes of the first arm are stored. See "Details".
 #' @param w2.var `character`. Name of the variable in `data` in which 
 #' the sample sizes of the second arm are stored. See "Details".
-#' @param time.var `character` Name of the variable in `data` in which the assessment time point is stored.
+#' @param time.var `character`. Name of the variable in `data` in which the assessment time point is stored.
 #' Should be expressed as weeks since randomization; other units (e.g. days, months) are also possible if `phi.within.study`
 #' is specified accordingly. See "Details".
-#' @param vcov `character` For the `"combined"` and `"threelevel.che"` model, should variance-covariance matrices
+#' @param vcov `character`. For the `"combined"` and `"threelevel.che"` model, should variance-covariance matrices
 #' (representing the dependency structure of the data) be approximated using a heterogeneous compound symmetry (`"simple"`; default)
 #' or unstructured matrix structure (`"complex"`)? See "Details".
+#' @param near.pd `logical`. If at least one of the study variance-covariance matrices constructed
+#' when `vcov="complex"` is not positive definite/invertible, should the \code{\link[Matrix]{nearPD}} function
+#' be used to compute the nearest positive definite matrix? Default is \code{FALSE}.
 #' @param use.rve \code{logical}. Should robust variance estimation be used to calculate confidence intervals and tests of three-level models?
 #' \code{TRUE} by default.
 #' @param html \code{logical}. Should an HTML table be created for the results? Default is \code{TRUE}.
@@ -289,7 +293,7 @@
 #' @importFrom meta update.meta metagen
 #' @importFrom metafor escalc aggregate.escalc rma.mv vcalc blsplit
 #' @importFrom clubSandwich coef_test conf_int
-#' @importFrom stats dffits model.matrix rnorm rstudent complete.cases
+#' @importFrom stats dffits model.matrix rnorm rstudent complete.cases median
 #' @importFrom utils combn
 #' @export runMetaAnalysis
 
@@ -330,6 +334,7 @@ runMetaAnalysis = function(data,
                                            "n_arm2", "totaln_arm2"),
                            time.var = "time_weeks",
                            vcov = c("simple", "complex"),
+                           near.pd = FALSE,
                            use.rve = TRUE,
                            html = TRUE,
                            ...){
@@ -482,7 +487,8 @@ runMetaAnalysis = function(data,
                                    method.tau, method.tau.ci, dots,
                                    es.binary.raw.vars, arm.var.1, arm.var.2,
                                    phi.within.study, n.var.arm1, 
-                                   n.var.arm2, w1.var, w2.var, time.var)
+                                   n.var.arm2, w1.var, w2.var, time.var,
+                                   near.pd)
       sendMessage(mComb, "combined", which.run)
       if (mComb$has.error){
         message("- ", crayon::yellow("[!] "), 
@@ -633,7 +639,8 @@ runMetaAnalysis = function(data,
                                nnt.cer, which.run, mGeneral, mCombined,
                                use.rve, rho.within.study, which.combine.var,
                                phi.within.study, n.var.arm1, 
-                               n.var.arm2, w1.var, w2.var, time.var)
+                               n.var.arm2, w1.var, w2.var, time.var,
+                               near.pd)
       sendMessage(mCHE, "threelevel.che", which.run)
       if (mCHE$has.error){
         message("- ", crayon::yellow("[!] "), 
