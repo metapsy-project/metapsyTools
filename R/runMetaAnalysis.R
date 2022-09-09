@@ -241,7 +241,7 @@
 #' The `vcov` argument controls if the effect size dependencies within the data
 #' should be approximated using a `"simple"` (default) or more `"complex"` (but potentially more accurate)
 #' method. This argument is only relevant for the `"combined"` and `"threelevel.che"` models. The default 
-#' "simple" method constructs variance-covariance matrices \mjeqn{V_k}{V_k} for each study using a 
+#' "simple" method constructs variance-covariance matrices \mjeqn{\Sigma_k}{\Sigma_k} for each study using a 
 #' constant sampling correlation \mjeqn{\rho}{\rho} (defined by `rho.within.study`), which is identical across all studies, outcomes, and time points.
 #' This simplifying assumption is part of the formulation of the CHE model originally provided by 
 #' Pustejovsky and Tipton ([2022](https://link.springer.com/article/10.1007/s11121-021-01246-3)). 
@@ -249,13 +249,13 @@
 #' Naturally, employing a common value of \mjeqn{\rho}{\rho} across all studies may not be reasonable
 #' in some analyses, and other information may be available to better approximate the effect size dependencies
 #' in the collected data. Setting `vcov` to `"complex"` allows to assume that correlations between effect 
-#' sizes may differ conditional on the type of dependency. This means that the variance-covariance matrix \mjeqn{V_k}{V_k} of some study \mjeqn{k}{k} is
+#' sizes may differ conditional on the type of dependency. This means that the variance-covariance matrix \mjeqn{\Sigma_k}{\Sigma_k} of some study \mjeqn{k}{k} is
 #' approximated by an unstructured matrix with varying \mjeqn{\rho_{ij}}{\rho_{ij}} (instead of a 
 #' heterogeneous compound symmetry matrix with fixed \mjeqn{\rho}{\rho}, as is used when `vcov="simple"`).
 #' 
 #' 
-#' \mjtdeqn{\small \begin{array}{ccc} \texttt{vcov="simple"} & \texttt{vcov="complex"} & \\\ V_k =\left[ \begin{array}{cccc} v_1 & & & \\\ \rho v_2 v_1 & v_2 & & \\\ \rho v_3 v_1 & \rho v_3 v_2 & v_3 & \\\ \rho v_4 v_1 & \rho v_4 v_2 & \rho v_4 v_3 & v_4 \end{array} \right] & \left[ \begin{array}{cccc} v_1 & & & \\\ \rho_{21} v_2 v_1 & v_2 & & \\\ \rho_{31} v_3 v_1 & \rho_{32} v_3 v_2 & v_3 & \\\ \rho_{41} v_4 v_1 & \rho_{42} v_4 v_2 & \rho_{43} v_4 v_3 & v_4 \end{array} \right] &  \end{array}}{\begin{array}{ccc}\texttt{vcov="simple"} & \texttt{vcov="complex"} & \\\\\ V_k = \begin{bmatrix} v_1 \\\\\ \rho v_2 v_1 & v_2 & & \\\\\ \rho v_3 v_1 & \rho v_3 v_2 & v_3 & \\\\\ \rho v_4 v_1 & \rho v_4 v_2 & \rho v_4 v_3 & v_4 \end{bmatrix} & V_k = \begin{bmatrix} v_1 & & & \\\\\ \rho_{21} v_2 v_1 & v_2 & & \\\\\ \rho_{31} v_3 v_1 & \rho_{32} v_3 v_2 & v_3 & \\\\\ \rho_{41} v_4 v_1 & \rho_{42} v_4 v_2 & \rho_{43} v_4 v_3 & v_4 \end{bmatrix} &  \end{array}}{}
-#' 
+#' \mjtdeqn{\small \begin{array}{ccc} \texttt{vcov="simple"} & \texttt{vcov="complex"} & \\\ \Sigma_k =\left[ \begin{array}{cccc} \sigma^2_1 & & & \\\ \rho \sigma_2 \sigma_1 & \sigma^2_2 & & \\\ \rho \sigma_3 \sigma_1 & \rho \sigma_3 \sigma_2 & \sigma^2_3 & \\\ \rho \sigma_4 \sigma_1 & \rho \sigma_4 \sigma_2 & \rho \sigma_4 \sigma_3 & \sigma^2_4 \end{array} \right] & \left[ \begin{array}{cccc} \sigma^2_1 & & & \\\ \rho_{21} \sigma_2 \sigma_1 & \sigma^2_2 & & \\\ \rho_{31} \sigma_3 \sigma_1 & \rho_{32} \sigma_3 \sigma_2 & \sigma_3 & \\\ \rho_{41} \sigma_4 \sigma_1 & \rho_{42} \sigma_4 \sigma_2 & \rho_{43} \sigma_4 \sigma_3 & \sigma^2_4 \end{array} \right] &  \end{array}}{\begin{array}{ccc}\texttt{vcov="simple"} & \texttt{vcov="complex"} & \\\\\ \Sigma_k = \begin{bmatrix} \sigma^2_1 \\\\\ \rho \sigma_2 \sigma_1 & \sigma^2_2 & & \\\\\ \rho \sigma_3 \sigma_1 & \rho \sigma_3 \sigma_2 & \sigma^2_3 & \\\\\ \rho \sigma_4 \sigma_1 & \rho \sigma_4 \sigma_2 & \rho \sigma_4 \sigma_3 & \sigma^2_4 \end{bmatrix} & \Sigma_k = \begin{bmatrix} \sigma^2_1 & & & \\\\\ \rho_{21} \sigma_2 \sigma_1 & \sigma^2_2 & & \\\\\ \rho_{31} \sigma_3 \sigma_1 & \rho_{32} \sigma_3 \sigma_2 & \sigma^2_3 & \\\\\ \rho_{41} \sigma_4 \sigma_1 & \rho_{42} \sigma_4 \sigma_2 & \rho_{43} \sigma_4 \sigma_3 & \sigma^2_4 \end{bmatrix} &  \end{array}}{}
+#'  
 #' For example, setting `vcov = "complex"` allows to additionally incorporate assumed correlations specific to multiple testing over time 
 #' (e.g. correlations between effects at post-test and long-term follow-up). The value provided in
 #' `phi.within.study` represents the (auto-)correlation coefficient \mjeqn{\phi}{\phi}, which serves
@@ -268,7 +268,7 @@
 #' \mjeqn{\rho_w}{w}) can be derived if the `w1.var` and `w2.var` variables,
 #' containing the sample size of each study arm, are provided. 
 #' 
-#' Using the complex approximation method increases the risk that at least one studies' \mjeqn{V_k}{V_k} matrix
+#' Using the complex approximation method increases the risk that at least one studies' \mjeqn{\Sigma_k}{\Sigma_k} matrix
 #' is positive definite. In this case, the function automatically switches back to the 
 #' constant sampling correlation approximation.
 #' 

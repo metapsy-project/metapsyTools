@@ -270,17 +270,17 @@ complex dependence structures.</p></li>
 <p>The <code>vcov</code> argument controls if the effect size dependencies within the data
 should be approximated using a <code>"simple"</code> (default) or more <code>"complex"</code> (but potentially more accurate)
 method. This argument is only relevant for the <code>"combined"</code> and <code>"threelevel.che"</code> models. The default
-"simple" method constructs variance-covariance matrices <em></em>\(V_k\) for each study using a
+"simple" method constructs variance-covariance matrices <em></em>\(\Sigma_k\) for each study using a
 constant sampling correlation <em></em>\(\rho\) (defined by <code>rho.within.study</code>), which is identical across all studies, outcomes, and time points.
 This simplifying assumption is part of the formulation of the CHE model originally provided by
 Pustejovsky and Tipton (<a href="https://link.springer.com/article/10.1007/s11121-021-01246-3" class="external-link">2022</a>).</p>
 <p>Naturally, employing a common value of <em></em>\(\rho\) across all studies may not be reasonable
 in some analyses, and other information may be available to better approximate the effect size dependencies
 in the collected data. Setting <code>vcov</code> to <code>"complex"</code> allows to assume that correlations between effect
-sizes may differ conditional on the type of dependency. This means that the variance-covariance matrix <em></em>\(V_k\) of some study <em></em>\(k\) is
+sizes may differ conditional on the type of dependency. This means that the variance-covariance matrix <em></em>\(\Sigma_k\) of some study <em></em>\(k\) is
 approximated by an unstructured matrix with varying <em></em>\(\rho_{ij}\) (instead of a
 heterogeneous compound symmetry matrix with fixed <em></em>\(\rho\), as is used when <code>vcov="simple"</code>).</p>
-<p>\[\begin{array}{ccc}\texttt{vcov="simple"} &amp; \texttt{vcov="complex"} &amp; \\ V_k = \begin{bmatrix} v_1 \\ \rho v_2 v_1 &amp; v_2 &amp; &amp; \\ \rho v_3 v_1 &amp; \rho v_3 v_2 &amp; v_3 &amp; \\ \rho v_4 v_1 &amp; \rho v_4 v_2 &amp; \rho v_4 v_3 &amp; v_4 \end{bmatrix} &amp; V_k = \begin{bmatrix} v_1 &amp; &amp; &amp; \\ \rho_{21} v_2 v_1 &amp; v_2 &amp; &amp; \\ \rho_{31} v_3 v_1 &amp; \rho_{32} v_3 v_2 &amp; v_3 &amp; \\ \rho_{41} v_4 v_1 &amp; \rho_{42} v_4 v_2 &amp; \rho_{43} v_4 v_3 &amp; v_4 \end{bmatrix} &amp;  \end{array}\]</p>
+<p>\[\begin{array}{ccc}\texttt{vcov="simple"} &amp; \texttt{vcov="complex"} &amp; \\ \Sigma_k = \begin{bmatrix} \sigma^2_1 \\ \rho \sigma_2 \sigma_1 &amp; \sigma^2_2 &amp; &amp; \\ \rho \sigma_3 \sigma_1 &amp; \rho \sigma_3 \sigma_2 &amp; \sigma^2_3 &amp; \\ \rho \sigma_4 \sigma_1 &amp; \rho \sigma_4 \sigma_2 &amp; \rho \sigma_4 \sigma_3 &amp; \sigma^2_4 \end{bmatrix} &amp; \Sigma_k = \begin{bmatrix} \sigma^2_1 &amp; &amp; &amp; \\ \rho_{21} \sigma_2 \sigma_1 &amp; \sigma^2_2 &amp; &amp; \\ \rho_{31} \sigma_3 \sigma_1 &amp; \rho_{32} \sigma_3 \sigma_2 &amp; \sigma^2_3 &amp; \\ \rho_{41} \sigma_4 \sigma_1 &amp; \rho_{42} \sigma_4 \sigma_2 &amp; \rho_{43} \sigma_4 \sigma_3 &amp; \sigma^2_4 \end{bmatrix} &amp;  \end{array}\]</p>
 <p>For example, setting <code>vcov = "complex"</code> allows to additionally incorporate assumed correlations specific to multiple testing over time
 (e.g. correlations between effects at post-test and long-term follow-up). The value provided in
 <code>phi.within.study</code> represents the (auto-)correlation coefficient <em></em>\(\phi\), which serves
@@ -292,7 +292,7 @@ arms have the same size, meaning that each arm's weight <em></em>\(w\) is identi
 <em></em>\(\rho_w\) is known to be 0.5. Multiarm weights <em></em>\(w\) (and thus
 <em></em>\(\rho_w\)) can be derived if the <code>w1.var</code> and <code>w2.var</code> variables,
 containing the sample size of each study arm, are provided.</p>
-<p>Using the complex approximation method increases the risk that at least one studies' <em></em>\(V_k\) matrix
+<p>Using the complex approximation method increases the risk that at least one studies' <em></em>\(\Sigma_k\) matrix
 is positive definite. In this case, the function automatically switches back to the
 constant sampling correlation approximation.</p>
 </div>
