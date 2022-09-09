@@ -240,7 +240,7 @@ arms have the same size, meaning that each arm's weight \mjeqn{w}{w} is identica
 containing the sample size of each study arm, are provided.
 
 Using the complex approximation method increases the risk that at least one studies' \mjeqn{\Sigma_k}{\Sigma_k} matrix
-is positive definite. In this case, the function automatically switches back to the
+is not positive definite. In this case, the function automatically switches back to the
 constant sampling correlation approximation.
 }
 
