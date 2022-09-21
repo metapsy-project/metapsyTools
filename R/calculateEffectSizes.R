@@ -248,7 +248,7 @@ calculateEffectSizes = function(data,
   # Change sign
   if (!is.null(change.sign)){
     change.mask = ifelse(dat.final[[change.sign]], -1, 1)
-    dat.final$es = dat.final$es * change.mask
+    dat.final$.g = dat.final$.g * change.mask
   }
   
   
