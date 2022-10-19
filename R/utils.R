@@ -1838,7 +1838,7 @@ fitRobModel = function(which.run, which.rob, which.outliers,
   }
   rownames(mRobRes) = paste("Only", low.rob.filter)
   
-  if (length(mRob$value$data$comparison[!robMask]) != 0){
+  if (sum(!robMask) != 0){
     if (identical(which.rob[1], "combined")){
       mRobRes$excluded = 
         paste(mRob$value$studlab[!robMask], 
