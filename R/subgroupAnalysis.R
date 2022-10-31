@@ -4,12 +4,12 @@
 #' \code{runMetaAnalysis} objects.
 #'
 #' @usage subgroupAnalysis(.model,
-#'                         ...,
-#'                         .which.run = .model$which.run[1],
-#'                         .round.digits = 2,
-#'                         .nnt.cer = NULL,
-#'                         .tau.common = FALSE,
-#'                         .html = TRUE)
+#'                  ...,
+#'                  .which.run = .model$which.run[1],
+#'                  .round.digits = 2,
+#'                  .nnt.cer = NULL,
+#'                  .tau.common = FALSE,
+#'                  .html = TRUE)
 #'
 #' @param .model An object of class \code{"runMetaAnalysis"}, created by \code{\link{runMetaAnalysis}}.
 #' @param ... <\link[dplyr]{dplyr_data_masking}>. A number of subgroup variables included in the original dataset

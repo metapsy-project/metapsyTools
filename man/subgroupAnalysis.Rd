@@ -5,12 +5,12 @@
 \title{Run subgroup analyses}
 \usage{
 subgroupAnalysis(.model,
-                        ...,
-                        .which.run = .model$which.run[1],
-                        .round.digits = 2,
-                        .nnt.cer = NULL,
-                        .tau.common = FALSE,
-                        .html = TRUE)
+                 ...,
+                 .which.run = .model$which.run[1],
+                 .round.digits = 2,
+                 .nnt.cer = NULL,
+                 .tau.common = FALSE,
+                 .html = TRUE)
 }
 \arguments{
 \item{.model}{An object of class \code{"runMetaAnalysis"}, created by \code{\link{runMetaAnalysis}}.}
