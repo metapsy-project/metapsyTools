@@ -210,10 +210,10 @@ subgroupAnalysis = function(.model, ...,
 
         # NNT
         if (is.null(.nnt.cer)){
-          metapsyNNT(g, .model$nnt.cer) %>%
+          metapsyNNT(abs(g), .model$nnt.cer) %>%
             round(.round.digits) %>% abs() -> nnt
         } else {
-          metapsyNNT(g, .nnt.cer) %>%
+          metapsyNNT(abs(g), .nnt.cer) %>%
             round(.round.digits) %>% abs() -> nnt
         }
 
@@ -281,10 +281,10 @@ subgroupAnalysis = function(.model, ...,
       }
 
       if (is.null(.nnt.cer)){
-        metapsyNNT(g, .model$nnt.cer) %>%
+        metapsyNNT(abs(g), .model$nnt.cer) %>%
           round(.round.digits) %>% abs() -> nnt
       } else {
-        metapsyNNT(g, .nnt.cer) %>%
+        metapsyNNT(abs(g), .nnt.cer) %>%
           round(.round.digits) %>% abs() -> nnt
       }
 

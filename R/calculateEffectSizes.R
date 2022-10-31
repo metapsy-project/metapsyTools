@@ -190,12 +190,13 @@ calculateEffectSizes = function(data,
   data = data.frame(data)
 
   # Get id variables
-  data[colnames(data) %in%
-          c(vars.for.id, 
-            paste0(.condition,
-                   .groups.column.indicator),
-            paste0(.condition.specification,
-                   .groups.column.indicator))] %>%
+  data %>% 
+    dplyr::select(
+      all_of(c(vars.for.id, 
+               paste0(.condition,
+                      .groups.column.indicator),
+               paste0(.condition.specification,
+                      .groups.column.indicator)))) %>% 
     colnames() -> id.vars
   
   # Create comparison IDs
