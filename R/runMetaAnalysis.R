@@ -236,6 +236,17 @@
 #'   complex dependence structures.
 #' }
 #' 
+#' Internally, the `overall`, `combined`, `lowest.highest`, `outlier`, `influence` and `rob`
+#' models are fitted by calling the [meta::metagen()] or [meta::metabin()] function,
+#' respectively, in **\{meta\}** (Balduzzi, Rücker & Schwarzer, [2019](https://pubmed.ncbi.nlm.nih.gov/31563865/)). 
+#' The `threelevel` and `threelevel.che` models are implemented using [metafor::rma.mv()]
+#' in **\{metafor\}** (Viechtbauer, [2005](https://www.jstatsoft.org/article/view/v036i03)). 
+#' 
+#' Outlier selection is implemented using the [dmetar::find.outliers()] function,
+#' and influence analyses using the [dmetar::InfluenceAnalysis()] function. The latter function is a wrapper for 
+#' [metafor::influence.rma.uni()].
+#' 
+#'  
 #' ## Simple or complex variance-covariance approximation
 #' 
 #' The `vcov` argument controls if the effect size dependencies within the data

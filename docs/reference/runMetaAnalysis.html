@@ -263,7 +263,14 @@ in studies. Variance-covariance matrices of each study with two or more effect s
 <code>rho.within.study</code> as the assumed overall within-study correlation. This imputation allows to run a "correlated and
 hierarchical effects" (CHE) model, which is typically a good approximation for data sets with unknown and/or
 complex dependence structures.</p></li>
-</ul><div class="section">
+</ul><p>Internally, the <code>overall</code>, <code>combined</code>, <code>lowest.highest</code>, <code>outlier</code>, <code>influence</code> and <code>rob</code>
+models are fitted by calling the <code><a href="https://rdrr.io/pkg/meta/man/metagen.html" class="external-link">meta::metagen()</a></code> or <code><a href="https://rdrr.io/pkg/meta/man/metabin.html" class="external-link">meta::metabin()</a></code> function,
+respectively, in <strong>{meta}</strong> (Balduzzi, Rücker &amp; Schwarzer, <a href="https://pubmed.ncbi.nlm.nih.gov/31563865/" class="external-link">2019</a>).
+The <code>threelevel</code> and <code>threelevel.che</code> models are implemented using <code><a href="https://wviechtb.github.io/metafor/reference/rma.mv.html" class="external-link">metafor::rma.mv()</a></code>
+in <strong>{metafor}</strong> (Viechtbauer, <a href="https://www.jstatsoft.org/article/view/v036i03" class="external-link">2005</a>).</p>
+<p>Outlier selection is implemented using the <code><a href="http://dmetar.protectlab.org/reference/find.outliers.html" class="external-link">dmetar::find.outliers()</a></code> function,
+and influence analyses using the <code><a href="http://dmetar.protectlab.org/reference/InfluenceAnalysis.html" class="external-link">dmetar::InfluenceAnalysis()</a></code> function. The latter function is a wrapper for
+<code><a href="https://wviechtb.github.io/metafor/reference/influence.rma.uni.html" class="external-link">metafor::influence.rma.uni()</a></code>.</p><div class="section">
 <h3 id="simple-or-complex-variance-covariance-approximation">Simple or complex variance-covariance approximation<a class="anchor" aria-label="anchor" href="#simple-or-complex-variance-covariance-approximation"></a></h3>
 
 

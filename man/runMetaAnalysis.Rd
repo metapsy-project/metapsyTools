@@ -208,6 +208,16 @@ in studies. Variance-covariance matrices of each study with two or more effect s
 hierarchical effects" (CHE) model, which is typically a good approximation for data sets with unknown and/or
 complex dependence structures.
 }
+
+Internally, the \code{overall}, \code{combined}, \code{lowest.highest}, \code{outlier}, \code{influence} and \code{rob}
+models are fitted by calling the \code{\link[meta:metagen]{meta::metagen()}} or \code{\link[meta:metabin]{meta::metabin()}} function,
+respectively, in \strong{\{meta\}} (Balduzzi, Rücker & Schwarzer, \href{https://pubmed.ncbi.nlm.nih.gov/31563865/}{2019}).
+The \code{threelevel} and \code{threelevel.che} models are implemented using \code{\link[metafor:rma.mv]{metafor::rma.mv()}}
+in \strong{\{metafor\}} (Viechtbauer, \href{https://www.jstatsoft.org/article/view/v036i03}{2005}).
+
+Outlier selection is implemented using the \code{\link[dmetar:find.outliers]{dmetar::find.outliers()}} function,
+and influence analyses using the \code{\link[dmetar:InfluenceAnalysis]{dmetar::InfluenceAnalysis()}} function. The latter function is a wrapper for
+\code{\link[metafor:influence.rma.uni]{metafor::influence.rma.uni()}}.
 \subsection{Simple or complex variance-covariance approximation}{
 
 The \code{vcov} argument controls if the effect size dependencies within the data
