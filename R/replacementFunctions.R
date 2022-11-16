@@ -20,6 +20,8 @@
 #' se.var(x) <- value
 #' es.binary.raw.vars(x) <- value
 #' method.tau(x) <- value
+#' i2.ci.threelevel(x) <- value
+#' nsim.boot(x) <- value
 #' hakn(x) <- value
 #' study.var(x) <- value
 #' arm.var.1(x) <- value
@@ -45,7 +47,7 @@
 #' selmodel.steps(x) <- value
 #' rerun(m)
 #' 
-#' @export data<- which.run<- which.run near.pd near.pd<- es.measure es.measure<- es.type es.type<- es.var es.var<- se.var se.var<- es.binary.raw.vars es.binary.raw.vars<- method.tau method.tau<- hakn hakn<- study.var study.var<- arm.var.1 arm.var.1<- arm.var.2 arm.var.2<- measure.var measure.var<- low.rob.filter low.rob.filter<- method.tau.ci method.tau.ci<- which.combine which.combine<- which.combine.var which.combine.var<- which.outliers which.outliers<- which.influence which.influence<- which.rob which.rob<- nnt.cer nnt.cer<- rho.within.study rho.within.study<- phi.within.study phi.within.study<- w1.var w1.var<- w2.var w2.var<- vcov<- use.rve use.rve<- html html<- lower.is.better lower.is.better<- selmodel.steps selmodel.steps<- rerun
+#' @export data<- which.run<- which.run near.pd near.pd<- es.measure es.measure<- es.type es.type<- es.var es.var<- se.var se.var<- es.binary.raw.vars es.binary.raw.vars<- method.tau method.tau<- hakn hakn<- study.var study.var<- arm.var.1 arm.var.1<- arm.var.2 arm.var.2<- measure.var measure.var<- low.rob.filter low.rob.filter<- method.tau.ci method.tau.ci<- which.combine which.combine<- which.combine.var which.combine.var<- which.outliers which.outliers<- which.influence which.influence<- which.rob which.rob<- nnt.cer nnt.cer<- rho.within.study rho.within.study<- phi.within.study phi.within.study<- w1.var w1.var<- w2.var w2.var<- vcov<- use.rve use.rve<- html html<- lower.is.better lower.is.better<- i2.ci.threelevel<- i2.ci.threelevel nsim.boot<- nsim.boot selmodel.steps selmodel.steps<- rerun
 #' @aliases data which.run near.pd es.measure es.type es.var se.var es.binary.raw.vars 
 #' method.tau hakn study.var arm.var.1 arm.var.2 measure.var low.rob.filter 
 #' method.tau.ci round.digits which.combine which.combine.var which.outliers 
@@ -59,6 +61,7 @@
 #' which.influence<- which.rob<- nnt.cer<- rho.within.study<- 
 #' phi.within.study<- w1.var<- w2.var<- time.var<- vcov<- 
 #' use.rve<- html<- lower.is.better<- selmodel.steps<- near.pd near.pd<-
+#' i2.ci.threelevel<- i2.ci.threelevel nsim.boot<- nsim.boot
 #' @seealso \code{\link{runMetaAnalysis}}, \code{\link{correctPublicationBias}}
 #' @examples 
 #' \dontrun{
@@ -137,6 +140,22 @@ es.binary.raw.vars = `es.binary.raw.vars<-`
   return(x)
 }
 method.tau = `method.tau<-`
+
+`i2.ci.threelevel<-` = function(x, value){
+  origArgs = as.list(x$call)
+  origArgs$i2.ci.threelevel = value[1]
+  x$call = as.call(as.call(origArgs))
+  return(x)
+}
+i2.ci.threelevel = `i2.ci.threelevel<-`
+
+`nsim.boot<-` = function(x, value){
+  origArgs = as.list(x$call)
+  origArgs$nsim.boot = value[1]
+  x$call = as.call(as.call(origArgs))
+  return(x)
+}
+nsim.boot = `nsim.boot<-`
 
 `hakn<-` = function(x, value){
   origArgs = as.list(x$call)
@@ -344,6 +363,7 @@ lower.is.better = `lower.is.better<-`
   return(x)
 }
 selmodel.steps = `selmodel.steps<-`
+
 
 rerun = function(m){
   d = m$data

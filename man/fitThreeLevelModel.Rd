@@ -25,7 +25,9 @@ fitThreeLevelModel(
   which.run,
   mGeneral,
   mCombined,
-  use.rve
+  use.rve,
+  i2.ci.threelevel,
+  nsim.boot
 )
 }
 \description{

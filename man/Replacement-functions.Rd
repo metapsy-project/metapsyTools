@@ -69,6 +69,10 @@
 \alias{lower.is.better<-}
 \alias{selmodel.steps<-}
 \alias{near.pd<-}
+\alias{i2.ci.threelevel<-}
+\alias{i2.ci.threelevel}
+\alias{nsim.boot<-}
+\alias{nsim.boot}
 \title{Replacement functions for "runMetaAnalysis" results objects}
 \usage{
 data(x) <- value
@@ -79,6 +83,8 @@ es.var(x) <- value
 se.var(x) <- value
 es.binary.raw.vars(x) <- value
 method.tau(x) <- value
+i2.ci.threelevel(x) <- value
+nsim.boot(x) <- value
 hakn(x) <- value
 study.var(x) <- value
 arm.var.1(x) <- value

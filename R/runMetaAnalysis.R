@@ -5,10 +5,14 @@
 #' \loadmathjax
 #'
 #' @usage runMetaAnalysis(data,
+#' 
+#'                 # Models to run
 #'                 which.run = c("overall", "combined",
 #'                               "lowest.highest", "outliers",
 #'                               "influence", "rob", "threelevel",
 #'                               "threelevel.che"),
+#'                               
+#'                 # Effect size measure
 #'                 es.measure = c("g", "RR"),
 #'                 es.type = c("precalculated", "raw"),
 #'                 es.var = ifelse(identical(es.measure[1], "g"), 
@@ -18,15 +22,23 @@
 #'                 es.binary.raw.vars = 
 #'                   c(".event_arm1", ".event_arm2",
 #'                     ".totaln_arm1", ".totaln_arm2"),
+#'                     
+#'                 # Estimator of the heterogeneity variance
 #'                 method.tau = "REML",
+#'                 method.tau.ci = "Q-Profile",
+#'                 i2.ci.threelevel = FALSE,
+#'                 nsim.boot = 1e4,
 #'                 hakn = TRUE,
+#'                 
+#'                 # Data specifications
 #'                 study.var = "study",
 #'                 arm.var.1 = "condition_arm1",
 #'                 arm.var.2 = "condition_arm2",
 #'                 measure.var = "instrument",
 #'                 low.rob.filter = "rob > 2",
-#'                 method.tau.ci = "Q-Profile",
 #'                 round.digits = 2,
+#'                 
+#'                 # Model specifications
 #'                 which.combine = c("arms", "studies"),
 #'                 which.combine.var = "multi_arm1",
 #'                 which.outliers = c("overall", "combined"),
@@ -43,7 +55,11 @@
 #'                 vcov = c("simple", "complex"),
 #'                 near.pd = FALSE,
 #'                 use.rve = TRUE,
+#'                 
+#'                 # Output
 #'                 html = TRUE,
+#'                 
+#'                 # Additional arguments
 #'                 ...)
 #'
 #' @param data \code{data.frame}. Effect size data in the wide format, as 
@@ -76,6 +92,18 @@
 #' and its square root (tau). Either \code{"REML"} (default), \code{"DL"},
 #' \code{"PM"}, \code{"ML"}, \code{"HS"}, \code{"SJ"}, \code{"HE"}, or \code{"EB"}, can be abbreviated (see
 #' \code{\link[meta]{metagen}}). Use \code{"FE"} to use a fixed-effect/"common effect" model.
+#' @param method.tau.ci \code{character}. A character string indicating which method is used to estimate the
+#' confidence interval of the between-study heterogeneity variance \mjeqn{\tau^2}{\tau^2}. Either \code{"Q-Profile"} (default and recommended; [Viechtbauer, 2017](http://www.wvbauer.com/lib/exe/fetch.php/articles:viechtbauer2007b.pdf)),
+#' \code{"BJ"}, \code{"J"}, or \code{"PL"} can be abbreviated. See \code{\link[meta]{metagen}} and \code{\link[metafor]{rma.uni}} for details.
+#' @param i2.ci.threelevel `logical`. Confidence intervals for \mjeqn{\tau^2}{\tau^2} as calculated by the Q-Profile method are not 
+#' directly applicable for three-level models, in which two heterogeneity variance components are estimated. By default,
+#' this argument is therefore set to `FALSE`, and no confidence intervals around \mjeqn{\tau^2}{\tau^2} and \mjeqn{I^2}{I^2} are provided for the
+#' `"threelevel"` and `"threelevel.che"` model.
+#' If this argument is set to `TRUE`, parametric bootstrapping is used to calculate confidence intervals around the between- and
+#' within-study heterogeneity estimates (\mjeqn{\tau}{\tau} and \mjeqn{I^2}{I^2}). Please note that this can take several minutes,
+#' depending on the number of effect sizes.
+#' @param nsim.boot `numeric` Number of bootstrap samples to be drawn when `i2.ci.threelevel` is `TRUE`. Defaults to
+#' 10000.
 #' @param hakn \code{logical}. Should the Knapp-Hartung adjustment for effect size significance tests be used? Default is \code{TRUE}.
 #' @param study.var \code{character}. The name of the variable in \code{data} in which the study IDs are stored.
 #' @param arm.var.1 \code{character}. The name of the variable in \code{data} in which the condition (e.g. "guided iCBT")
@@ -87,9 +115,6 @@
 #' @param low.rob.filter \code{character}. A filtering statement by which to 
 #' include studies for the "low RoB only" analysis. Please note that the name of 
 #' the variable must be included as a column in \code{data}.
-#' @param method.tau.ci \code{character}. A character string indicating which method is used to estimate the
-#' confidence interval of tau/tau-squared. Either \code{"Q-Profile"} (default and recommended),
-#' \code{"BJ"}, \code{"J"}, or \code{"PL"} can be abbreviated. See \code{\link[meta]{metagen}} for details.
 #' @param round.digits \code{numeric}. Number of digits to round the (presented) results by. Default is \code{2}.
 #' @param which.combine `character`. Should multiple effect sizes within one study be pooled
 #' on an `"arms"` (default) or `"study"` level? When a study is a multi-arm trial, setting
@@ -302,9 +327,9 @@
 #' @importFrom scales pvalue
 #' @importFrom purrr map
 #' @importFrom meta update.meta metagen
-#' @importFrom metafor escalc aggregate.escalc rma.mv vcalc blsplit
+#' @importFrom metafor escalc aggregate.escalc rma.mv vcalc blsplit simulate.rma
 #' @importFrom clubSandwich coef_test conf_int
-#' @importFrom stats dffits model.matrix rnorm rstudent complete.cases median
+#' @importFrom stats dffits model.matrix rnorm rstudent complete.cases median quantile
 #' @importFrom utils combn
 #' @export runMetaAnalysis
 
@@ -323,13 +348,15 @@ runMetaAnalysis = function(data,
                              c(".event_arm1", ".event_arm2",
                                ".totaln_arm1", ".totaln_arm2"),
                            method.tau = "REML",
+                           method.tau.ci = "Q-Profile",
+                           i2.ci.threelevel = FALSE,
+                           nsim.boot = 1e4,
                            hakn = TRUE,
                            study.var = "study",
                            arm.var.1 = "condition_arm1",
                            arm.var.2 = "condition_arm2",
                            measure.var = "instrument",
                            low.rob.filter = "rob > 2",
-                           method.tau.ci = "Q-Profile",
                            round.digits = 2,
                            which.combine = c("arms", "studies"),
                            which.combine.var = "multi_arm1",
@@ -617,7 +644,7 @@ runMetaAnalysis = function(data,
                          method.tau.meta, method.tau.ci, method.tau,
                          dots, es.binary.raw.vars, round.digits,
                          nnt.cer, which.run, mGeneral, mCombined,
-                         use.rve)
+                         use.rve, i2.ci.threelevel, nsim.boot)
     sendMessage(mThreeLevel, "threelevel", which.run)
     # If model failed, add to error model list
     if (mThreeLevel$has.error){
@@ -651,7 +678,7 @@ runMetaAnalysis = function(data,
                                use.rve, rho.within.study, which.combine.var,
                                phi.within.study, n.var.arm1, 
                                n.var.arm2, w1.var, w2.var, time.var,
-                               near.pd)
+                               near.pd, i2.ci.threelevel, nsim.boot)
       sendMessage(mCHE, "threelevel.che", which.run)
       if (mCHE$has.error){
         message("- ", crayon::yellow("[!] "), 
@@ -668,7 +695,8 @@ runMetaAnalysis = function(data,
                               method.tau.meta, method.tau.ci, method.tau,
                               dots, es.binary.raw.vars, round.digits,
                               nnt.cer, which.run, mGeneral, mCombined,
-                              use.rve, rho.within.study, phi.within.study)
+                              use.rve, rho.within.study, phi.within.study,
+                              i2.ci.threelevel, nsim.boot)
       sendMessage(mCHE, "threelevel.che", which.run)
       # If model failed, add to error model list
       if (mCHE$has.error){
@@ -811,15 +839,15 @@ print.runMetaAnalysis = function(x, ...){
     # Add publication bias corrected results
     cat("\n")
     cat(crayon::blue$bold(paste0("Publication bias correction ('", 
-               x$correctPublicationBias$which.run,
-               "' model) ")))
+                                 x$correctPublicationBias$which.run,
+                                 "' model) ")))
     cat(crayon::blue$bold("----------------------- \n"))
     dat.pb = x$correctPublicationBias$summary[,1:8]
     tbl.pb = dplyr::as_tibble(cbind(Model = rownames(dat.pb), dat.pb))
     old = options(pillar.bold=TRUE)
     tbl.format.pb = format(tbl.pb)[-c(1,3)]
     tbl.format.pb[-1] = lapply(tbl.format.pb[-1], 
-                            function(x) stringr::str_sub(x, 19))
+                               function(x) stringr::str_sub(x, 19))
     tbl.format.pb[1] = stringr::str_sub(tbl.format.pb[1], 3)
     cat(do.call(c, tbl.format.pb), sep="\n")
     options(old)
@@ -875,6 +903,262 @@ print.runMetaAnalysis = function(x, ...){
       }
       
       x$summary %>%
+        {.$Analysis = rownames(.); rownames(.) = NULL; .} %>%
+        dplyr::select(Analysis, dplyr::everything(), -excluded) %>%
+        setColnames(c(".", "<i>k</i>", 
+                      ifelse(identical(x$.type.es, "RR"), 
+                             "<i>RR</i>",
+                             "<i>g</i>"), 
+                      "CI", "<i>p</i>",
+                      "<i>I</i><sup>2</sup>",
+                      "CI", "PI", "NNT")) %>%
+        knitr::kable(escape = FALSE) %>%
+        kableExtra::kable_styling(font_size = 8, full_width = FALSE) %>%
+        kableExtra::column_spec(1, bold = TRUE, width_min = "13em") %>%
+        kableExtra::footnote(general = "Excluded effect sizes/studies:",
+                             alphabet = footnotes) %>%
+        print()
+    }
+    
+    
+  } else {
+    
+    # # # # # # # # # # # # # #
+    # Standard Result Class   #
+    # # # # # # # # # # # # # # 
+    
+    models = list("overall" = "Overall", 
+                  "lowest.highest" = c("One ES/study (lowest)",
+                                       "One ES/study (highest)"), 
+                  "outliers" = "Outliers removed",
+                  "influence" = "Influence Analysis", 
+                  "rob" = "rob", 
+                  "combined" = "Combined", 
+                  "threelevel" = "Three-Level Model",
+                  "threelevel.che" = "Three-Level Model (CHE)")
+    
+    run.models = unlist(models[x$which.run])
+    if ("rob" %in% run.models){
+      run.models[["rob"]] = 
+        rownames(x$summary)[grepl("Only", rownames(x$summary))]
+    }
+    
+    cat(crayon::blue$bold("Model results "))
+    cat(crayon::blue$bold(
+      "------------------------------------------------ \n"))
+    dat = x$summary[run.models, 1:8]
+    tbl = dplyr::as_tibble(cbind(Model = rownames(dat), dat))
+    old = options(pillar.bold=TRUE)
+    tbl.format = format(tbl)[-c(1,3)]
+    tbl.format[-1] = lapply(tbl.format[-1], 
+                            function(x) stringr::str_sub(x, 19))
+    tbl.format[1] = stringr::str_sub(tbl.format[1], 3)
+    cat(do.call(c, tbl.format), sep="\n")
+    options(old)
+    
+    if ("threelevel" %in% x$which.run){
+      cat("\n")
+      cat(crayon::blue$bold("Variance components (three-level model) "))
+      cat(crayon::blue$bold("---------------------- \n"))
+      if (is.na(x$model.threelevel.var.comp)[1]){
+        cat("-")
+      } else {
+        print(x$model.threelevel.var.comp) 
+      }
+    }
+    
+    if ("threelevel.che" %in% x$which.run){
+      cat("\n")
+      cat(crayon::blue$bold("Variance components (three-level CHE model) "))
+      cat(crayon::blue$bold("------------------ \n"))
+      if (is.na(x$model.threelevel.che.var.comp)[1]){
+        cat("-")
+      } else {
+        print(x$model.threelevel.che.var.comp) 
+      }
+    }
+    
+    if (x$html == TRUE){
+      
+      x$summary = x$summary[run.models,]
+      # Add footnote labels
+      fn.rows = x$summary$excluded != "none"
+      rownames(x$summary)[fn.rows] = paste0(rownames(x$summary[fn.rows,]), "<sup>",
+                                            letters[1:nrow(x$summary[fn.rows,])], "</sup>")
+      
+      if (identical(x$summary$excluded[fn.rows], 
+                    character(0))) {
+        footnotes = "none"
+      } else {
+        footnotes = x$summary$excluded[fn.rows]
+      }
+      
+      x$summary %>%
+        {.$Analysis = rownames(.); rownames(.) = NULL; .} %>%
+        dplyr::select(Analysis, dplyr::everything(), -excluded) %>%
+        setColnames(c(".", "<i>k</i>", 
+                      ifelse(identical(x$.type.es, "RR"), 
+                             "<i>RR</i>",
+                             "<i>g</i>"), 
+                      "CI", "<i>p</i>",
+                      "<i>I</i><sup>2</sup>",
+                      "CI", "PI", "NNT")) %>%
+        knitr::kable(escape = FALSE) %>%
+        kableExtra::kable_styling(font_size = 8, full_width = FALSE) %>%
+        kableExtra::column_spec(1, bold = TRUE, width_min = "13em") %>%
+        kableExtra::footnote(general = "Excluded effect sizes/studies:",
+                             alphabet = footnotes) %>%
+        print()
+    }
+    
+  }
+  
+}
+
+
+#' Print method for objects of class 'runMetaAnalysis'
+#'
+#' Print S3 method for objects of class \code{runMetaAnalysis}.
+#'
+#' @param x An object of class \code{runMetaAnalysis}.
+#' @param ... Additional arguments.
+#'
+#' @author Mathias Harrer \email{mathias.h.harrer@@gmail.com},
+#' Paula Kuper \email{paula.r.kuper@@gmail.com}, Pim Cuijpers 
+#' \email{p.cuijpers@@vu.nl}
+#'
+#' @importFrom knitr kable
+#' @importFrom dplyr as_tibble
+#' @importFrom kableExtra kable_styling column_spec footnote
+#' @importFrom crayon green blue magenta bold
+#' @importFrom stringr str_sub
+#'
+#' @export
+#' @method print runMetaAnalysis
+
+
+print.runMetaAnalysis = function(x, ...){
+  
+  if (class(x)[2] == "correctPublicationBias"){
+    
+    # # # # # # # # # # # # # #
+    # If Pubbias is corrected #
+    # # # # # # # # # # # # # # 
+    
+    
+    models = list("overall" = "Overall", 
+                  "lowest.highest" = c("One ES/study (lowest)",
+                                       "One ES/study (highest)"), 
+                  "outliers" = "Outliers removed",
+                  "influence" = "Influence Analysis", 
+                  "rob" = "rob", 
+                  "combined" = "Combined", 
+                  "threelevel" = "Three-Level Model",
+                  "threelevel.che" = "Three-Level Model (CHE)")
+    
+    run.models = unlist(models[x$which.run])
+    if ("rob" %in% run.models){
+      run.models[["rob"]] = 
+        rownames(x$summary)[grepl("Only", rownames(x$summary))]
+    }
+    
+    cat(crayon::blue$bold("Model results "))
+    cat(crayon::blue$bold(
+      "------------------------------------------------ \n"))
+    dat = x$summary[run.models, 1:8]
+    tbl = dplyr::as_tibble(cbind(Model = rownames(dat), dat))
+    old = options(pillar.bold=TRUE)
+    tbl.format = format(tbl)[-c(1,3)]
+    tbl.format[-1] = lapply(tbl.format[-1], 
+                            function(x) stringr::str_sub(x, 19))
+    tbl.format[1] = stringr::str_sub(tbl.format[1], 3)
+    cat(do.call(c, tbl.format), sep="\n")
+    options(old)
+    
+    # Add publication bias corrected results
+    cat("\n")
+    cat(crayon::blue$bold(paste0("Publication bias correction ('", 
+               x$correctPublicationBias$which.run,
+               "' model) ")))
+    cat(crayon::blue$bold("----------------------- \n"))
+    dat.pb = x$correctPublicationBias$summary[,1:8]
+    tbl.pb = dplyr::as_tibble(cbind(Model = rownames(dat.pb), dat.pb))
+    old = options(pillar.bold=TRUE)
+    tbl.format.pb = format(tbl.pb)[-c(1,3)]
+    tbl.format.pb[-1] = lapply(tbl.format.pb[-1], 
+                            function(x) stringr::str_sub(x, 19))
+    tbl.format.pb[1] = stringr::str_sub(tbl.format.pb[1], 3)
+    cat(do.call(c, tbl.format.pb), sep="\n")
+    options(old)
+    
+    
+    if ("threelevel" %in% x$which.run){
+      cat("\n")
+      cat(crayon::blue$bold("Variance components (three-level model) "))
+      cat(crayon::blue$bold("---------------------- \n"))
+      if (is.na(x$model.threelevel.var.comp)[1]){
+        cat("-")
+      } else {
+        dat = x$model.threelevel.var.comp
+        tbl = dplyr::as_tibble(cbind(Source = rownames(dat), dat))
+        old = options(pillar.bold=TRUE)
+        tbl.format = format(tbl)[-c(1,3)]
+        tbl.format[-1] = lapply(tbl.format[-1], 
+                                function(x) stringr::str_sub(x, 19))
+        tbl.format[1] = stringr::str_sub(tbl.format[1], 3)
+        cat(do.call(c, tbl.format), sep="\n")
+        options(old)
+      }
+    }
+    
+    if ("threelevel.che" %in% x$which.run){
+      cat("\n")
+      cat(crayon::blue$bold("Variance components (three-level CHE model) "))
+      cat(crayon::blue$bold("------------------ \n"))
+      if (is.na(x$model.threelevel.che.var.comp)[1]){
+        cat("-")
+      } else {
+        dat = x$model.threelevel.che.var.comp
+        tbl = dplyr::as_tibble(cbind(Source = rownames(dat), dat))
+        old = options(pillar.bold=TRUE)
+        tbl.format = format(tbl)[-c(1,3)]
+        tbl.format[-1] = lapply(tbl.format[-1], 
+                                function(x) stringr::str_sub(x, 19))
+        tbl.format[1] = stringr::str_sub(tbl.format[1], 3)
+        cat(do.call(c, tbl.format), sep="\n")
+        options(old)
+      }
+    }
+    
+    
+    if (x$html == TRUE){
+      
+      x$summary = x$summary[run.models,]
+      
+      # Add publication bias
+      pub.row = c(rep(" ", ncol(x$summary)-1),
+                  paste0("Corrections were applied to the '",
+                         x$correctPublicationBias$which.run, 
+                         "' model."))
+      rownames(x$correctPublicationBias$summary) = 
+        paste("-", rownames(x$correctPublicationBias$summary))
+      rbind(x$summary, "<i>Publication bias correction</i>" = pub.row,
+            x$correctPublicationBias$summary) -> x$summary
+      
+      # Add footnote labels
+      fn.rows = x$summary$excluded != "none"
+      rownames(x$summary)[fn.rows] = paste0(rownames(x$summary[fn.rows,]), "<sup>",
+                                            letters[1:nrow(x$summary[fn.rows,])], "</sup>")
+      
+      if (identical(x$summary$excluded[fn.rows], 
+                    character(0))) {
+        footnotes = "none"
+      } else {
+        footnotes = x$summary$excluded[fn.rows]
+      }
+      
+      x$summary %>%
+        {.$p = ifelse(.$p == "<0.001", "&lt;0.001", .$p);.} %>% 
         {.$Analysis = rownames(.); rownames(.) = NULL; .} %>%
         dplyr::select(Analysis, dplyr::everything(), -excluded) %>%
         setColnames(c(".", "<i>k</i>", 
@@ -966,6 +1250,7 @@ print.runMetaAnalysis = function(x, ...){
       }
       
       x$summary %>%
+        {.$p = ifelse(.$p == "<0.001", "&lt;0.001", .$p);.} %>% 
         {.$Analysis = rownames(.); rownames(.) = NULL; .} %>%
         dplyr::select(Analysis, dplyr::everything(), -excluded) %>%
         setColnames(c(".", "<i>k</i>", 

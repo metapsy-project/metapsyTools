@@ -5,6 +5,8 @@
 \title{Print method for objects of class 'runMetaAnalysis'}
 \usage{
 \method{print}{runMetaAnalysis}(x, ...)
+
+\method{print}{runMetaAnalysis}(x, ...)
 }
 \arguments{
 \item{x}{An object of class \code{runMetaAnalysis}.}
@@ -13,8 +15,14 @@
 }
 \description{
 Print S3 method for objects of class \code{runMetaAnalysis}.
+
+Print S3 method for objects of class \code{runMetaAnalysis}.
 }
 \author{
+Mathias Harrer \email{mathias.h.harrer@gmail.com},
+Paula Kuper \email{paula.r.kuper@gmail.com}, Pim Cuijpers
+\email{p.cuijpers@vu.nl}
+
 Mathias Harrer \email{mathias.h.harrer@gmail.com},
 Paula Kuper \email{paula.r.kuper@gmail.com}, Pim Cuijpers
 \email{p.cuijpers@vu.nl}

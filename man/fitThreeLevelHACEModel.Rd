@@ -34,7 +34,9 @@ fitThreeLevelHACEModel(
   w1.var,
   w2.var,
   time.var,
-  near.pd
+  near.pd,
+  i2.ci.threelevel,
+  nsim.boot
 )
 }
 \description{

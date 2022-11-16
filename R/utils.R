@@ -1867,7 +1867,7 @@ fitThreeLevelModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
                               method.tau.meta, method.tau.ci, method.tau,
                               dots, es.binary.raw.vars, round.digits,
                               nnt.cer, which.run, mGeneral, mCombined,
-                              use.rve){
+                              use.rve, i2.ci.threelevel, nsim.boot){
   
   # Define multi.study
   multi.study = names(table(data[[study.var]])
@@ -1988,6 +1988,88 @@ fitThreeLevelModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
       round(mThreeLevel$value$variance.components$i2, 1)
     rownames(mThreeLevel$value$variance.components) = 
       c("Between Studies", "Within Studies", "Total")
+    
+    # Calculate bootstrapped CIs
+    if (i2.ci.threelevel){
+      message(
+        crayon::cyan(
+          crayon::bold(
+            "- Parametric bootstrap for i2 confidence intervals (three-level MA model) ...")))
+      
+      # Run bootstrapping
+      sim = metafor::simulate.rma(mThreeLevel$value, nsim=nsim.boot)
+      counter = 0
+      mThreeLevelArgs.bs = mThreeLevelArgs
+      
+      sav = lapply(sim, function(x) {
+        tmp = try({
+          mThreeLevelArgs.bs$yi = x
+          do.call(metafor::rma.mv, mThreeLevelArgs.bs)}, silent=TRUE) 
+        if (inherits(tmp, "try-error")) { 
+          counter <<- counter + 1
+          NA
+        } else {
+          counter <<- counter + 1
+          if (counter %in% seq(0, nsim.boot, nsim.boot/100)){
+            cat(crayon::green(
+              paste0((counter/nsim.boot)*100, "% completed | ")))
+          }
+          if (identical(counter,nsim.boot)){
+            cat(crayon::green("DONE \n"))
+          }
+          tmp
+        }})
+      
+      sav = sav[!is.na(sav)]
+      
+      # Extract bootstrap cis (sigma)
+      rbind(
+        sapply(sav, function(x) x$sigma2[1]) %>% 
+          quantile(c(.025, .975)),
+        sapply(sav, function(x) x$sigma2[2]) %>% 
+          quantile(c(.025, .975)),
+        sapply(sav, function(x) x$sigma2[1] + x$sigma2[2]) %>% 
+          quantile(c(.025, .975))) -> sigma2.ci
+      
+      # Extract bootstrap cis (i2)
+      rbind(
+        sapply(sav, function(x) 100 * x$sigma2[1] / 
+                 (sum(x$sigma2) + (mThreeLevel$value$k-mThreeLevel$value$p)/
+                    sum(diag(P)))) %>% 
+          quantile(c(.025, .975)),
+        sapply(sav, function(x) 100 * x$sigma2[2] / 
+                 (sum(x$sigma2) + (mThreeLevel$value$k-mThreeLevel$value$p)/
+                    sum(diag(P)))) %>% 
+          quantile(c(.025, .975)),
+        sapply(sav, function(x) 100 * sum(x$sigma2) / 
+                 (sum(x$sigma2) + (mThreeLevel$value$k-mThreeLevel$value$p)/
+                    sum(diag(P)))) %>% 
+          quantile(c(.025, .975))) -> i2.ci
+      
+      mThreeLevel$value$variance.components$tau2.ci = 
+        c(paste0("[", round(sigma2.ci[1,], round.digits+1) %>% 
+                   paste(collapse = "; "), "]"),
+          paste0("[", round(sigma2.ci[2,], round.digits+1) %>% 
+                   paste(collapse = "; "), "]"), 
+          paste0("[", round(sigma2.ci[3,], round.digits+1) %>% 
+                   paste(collapse = "; "), "]"))
+      
+      mThreeLevel$value$variance.components$i2.ci = 
+        c(paste0("[", round(i2.ci[1,], round.digits) %>% 
+                   paste(collapse = "; "), "]"),
+          paste0("[", round(i2.ci[2,], round.digits) %>% 
+                   paste(collapse = "; "), "]"), 
+          paste0("[", round(i2.ci[3,], round.digits) %>% 
+                   paste(collapse = "; "), "]"))
+      
+      mThreeLevel$value$variance.components =
+        mThreeLevel$value$variance.components[,c("tau2", "tau2.ci", "i2", "i2.ci")] 
+      
+      has.bs = TRUE
+    } 
+    else {
+      has.bs = FALSE
+    }
   }
   
   if (use.rve[1] == FALSE){
@@ -2021,7 +2103,7 @@ fitThreeLevelModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
                                    round(round.digits), "]"),
                    p = pval %>% scales::pvalue(),
                    i2 = round(I2, 1),
-                   i2.ci = "-",
+                   i2.ci = ifelse(has.bs, variance.components$i2.ci[3], "-"),
                    prediction.ci = paste0("[", 
                                           round(predict(mThreeLevel$value)$pi.lb %>% 
                                                   ifelse(identical(.type.es, "RR"), exp(.), .), 
@@ -2048,10 +2130,11 @@ fitThreeLevelModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
     
     if (length(multi.study) == 0 & 
         "threelevel" %in% which.run){
-      message("- ", crayon::yellow("[!] "), 
+      message("\n- ", crayon::yellow("[!] "), 
               "All included ES seem to be independent.",
               " A three-level model is not adequate and ",
-              " tau/I2 estimates are not trustworthy!")
+              " tau/I2 estimates are not trustworthy! ",
+              appendLF = FALSE)
       warn.end = TRUE
       which.run[!which.run == "threelevel"] -> which.run
     }
@@ -2112,7 +2195,7 @@ fitThreeLevelModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
                      mThreeLevel$value, "CR2")[["p_Satt"]] %>%
                      scales::pvalue(),
                    i2 = round(I2, 1),
-                   i2.ci = "-",
+                   i2.ci = ifelse(has.bs, variance.components$i2.ci[3], "-"),
                    prediction.ci = paste0(
                      "[", 
                      round(pi.lb.rve %>% 
@@ -2141,10 +2224,11 @@ fitThreeLevelModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
     sendMessage(mThreeLevel, "threelevel")
     
     if (length(multi.study) == 0 & "threelevel" %in% which.run){
-      message("- ", crayon::yellow("[!] "), 
+      message("\n- ", crayon::yellow("[!] "), 
               "All included ES seem to be independent.",
               " A three-level model is not adequate and ",
-              " tau/I2 estimates are not trustworthy!")
+              " tau/I2 estimates are not trustworthy! ",
+              appendLF = FALSE)
       warn.end = TRUE
       which.run[!which.run == "threelevel"] -> which.run
     }
@@ -2163,7 +2247,8 @@ fitThreeLevelCHEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
                                  method.tau.meta, method.tau.ci, method.tau,
                                  dots, es.binary.raw.vars, round.digits,
                                  nnt.cer, which.run, mGeneral, mCombined,
-                                 use.rve, rho.within.study, phi.within.study){
+                                 use.rve, rho.within.study, phi.within.study,
+                                 i2.ci.threelevel, nsim.boot){
   
   if (rho.within.study[1] >.99){
     message("- ", crayon::yellow("[!] "), 
@@ -2335,6 +2420,88 @@ fitThreeLevelCHEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
       round(mCHE$value$variance.components$i2, 1)
     rownames(mCHE$value$variance.components) = 
       c("Between Studies", "Within Studies", "Total")
+    
+    # Calculate bootstrapped CIs
+    if (i2.ci.threelevel){
+      message(
+        crayon::cyan(
+          crayon::bold(
+            "- Parametric bootstrap for i2 confidence intervals (three-level CHE model) ...")))
+      
+      # Run bootstrapping
+      sim = metafor::simulate.rma(mCHE$value, nsim=nsim.boot)
+      counter = 0
+      mCHEArgs.bs = mCHEArgs
+      
+      sav = lapply(sim, function(x) {
+        tmp = try({
+          mCHEArgs.bs$data$TE = x
+          do.call(metafor::rma.mv, mCHEArgs.bs)}, silent=TRUE) 
+        if (inherits(tmp, "try-error")) { 
+          counter <<- counter + 1
+          NA
+        } else {
+          counter <<- counter + 1
+          if (counter %in% seq(0, nsim.boot, nsim.boot/100)){
+            cat(crayon::green(
+              paste0((counter/nsim.boot)*100, "% completed | ")))
+          }
+          if (identical(counter,nsim.boot)){
+            cat(crayon::green("DONE \n"))
+          }
+          tmp
+        }})
+      
+      sav = sav[!is.na(sav)]
+      
+      # Extract bootstrap cis (sigma)
+      rbind(
+        sapply(sav, function(x) x$sigma2[1]) %>% 
+          quantile(c(.025, .975)),
+        sapply(sav, function(x) x$sigma2[2]) %>% 
+          quantile(c(.025, .975)),
+        sapply(sav, function(x) x$sigma2[1] + x$sigma2[2]) %>% 
+          quantile(c(.025, .975))) -> sigma2.ci
+      
+      # Extract bootstrap cis (i2)
+      rbind(
+        sapply(sav, function(x) 100 * x$sigma2[1] / 
+                 (sum(x$sigma2) + (mCHE$value$k-mCHE$value$p)/
+                    sum(diag(P)))) %>% 
+          quantile(c(.025, .975)),
+        sapply(sav, function(x) 100 * x$sigma2[2] / 
+                 (sum(x$sigma2) + (mCHE$value$k-mCHE$value$p)/
+                    sum(diag(P)))) %>% 
+          quantile(c(.025, .975)),
+        sapply(sav, function(x) 100 * sum(x$sigma2) / 
+                 (sum(x$sigma2) + (mCHE$value$k-mCHE$value$p)/
+                    sum(diag(P)))) %>% 
+          quantile(c(.025, .975))) -> i2.ci
+      
+      mCHE$value$variance.components$tau2.ci = 
+        c(paste0("[", round(sigma2.ci[1,], round.digits+1) %>% 
+                   paste(collapse = "; "), "]"),
+          paste0("[", round(sigma2.ci[2,], round.digits+1) %>% 
+                   paste(collapse = "; "), "]"), 
+          paste0("[", round(sigma2.ci[3,], round.digits+1) %>% 
+                   paste(collapse = "; "), "]"))
+      
+      mCHE$value$variance.components$i2.ci = 
+        c(paste0("[", round(i2.ci[1,], round.digits) %>% 
+                   paste(collapse = "; "), "]"),
+          paste0("[", round(i2.ci[2,], round.digits) %>% 
+                   paste(collapse = "; "), "]"), 
+          paste0("[", round(i2.ci[3,], round.digits) %>% 
+                   paste(collapse = "; "), "]"))
+      
+      mCHE$value$variance.components =
+        mCHE$value$variance.components[,c("tau2", "tau2.ci", "i2", "i2.ci")] 
+      
+      has.bs = TRUE
+    } 
+    else {
+      has.bs = FALSE
+    }
   }
   
   
@@ -2369,7 +2536,7 @@ fitThreeLevelCHEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
                                    round(round.digits), "]"),
                    p = pval %>% scales::pvalue(),
                    i2 = round(I2, 1),
-                   i2.ci = "-",
+                   i2.ci = ifelse(has.bs, variance.components$i2.ci[3], "-"),
                    prediction.ci = paste0(
                      "[", 
                      round(predict(mCHE$value)$pi.lb %>% 
@@ -2391,10 +2558,11 @@ fitThreeLevelCHEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
     sendMessage(mCHE, "threelevel.che")
     
     if (length(multi.study) == 0 & "threelevel.che" %in% which.run){
-      message("- ", crayon::yellow("[!] "), 
+      message("\n- ", crayon::yellow("[!] "), 
               "All included ES seem to be independent.",
               " A three-level CHE model is not adequate and ",
-              "tau/I2 estimates are not trustworthy!")
+              "tau/I2 estimates are not trustworthy! ",
+              appendLF = FALSE)
       warn.end = TRUE
       which.run[!which.run == "threelevel.che"] -> which.run
     }
@@ -2452,7 +2620,7 @@ fitThreeLevelCHEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
                      mCHE$value, "CR2")[["p_Satt"]] %>%
                      scales::pvalue(),
                    i2 = round(I2, 1),
-                   i2.ci = "-",
+                   i2.ci = ifelse(has.bs, variance.components$i2.ci[3], "-"),
                    prediction.ci = paste0(
                      "[", 
                      round(pi.lb.rve %>% 
@@ -2479,10 +2647,11 @@ fitThreeLevelCHEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
     sendMessage(mCHE, "threelevel.che")
     
     if (length(multi.study) == 0 & "threelevel.che" %in% which.run){
-      message("- ", crayon::yellow("[!] "), 
+      message("\n- ", crayon::yellow("[!] "), 
               "All included ES seem to be independent.",
               " A three-level CHE model is not adequate and ",
-              "tau/I2 estimates are not trustworthy!")
+              "tau/I2 estimates are not trustworthy! ",
+              appendLF = FALSE)
       warn.end = TRUE
       which.run[!which.run == "threelevel.che"] -> which.run
     }
@@ -2505,7 +2674,7 @@ fitThreeLevelHACEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
                                   use.rve, rho.within.study, which.combine.var,
                                   phi.within.study, n.var.arm1, 
                                   n.var.arm2, w1.var, w2.var, time.var,
-                                  near.pd){
+                                  near.pd, i2.ci.threelevel, nsim.boot){
   
   if (rho.within.study[1] >.99){
     message("- ", crayon::yellow("[!] "), 
@@ -2640,13 +2809,13 @@ fitThreeLevelHACEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
     
     # Approximate Vcovs
     tryCatch2(
-    metafor::vcalc(vi = data.g$se^2, cluster = study, 
-                   obs = instrument, time1 = time_weeks,
-                   grp1 = vcalc_arm1, grp2 = vcalc_arm2,
-                   w1 = n_arm1, w2 = n_arm2, 
-                   rho = rho.within.study, 
-                   phi = phi.within.study, data = dat.che, 
-                   nearpd = near.pd)) -> vcalc.res
+      metafor::vcalc(vi = data.g$se^2, cluster = study, 
+                     obs = instrument, time1 = time_weeks,
+                     grp1 = vcalc_arm1, grp2 = vcalc_arm2,
+                     w1 = n_arm1, w2 = n_arm2, 
+                     rho = rho.within.study, 
+                     phi = phi.within.study, data = dat.che, 
+                     nearpd = near.pd)) -> vcalc.res
     if (!is.null(vcalc.res$warning[1])){
       append.error = TRUE
     } else {
@@ -2718,6 +2887,88 @@ fitThreeLevelHACEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
       round(mCHE$value$variance.components$i2, 1)
     rownames(mCHE$value$variance.components) = 
       c("Between Studies", "Within Studies", "Total")
+    
+    # Calculate bootstrapped CIs
+    if (i2.ci.threelevel){
+      message(
+        crayon::cyan(
+          crayon::bold(
+            "- Parametric bootstrap for i2 confidence intervals (three-level CHE model) ...")))
+      
+      # Run bootstrapping
+      sim = metafor::simulate.rma(mCHE$value, nsim=nsim.boot)
+      counter = 0
+      mCHEArgs.bs = mCHEArgs
+      
+      sav = lapply(sim, function(x) {
+        tmp = try({
+          mCHEArgs.bs$data$TE = x
+          do.call(metafor::rma.mv, mCHEArgs.bs)}, silent=TRUE) 
+        if (inherits(tmp, "try-error")) { 
+          counter <<- counter + 1
+          NA
+        } else {
+          counter <<- counter + 1
+          if (counter %in% seq(0, nsim.boot, nsim.boot/100)){
+            cat(crayon::green(
+              paste0((counter/nsim.boot)*100, "% completed | ")))
+          }
+          if (identical(counter,nsim.boot)){
+            cat(crayon::green("DONE \n"))
+          }
+          tmp
+        }})
+      
+      sav = sav[!is.na(sav)]
+      
+      # Extract bootstrap cis (sigma)
+      rbind(
+        sapply(sav, function(x) x$sigma2[1]) %>% 
+          quantile(c(.025, .975)),
+        sapply(sav, function(x) x$sigma2[2]) %>% 
+          quantile(c(.025, .975)),
+        sapply(sav, function(x) x$sigma2[1] + x$sigma2[2]) %>% 
+          quantile(c(.025, .975))) -> sigma2.ci
+      
+      # Extract bootstrap cis (i2)
+      rbind(
+        sapply(sav, function(x) 100 * x$sigma2[1] / 
+                 (sum(x$sigma2) + (mCHE$value$k-mCHE$value$p)/
+                    sum(diag(P)))) %>% 
+          quantile(c(.025, .975)),
+        sapply(sav, function(x) 100 * x$sigma2[2] / 
+                 (sum(x$sigma2) + (mCHE$value$k-mCHE$value$p)/
+                    sum(diag(P)))) %>% 
+          quantile(c(.025, .975)),
+        sapply(sav, function(x) 100 * sum(x$sigma2) / 
+                 (sum(x$sigma2) + (mCHE$value$k-mCHE$value$p)/
+                    sum(diag(P)))) %>% 
+          quantile(c(.025, .975))) -> i2.ci
+      
+      mCHE$value$variance.components$tau2.ci = 
+        c(paste0("[", round(sigma2.ci[1,], round.digits+1) %>% 
+                   paste(collapse = "; "), "]"),
+          paste0("[", round(sigma2.ci[2,], round.digits+1) %>% 
+                   paste(collapse = "; "), "]"), 
+          paste0("[", round(sigma2.ci[3,], round.digits+1) %>% 
+                   paste(collapse = "; "), "]"))
+      
+      mCHE$value$variance.components$i2.ci = 
+        c(paste0("[", round(i2.ci[1,], round.digits) %>% 
+                   paste(collapse = "; "), "]"),
+          paste0("[", round(i2.ci[2,], round.digits) %>% 
+                   paste(collapse = "; "), "]"), 
+          paste0("[", round(i2.ci[3,], round.digits) %>% 
+                   paste(collapse = "; "), "]"))
+      
+      mCHE$value$variance.components =
+        mCHE$value$variance.components[,c("tau2", "tau2.ci", "i2", "i2.ci")] 
+      
+      has.bs = TRUE
+    } 
+    else {
+      has.bs = FALSE
+    }
   }
   
   
@@ -2754,7 +3005,7 @@ fitThreeLevelHACEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
                                    round(round.digits), "]"),
                    p = pval %>% scales::pvalue(),
                    i2 = round(I2, 1),
-                   i2.ci = "-",
+                   i2.ci = ifelse(has.bs, variance.components$i2.ci[3], "-"),
                    prediction.ci = paste0(
                      "[", 
                      round(predict(mCHE$value)$pi.lb %>% 
@@ -2776,10 +3027,11 @@ fitThreeLevelHACEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
     sendMessage(mCHE, "threelevel.che")
     
     if (length(multi.study) == 0 & "threelevel.che" %in% which.run){
-      message("- ", crayon::yellow("[!] "), 
+      message("\n- ", crayon::yellow("[!] "), 
               "All included ES seem to be independent.",
               " A three-level CHE model is not adequate and ",
-              "tau/I2 estimates are not trustworthy!")
+              "tau/I2 estimates are not trustworthy! ",
+              appendLF = FALSE)
       warn.end = TRUE
       which.run[!which.run == "threelevel.che"] -> which.run
     }
@@ -2838,7 +3090,7 @@ fitThreeLevelHACEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
                      mCHE$value, "CR2")[["p_Satt"]] %>%
                      scales::pvalue(),
                    i2 = round(I2, 1),
-                   i2.ci = "-",
+                   i2.ci = ifelse(has.bs, variance.components$i2.ci[3], "-"),
                    prediction.ci = paste0(
                      "[", 
                      round(pi.lb.rve %>% 
@@ -2865,10 +3117,11 @@ fitThreeLevelHACEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
     sendMessage(mCHE, "threelevel.che")
     
     if (length(multi.study) == 0 & "threelevel.che" %in% which.run){
-      message("- ", crayon::yellow("[!] "), 
+      message("\n- ", crayon::yellow("[!] "), 
               "All included ES seem to be independent.",
               " A three-level CHE model is not adequate and ",
-              "tau/I2 estimates are not trustworthy!")
+              "tau/I2 estimates are not trustworthy! ",
+              appendLF = FALSE)
       warn.end = TRUE
       which.run[!which.run == "threelevel.che"] -> which.run
     }
@@ -2911,6 +3164,19 @@ setColnames = function (x, value)
     dimnames(x) <- dn
   }
   x
+}
+
+
+#' Compute I-squared from tau2 using the "generalized" formula
+#' (as used, e.g., in metafor). This formula uses an estimate
+#' of the "typical" within-study variance (v-tilde).
+#' @keywords internal 
+i2.gen = function(tau2, k, vi){
+  wi = 1/vi
+  v.tilde = ((k-1)*sum(wi))/
+    (sum(wi)^2-sum(wi^2))
+  i2 = 100*(tau2/(tau2+v.tilde))
+  return(i2)
 }
 
 

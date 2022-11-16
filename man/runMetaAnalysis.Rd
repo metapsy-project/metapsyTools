@@ -5,10 +5,14 @@
 \title{Run different types of meta-analyses}
 \usage{
 runMetaAnalysis(data,
+
+                # Models to run
                 which.run = c("overall", "combined",
                               "lowest.highest", "outliers",
                               "influence", "rob", "threelevel",
                               "threelevel.che"),
+                              
+                # Effect size measure
                 es.measure = c("g", "RR"),
                 es.type = c("precalculated", "raw"),
                 es.var = ifelse(identical(es.measure[1], "g"), 
@@ -18,15 +22,23 @@ runMetaAnalysis(data,
                 es.binary.raw.vars = 
                   c(".event_arm1", ".event_arm2",
                     ".totaln_arm1", ".totaln_arm2"),
+                    
+                # Estimator of the heterogeneity variance
                 method.tau = "REML",
+                method.tau.ci = "Q-Profile",
+                i2.ci.threelevel = FALSE,
+                nsim.boot = 1e4,
                 hakn = TRUE,
+                
+                # Data specifications
                 study.var = "study",
                 arm.var.1 = "condition_arm1",
                 arm.var.2 = "condition_arm2",
                 measure.var = "instrument",
                 low.rob.filter = "rob > 2",
-                method.tau.ci = "Q-Profile",
                 round.digits = 2,
+                
+                # Model specifications
                 which.combine = c("arms", "studies"),
                 which.combine.var = "multi_arm1",
                 which.outliers = c("overall", "combined"),
@@ -43,7 +55,11 @@ runMetaAnalysis(data,
                 vcov = c("simple", "complex"),
                 near.pd = FALSE,
                 use.rve = TRUE,
+                
+                # Output
                 html = TRUE,
+                
+                # Additional arguments
                 ...)
 }
 \arguments{
@@ -85,6 +101,21 @@ and its square root (tau). Either \code{"REML"} (default), \code{"DL"},
 \code{"PM"}, \code{"ML"}, \code{"HS"}, \code{"SJ"}, \code{"HE"}, or \code{"EB"}, can be abbreviated (see
 \code{\link[meta]{metagen}}). Use \code{"FE"} to use a fixed-effect/"common effect" model.}
 
+\item{method.tau.ci}{\code{character}. A character string indicating which method is used to estimate the
+confidence interval of the between-study heterogeneity variance \mjeqn{\tau^2}{\tau^2}. Either \code{"Q-Profile"} (default and recommended; \href{http://www.wvbauer.com/lib/exe/fetch.php/articles:viechtbauer2007b.pdf}{Viechtbauer, 2017}),
+\code{"BJ"}, \code{"J"}, or \code{"PL"} can be abbreviated. See \code{\link[meta]{metagen}} and \code{\link[metafor]{rma.uni}} for details.}
+
+\item{i2.ci.threelevel}{\code{logical}. Confidence intervals for \mjeqn{\tau^2}{\tau^2} as calculated by the Q-Profile method are not
+directly applicable for three-level models, in which two heterogeneity variance components are estimated. By default,
+this argument is therefore set to \code{FALSE}, and no confidence intervals around \mjeqn{\tau^2}{\tau^2} and \mjeqn{I^2}{I^2} are provided for the
+\code{"threelevel"} and \code{"threelevel.che"} model.
+If this argument is set to \code{TRUE}, parametric bootstrapping is used to calculate confidence intervals around the between- and
+within-study heterogeneity estimates (\mjeqn{\tau}{\tau} and \mjeqn{I^2}{I^2}). Please note that this can take several minutes,
+depending on the number of effect sizes.}
+
+\item{nsim.boot}{\code{numeric} Number of bootstrap samples to be drawn when \code{i2.ci.threelevel} is \code{TRUE}. Defaults to
+10000.}
+
 \item{hakn}{\code{logical}. Should the Knapp-Hartung adjustment for effect size significance tests be used? Default is \code{TRUE}.}
 
 \item{study.var}{\code{character}. The name of the variable in \code{data} in which the study IDs are stored.}
@@ -101,10 +132,6 @@ in which the instrument used for the comparison is stored.}
 \item{low.rob.filter}{\code{character}. A filtering statement by which to
 include studies for the "low RoB only" analysis. Please note that the name of
 the variable must be included as a column in \code{data}.}
-
-\item{method.tau.ci}{\code{character}. A character string indicating which method is used to estimate the
-confidence interval of tau/tau-squared. Either \code{"Q-Profile"} (default and recommended),
-\code{"BJ"}, \code{"J"}, or \code{"PL"} can be abbreviated. See \code{\link[meta]{metagen}} for details.}
 
 \item{round.digits}{\code{numeric}. Number of digits to round the (presented) results by. Default is \code{2}.}
 

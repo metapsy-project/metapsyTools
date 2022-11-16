@@ -27,7 +27,9 @@ fitThreeLevelCHEModel(
   mCombined,
   use.rve,
   rho.within.study,
-  phi.within.study
+  phi.within.study,
+  i2.ci.threelevel,
+  nsim.boot
 )
 }
 \description{
