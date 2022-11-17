@@ -95,8 +95,8 @@
 #' @importFrom scales pvalue
 #' @importFrom meta trimfill
 #' @importFrom metasens limitmeta
-#' @importFrom metafor selmodel rma.uni
-#' @importFrom stats dffits model.matrix rnorm rstudent
+#' @importFrom metafor selmodel rma.uni confint.rma.uni.selmodel
+#' @importFrom stats dffits model.matrix rnorm rstudent quantile
 #' @importFrom utils combn argsAnywhere
 #' @export correctPublicationBias
 
@@ -302,6 +302,57 @@ correctPublicationBias = function(model,
   mLimit = tryCatch2(
     do.call(metasens::limitmeta, c(x = list(M), lm.args)))
   
+  # Use bootstrapping if selected
+  if (model$i2.ci.boot){
+    message(
+      crayon::cyan(
+        crayon::bold(
+          "- Parametric bootstrap for g2 confidence intervals (limit meta-analysis) ...")))
+    
+    dat = list(dat = M$data, lm.args = lm.args, call = M$call)
+    # Bootstrap worker
+    boot.func = function(data.boot) {
+      data.bt = data.boot$data
+      lm.args = data.boot$lm.args
+      call = data.boot$call
+      call$TE = data.bt$.g
+      M.update = eval(call)
+      res = do.call(metasens::limitmeta, c(x = list(M.update), lm.args))
+      return(res$G.squared)
+    }
+    # Generate data
+    data.gen = function(dat, mle=list(mu=M$TE.random, tau2=M$tau2)) {
+      dat.bt = dat$dat
+      dat.bt$.g = rnorm(nrow(dat.bt), mle$mu, sqrt(mle$tau2 + dat.bt$.g_se^2))
+      dat.bt$.g_se = dat$.g_se
+      dat.ret = list(data = dat.bt, lm.args = dat$lm.args, call = dat$call)
+      return(dat.ret)
+    }
+    # Sample
+    res.vec = numeric(model$nsim.boot)
+    counter = 0
+    for (i in 1:model$nsim.boot){
+      tmp = try({boot.func(data.gen(dat))}, silent=TRUE)
+      if (inherits(tmp, "try-error")) {
+        res.vec[i] = NA
+        counter = counter + 1
+      } else {
+        res.vec[i] = tmp
+        counter = counter + 1
+        if (counter %in% seq(0, model$nsim.boot, model$nsim.boot/100)){
+          cat(crayon::green(
+            paste0((counter/model$nsim.boot)*100, "% completed | ")))
+        }
+        if (identical(counter, model$nsim.boot)){
+          cat(crayon::green("DONE \n"))
+        }
+      }
+    }
+    
+    sav = res.vec[!is.na(res.vec)]
+    mLimit$value$G.squared.ci = quantile(sav, c(.025, .975))
+  }
+  
   if (is.null(mLimit$value) & 
       is.null(mLimit$warning)){
     message("- ", crayon::yellow("[!] "),
@@ -351,7 +402,11 @@ correctPublicationBias = function(model,
                         round(round.digits), "]"),
         p = pval.adjust %>% scales::pvalue(),
         i2 = round(G.squared*100, 2),
-        i2.ci = "-",
+        i2.ci = ifelse(model$i2.ci.boot,
+                       paste0(
+                         "[", 
+                         round(G.squared.ci[1]*100, round.digits), "; ",
+                         round(G.squared.ci[2]*100, round.digits), "]"), "-"),
         prediction.ci = paste0(
           "[", 
           round(lower.predict %>% 
@@ -496,6 +551,12 @@ correctPublicationBias = function(model,
                       CER = cer)} -> nnt.g
       }
     }
+
+    # Calculate profile-likelihood CIs
+    tau2.sm = metafor::confint.rma.uni.selmodel(mSelmodel)[[1]]$random["tau^2",1:3]
+    mSelmodel$i2 = i2.gen(tau2.sm, mSelmodel$k, mSelmodel$vi)[1]
+    mSelmodel$i2.lower = i2.gen(tau2.sm, mSelmodel$k, mSelmodel$vi)[2]
+    mSelmodel$i2.upper = i2.gen(tau2.sm, mSelmodel$k, mSelmodel$vi)[3]
     
     mSelmodelRes = with(mSelmodel,{
       data.frame(
@@ -512,8 +573,11 @@ correctPublicationBias = function(model,
             ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
             round(r.digits), "]"),
         p = pval %>% scales::pvalue(),
-        i2 = round(M.metafor$I2, 2),
-        i2.ci = "-",
+        i2 = round(i2, 2),
+        i2.ci = paste0(
+          "[", 
+          round(i2.lower, r.digits), "; ",
+          round(i2.upper, r.digits), "]"),
         prediction.ci = paste0(
           "[", 
           round(predict(mSelmodel)[["pi.lb"]] %>% 

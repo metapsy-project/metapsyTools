@@ -28,7 +28,7 @@ fitThreeLevelCHEModel(
   use.rve,
   rho.within.study,
   phi.within.study,
-  i2.ci.threelevel,
+  i2.ci.boot,
   nsim.boot
 )
 }

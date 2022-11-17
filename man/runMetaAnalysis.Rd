@@ -26,8 +26,8 @@ runMetaAnalysis(data,
                 # Estimator of the heterogeneity variance
                 method.tau = "REML",
                 method.tau.ci = "Q-Profile",
-                i2.ci.threelevel = FALSE,
-                nsim.boot = 1e4,
+                i2.ci.boot = FALSE,
+                nsim.boot = 5e3,
                 hakn = TRUE,
                 
                 # Data specifications
@@ -105,16 +105,19 @@ and its square root (tau). Either \code{"REML"} (default), \code{"DL"},
 confidence interval of the between-study heterogeneity variance \mjeqn{\tau^2}{\tau^2}. Either \code{"Q-Profile"} (default and recommended; \href{http://www.wvbauer.com/lib/exe/fetch.php/articles:viechtbauer2007b.pdf}{Viechtbauer, 2017}),
 \code{"BJ"}, \code{"J"}, or \code{"PL"} can be abbreviated. See \code{\link[meta]{metagen}} and \code{\link[metafor]{rma.uni}} for details.}
 
-\item{i2.ci.threelevel}{\code{logical}. Confidence intervals for \mjeqn{\tau^2}{\tau^2} as calculated by the Q-Profile method are not
+\item{i2.ci.boot}{\code{logical}. Confidence intervals for \mjeqn{\tau^2}{\tau^2} as calculated by the Q-Profile method are not
 directly applicable for three-level models, in which two heterogeneity variance components are estimated. By default,
 this argument is therefore set to \code{FALSE}, and no confidence intervals around \mjeqn{\tau^2}{\tau^2} and \mjeqn{I^2}{I^2} are provided for the
 \code{"threelevel"} and \code{"threelevel.che"} model.
 If this argument is set to \code{TRUE}, parametric bootstrapping is used to calculate confidence intervals around the between- and
 within-study heterogeneity estimates (\mjeqn{\tau}{\tau} and \mjeqn{I^2}{I^2}). Please note that this can take several minutes,
-depending on the number of effect sizes.}
+depending on the number of effect sizes. If \code{\link[=correctPublicationBias]{correctPublicationBias()}} is used and \code{i2.ci.boot} is \code{TRUE},
+bootstrapping will also be used to calculate confidence intervals around the \mjeqn{G^2}{G^2} statistic
+(\href{https://academic.oup.com/biostatistics/article/12/1/122/391113}{Rücker et al., 2011})
+used in the limit meta-analysis (note that \mjeqn{G^2}{G^2} is printed as \mjeqn{I^2}{I^2} in this package).}
 
-\item{nsim.boot}{\code{numeric} Number of bootstrap samples to be drawn when \code{i2.ci.threelevel} is \code{TRUE}. Defaults to
-10000.}
+\item{nsim.boot}{\code{numeric} Number of bootstrap samples to be drawn when \code{i2.ci.boot} is \code{TRUE}. Defaults to
+5000.}
 
 \item{hakn}{\code{logical}. Should the Knapp-Hartung adjustment for effect size significance tests be used? Default is \code{TRUE}.}
 

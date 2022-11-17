@@ -1867,7 +1867,7 @@ fitThreeLevelModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
                               method.tau.meta, method.tau.ci, method.tau,
                               dots, es.binary.raw.vars, round.digits,
                               nnt.cer, which.run, mGeneral, mCombined,
-                              use.rve, i2.ci.threelevel, nsim.boot){
+                              use.rve, i2.ci.boot, nsim.boot){
   
   # Define multi.study
   multi.study = names(table(data[[study.var]])
@@ -1990,7 +1990,7 @@ fitThreeLevelModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
       c("Between Studies", "Within Studies", "Total")
     
     # Calculate bootstrapped CIs
-    if (i2.ci.threelevel){
+    if (i2.ci.boot){
       message(
         crayon::cyan(
           crayon::bold(
@@ -2233,6 +2233,13 @@ fitThreeLevelModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
       which.run[!which.run == "threelevel"] -> which.run
     }
   }
+  
+  if (has.bs){
+    mThreeLevel$value$i2.ci.boot = TRUE
+  } else {
+    mThreeLevel$value$i2.ci.boot = FALSE
+  }
+  
   return(list(m = mThreeLevel$value, 
               res = mThreeLevelRes,
               has.error = mThreeLevel$has.error,
@@ -2248,7 +2255,7 @@ fitThreeLevelCHEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
                                  dots, es.binary.raw.vars, round.digits,
                                  nnt.cer, which.run, mGeneral, mCombined,
                                  use.rve, rho.within.study, phi.within.study,
-                                 i2.ci.threelevel, nsim.boot){
+                                 i2.ci.boot, nsim.boot){
   
   if (rho.within.study[1] >.99){
     message("- ", crayon::yellow("[!] "), 
@@ -2422,7 +2429,7 @@ fitThreeLevelCHEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
       c("Between Studies", "Within Studies", "Total")
     
     # Calculate bootstrapped CIs
-    if (i2.ci.threelevel){
+    if (i2.ci.boot){
       message(
         crayon::cyan(
           crayon::bold(
@@ -2656,6 +2663,12 @@ fitThreeLevelCHEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
       which.run[!which.run == "threelevel.che"] -> which.run
     }
   }
+  if (has.bs){
+    mCHE$value$i2.ci.boot = TRUE
+  } else {
+    mCHE$value$i2.ci.boot = FALSE
+  }
+  
   return(list(m = mCHE$value, 
               res = mCHERes,
               has.error = mCHE$has.error,
@@ -2674,7 +2687,7 @@ fitThreeLevelHACEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
                                   use.rve, rho.within.study, which.combine.var,
                                   phi.within.study, n.var.arm1, 
                                   n.var.arm2, w1.var, w2.var, time.var,
-                                  near.pd, i2.ci.threelevel, nsim.boot){
+                                  near.pd, i2.ci.boot, nsim.boot){
   
   if (rho.within.study[1] >.99){
     message("- ", crayon::yellow("[!] "), 
@@ -2889,7 +2902,7 @@ fitThreeLevelHACEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
       c("Between Studies", "Within Studies", "Total")
     
     # Calculate bootstrapped CIs
-    if (i2.ci.threelevel){
+    if (i2.ci.boot){
       message(
         crayon::cyan(
           crayon::bold(
@@ -3131,6 +3144,11 @@ fitThreeLevelHACEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
   if (append.error){
     mCHE$has.error = TRUE
     mCHE$error$message = paste(vcalc.res$warning) 
+  }
+  if (has.bs){
+    mCHE$value$i2.ci.boot = TRUE
+  } else {
+    mCHE$value$i2.ci.boot = FALSE
   }
   
   return(list(m = mCHE$value, 

@@ -26,7 +26,7 @@ fitThreeLevelModel(
   mGeneral,
   mCombined,
   use.rve,
-  i2.ci.threelevel,
+  i2.ci.boot,
   nsim.boot
 )
 }

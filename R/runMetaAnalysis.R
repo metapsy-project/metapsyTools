@@ -26,8 +26,8 @@
 #'                 # Estimator of the heterogeneity variance
 #'                 method.tau = "REML",
 #'                 method.tau.ci = "Q-Profile",
-#'                 i2.ci.threelevel = FALSE,
-#'                 nsim.boot = 1e4,
+#'                 i2.ci.boot = FALSE,
+#'                 nsim.boot = 5e3,
 #'                 hakn = TRUE,
 #'                 
 #'                 # Data specifications
@@ -95,15 +95,18 @@
 #' @param method.tau.ci \code{character}. A character string indicating which method is used to estimate the
 #' confidence interval of the between-study heterogeneity variance \mjeqn{\tau^2}{\tau^2}. Either \code{"Q-Profile"} (default and recommended; [Viechtbauer, 2017](http://www.wvbauer.com/lib/exe/fetch.php/articles:viechtbauer2007b.pdf)),
 #' \code{"BJ"}, \code{"J"}, or \code{"PL"} can be abbreviated. See \code{\link[meta]{metagen}} and \code{\link[metafor]{rma.uni}} for details.
-#' @param i2.ci.threelevel `logical`. Confidence intervals for \mjeqn{\tau^2}{\tau^2} as calculated by the Q-Profile method are not 
+#' @param i2.ci.boot `logical`. Confidence intervals for \mjeqn{\tau^2}{\tau^2} as calculated by the Q-Profile method are not 
 #' directly applicable for three-level models, in which two heterogeneity variance components are estimated. By default,
 #' this argument is therefore set to `FALSE`, and no confidence intervals around \mjeqn{\tau^2}{\tau^2} and \mjeqn{I^2}{I^2} are provided for the
 #' `"threelevel"` and `"threelevel.che"` model.
 #' If this argument is set to `TRUE`, parametric bootstrapping is used to calculate confidence intervals around the between- and
 #' within-study heterogeneity estimates (\mjeqn{\tau}{\tau} and \mjeqn{I^2}{I^2}). Please note that this can take several minutes,
-#' depending on the number of effect sizes.
-#' @param nsim.boot `numeric` Number of bootstrap samples to be drawn when `i2.ci.threelevel` is `TRUE`. Defaults to
-#' 10000.
+#' depending on the number of effect sizes. If [correctPublicationBias()] is used and `i2.ci.boot` is `TRUE`,
+#' bootstrapping will also be used to calculate confidence intervals around the \mjeqn{G^2}{G^2} statistic 
+#' ([Rücker et al., 2011](https://academic.oup.com/biostatistics/article/12/1/122/391113))
+#' used in the limit meta-analysis (note that \mjeqn{G^2}{G^2} is printed as \mjeqn{I^2}{I^2} in this package).
+#' @param nsim.boot `numeric` Number of bootstrap samples to be drawn when `i2.ci.boot` is `TRUE`. Defaults to
+#' 5000.
 #' @param hakn \code{logical}. Should the Knapp-Hartung adjustment for effect size significance tests be used? Default is \code{TRUE}.
 #' @param study.var \code{character}. The name of the variable in \code{data} in which the study IDs are stored.
 #' @param arm.var.1 \code{character}. The name of the variable in \code{data} in which the condition (e.g. "guided iCBT")
@@ -349,8 +352,8 @@ runMetaAnalysis = function(data,
                                ".totaln_arm1", ".totaln_arm2"),
                            method.tau = "REML",
                            method.tau.ci = "Q-Profile",
-                           i2.ci.threelevel = FALSE,
-                           nsim.boot = 1e4,
+                           i2.ci.boot = FALSE,
+                           nsim.boot = 5e3,
                            hakn = TRUE,
                            study.var = "study",
                            arm.var.1 = "condition_arm1",
@@ -424,6 +427,15 @@ runMetaAnalysis = function(data,
   if (!identical(which.combine[1], "studies") &&
       !identical(which.combine[1], "arms")){
     stop("'which.combine' must be either 'arms' or 'studies'.")
+  }
+  
+  if (!is.numeric(nsim.boot)){
+    stop("'nsim.boot' must numeric.")
+  }
+  
+  if (nsim.boot < 1000 && i2.ci.boot){
+    warning("Number of boostrap samples (nsim.boot) is low. ",
+            "Use a higher number for reliable inferences.")
   }
   
   # Get three-dots arguments;
@@ -644,7 +656,7 @@ runMetaAnalysis = function(data,
                          method.tau.meta, method.tau.ci, method.tau,
                          dots, es.binary.raw.vars, round.digits,
                          nnt.cer, which.run, mGeneral, mCombined,
-                         use.rve, i2.ci.threelevel, nsim.boot)
+                         use.rve, i2.ci.boot, nsim.boot)
     sendMessage(mThreeLevel, "threelevel", which.run)
     # If model failed, add to error model list
     if (mThreeLevel$has.error){
@@ -678,7 +690,7 @@ runMetaAnalysis = function(data,
                                use.rve, rho.within.study, which.combine.var,
                                phi.within.study, n.var.arm1, 
                                n.var.arm2, w1.var, w2.var, time.var,
-                               near.pd, i2.ci.threelevel, nsim.boot)
+                               near.pd, i2.ci.boot, nsim.boot)
       sendMessage(mCHE, "threelevel.che", which.run)
       if (mCHE$has.error){
         message("- ", crayon::yellow("[!] "), 
@@ -696,7 +708,7 @@ runMetaAnalysis = function(data,
                               dots, es.binary.raw.vars, round.digits,
                               nnt.cer, which.run, mGeneral, mCombined,
                               use.rve, rho.within.study, phi.within.study,
-                              i2.ci.threelevel, nsim.boot)
+                              i2.ci.boot, nsim.boot)
       sendMessage(mCHE, "threelevel.che", which.run)
       # If model failed, add to error model list
       if (mCHE$has.error){
@@ -761,7 +773,9 @@ runMetaAnalysis = function(data,
        call = match.call(),
        .type.es = .type.es,
        .raw.bin.es = .raw.bin.es,
-       error.model.list = error.model.list) -> returnlist
+       error.model.list = error.model.list,
+       i2.ci.boot = i2.ci.boot,
+       nsim.boot = nsim.boot) -> returnlist
   class(returnlist) = c("runMetaAnalysis", "list")
   
   if ("lowest.highest" %in% which.run){
@@ -1100,6 +1114,7 @@ print.runMetaAnalysis = function(x, ...){
         cat("-")
       } else {
         dat = x$model.threelevel.var.comp
+        dat = within(dat,{tau2 = round(tau2, x$round.digits+1)})
         tbl = dplyr::as_tibble(cbind(Source = rownames(dat), dat))
         old = options(pillar.bold=TRUE)
         tbl.format = format(tbl)[-c(1,3)]
@@ -1119,6 +1134,7 @@ print.runMetaAnalysis = function(x, ...){
         cat("-")
       } else {
         dat = x$model.threelevel.che.var.comp
+        dat = within(dat,{tau2 = round(tau2, x$round.digits+1)})
         tbl = dplyr::as_tibble(cbind(Source = rownames(dat), dat))
         old = options(pillar.bold=TRUE)
         tbl.format = format(tbl)[-c(1,3)]
@@ -1219,7 +1235,16 @@ print.runMetaAnalysis = function(x, ...){
       if (is.na(x$model.threelevel.var.comp)[1]){
         cat("-")
       } else {
-        print(x$model.threelevel.var.comp) 
+        dat = x$model.threelevel.var.comp
+        dat = within(dat,{tau2 = round(tau2, x$round.digits+1)})
+        tbl = dplyr::as_tibble(cbind(Source = rownames(dat), dat))
+        old = options(pillar.bold=TRUE)
+        tbl.format = format(tbl)[-c(1,3)]
+        tbl.format[-1] = lapply(tbl.format[-1], 
+                                function(x) stringr::str_sub(x, 19))
+        tbl.format[1] = stringr::str_sub(tbl.format[1], 3)
+        cat(do.call(c, tbl.format), sep="\n")
+        options(old)
       }
     }
     
@@ -1230,7 +1255,16 @@ print.runMetaAnalysis = function(x, ...){
       if (is.na(x$model.threelevel.che.var.comp)[1]){
         cat("-")
       } else {
-        print(x$model.threelevel.che.var.comp) 
+        dat = x$model.threelevel.che.var.comp
+        dat = within(dat,{tau2 = round(tau2, x$round.digits+1)})
+        tbl = dplyr::as_tibble(cbind(Source = rownames(dat), dat))
+        old = options(pillar.bold=TRUE)
+        tbl.format = format(tbl)[-c(1,3)]
+        tbl.format[-1] = lapply(tbl.format[-1], 
+                                function(x) stringr::str_sub(x, 19))
+        tbl.format[1] = stringr::str_sub(tbl.format[1], 3)
+        cat(do.call(c, tbl.format), sep="\n")
+        options(old)
       }
     }
     
