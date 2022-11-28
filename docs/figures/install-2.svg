@@ -1,0 +1,14 @@
+<svg width="36px" height="36px" viewBox="0 0 36 36" version="1.1"  preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<defs>
+    <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(94, 186, 189);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(3, 114, 183);stop-opacity:1" />
+    </linearGradient>
+</defs>
+    <title>align-right-text-line</title>
+    <path d="M14.65,27.1a1.1,1.1,0,0,0,1.1,1.1H30V26H15.75A1.1,1.1,0,0,0,14.65,27.1Z" class="clr-i-outline clr-i-outline-path-1" fill="url(#grad3)"></path>
+    <path d="M6.9,21.1A1.1,1.1,0,0,0,8,22.2H30V20H8A1.1,1.1,0,0,0,6.9,21.1Z" class="clr-i-outline clr-i-outline-path-2" fill="url(#grad3)"></path>
+    <path d="M13.4,15.1a1.1,1.1,0,0,0,1.1,1.1H30V14H14.5A1.1,1.1,0,0,0,13.4,15.1Z" class="clr-i-outline clr-i-outline-path-3" fill="url(#grad3)"></path>
+    <path d="M6.75,8a1.1,1.1,0,1,0,0,2.2H30V8Z" class="clr-i-outline clr-i-outline-path-4" fill="url(#grad3)"></path>
+    <rect x="0" y="0" width="36" height="36" fill-opacity="0"/>
+</svg>
