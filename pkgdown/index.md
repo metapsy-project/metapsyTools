@@ -1,17 +1,18 @@
-<h1>
-  <code style="background: white;">metapsyTools</code>
-</h1>
+<h1><code style="background: white; font-size: 45px !important; font-weight: 500; color: black;">metapsyTools</code></h1>
 
+<br>
+
+### Overview {#overview}
 
 The `metapsyTools` package facilitates the calculation of effect sizes and meta-analyses based on the [Metapsy](https://www.metapsy.org) database (or databases adhering to the same format).
 
-Databases that are loaded into R using the [`metapsyData`](https://data.metapsy.org) package can automatically be analyzed using the [analysis module](https://tools.metapsy.org/articles/metapsytools#the-analysis-module) of the package. 
+Databases that are loaded into R using the [`metapsyData`](https://data.metapsy.org) package can automatically be analyzed using the [analysis module](https://tools.metapsy.org/articles/metapsytools#the-analysis-module) of the package.
 
 <br></br>
 
-## Usage Example
+### Usage Example {#usage-example}
 
-```r
+``` r
 # Load metapsyData
 library(metapsyData)
 
@@ -25,21 +26,16 @@ getData("depression-inpatients") %>%
 
 <br></br>
 
-## Installation
+### Installation {#installation}
 
 The `metapsyTools` package lives in a **GitHub repository**. It can be downloaded using the code below:
 
-```r
-if (!require("devtools"))
-  install.packages("devtools")
+``` r
+if (!require("remotes"))
+  install.packages("remotes")
 
-devtools::install_github(
+remotes::install_github(
     "metapsy-project/metapsyTools")
 ```
 
 More details on how to install and update the package can be found in the [installation guide](articles/web/installation.html).
-
-<br></br>
-
-<br></br>
-

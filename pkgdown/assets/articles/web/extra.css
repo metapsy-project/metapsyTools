@@ -1,0 +1,141 @@
+p, #main li {
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+    --primary-color: #313f45 !important;
+    --body-color: #f9f9f9 !important;
+    --text-color: #636363 !important;
+    --text-color-dark: #242738 !important;
+    --white-color: #ffffff !important;
+    --light-color: #f8f9fa !important;
+    --code-bg-color: #f6f6f6 !important;
+    --color-table: #f8f8f8 !important;
+    --hr-color: rgba(0,0,0,.1) !important;
+    --header-color: rgba(94, 186, 189, 1) !important;
+    --col-shadow-1: rgba(12, 13, 14, 0.1) !important;
+    --col-shadow-2: rgba(255, 255, 255, 0.1) !important;
+    --bg-image: url("https://docs.metapsy.org/images/banner.jpg");
+    --bs-dark2: #313f45;
+    --bs-primary: #0372b7;
+    --bs-secondary: #6c757d;
+    --bs-info: rgba(94, 186, 189, 1);
+    --bs-gradient2: linear-gradient(90deg, rgba(94, 186, 189, 1), rgba(3, 114, 183, 1));
+    --color-tip: #e6f9e6 !important;
+    --color-tip-above: #78c578;
+    --blue: #007bff;
+    --indigo: #6610f2;
+    --purple: #6f42c1;
+    --pink: #e83e8c;
+    --red: #dc3545;
+    --orange: #fd7e14;
+    --yellow: #ffc107;
+    --green: #28a745;
+    --teal: #20c997;
+    --cyan: #17a2b8;
+    --white: #fff;
+    --gray: #6c757d;
+    --gray-dark: #343a40;
+    --primary: #007bff;
+    --secondary: #6c757d;
+    --success: #28a745;
+    --info: #17a2b8;
+    --warning: #ffc107;
+    --danger: #dc3545;
+    --light: #f8f9fa;
+    --dark: #343a40;
+    --breakpoint-xs: 0;
+    --breakpoint-sm: 576px;
+    --breakpoint-md: 768px;
+    --breakpoint-lg: 992px;
+    --breakpoint-xl: 1200px;
+    --font-family-sans-serif: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+    --font-family-monospace: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+    --fa-style-family-brands: "Font Awesome 6 Brands";
+    --fa-font-brands: normal 400 1em/1 "Font Awesome 6 Brands";
+    --fa-font-regular: normal 400 1em/1 "Font Awesome 6 Free";
+    --fa-style-family-classic: "Font Awesome 6 Free";
+    --fa-font-solid: normal 900 1em/1 "Font Awesome 6 Free";
+    --font-family: Fira Sans;
+    font-weight: 400;
+    text-align: left;
+    line-height: 1.5;
+    font-family: var(--font-family),sans-serif;
+    -webkit-font-smoothing: antialiased;
+    box-sizing: border-box;
+    font-size: 18px !important;
+    margin-top: 0;
+    color: var(--text-color);
+    margin-bottom: 10px;
+    font-size: 20px !important;
+}
+
+
+code {
+  font-size: 18px !important;
+  font-weight: 400;
+  color: #636363;
+}
+
+main {
+  box-shadow: 0 0px rgb(12 13 14), 0 1px 6px 3px rgb(59 64 69 / 12%);
+  background: white;
+}
+
+body {
+  background: #f9f9f9 !important;
+}
+
+.row>main {
+    max-width: 56rem !important;
+    padding-left: 3% !important;
+    padding-right: 3% !important;
+    margin-bottom: 50px !important;
+    padding-top: 25px;
+    padding-bottom: 25px;
+}
+
+
+h1 {
+  font-size: 34px !important;
+  font-weight: 600;
+}
+
+h2 {
+  font-size: 32px !important;
+  font-weight: 600;
+}
+
+h3 {
+  font-size: 28px !important;
+  font-weight: 600;
+}
+
+h4 {
+  font-size: 26px !important;
+  font-weight: 600;
+}
+
+h5 {
+  font-size: 24px !important;
+  font-weight: 600;
+}
+
+aside h2, aside .h2 {
+    margin-top: 1.5rem;
+    font-size: 20px !important;
+    color: black;
+    font-weight: 400;
+    font-family: 'Fira Sans';
+}
+
+aside {
+  font-weight: 400 !important;
+}
+
+.dropdown-item {
+  font-weight: 400
+}
+
+.navbar {
+  box-shadow: 0 0 5px black;
+}
+

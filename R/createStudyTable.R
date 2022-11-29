@@ -189,6 +189,15 @@ createStudyTable = function(.data, ...,
   }
 
   rownames(data.d) = NULL
+  
+  # Replace redundant study names
+  if ("study" %in% colnames(data.d)[1]){
+    unique(with(data.d, 
+                unlist(lapply(study, 
+                              function(i) grep(i, study)[1])))
+    ) -> first.var.mask
+    data.d$study[!1:nrow(data.d) %in% first.var.mask] = "."
+  }
 
   if (.html == TRUE){
     message(crayon::cyan(crayon::bold("- Creating HTML table...")))

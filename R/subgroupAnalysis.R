@@ -335,17 +335,35 @@ subgroupAnalysis = function(.model, ...,
 #'
 #' @importFrom knitr kable
 #' @importFrom dplyr as_tibble
-#' @importFrom kableExtra kable_styling column_spec collapse_rows
+#' @importFrom kableExtra kable_styling column_spec footnote
+#' @importFrom crayon green blue magenta bold
+#' @importFrom stringr str_sub
 #'
 #' @export
 #' @method print subgroupAnalysis
 
 print.subgroupAnalysis = function(x, ...){
 
-  cat("Subgroup analysis results ")
-  cat("---------------------- \n")
-  print(dplyr::as_tibble(x$summary), n = nrow(x$summary))
-
+  unique(with(x$summary, 
+         unlist(lapply(variable, 
+                       function(i) grep(i, variable)[1])))
+    ) -> first.var.mask
+  x$summary$variable[!1:nrow(x$summary) %in% first.var.mask] = "."
+  x$summary$p[!1:nrow(x$summary) %in% first.var.mask] = "."
+  
+  cat(crayon::blue$bold("Subgroup analysis results "))
+  cat(crayon::blue$bold(
+    "---------------------- \n"))
+  dat = x$summary
+  tbl = dplyr::as_tibble(dat)
+  old = options(pillar.bold=TRUE)
+  tbl.format = format(tbl)[-c(1,3)]
+  tbl.format[-1] = lapply(tbl.format[-1], 
+                          function(x) stringr::str_sub(x, 19))
+  tbl.format[1] = stringr::str_sub(tbl.format[1], 3)
+  cat(do.call(c, tbl.format), sep="\n")
+  options(old)
+  
   if (x$html == TRUE){
     
     if (identical(x$.type.es, "RR")){
@@ -359,7 +377,8 @@ print.subgroupAnalysis = function(x, ...){
     }
 
     x$summary %>%
-      setColnames(colNames) %>%
+      {.$p = ifelse(.$p == "<0.001", "&lt;0.001", .$p);.} %>% 
+      {colnames(.) = colNames;.} %>%
       knitr::kable(escape = FALSE) %>%
       kableExtra::kable_styling(font_size = 8, full_width = FALSE) %>%
       kableExtra::column_spec(1, bold = TRUE) %>%

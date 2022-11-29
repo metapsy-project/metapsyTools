@@ -1,14 +1,22 @@
 template:
   includes:
-    in_header: <script src="extra_script_header.js"></script>
+    in_header: 
+      - <script src="extra_script_header.js"></script>
+      - <link rel="stylesheet" href="extra.css">
     after_body: <script src="extra_script.js"></script>
   bootstrap: 5
   bootswatch: flatly
   bslib:
     pkgdown-nav-height: 100px
-    base_font: {google: "Fira Sans"}
-    heading_font: {google: "Fira Sans"}
+    base_font: {google: {family: "Fira Sans", wght: "100;200;300;400;500;600;700;800;900"}}
+    heading_font: {google: {family: "Roboto Slab", wght: "100;200;300;400;500;600;700;800;900"}}
     code_font: {google: "Fira Code"}
+    headings-font-weight: 400
+    font-weight-normal: 300
+    nested-kbd-font-weight: 400
+    nav-link-font-weight: 400
+    link-decoration: "none"
+    link-color: "#0372b7"
 navbar:
   structure:
     left: [intro, reference]

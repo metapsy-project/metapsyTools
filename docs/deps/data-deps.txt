@@ -4,3 +4,4 @@
 <script src="deps/bootstrap-5.1.0/bootstrap.bundle.min.js"></script>
 <link href="deps/_Fira%20Sans-0.4.1/font.css" rel="stylesheet" />
 <link href="deps/_Fira%20Code-0.4.1/font.css" rel="stylesheet" />
+<link href="deps/_Roboto%20Slab-0.4.1/font.css" rel="stylesheet" />

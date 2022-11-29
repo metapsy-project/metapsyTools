@@ -47,9 +47,15 @@ var container = document.getElementsByClassName('container');
 container[0].style.paddingTop = "13px";
 nav[0].insertBefore(strip, nav[0].firstChild);
 
+
+
+var headerTitle = document.querySelector("body > nav > div.container > a");
+headerTitle.style.fontFamily = "var(--bs-font-monospace)";
+headerTitle.style.fontWeight = "400"
+headerTitle.style.fontSize = "20px"
+
 var ghLink = document.getElementsByClassName('dont-index')[0];
 ghLink.style.display = 'none';
-
 
 
 
