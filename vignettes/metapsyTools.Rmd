@@ -44,7 +44,7 @@ Prepared data sets that follow the [**Metapsy data standard**](https://docs.meta
 
 <br>
 
-The companion package of `metapsyTools` is [`metapsyData`](data.metapsy.org). Using `metapsyData` meta-analytic databases can be automatically downloaded into your R environment. Databases retrieved using `metapsyData` can directly be analyzed using `metapsyTools`.
+The companion package of `metapsyTools` is [`metapsyData`](data.metapsy.org). Using `metapsyData`, meta-analytic databases can be automatically downloaded into your R environment. Databases retrieved using `metapsyData` can directly be analyzed using `metapsyTools`.
 
 **If your goal is to analyze existing databases included in Metapsy, only the analysis module in `metapsyTools` is relevant to you. Click** [here](#the-analysis-module) **to navigate directly to the analysis module section.**
 
@@ -58,7 +58,7 @@ The companion package of `metapsyTools` is [`metapsyData`](data.metapsy.org). Us
 
 The preparation module in `metapsyTools` allows to:
 
--   check if the classes of variables in the imported data set are set as required, using the [checkDataFormat](https://tools.metapsy.org/reference/checkdataformat) function.
+-   check if the classes of variables in the imported data are set as required, using the [checkDataFormat](https://tools.metapsy.org/reference/checkdataformat) function.
 -   check for formatting conflicts which have to be resolved prior to any further steps, using the [checkConflicts](https://tools.metapsy.org/reference/checkdataformat) function.
 -   calculate Hedges' $g$ and/or risk ratios ($RR$) for each comparison, provided suitable data is available, and generate a data set ready for meta-analyses, using the [calculateEffectSizes](https://tools.metapsy.org/reference/calculateeffectsizes) function.
 
@@ -214,9 +214,9 @@ In our case, no data format conflicts were detected. This is because all the dat
     # Andersson, 2005
     # [...]
 
-ID conflicts typically occur because the information in the variables used to build the IDs (see box above) is not sufficient to create a unique ID for each comparison. Studies with non-unique IDs are subsequently printed out. The [checkConflicts](https://tools.metapsy.org/reference/checkconflicts) function also has an argument called `vars.for.id`, which can be used define (other or additional) columns to be used for ID generation. This can sometimes help to create unique IDs.
+ID conflicts typically occur because the information in the variables used to build the IDs (see box above) is not sufficient to create a unique ID for each comparison. Studies with non-unique IDs are subsequently printed out. The checkConflicts function also has an argument called `vars.for.id`, which can be used define (other or additional) columns to be used for ID generation. This can sometimes help to create unique IDs.
 
-As an illustration, we now define an extended variable list to be used for our IDs in [checkConflicts](https://tools.metapsy.org/reference/checkconflicts):
+As an illustration, we now define an extended variable list to be used for our IDs in [`checkConflicts`](https://tools.metapsy.org/reference/checkconflicts):
 
 ```{r, eval=F}
 # Define extended ID list 
@@ -236,9 +236,9 @@ checkConflicts(depressionPsyCtr,
 
 If the data set has been pre-formatted correctly, and all ID conflicts were resolved, the [`calculateEffectSizes`](https://tools.metapsy.org/reference/calculateeffectsizes) function can be used to **calculate effect sizes** (Hedges' $g$ or risk ratios, $RR$) for all comparisons in the database.
 
-The [`calculateEffectSizes`](https://tools.metapsy.org/reference/calculateeffectsizes) function uses the information stored in the [effect size data variables](https://tools.metapsy.org/articles/metapsytools#effect-size-data-variables-ii) to calculate $g$ and/or $RR$, depending on what information is available. Therefore, it is very important to make sure these variables are defined correctly before running [`calculateEffectSizes`](https://tools.metapsy.org/reference/calculateeffectsizes).
+The `calculateEffectSizes` function uses the information stored in the [effect size data variables](https://tools.metapsy.org/articles/metapsytools#effect-size-data-variables-ii) to calculate $g$ and/or $RR$, depending on what information is available. Therefore, it is very important to make sure these variables are defined correctly before running `calculateEffectSizes`.
 
-The [`calculateEffectSizes`](https://tools.metapsy.org/reference/calculateeffectsizes) function adds nine columns to the data set, all of which start with a dot (`.`). They are included so that meta-analysis functions in `metapsyTools` can be applied "out of the box".
+The `calculateEffectSizes` function adds nine columns to the data set, all of which start with a dot (`.`). They are included so that meta-analysis functions in `metapsyTools` can be applied "out of the box".
 
 -   **`.id`**: Unique identifier for a trial arm comparison/row.
 -   **`.g`**: Calculated effect size (Hedges' $g$).
@@ -374,7 +374,7 @@ The `metapsyTools` package contains functions which allow to flexibly filter out
 
 The [`filterPoolingData`](https://tools.metapsy.org/reference/filterpoolingdata) function is the main function for filtering. We simply have to provide the final data set with calculated effect sizes (see [preparation module](https://tools.metapsy.org/articles/metapsytools#the-preparation-module)), as well as one or several filtering criteria pertaining to our specific research question.
 
-Say that we want to run a meta-analysis of all studies in which CBT was compared to wait-lists, with the BDI-II at post-test being the analyzed outcome. We can filter out the relevant comparisons like this:
+Say that we want to run a meta-analysis of all studies in which CBT was compared to wait-lists, with the BDI-I at post-test being the analyzed outcome. We can filter out the relevant comparisons like this:
 
 ```{r, eval=FALSE}
 # Load the pre-installed "depressionPsyCtr" dataset
@@ -464,14 +464,14 @@ data %>%
 
 After all relevant rows have been filtered out, we can start to pool the effect sizes. The [`runMetaAnalysis`](https://tools.metapsy.org/reference/runmetaanalysis) function serves as a wrapper for several commonly used meta-analytic approaches, and, by default, applies them all at once to our data:
 
--   `"overall"`. Runs a generic inverse-variance (random-effects) model. All included effect sizes are treated as independent. If raw event data is available in the `event_arm1`, `event_arm2`, `totaln_arm1`, `totaln_arm2` columns (see [Effect Size Calculation]), the Mantel-Haenszel method (Greenland & Robins, [1985](https://www.jstor.org/stable/2530643)) is used to pool effects.
--   `"combined"`. Pools all effect sizes within one study before calculating the overall effect. This ensures that all effect sizes are independent (i.e., unit-of-analysis error & double-counting is avoided). To combine the effects, one has to assume a **correlation** of effect sizes within studies, empirical estimates of which are typically not available. By default, `runMetaAnalysis` assumes that $\rho$=0.6.
+-   `"overall"`. Runs a generic inverse-variance (random-effects) model. All included effect sizes are treated as independent. If raw event data is available in the `event_arm1`, `event_arm2`, `totaln_arm1`, `totaln_arm2` columns (see [Effect Size Calculation]), the Mantel-Haenszel method (Greenland & Robins, [1985](https://www.jstor.org/stable/2530643)) is used to pool effects. Please note that assumptions of this model are violated whenever a study contributes more than one effect sizes (since these effect sizes are assumed to be correlated). In this case, results of the `"combined"` and `"threelevel"`/`"threelevel.che"` models should be reported instead.
+-   `"combined"`. Aggregates all effect sizes within one study before calculating the overall effect. This ensures that all effect sizes are independent (i.e., unit-of-analysis error & double-counting is avoided). To combine the effects, one has to assume a **correlation** of effect sizes within studies, empirical estimates of which are typically not available. By default, `runMetaAnalysis` assumes that $\rho$=0.6.
 -   `"lowest.highest"`. Runs a meta-analysis, but with only (i) the lowest and (ii) highest effect size within each study included.
 -   `"outlier"`. Runs a meta-analysis without statistical outliers (i.e. effect sizes for which the confidence interval does not overlap with the confidence interval of the overall effect).
--   `"influence"`. Runs a meta-analysis without influential cases, as defined using the "rules of thumb" in Viechtbauer & Cheung ([2010](https://onlinelibrary.wiley.com/doi/10.1002/jrsm.11)). See also the [`InfluenceAnalysis`](https://dmetar.protectlab.org/reference/influenceanalysis) function in [`dmetar`](https://dmetar.protectlab.org/).
+-   `"influence"`. Runs a meta-analysis without influential cases, as defined using the influence diagnostics in Viechtbauer & Cheung ([2010](https://onlinelibrary.wiley.com/doi/10.1002/jrsm.11)). See also the [`InfluenceAnalysis`](https://dmetar.protectlab.org/reference/influenceanalysis) function in [`dmetar`](https://dmetar.protectlab.org/), and Harrer et al. (2022, [chap. 5.4.2](https://bookdown.org/MathiasHarrer/Doing_Meta_Analysis_in_R/heterogeneity.html#influence-analysis)).
 -   `"rob"`. Runs a meta-analysis with only low-RoB studies included. By default, only studies with a value `> 2` in the `rob` variable are considered for this analysis.
 -   `"threelevel"`. Runs a multilevel (three-level) meta-analysis model, with effect sizes nested in studies (Harrer et al., 2022, [chap. 10](https://bookdown.org/MathiasHarrer/Doing_Meta_Analysis_in_R/multilevel-ma.html)).
--   `"threelevel.che"`. Runs a multilevel (three-level) "correlated and hierarchical effects" (CHE) meta-analysis model. In this model, effect sizes are nested in studies, and effects within studies are assumed to be correlated (by default, it is assumed that $\rho$=0.6; [Pustejovsky & Tipton, 2022](https://link.springer.com/article/10.1007/s11121-021-01246-3)). This will typically be a plausible modeling assumption in most real-world use cases.
+-   `"threelevel.che"`. Runs a multilevel (three-level) "correlated and hierarchical effects" (CHE) meta-analysis model. In this model, effect sizes are nested in studies, and effects within studies are assumed to be correlated (Pustejovsky & Tipton, [2022](https://link.springer.com/article/10.1007/s11121-021-01246-3); by default, it is assumed that $\rho$=0.6). This will typically be a plausible modeling assumption in most real-world use cases. In most scenarios, the `"threelevel.che"` model can be seen as a better (and therefore preferable) approximation of the data structure at hand, compared to the simpler `"threelevel"` model.
 
 To illustrate how the function works, we first select a subset of our "toy" `depressionPsyCtr` data.
 
@@ -484,7 +484,7 @@ depressionPsyCtr %>%
   ) -> ma.data
 ```
 
-Then, we plug the data set into the `runMetaAnalysis` function:
+Then, we plug the resulting `ma.data` data set into the `runMetaAnalysis` function:
 
 ```{r, eval=F}
 res <- runMetaAnalysis(ma.data)
@@ -599,7 +599,7 @@ The `runMetaAnalysis` function allows to tweak many, many details of the specifi
 Here is an example of a `runMetaAnalysis` call with non-default settings:
 
 ```{r, eval=FALSE}
-runMetaAnalysis(data,
+runMetaAnalysis(ma.data,
                 es.measure = "RR",
                 es.type = "raw",
                 method.tau = "DL",
@@ -607,13 +607,25 @@ runMetaAnalysis(data,
                 rho.within.study = 0.8)
 ```
 
+Also note that for the `"combined"` model, by default, effect sizes of multi-arm trials will be aggregated on an **arms** **level**. If, for example, a study included a CBT, Internet-based CBT, and wait-list arm (where wait-list is the reference condition), two separate aggregated effects will be calculated: one for CBT vs. wait-list, and one for Internet-based CBT vs. wait-list.
+
+From a statistical perspective, it is typically preferable to aggregate on a **study level** instead[^3] (in our example, this would lead to one aggregated effect for CBT/Internet-based CBT combined vs. wait-list), although the aggregated effect sizes may then be more difficult to interpret from a clinical perspective.
+
+[^3]: This is because, if effect sizes are aggregated on an arms level, the resulting effect size estimates of multi-arm studies are correlated, while the meta-analytic model assumes that they are independent.
+
+To combine effect sizes on a study level instead, we can set the `which.combine` argument to `"studies"`.
+
+```{r, eval=F}
+runMetaAnalysis(ma.data, which.combine = "studies")
+```
+
 <br>
 
 #### Confidence Intervals for Three-Level Model $\tau^2$ and $I^2$ Values
 
-Please note that, by default, no confidence intervals are printed for the $I^2$ value of the `"threelevel"` and `"threelevel.che"` model (the same is also the case for the $G^2$ value, the equivalent of $I^2$ in limit meta-analyses; see [Publication Bias] section)[^3]. This is because there are two heterogeneity variances in three-level models (the "conventional" between-study heterogeneity variance $\tau^2_{(1)}$ and the heterogeneity variance within studies, $\tau^2_{(2)}$). This means that there are also two $I^2$ values, one within studies, and one for the between-study heterogeneity. Established closed-form or iterative solutions (such as the $Q$-Profile method; Viechtbauer, [2007](https://pubmed.ncbi.nlm.nih.gov/16463355/)) are not directly applicable here, which means that confidence intervals cannot be calculated that easily.
+Please note that, by default, no confidence intervals are printed for the $I^2$ value of the `"threelevel"` and `"threelevel.che"` model (the same is also the case for the $G^2$ value, the equivalent of $I^2$ in limit meta-analyses; see [Publication Bias] section)[^4]. This is because there are two heterogeneity variances in three-level models: the "conventional" between-study heterogeneity variance $\tau^2_{(1)}$ and the heterogeneity variance within studies, $\tau^2_{(2)}$. This means that there are also two $I^2$ values, one within studies, and one for the between-study heterogeneity. Established closed-form or iterative solutions (such as the $Q$-Profile method; Viechtbauer, [2007](https://pubmed.ncbi.nlm.nih.gov/16463355/)) are not directly applicable here, which means that confidence intervals cannot be calculated that easily.
 
-[^3]: The $G^2$ statistic ([Rücker et al., 2011](https://academic.oup.com/biostatistics/article/12/1/122/391113)) quanitifies the percentage of between-study heterogeneity that remains after small-study effects have been accounted for (in `metapsyTools`, $G^2$ is printed as $I^2$ ).
+[^4]: The $G^2$ statistic ([Rücker et al., 2011](https://academic.oup.com/biostatistics/article/12/1/122/391113)) quanitifies the percentage of between-study heterogeneity that remains after small-study effects have been accounted for (in `metapsyTools`, $G^2$ is printed as $I^2$ ).
 
 In `metapsyTools`, one can resort to the **parametric bootstrap** (van den Noortgate & Onghena, [2005](https://link.springer.com/content/pdf/10.3758/BF03206394.pdf)) to obtain approximate confidence intervals around the $\tau^2$ and $I^2$ values. Bootstrapping is performed when the `i2.ci.boot` argument is set to `TRUE`. By default, $n$=5000 bootstrap samples are drawn, which should be seen as the absolute lower limit; more replications are preferable and can be specified via the `nsim.boot` argument.
 
@@ -799,13 +811,16 @@ Then, we have to call the `rerun` function:
 rerun(res)
 ```
 
-A list of all available setting replacement functions is provided [here](https://tools.metapsy.org/reference/replacement-functions).
+A list of all available setting replacement functions is provided [here](https://tools.metapsy.org/reference/replacement-functions). Replacement functions may be particularly helpful for **sensitivity analyses**.
 
 <br></br>
 
 ### Publication Bias
 
-It is also possible to correct effect size estimates for potential publication bias and/or small-study effects using the [`correctPublicationBias`](https://tools.metapsy.org/reference/correctpublicationbias) function. This will apply three correction methods at the same time, providing a range of (more or less) plausible corrected values. Using the `which.run` argument, we can apply these methods to the `"combined"` analysis.
+It is also possible to correct effect size estimates for potential publication bias and/or small-study effects using the [`correctPublicationBias`](https://tools.metapsy.org/reference/correctpublicationbias) function. This will apply three correction methods at the same time, providing a range of (more or less) plausible corrected values. Using the `which.run` argument, we can apply these methods to a specific model we fitted previously.[^5] Here, we select the `"combined"` analysis.
+
+[^5]: By default, `correctPublicationBias` uses the first model defined via `which.run`\
+    in `runMetaAnalysis` (typically, the `"overall"` model). Other possible values are`"overall"`, `"combined"`, `"lowest"`, `"highest"`, `"outliers"`, `"influence"` and `"rob"`. Currently, three-level models are not supported in `correctPublicationBias`.
 
 ```{r, eval=FALSE}
 correctPublicationBias(res, which.run = "combined")
@@ -821,7 +836,7 @@ correctPublicationBias(res, which.run = "combined")
 
 The reason why three publication bias methods are applied at the same time is because all publication bias methods are based on (to some extent) **untestable** **assumptions**, and these assumption differ between methods:
 
--   The **trim-and-fill** method is included mostly as a "legacy" method, given its popularity in the last decades. This method is also frequently requested by reviewers. However, it has been found that this method does not perform well as a method to correct for publication bias, especially when the between-study heterogeneity is high. The trim-and-fill method assumes that publication bias results in funnel plot asymmetry, and provides an algorithm that imputes studies so that this asymmetry is removed, after which the results are re-estimated.
+-   The **trim-and-fill** method is included mostly as a "legacy" method, given its popularity in the last decades. This method is also frequently requested by reviewers. However, it has been found that this method does not perform well as a way to correct for publication bias, especially when the between-study heterogeneity is high. The trim-and-fill method assumes that publication bias results in funnel plot asymmetry, and provides an algorithm that imputes studies so that this asymmetry is removed, after which the results are re-estimated.
 
 -   The **limit meta-analysis** method assumes that publication bias manifests itself in so-called small-study effects (i.e., it assumes that small studies with high standard errors are more likely to be affected by publication bias). It calculates the expected ("shrunken") pooled effect as the standard error $\epsilon_k$ goes to zero, while accounting for between-study heterogeneity. Importantly, this methods controls for small-study effects only, which can be associated with publication bias, but does not have to.
 
@@ -918,6 +933,8 @@ metaRegression(res$model.threelevel,
     # ---
     # Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
+Please note that, to be available in `metaRegression`, is is necessary that the moderator variable(s) are already included in the data set that we originally used to call `runMetaAnalysis`.
+
 <br></br>
 
 <br></br>
@@ -977,7 +994,7 @@ By default, `createStudyTable` also returns an HTML table that one can copy and 
 <br>
 
 ::: {style="background-color: #f1f3f5 !important; padding: 25px; border-radius: 5px; color: gray; box-shadow: 0px 0px 5px;"}
-<strong>Still have questions?</strong> This vignette only provides a superficial overview of `metapsyTools`' functionality. Every function also comes with a detailed documentation, which you may consult to learn more about available options and covered use cases. Please note that `metapsyTools` is still at an early development stage, which means that errors or other problems may still occur under some circumstances. To report an issue or ask for help, you can contact **Mathias** ([mathias.harrer\@tum.de](mailto:mathias.harrer@tum.de){.email}).
+<strong>Still have questions?</strong> This vignette only provides a superficial overview of `metapsyTools`' functionality. Every function also comes with a detailed documentation, which you may consult to learn more about available options and covered use cases. Please note that `metapsyTools` is still under active development, which means that errors or other problems may still occur under some circumstances. To report an issue or ask for help, you can contact **Mathias** ([mathias.harrer\@tum.de](mailto:mathias.harrer@tum.de){.email}).
 :::
 
 <br>

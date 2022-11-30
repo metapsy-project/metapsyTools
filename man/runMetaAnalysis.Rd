@@ -139,10 +139,10 @@ the variable must be included as a column in \code{data}.}
 \item{round.digits}{\code{numeric}. Number of digits to round the (presented) results by. Default is \code{2}.}
 
 \item{which.combine}{\code{character}. Should multiple effect sizes within one study be pooled
-on an \code{"arms"} (default) or \code{"study"} level? When a study is a multi-arm trial, setting
+on an \code{"arms"} (default) or \code{"studies"} level? When a study is a multi-arm trial, setting
 \code{which.combine = "arms"} will aggregate the effect sizes for each trial arm individually before pooling;
 the \code{which.combine.var} argument can be used to control which effects within a study should be aggregated.
-When \code{which.combine = "study"}, one overall aggregated effect is created for each study. This setting is preferable
+When \code{which.combine = "studies"}, one overall aggregated effect is created for each study. This setting is preferable
 from a statistical perspective, since it ensures that all pooled effects can be assumed to be independent.}
 
 \item{which.combine.var}{\code{character}. Additional grouping variable within studies to be used for the \code{"combined"}

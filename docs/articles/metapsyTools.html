@@ -145,7 +145,7 @@ module, on the other hand, should be usable by all researchers.</p>
 </div>
 <p><br></p>
 <p>The companion package of <code>metapsyTools</code> is <a href="data.metapsy.org"><code>metapsyData</code></a>. Using
-<code>metapsyData</code> meta-analytic databases can be automatically
+<code>metapsyData</code>, meta-analytic databases can be automatically
 downloaded into your R environment. Databases retrieved using
 <code>metapsyData</code> can directly be analyzed using
 <code>metapsyTools</code>.</p>
@@ -165,8 +165,8 @@ The Preparation Module<a class="anchor" aria-label="anchor" href="#the-preparati
 <hr>
 <p>The preparation module in <code>metapsyTools</code> allows to:</p>
 <ul>
-<li>check if the classes of variables in the imported data set are set
-as required, using the <a href="https://tools.metapsy.org/reference/checkdataformat" class="external-link">checkDataFormat</a>
+<li>check if the classes of variables in the imported data are set as
+required, using the <a href="https://tools.metapsy.org/reference/checkdataformat" class="external-link">checkDataFormat</a>
 function.</li>
 <li>check for formatting conflicts which have to be resolved prior to
 any further steps, using the <a href="https://tools.metapsy.org/reference/checkdataformat" class="external-link">checkConflicts</a>
@@ -447,12 +447,12 @@ output looks similar to this:</p>
 <p>ID conflicts typically occur because the information in the variables
 used to build the IDs (see box above) is not sufficient to create a
 unique ID for each comparison. Studies with non-unique IDs are
-subsequently printed out. The <a href="https://tools.metapsy.org/reference/checkconflicts" class="external-link">checkConflicts</a>
-function also has an argument called <code>vars.for.id</code>, which can
-be used define (other or additional) columns to be used for ID
-generation. This can sometimes help to create unique IDs.</p>
+subsequently printed out. The checkConflicts function also has an
+argument called <code>vars.for.id</code>, which can be used define
+(other or additional) columns to be used for ID generation. This can
+sometimes help to create unique IDs.</p>
 <p>As an illustration, we now define an extended variable list to be
-used for our IDs in <a href="https://tools.metapsy.org/reference/checkconflicts" class="external-link">checkConflicts</a>:</p>
+used for our IDs in <a href="https://tools.metapsy.org/reference/checkconflicts" class="external-link"><code>checkConflicts</code></a>:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Define extended ID list </span>
 <span class="co"># "target_group" is now also included</span>
@@ -473,15 +473,16 @@ conflicts were resolved, the <a href="https://tools.metapsy.org/reference/calcul
 function can be used to <strong>calculate effect sizes</strong> (Hedges’
 <span class="math inline">\(g\)</span> or risk ratios, <span class="math inline">\(RR\)</span>) for all comparisons in the
 database.</p>
-<p>The <a href="https://tools.metapsy.org/reference/calculateeffectsizes" class="external-link"><code>calculateEffectSizes</code></a>
-function uses the information stored in the <a href="https://tools.metapsy.org/articles/metapsytools#effect-size-data-variables-ii" class="external-link">effect
+<p>The <code>calculateEffectSizes</code> function uses the information
+stored in the <a href="https://tools.metapsy.org/articles/metapsytools#effect-size-data-variables-ii" class="external-link">effect
 size data variables</a> to calculate <span class="math inline">\(g\)</span> and/or <span class="math inline">\(RR\)</span>, depending on what information is
 available. Therefore, it is very important to make sure these variables
-are defined correctly before running <a href="https://tools.metapsy.org/reference/calculateeffectsizes" class="external-link"><code>calculateEffectSizes</code></a>.</p>
-<p>The <a href="https://tools.metapsy.org/reference/calculateeffectsizes" class="external-link"><code>calculateEffectSizes</code></a>
-function adds nine columns to the data set, all of which start with a
-dot (<code>.</code>). They are included so that meta-analysis functions
-in <code>metapsyTools</code> can be applied “out of the box”.</p>
+are defined correctly before running
+<code>calculateEffectSizes</code>.</p>
+<p>The <code>calculateEffectSizes</code> function adds nine columns to
+the data set, all of which start with a dot (<code>.</code>). They are
+included so that meta-analysis functions in <code>metapsyTools</code>
+can be applied “out of the box”.</p>
 <ul>
 <li>
 <strong><code>.id</code></strong>: Unique identifier for a trial arm
@@ -671,7 +672,7 @@ the final data set with calculated effect sizes (see <a href="https://tools.meta
 module</a>), as well as one or several filtering criteria pertaining to
 our specific research question.</p>
 <p>Say that we want to run a meta-analysis of all studies in which CBT
-was compared to wait-lists, with the BDI-II at post-test being the
+was compared to wait-lists, with the BDI-I at post-test being the
 analyzed outcome. We can filter out the relevant comparisons like
 this:</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
@@ -771,11 +772,16 @@ independent. If raw event data is available in the
 <code>event_arm1</code>, <code>event_arm2</code>,
 <code>totaln_arm1</code>, <code>totaln_arm2</code> columns (see <a href="#effect-size-calculation">Effect Size Calculation</a>), the
 Mantel-Haenszel method (Greenland &amp; Robins, <a href="https://www.jstor.org/stable/2530643" class="external-link">1985</a>) is used to pool
-effects.</li>
+effects. Please note that assumptions of this model are violated
+whenever a study contributes more than one effect sizes (since these
+effect sizes are assumed to be correlated). In this case, results of the
+<code>"combined"</code> and
+<code>"threelevel"</code>/<code>"threelevel.che"</code> models should be
+reported instead.</li>
 <li>
-<code>"combined"</code>. Pools all effect sizes within one study
-before calculating the overall effect. This ensures that all effect
-sizes are independent (i.e., unit-of-analysis error &amp;
+<code>"combined"</code>. Aggregates all effect sizes within one
+study before calculating the overall effect. This ensures that all
+effect sizes are independent (i.e., unit-of-analysis error &amp;
 double-counting is avoided). To combine the effects, one has to assume a
 <strong>correlation</strong> of effect sizes within studies, empirical
 estimates of which are typically not available. By default,
@@ -790,10 +796,11 @@ outliers (i.e. effect sizes for which the confidence interval does not
 overlap with the confidence interval of the overall effect).</li>
 <li>
 <code>"influence"</code>. Runs a meta-analysis without influential
-cases, as defined using the “rules of thumb” in Viechtbauer &amp; Cheung
-(<a href="https://onlinelibrary.wiley.com/doi/10.1002/jrsm.11" class="external-link">2010</a>).
+cases, as defined using the influence diagnostics in Viechtbauer &amp;
+Cheung (<a href="https://onlinelibrary.wiley.com/doi/10.1002/jrsm.11" class="external-link">2010</a>).
 See also the <a href="https://dmetar.protectlab.org/reference/influenceanalysis" class="external-link"><code>InfluenceAnalysis</code></a>
-function in <a href="https://dmetar.protectlab.org/" class="external-link"><code>dmetar</code></a>.</li>
+function in <a href="https://dmetar.protectlab.org/" class="external-link"><code>dmetar</code></a>, and
+Harrer et al. (2022, <a href="https://bookdown.org/MathiasHarrer/Doing_Meta_Analysis_in_R/heterogeneity.html#influence-analysis" class="external-link">chap. 5.4.2</a>).</li>
 <li>
 <code>"rob"</code>. Runs a meta-analysis with only low-RoB studies
 included. By default, only studies with a value <code>&gt; 2</code> in
@@ -806,9 +813,12 @@ meta-analysis model, with effect sizes nested in studies (Harrer et al.,
 <code>"threelevel.che"</code>. Runs a multilevel (three-level)
 “correlated and hierarchical effects” (CHE) meta-analysis model. In this
 model, effect sizes are nested in studies, and effects within studies
-are assumed to be correlated (by default, it is assumed that <span class="math inline">\(\rho\)</span>=0.6; <a href="https://link.springer.com/article/10.1007/s11121-021-01246-3" class="external-link">Pustejovsky
-&amp; Tipton, 2022</a>). This will typically be a plausible modeling
-assumption in most real-world use cases.</li>
+are assumed to be correlated (by default, it is assumed that <span class="math inline">\(\rho\)</span>=0.6; Pustejovsky &amp; Tipton, <a href="https://link.springer.com/article/10.1007/s11121-021-01246-3" class="external-link">2022</a>).
+This will typically be a plausible modeling assumption in most
+real-world use cases. In most scenarios, the
+<code>"threelevel.che"</code> model can be seen as a better (and
+therefore preferable) approximation of the data structure at hand,
+compared to the simpler <code>"threelevel"</code> model.</li>
 </ul>
 <p>To illustrate how the function works, we first select a subset of our
 “toy” <code>depressionPsyCtr</code> data.</p>
@@ -819,8 +829,8 @@ assumption in most real-world use cases.</li>
     <span class="va">condition_arm1</span> <span class="op">==</span> <span class="st">"cbt"</span>,
     <span class="fu"><a href="../reference/Detect.html">Detect</a></span><span class="op">(</span><span class="va">condition_arm2</span>, <span class="st">"wl|cau"</span><span class="op">)</span>
   <span class="op">)</span> <span class="op">-&gt;</span> <span class="va">ma.data</span></code></pre></div>
-<p>Then, we plug the data set into the <code>runMetaAnalysis</code>
-function:</p>
+<p>Then, we plug the resulting <code>ma.data</code> data set into the
+<code>runMetaAnalysis</code> function:</p>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/runMetaAnalysis.html">runMetaAnalysis</a></span><span class="op">(</span><span class="va">ma.data</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co"># - Running meta-analyses...</span>
@@ -970,12 +980,28 @@ you can change this argument accordingly.</li>
 <p>Here is an example of a <code>runMetaAnalysis</code> call with
 non-default settings:</p>
 <div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/runMetaAnalysis.html">runMetaAnalysis</a></span><span class="op">(</span><span class="va">data</span>,
+<code class="sourceCode R"><span class="fu"><a href="../reference/runMetaAnalysis.html">runMetaAnalysis</a></span><span class="op">(</span><span class="va">ma.data</span>,
                 es.measure <span class="op">=</span> <span class="st">"RR"</span>,
                 es.type <span class="op">=</span> <span class="st">"raw"</span>,
                 method.tau <span class="op">=</span> <span class="st">"DL"</span>,
                 nnt.cer <span class="op">=</span> <span class="fl">0.4</span>,
                 rho.within.study <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span></code></pre></div>
+<p>Also note that for the <code>"combined"</code> model, by default,
+effect sizes of multi-arm trials will be aggregated on an
+<strong>arms</strong> <strong>level</strong>. If, for example, a study
+included a CBT, Internet-based CBT, and wait-list arm (where wait-list
+is the reference condition), two separate aggregated effects will be
+calculated: one for CBT vs. wait-list, and one for Internet-based CBT
+vs. wait-list.</p>
+<p>From a statistical perspective, it is typically preferable to
+aggregate on a <strong>study level</strong> instead<a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a> (in our example, this
+would lead to one aggregated effect for CBT/Internet-based CBT combined
+vs. wait-list), although the aggregated effect sizes may then be more
+difficult to interpret from a clinical perspective.</p>
+<p>To combine effect sizes on a study level instead, we can set the
+<code>which.combine</code> argument to <code>"studies"</code>.</p>
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="../reference/runMetaAnalysis.html">runMetaAnalysis</a></span><span class="op">(</span><span class="va">ma.data</span>, which.combine <span class="op">=</span> <span class="st">"studies"</span><span class="op">)</span></code></pre></div>
 <p><br></p>
 </div>
 <div class="section level4">
@@ -987,10 +1013,10 @@ the <span class="math inline">\(I^2\)</span> value of the
 same is also the case for the <span class="math inline">\(G^2\)</span>
 value, the equivalent of <span class="math inline">\(I^2\)</span> in
 limit meta-analyses; see <a href="#publication-bias">Publication
-Bias</a> section)<a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a>. This is because there are two
-heterogeneity variances in three-level models (the “conventional”
+Bias</a> section)<a href="#fn4" class="footnote-ref" id="fnref4"><sup>4</sup></a>. This is because there are two
+heterogeneity variances in three-level models: the “conventional”
 between-study heterogeneity variance <span class="math inline">\(\tau^2_{(1)}\)</span> and the heterogeneity
-variance within studies, <span class="math inline">\(\tau^2_{(2)}\)</span>). This means that there are
+variance within studies, <span class="math inline">\(\tau^2_{(2)}\)</span>. This means that there are
 also two <span class="math inline">\(I^2\)</span> values, one within
 studies, and one for the between-study heterogeneity. Established
 closed-form or iterative solutions (such as the <span class="math inline">\(Q\)</span>-Profile method; Viechtbauer, <a href="https://pubmed.ncbi.nlm.nih.gov/16463355/" class="external-link">2007</a>) are not
@@ -1010,7 +1036,7 @@ expensive</strong>, which means that it can take up to an hour and
 longer until final results are obtained. During the bootstrapping
 procedure, the function prints a progress update so that users get an
 indication of how long the function (still) has to run.</p>
-<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">res.boot</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/runMetaAnalysis.html">runMetaAnalysis</a></span><span class="op">(</span><span class="va">ma.data</span>,
                             i2.ci.boot <span class="op">=</span> <span class="cn">TRUE</span>,
                             nsim.boot <span class="op">=</span> <span class="fl">500</span><span class="op">)</span>
@@ -1097,7 +1123,7 @@ data standard</strong></a>, it is possible to set <code>vcov</code> to
 function will then inform us if the complex variance-covariance
 approximation was not possible, meaning that the function automatically
 reverted to the standard <code>"simple"</code> approach.</p>
-<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/runMetaAnalysis.html">runMetaAnalysis</a></span><span class="op">(</span><span class="va">ma.data</span>,
                 vcov <span class="op">=</span> <span class="st">"complex"</span><span class="op">)</span></code></pre></div>
 <p>If you want to use the complex variance-covariance matrix
@@ -1135,7 +1161,7 @@ are identical to the ones one would receive by running <a href="https://bookdown
 <a href="https://bookdown.org/MathiasHarrer/Doing_Meta_Analysis_in_R/pooling-es.html#ppoolbin" class="external-link"><code>metabin</code></a>,
 or <a href="https://bookdown.org/MathiasHarrer/Doing_Meta_Analysis_in_R/multilevel-ma.html#multilevel-R" class="external-link"><code>rma.mv</code></a>
 directly.</p>
-<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">res</span><span class="op">$</span><span class="va">model.overall</span>         <span class="co"># "overall" model (metagen/metabin)</span>
 <span class="va">res</span><span class="op">$</span><span class="va">model.combined</span>        <span class="co"># "combined" model (metagen/metabin)</span>
 <span class="va">res</span><span class="op">$</span><span class="va">model.lowest</span>          <span class="co"># lowest effect size/study only model (metagen/metabin)</span>
@@ -1150,7 +1176,7 @@ directly.</p>
 available for the models created by
 <code>runMetaAnalysis</code></strong>. For example, we can generate a
 funnel plot for our “overall” model like this:</p>
-<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/guido-s/meta/" class="external-link">meta</a></span><span class="op">)</span>
 
 <span class="co"># model.overall is a "meta" model, so we can directly</span>
@@ -1166,7 +1192,7 @@ funnel plot for our “overall” model like this:</p>
 <p>This feature can also be used to run, for example, <strong>Egger’s
 regression test</strong>, using functions already included in
 <code>meta</code> and <code>dmetar</code>:</p>
-<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Egger's regression test applied to the "overall" model:</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dmetar.protectlab.org" class="external-link">dmetar</a></span><span class="op">)</span>
 <span class="fu"><a href="http://dmetar.protectlab.org/reference/eggers.test.html" class="external-link">eggers.test</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">model.overall</span><span class="op">)</span></code></pre></div>
@@ -1201,7 +1227,7 @@ methods).</p></li>
 the calculated models. We only have to plug the results object into
 <code>plot</code>, and specify the name of the model for which the
 forest plot should be retrieved:</p>
-<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span>, <span class="st">"overall"</span><span class="op">)</span>        <span class="co"># Overall model (ES assumed independent)</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span>, <span class="st">"combined"</span><span class="op">)</span>       <span class="co"># ES combined within studies before pooling</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span>, <span class="st">"lowest.highest"</span><span class="op">)</span> <span class="co"># Lowest and highest ES removed (creates 2 plots)</span>
@@ -1211,7 +1237,7 @@ forest plot should be retrieved:</p>
 <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span>, <span class="st">"threelevel.che"</span><span class="op">)</span> <span class="co"># Three-level CHE model</span></code></pre></div>
 <p>This is what the <code>"overall"</code> model forest plot looks like,
 for example:</p>
-<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span>, <span class="st">"overall"</span><span class="op">)</span></code></pre></div>
 <center>
 <img src="forest.png" width="400">
@@ -1220,7 +1246,7 @@ for example:</p>
 <code>forest.meta</code> function in the <code>meta</code> package.
 Therefore, all the advanced <a href="https://bookdown.org/MathiasHarrer/Doing_Meta_Analysis_in_R/forest.html" class="external-link">styling
 options</a> are also available using extra arguments.</p>
-<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span>, <span class="st">"overall"</span>, 
      col.predict <span class="op">=</span> <span class="st">"lightgreen"</span>, 
      col.square <span class="op">=</span> <span class="st">"gray"</span>,
@@ -1231,7 +1257,7 @@ options</a> are also available using extra arguments.</p>
 <p>It is also possible to generate <a href="https://bookdown.org/MathiasHarrer/Doing_Meta_Analysis_in_R/heterogeneity.html#baujat" class="external-link">Baujat</a>
 and <a href="https://bookdown.org/MathiasHarrer/Doing_Meta_Analysis_in_R/heterogeneity.html#loo-ma" class="external-link">Leave-One-Out
 Plots</a> (not displayed here).</p>
-<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span>, <span class="st">"baujat"</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span>, <span class="st">"loo-es"</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span>, <span class="st">"loo-i2"</span><span class="op">)</span></code></pre></div>
@@ -1249,13 +1275,15 @@ called.</p>
 estimator of <span class="math inline">\(\tau^2\)</span>, and a
 different CER to calculate the number needed to treat, leaving all other
 settings the same, we can run:</p>
-<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/Replacement-functions.html">method.tau</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">"PM"</span>
 <span class="fu"><a href="../reference/Replacement-functions.html">nnt.cer</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fl">0.7</span></code></pre></div>
 <p>Then, we have to call the <code>rerun</code> function:</p>
-<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/Replacement-functions.html">rerun</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></code></pre></div>
-<p>A list of all available setting replacement functions is provided <a href="https://tools.metapsy.org/reference/replacement-functions" class="external-link">here</a>.</p>
+<p>A list of all available setting replacement functions is provided <a href="https://tools.metapsy.org/reference/replacement-functions" class="external-link">here</a>.
+Replacement functions may be particularly helpful for
+<strong>sensitivity analyses</strong>.</p>
 <p><br></p>
 </div>
 </div>
@@ -1266,9 +1294,10 @@ settings the same, we can run:</p>
 publication bias and/or small-study effects using the <a href="https://tools.metapsy.org/reference/correctpublicationbias" class="external-link"><code>correctPublicationBias</code></a>
 function. This will apply three correction methods at the same time,
 providing a range of (more or less) plausible corrected values. Using
-the <code>which.run</code> argument, we can apply these methods to the
-<code>"combined"</code> analysis.</p>
-<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
+the <code>which.run</code> argument, we can apply these methods to a
+specific model we fitted previously.<a href="#fn5" class="footnote-ref" id="fnref5"><sup>5</sup></a> Here, we select the <code>"combined"</code>
+analysis.</p>
+<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/correctPublicationBias.html">correctPublicationBias</a></span><span class="op">(</span><span class="va">res</span>, which.run <span class="op">=</span> <span class="st">"combined"</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co"># [...]</span>
 <span class="co"># Publication bias correction ('combined' model) ----------------------- </span>
@@ -1285,7 +1314,7 @@ these assumption differ between methods:</p>
 <li><p>The <strong>trim-and-fill</strong> method is included mostly as a
 “legacy” method, given its popularity in the last decades. This method
 is also frequently requested by reviewers. However, it has been found
-that this method does not perform well as a method to correct for
+that this method does not perform well as a way to correct for
 publication bias, especially when the between-study heterogeneity is
 high. The trim-and-fill method assumes that publication bias results in
 funnel plot asymmetry, and provides an algorithm that imputes studies so
@@ -1317,7 +1346,7 @@ and <a href="https://rdrr.io/cran/metasens/man/limitmeta.html" class="external-l
 functions in <code>meta</code> and <code>metasens</code> (Schwarzer,
 Carpenter &amp; Rücker, <a href="https://CRAN.R-project.org/package=metasens" class="external-link">2022</a>),
 respectively. You can find an example below:</p>
-<div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb48"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/correctPublicationBias.html">correctPublicationBias</a></span><span class="op">(</span>
   
               <span class="va">res</span>, which.run <span class="op">=</span> <span class="st">"combined"</span>,
@@ -1340,7 +1369,7 @@ variable.</p>
 <p>For example, we might want to check if effects differ by country
 (<code>country</code>) or intervention type
 (<code>condition_arm1</code>):</p>
-<div class="sourceCode" id="cb48"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb49"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">sg</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/subgroupAnalysis.html">subgroupAnalysis</a></span><span class="op">(</span><span class="va">res</span>, <span class="va">country</span>, <span class="va">condition_arm2</span><span class="op">)</span>
 <span class="va">sg</span></code></pre></div>
 <pre><code><span class="co"># Subgroup analysis results ---------------------- </span>
@@ -1356,7 +1385,7 @@ effect (there is, for example, no significant moderator effect of
 <p>It is also possible to conduct subgroup analyses using another model,
 say, the three-level model. We only have to specify
 <code>.which.run</code>:</p>
-<div class="sourceCode" id="cb50"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb51"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">sg</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/subgroupAnalysis.html">subgroupAnalysis</a></span><span class="op">(</span><span class="va">res</span>, 
                        <span class="va">country</span>, <span class="va">condition_arm2</span>,
                        .which.run <span class="op">=</span> <span class="st">"threelevel"</span><span class="op">)</span></code></pre></div>
@@ -1366,7 +1395,7 @@ heterogeneity variance <span class="math inline">\(\tau^2\)</span> (in
 lieu of subgroup-specific estimates). This can be done by setting the
 <code>.tau.common</code> argument to <code>TRUE</code> in the
 function:</p>
-<div class="sourceCode" id="cb51"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb52"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">sg</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/subgroupAnalysis.html">subgroupAnalysis</a></span><span class="op">(</span><span class="va">res</span>, 
                        <span class="va">country</span>, <span class="va">condition_arm2</span>,
                        .which.run <span class="op">=</span> <span class="st">"combined"</span>,
@@ -1384,7 +1413,7 @@ model. We want to use the risk of bias rating, as well as the scaled
 study year as predictors. This can be achieved by extracting the model
 to be analyzed using the <code>$</code> operator, and then using
 <code>metaRegression</code> to fit the model.</p>
-<div class="sourceCode" id="cb52"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb53"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/metaRegression.html">metaRegression</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">model.threelevel</span>, 
                <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/scale.html" class="external-link">scale</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">rob</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/scale.html" class="external-link">scale</a></span><span class="op">(</span><span class="va">year</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co"># Multivariate Meta-Analysis Model (k = 26; method: REML)</span>
@@ -1410,6 +1439,10 @@ to be analyzed using the <code>$</code> operator, and then using
 <span class="co"># </span>
 <span class="co"># ---</span>
 <span class="co"># Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1</span></code></pre>
+<p>Please note that, to be available in <code>metaRegression</code>, is
+is necessary that the moderator variable(s) are already included in the
+data set that we originally used to call
+<code>runMetaAnalysis</code>.</p>
 <p><br></p>
 <p><br></p>
 </div>
@@ -1427,7 +1460,7 @@ variables in the order in which they should appear in the table. It is
 also possible to rename factor labels directly in the function,
 determine how far values should be rounded, and if variable names should
 be changed:</p>
-<div class="sourceCode" id="cb54"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb55"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/createStudyTable.html">createStudyTable</a></span><span class="op">(</span>
   
   <span class="co"># Dataset. Alternatively, a runMetaAnalysis</span>
@@ -1475,8 +1508,8 @@ that one can copy and paste into MS Word.</p>
 superficial overview of <code>metapsyTools</code>’ functionality. Every
 function also comes with a detailed documentation, which you may consult
 to learn more about available options and covered use cases. Please note
-that <code>metapsyTools</code> is still at an early development stage,
-which means that errors or other problems may still occur under some
+that <code>metapsyTools</code> is still under active development, which
+means that errors or other problems may still occur under some
 circumstances. To report an issue or ask for help, you can contact
 <strong>Mathias</strong> (<a href="mailto:mathias.harrer@tum.de" class="email">mathias.harrer@tum.de</a>).</p>
 </div>
@@ -1493,11 +1526,23 @@ data set (e.g., the CAU-Waitlist combination in our example may
 typically not be included).<a href="#fnref1" class="footnote-back">↩︎</a></p></li>
 <li id="fn2"><p>These functions are technically part of the <a href="https://tools.metapsy.org/reference/#preparation-module" class="external-link">preparation
 module</a>, but are listed here for convenience.<a href="#fnref2" class="footnote-back">↩︎</a></p></li>
-<li id="fn3"><p>The <span class="math inline">\(G^2\)</span> statistic
+<li id="fn3"><p>This is because, if effect sizes are aggregated on an
+arms level, the resulting effect size estimates of multi-arm studies are
+correlated, while the meta-analytic model assumes that they are
+independent.<a href="#fnref3" class="footnote-back">↩︎</a></p></li>
+<li id="fn4"><p>The <span class="math inline">\(G^2\)</span> statistic
 (<a href="https://academic.oup.com/biostatistics/article/12/1/122/391113" class="external-link">Rücker
 et al., 2011</a>) quanitifies the percentage of between-study
 heterogeneity that remains after small-study effects have been accounted
-for (in <code>metapsyTools</code>, <span class="math inline">\(G^2\)</span> is printed as <span class="math inline">\(I^2\)</span> ).<a href="#fnref3" class="footnote-back">↩︎</a></p></li>
+for (in <code>metapsyTools</code>, <span class="math inline">\(G^2\)</span> is printed as <span class="math inline">\(I^2\)</span> ).<a href="#fnref4" class="footnote-back">↩︎</a></p></li>
+<li id="fn5"><p>By default, <code>correctPublicationBias</code> uses the
+first model defined via <code>which.run</code><br>
+in <code>runMetaAnalysis</code> (typically, the <code>"overall"</code>
+model). Other possible values are<code>"overall"</code>,
+<code>"combined"</code>, <code>"lowest"</code>, <code>"highest"</code>,
+<code>"outliers"</code>, <code>"influence"</code> and
+<code>"rob"</code>. Currently, three-level models are not supported in
+<code>correctPublicationBias</code>.<a href="#fnref5" class="footnote-back">↩︎</a></p></li>
 </ol>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>

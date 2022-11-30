@@ -201,10 +201,10 @@ the variable must be included as a column in <code>data</code>.</p></dd>
 <dd><p><code>numeric</code>. Number of digits to round the (presented) results by. Default is <code>2</code>.</p></dd>
 <dt>which.combine</dt>
 <dd><p><code>character</code>. Should multiple effect sizes within one study be pooled
-on an <code>"arms"</code> (default) or <code>"study"</code> level? When a study is a multi-arm trial, setting
+on an <code>"arms"</code> (default) or <code>"studies"</code> level? When a study is a multi-arm trial, setting
 <code>which.combine = "arms"</code> will aggregate the effect sizes for each trial arm individually before pooling;
 the <code>which.combine.var</code> argument can be used to control which effects within a study should be aggregated.
-When <code>which.combine = "study"</code>, one overall aggregated effect is created for each study. This setting is preferable
+When <code>which.combine = "studies"</code>, one overall aggregated effect is created for each study. This setting is preferable
 from a statistical perspective, since it ensures that all pooled effects can be assumed to be independent.</p></dd>
 <dt>which.combine.var</dt>
 <dd><p><code>character</code>. Additional grouping variable within studies to be used for the <code>"combined"</code>
