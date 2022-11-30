@@ -3,7 +3,8 @@ pkgdown: 2.0.2
 pkgdown_sha: ~
 articles:
   metapsyTools: metapsyTools.html
+  get-started: web/get-started.html
   installation: web/installation.html
   look_inside: web/look_inside.html
-last_built: 2022-11-30T15:15Z
+last_built: 2022-11-30T15:46Z
 

@@ -24,7 +24,7 @@ navbar:
   components:
     intro:
       text: Get Started
-      href: articles/metapsyTools.html
+      href: articles/web/get-started.html
     reference:
       text: Documentation
       menu: 
