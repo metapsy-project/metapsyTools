@@ -3198,4 +3198,108 @@ i2.gen = function(tau2, k, vi){
 }
 
 
+#' Check for problems in data sets prepared for netmeta.
+#' @keywords internal 
+checkProblemsNMA = function(dat.netmeta){
+  c(unique(dat.netmeta[
+    dat.netmeta$condition_arm1 == 
+      dat.netmeta$condition_arm2, "study"]),
+    table(dat.netmeta$study, 
+          with(dat.netmeta, 
+               paste0(condition_arm1, condition_arm2))) %>% 
+      {rowSums(. > 1) > 0} %>% {names(.)[.]}) %>% unique()
+}
+
+
+#' Add all trial arm combinations for multiarm trials in NMA.
+#' @importFrom crayon green yellow
+#' @importFrom dplyr select ends_with filter group_map group_by
+#' @importFrom stringr str_replace_all str_remove_all
+#' @importFrom stats dffits model.matrix rnorm rstudent
+#' @importFrom utils combn
+#' @keywords internal 
+addAllCombinations = 
+  function(
+    data,
+    vars.for.id = c("study", "outcome_type",
+                    "instrument", "time",
+                    "time_weeks", "rating"),
+    vars.for.es = c("mean", "sd", "n", "mean_change", "sd_change", "n_change",   
+                    "event", "totaln"),
+    condition = "condition",
+    condition.specification = "multi",
+    groups.column.indicator = c("_arm1", "_arm2")){
+    
+    
+    condition.vars = 
+      paste0(condition, 
+             groups.column.indicator)
+    
+    es.vars = c(
+      paste0(vars.for.es, groups.column.indicator[1]),
+      paste0(vars.for.es, groups.column.indicator[2])) %>% 
+      {.[order(.)]}
+    
+    multiarm.vars = 
+      paste0(condition.specification, 
+             groups.column.indicator)
+    
+    apply(data, 1,
+          function(x){
+            paste(as.character(x[vars.for.id]), 
+                  collapse = "_")}) -> data$id.multiarm
+    
+    table(data$id.multiarm[!apply(data, 1, function(x) 
+      x[[condition.vars[1]]] == x[[condition.vars[2]]])]) %>% 
+      {names(.[.>1])} -> multiarm.studies
+    
+    
+    multiarm.list = list()
+    for (i in 1:length(multiarm.studies)){
+      
+      x = data[data$id.multiarm==multiarm.studies[i],]
+      trts = unique(unlist(x[,condition.vars]))
+      combinations = t(combn(unique(unlist(x[,condition.vars])), 2))
+      
+      # Part of df that does not have arm info
+      df.equal = x %>% 
+        select(!ends_with(groups.column.indicator))
+      
+      # Part with info on arm 1
+      df.arm1 = x %>% 
+        select(ends_with(groups.column.indicator[1]))
+      df.arm1.1 = df.arm1 %>% 
+        {colnames(.) = gsub(
+          groups.column.indicator[1], groups.column.indicator[2], colnames(.));.}
+      
+      # Part with info on arm 2
+      df.arm2 = x %>% 
+        select(ends_with(groups.column.indicator[2]))
+      df.arm2.1 = df.arm2 %>% 
+        {colnames(.) = gsub(
+          groups.column.indicator[2], groups.column.indicator[1], colnames(.));.}
+      
+      # Combine
+      df.comb = list(arm1 = rbind(df.arm1, df.arm2.1),
+                     arm2 = rbind(df.arm2, df.arm1.1))
+      
+      apply(combinations, 1, function(z){
+        cbind(
+          df.comb$arm1[df.comb$arm1[[condition.vars[1]]] == z[1],][1,],
+          df.comb$arm2[df.comb$arm2[[condition.vars[2]]] == z[2],][1,])
+      }) %>% 
+        do.call(rbind, .) -> df.arms
+      
+      cbind(df.equal[rep(1, nrow(df.arms)),], df.arms) %>% 
+        dplyr::select(colnames(x)) -> multiarm.list[[i]]
+    }
+    
+    rbind(data[!data$id.multiarm %in% multiarm.studies,],
+          do.call(rbind, multiarm.list)) %>% 
+      {.[order(.$id.multiarm),]} -> return.data
+    
+    rownames(return.data) = NULL
+    return(return.data)
+  }
+
 

@@ -37,7 +37,7 @@
     
     <a class="navbar-brand me-2" href="../../index.html">metapsyTools</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.7</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.8</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -123,24 +123,24 @@ library and is then ready to be used.</p>
 <strong>prompts</strong>:</p>
 <pre><code><span class="co">## These packages have more recent versions available.</span>
 <span class="co">## Which would you like to update?</span>
-<span class="co">## </span>
-<span class="co">## 1: All                          </span>
-<span class="co">## 2: CRAN packages only            </span>
-<span class="co">## 3: None                          </span>
+<span class="co">##</span>
+<span class="co">## 1: All</span>
+<span class="co">## 2: CRAN packages only</span>
+<span class="co">## 3: None</span>
 <span class="co">## 4: ggpubr (0.2.2 -&gt; 0.2.3) [CRAN]</span>
 <span class="co">## 5: zip    (2.0.3 -&gt; 2.0.4) [CRAN]</span>
-<span class="co">## </span>
+<span class="co">##</span>
 <span class="co">## Enter one or more numbers, or an empty line to skip updates:</span></code></pre>
 <p>When you get this message, it is best to tell the installation
 manager that no packages should be updated. In our example, this means
 pasting <code>3</code> into the console and then hitting Enter. In the
 same vein, when the installation manager asks this question:</p>
 <pre><code><span class="co">## There are binary versions available but the source versions are later:</span>
-<span class="co">##  </span>
+<span class="co">##</span>
 <span class="co">##  [...]</span>
-<span class="co">##  </span>
+<span class="co">##</span>
 <span class="co">##   Do you want to install from sources the package which needs compilation?</span>
-<span class="co">##   y/n: </span></code></pre>
+<span class="co">##   y/n:</span></code></pre>
 <p>It is best to choose <code>n</code> (no). If the installation fails
 with this strategy (meaning that you get an Error), run the installation
 again, but update all packages this time.</p>
@@ -164,9 +164,9 @@ package version that you have locally on your computer.</p>
 the current version on your computer. You can do this using the
 following code:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># Note: this code assumes you are working with RStudio </span>
+<code class="sourceCode R"><span class="co"># Note: this code assumes you are working with RStudio</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/remove.packages.html" class="external-link">remove.packages</a></span><span class="op">(</span><span class="st">"metapsyTools"</span><span class="op">)</span>
-<span class="fu">.rs.restartR</span><span class="op">(</span><span class="op">)</span> </code></pre></div>
+<span class="fu">.rs.restartR</span><span class="op">(</span><span class="op">)</span></code></pre></div>
 <p>You can then use the same code as used above to (re-)install the
 latest package version.</p>
 <p><br></p>
