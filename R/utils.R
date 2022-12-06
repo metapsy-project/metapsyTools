@@ -490,8 +490,9 @@ extractG = function(x){
   lapply(as.list(1:length(index)), 
          function(i) {
            y = x[i, index[[i]]]
-           if (length(y) <= 1) { return(data.frame(es = NA, se = NA)) } 
-           else {return(y)}}) %>% 
+           if (length(y) <= 1) { 
+             return(data.frame(es = NA, se = NA)[,c("es", "se")]) } 
+           else {return(y[,c("es", "se")])}}) %>% 
     do.call(rbind, .) -> x.select
   return(x.select)
 }
