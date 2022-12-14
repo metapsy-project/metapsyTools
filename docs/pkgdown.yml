@@ -2,9 +2,10 @@ pandoc: 2.19.2
 pkgdown: 2.0.2
 pkgdown_sha: ~
 articles:
+  data-validator: app/data-validator.html
   metapsyTools: metapsyTools.html
   get-started: web/get-started.html
   installation: web/installation.html
   look_inside: web/look_inside.html
-last_built: 2022-12-05T15:21Z
+last_built: 2022-12-14T21:02Z
 

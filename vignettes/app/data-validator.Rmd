@@ -1,0 +1,9 @@
+---
+title: "Data Validator"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Data Validator}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
