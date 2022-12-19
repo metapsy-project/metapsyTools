@@ -318,7 +318,7 @@ correctPublicationBias = function(model,
       call$TE = data.bt$.g
       M.update = eval(call)
       res = do.call(metasens::limitmeta, c(x = list(M.update), lm.args))
-      return(res$G.squared)
+      return(c("G.squared" = res$G.squared, "tau2" = res$tau^2))
     }
     # Generate data
     data.gen = function(dat, mle=list(mu=M$TE.random, tau2=M$tau2)) {
@@ -329,15 +329,18 @@ correctPublicationBias = function(model,
       return(dat.ret)
     }
     # Sample
-    res.vec = numeric(model$nsim.boot)
+    g2.vec = numeric(model$nsim.boot)
+    tau2.vec = numeric(model$nsim.boot)
     counter = 0
     for (i in 1:model$nsim.boot){
       tmp = try({boot.func(data.gen(dat))}, silent=TRUE)
       if (inherits(tmp, "try-error")) {
-        res.vec[i] = NA
+        g2.vec[i] = NA
+        tau2.vec[i] = NA
         counter = counter + 1
       } else {
-        res.vec[i] = tmp
+        g2.vec[i] = tmp[["G.squared"]]
+        tau2.vec[i] = tmp[["tau2"]]
         counter = counter + 1
         if (counter %in% seq(0, model$nsim.boot, model$nsim.boot/100)){
           cat(crayon::green(
@@ -349,8 +352,10 @@ correctPublicationBias = function(model,
       }
     }
     
-    sav = res.vec[!is.na(res.vec)]
-    mLimit$value$G.squared.ci = quantile(sav, c(.025, .975))
+    sav.g2 = g2.vec[!is.na(g2.vec)]
+    sav.tau2 = tau2.vec[!is.na(tau2.vec)]
+    mLimit$value$G.squared.ci = quantile(sav.g2, c(.025, .975))
+    mLimit$value$se.tau2 = sd(sav.tau2)
   }
   
   if (is.null(mLimit$value) & 

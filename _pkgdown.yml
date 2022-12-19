@@ -73,6 +73,7 @@ reference:
   contents:
   - starts_with("metapsy")
   - imputeResponse
+  - proportionMID
   - starts_with("plot")
   - starts_with("print")
   - starts_with("summary")

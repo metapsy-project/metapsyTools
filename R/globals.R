@@ -10,4 +10,4 @@ utils::globalVariables(c("es", "se", ".", "condition", "study", "NNT",
                          "mCHE.g", "event", "mCombined", "method.tau.meta",
                          "multi.study", "TE", "condition_arm1", 
                          "condition_arm2", "multi_arm1", "n.var.arm1", 
-                         "n.var.arm2", "seTE"))
+                         "n.var.arm2", "seTE", "tau2"))

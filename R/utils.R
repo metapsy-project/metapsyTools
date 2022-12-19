@@ -1854,6 +1854,7 @@ fitRobModel = function(which.run, which.rob, which.outliers,
       "no studies removed; ",
       low.rob.filter, " applies to all studies")
   }
+  mRob$value$title2 = paste("Only", low.rob.filter)
   return(list(m = mRob$value, 
               res = mRobRes,
               has.error = mRob$has.error,
@@ -2032,6 +2033,13 @@ fitThreeLevelModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
         sapply(sav, function(x) x$sigma2[1] + x$sigma2[2]) %>% 
           quantile(c(.025, .975))) -> sigma2.ci
       
+      # Extract bootstrap SD (sigma)
+      rbind(
+        sapply(sav, function(x) x$sigma2[1]) %>% sd(),
+        sapply(sav, function(x) x$sigma2[2]) %>% sd(),
+        sapply(sav, function(x) x$sigma2[1] + x$sigma2[2]) %>% 
+          sd()) -> se.sigma2
+      
       # Extract bootstrap cis (i2)
       rbind(
         sapply(sav, function(x) 100 * x$sigma2[1] / 
@@ -2065,6 +2073,8 @@ fitThreeLevelModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
       
       mThreeLevel$value$variance.components =
         mThreeLevel$value$variance.components[,c("tau2", "tau2.ci", "i2", "i2.ci")] 
+      
+      mThreeLevel$value$se.sigma2 = se.sigma2
       
       has.bs = TRUE
     } 
@@ -2471,6 +2481,13 @@ fitThreeLevelCHEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
         sapply(sav, function(x) x$sigma2[1] + x$sigma2[2]) %>% 
           quantile(c(.025, .975))) -> sigma2.ci
       
+      # Extract bootstrap SD (sigma)
+      rbind(
+        sapply(sav, function(x) x$sigma2[1]) %>% sd(),
+        sapply(sav, function(x) x$sigma2[2]) %>% sd(),
+        sapply(sav, function(x) x$sigma2[1] + x$sigma2[2]) %>% 
+          sd()) -> se.sigma2
+      
       # Extract bootstrap cis (i2)
       rbind(
         sapply(sav, function(x) 100 * x$sigma2[1] / 
@@ -2504,6 +2521,8 @@ fitThreeLevelCHEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
       
       mCHE$value$variance.components =
         mCHE$value$variance.components[,c("tau2", "tau2.ci", "i2", "i2.ci")] 
+      
+      mCHE$value$se.sigma2 = se.sigma2
       
       has.bs = TRUE
     } 
@@ -2944,6 +2963,13 @@ fitThreeLevelHACEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
         sapply(sav, function(x) x$sigma2[1] + x$sigma2[2]) %>% 
           quantile(c(.025, .975))) -> sigma2.ci
       
+      # Extract bootstrap SD (sigma)
+      rbind(
+        sapply(sav, function(x) x$sigma2[1]) %>% sd(),
+        sapply(sav, function(x) x$sigma2[2]) %>% sd(),
+        sapply(sav, function(x) x$sigma2[1] + x$sigma2[2]) %>% 
+          sd()) -> se.sigma2
+      
       # Extract bootstrap cis (i2)
       rbind(
         sapply(sav, function(x) 100 * x$sigma2[1] / 
@@ -2976,7 +3002,9 @@ fitThreeLevelHACEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
                    paste(collapse = "; "), "]"))
       
       mCHE$value$variance.components =
-        mCHE$value$variance.components[,c("tau2", "tau2.ci", "i2", "i2.ci")] 
+        mCHE$value$variance.components[,c("tau2", "tau2.ci", "i2", "i2.ci")]
+      
+      mCHE$value$se.sigma2 = se.sigma2
       
       has.bs = TRUE
     } 
