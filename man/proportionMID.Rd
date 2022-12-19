@@ -52,7 +52,7 @@ meaningful (e.g. clinically relevant) threshold.
 \details{
 The \code{proportionMID} function implements an approach to estimate
 the proportion of true effect sizes exceeding a (scientifically or clinically)
-relevant threshold, as proposed by Mathur & VanderWeele (\href{https://www.tandfonline.com/doi/10.1080/01621459.2018.1529598}{2019}). These estimated
+relevant threshold, as proposed by Mathur & VanderWeele (\href{https://onlinelibrary.wiley.com/doi/full/10.1002/sim.8057}{2019}). These estimated
 proportions have been suggested as a useful metric to determine
 the impact that between-study heterogeneity in a meta-analysis has on the
 "real-life" interpretation of results.
@@ -63,7 +63,7 @@ population are practicially irrelevant, or even negative. Conversely
 overall non-significant effects, in the face of large heterogeneity, can still
 mean that a substantial proportion of studies have non-negligible \emph{true} effects.
 
-As recommended by Mathur & VanderWeele (\href{https://www.tandfonline.com/doi/10.1080/01621459.2018.1529598}{2019}),
+As recommended by Mathur & VanderWeele (\href{https://onlinelibrary.wiley.com/doi/full/10.1002/sim.8057}{2019}),
 the \code{proportionMID} function
 also automatically calculates the proportion of true effects exceeding the
 \emph{"inverse"} of the user-defined effect (e.g., if \code{mid=-0.24}, by default,
@@ -81,7 +81,7 @@ to hold.
 
 Confidence intervals provided by the functions are calculated using the
 asymptotic closed-form solution derived using the Delta method in Mathur &
-VanderWeele (\href{https://www.tandfonline.com/doi/10.1080/01621459.2018.1529598}{2019}).
+VanderWeele (\href{https://onlinelibrary.wiley.com/doi/full/10.1002/sim.8057}{2019}).
 Following their recommendations, a warning is printed
 when \mjeqn{p}{p}<0.15 or \mjeqn{p}{p}>0.85, since in this case the asymptotic
 CIs should be interpreted cautiously; CIs based on boostrapping would be preferable
@@ -128,8 +128,8 @@ major depressive disorders. \emph{Depression and Anxiety, 31}(5), 374-378.
 Jackson, D., & White, I. R. (2018). When should meta-analysis avoid making
 hidden normality assumptions?. \emph{Biometrical Journal, 60}(6), 1040-1058.
 
-Mathur, M. B., & VanderWeele, T. J. (2019). Sensitivity analysis for unmeasured
-confounding in meta-analyses. \emph{Journal of the American Statistical Association}.
+Mathur, M. B., & VanderWeele, T. J. (2019). New metrics for meta-analyses of
+heterogeneous effects. \emph{Statistics in Medicine, 38}(8), 1336-1342.
 }
 \seealso{
 \code{\link{runMetaAnalysis}}, \code{\link{correctPublicationBias}}

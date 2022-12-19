@@ -78,7 +78,7 @@
 #'
 #' @details The `proportionMID` function implements an approach to estimate
 #' the proportion of true effect sizes exceeding a (scientifically or clinically)
-#' relevant threshold, as proposed by Mathur & VanderWeele ([2019](https://www.tandfonline.com/doi/10.1080/01621459.2018.1529598)). These estimated 
+#' relevant threshold, as proposed by Mathur & VanderWeele ([2019](https://onlinelibrary.wiley.com/doi/full/10.1002/sim.8057)). These estimated 
 #' proportions have been suggested as a useful metric to determine
 #' the impact that between-study heterogeneity in a meta-analysis has on the 
 #' "real-life" interpretation of results.
@@ -89,7 +89,7 @@
 #' overall non-significant effects, in the face of large heterogeneity, can still
 #' mean that a substantial proportion of studies have non-negligible _true_ effects.
 #' 
-#' As recommended by Mathur & VanderWeele ([2019](https://www.tandfonline.com/doi/10.1080/01621459.2018.1529598)), 
+#' As recommended by Mathur & VanderWeele ([2019](https://onlinelibrary.wiley.com/doi/full/10.1002/sim.8057)), 
 #' the `proportionMID` function
 #' also automatically calculates the proportion of true effects exceeding the 
 #' _"inverse"_ of the user-defined effect (e.g., if `mid=-0.24`, by default,
@@ -107,7 +107,7 @@
 #' 
 #' Confidence intervals provided by the functions are calculated using the
 #' asymptotic closed-form solution derived using the Delta method in Mathur &
-#' VanderWeele ([2019](https://www.tandfonline.com/doi/10.1080/01621459.2018.1529598)). 
+#' VanderWeele ([2019](https://onlinelibrary.wiley.com/doi/full/10.1002/sim.8057)). 
 #' Following their recommendations, a warning is printed
 #' when \mjeqn{p}{p}<0.15 or \mjeqn{p}{p}>0.85, since in this case the asymptotic
 #' CIs should be interpreted cautiously; CIs based on boostrapping would be preferable
@@ -122,8 +122,8 @@
 #' Jackson, D., & White, I. R. (2018). When should meta-analysis avoid making 
 #' hidden normality assumptions?. _Biometrical Journal, 60_(6), 1040-1058.
 #' 
-#' Mathur, M. B., & VanderWeele, T. J. (2019). Sensitivity analysis for unmeasured 
-#' confounding in meta-analyses. _Journal of the American Statistical Association_.
+#' Mathur, M. B., & VanderWeele, T. J. (2019). New metrics for meta-analyses of 
+#' heterogeneous effects. _Statistics in Medicine, 38_(8), 1336-1342.
 #' 
 #' @import dplyr numDeriv
 #' @importFrom stats dffits model.matrix rnorm rstudent quantile sd qnorm dnorm

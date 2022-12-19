@@ -112,7 +112,7 @@ and between-study heterogeneity <em></em>\(\tau^2\).</p>
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>The <code>proportionMID</code> function implements an approach to estimate
 the proportion of true effect sizes exceeding a (scientifically or clinically)
-relevant threshold, as proposed by Mathur &amp; VanderWeele (<a href="https://www.tandfonline.com/doi/10.1080/01621459.2018.1529598" class="external-link">2019</a>). These estimated
+relevant threshold, as proposed by Mathur &amp; VanderWeele (<a href="https://onlinelibrary.wiley.com/doi/full/10.1002/sim.8057" class="external-link">2019</a>). These estimated
 proportions have been suggested as a useful metric to determine
 the impact that between-study heterogeneity in a meta-analysis has on the
 "real-life" interpretation of results.</p>
@@ -121,7 +121,7 @@ can still mean that a substantial proportion of true effects in the studies
 population are practicially irrelevant, or even negative. Conversely
 overall non-significant effects, in the face of large heterogeneity, can still
 mean that a substantial proportion of studies have non-negligible <em>true</em> effects.</p>
-<p>As recommended by Mathur &amp; VanderWeele (<a href="https://www.tandfonline.com/doi/10.1080/01621459.2018.1529598" class="external-link">2019</a>),
+<p>As recommended by Mathur &amp; VanderWeele (<a href="https://onlinelibrary.wiley.com/doi/full/10.1002/sim.8057" class="external-link">2019</a>),
 the <code>proportionMID</code> function
 also automatically calculates the proportion of true effects exceeding the
 <em>"inverse"</em> of the user-defined effect (e.g., if <code>mid=-0.24</code>, by default,
@@ -137,7 +137,7 @@ Jackson &amp; White, <a href="https://onlinelibrary.wiley.com/doi/full/10.1002/b
 to hold.</p>
 <p>Confidence intervals provided by the functions are calculated using the
 asymptotic closed-form solution derived using the Delta method in Mathur &amp;
-VanderWeele (<a href="https://www.tandfonline.com/doi/10.1080/01621459.2018.1529598" class="external-link">2019</a>).
+VanderWeele (<a href="https://onlinelibrary.wiley.com/doi/full/10.1002/sim.8057" class="external-link">2019</a>).
 Following their recommendations, a warning is printed
 when <em></em>\(p\)&lt;0.15 or <em></em>\(p\)&gt;0.85, since in this case the asymptotic
 CIs should be interpreted cautiously; CIs based on boostrapping would be preferable
@@ -151,8 +151,8 @@ What is the threshold for a clinically relevant effect? The case of
 major depressive disorders. <em>Depression and Anxiety, 31</em>(5), 374-378.</p>
 <p>Jackson, D., &amp; White, I. R. (2018). When should meta-analysis avoid making
 hidden normality assumptions?. <em>Biometrical Journal, 60</em>(6), 1040-1058.</p>
-<p>Mathur, M. B., &amp; VanderWeele, T. J. (2019). Sensitivity analysis for unmeasured
-confounding in meta-analyses. <em>Journal of the American Statistical Association</em>.</p>
+<p>Mathur, M. B., &amp; VanderWeele, T. J. (2019). New metrics for meta-analyses of
+heterogeneous effects. <em>Statistics in Medicine, 38</em>(8), 1336-1342.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
