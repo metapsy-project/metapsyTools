@@ -136,7 +136,7 @@ subgroupAnalysis = function(.model, ...,
                     hakn = M$hakn,
                     data = M$data[na.mask,],
                     subgroup = M$data[[x]][na.mask],
-                    fixed = M$fixed,
+                    fixed = M$common,
                     random = M$random,
                     tau.common = .tau.common)
 
@@ -153,12 +153,12 @@ subgroupAnalysis = function(.model, ...,
       purrr::map2(as.list(variables), function(x,y){
 
         # Effect size in each group
-        if (x$comb.fixed == TRUE){
+        if (x$comb.common == TRUE){
           g = round(
                 if (identical(.model$.type.es, "RR")){
-                   exp(x$TE.fixed.w)
+                   exp(x$TE.common.w)
                 } else {
-                  x$TE.fixed.w
+                  x$TE.common.w
                 }, .round.digits)
         } else {
           g = round(
@@ -170,19 +170,19 @@ subgroupAnalysis = function(.model, ...,
         }
 
         # Confidence interval for g
-        if (x$comb.fixed == TRUE){
+        if (x$comb.common == TRUE){
           g.ci = paste0("[", 
                         round(
                           if (identical(.model$.type.es, "RR")){
-                            exp(x$lower.fixed.w)
+                            exp(x$lower.common.w)
                           } else {
-                            x$lower.fixed.w
+                            x$lower.common.w
                           }, .round.digits), "; ",
                         round(
                           if (identical(.model$.type.es, "RR")){
-                            exp(x$upper.fixed.w)
+                            exp(x$upper.common.w)
                           } else {
-                            x$upper.fixed.w
+                            x$upper.common.w
                           }, .round.digits), "]")
         } else {
           g.ci = paste0("[", 

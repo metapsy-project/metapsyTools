@@ -1690,7 +1690,7 @@ summary.runMetaAnalysis = function(object, forest = TRUE, ...){
   cat("---------------------------------------------------------- \n")
   cat("\n")
 
-  if (x$model.overall$fixed == TRUE & x$model.overall$random == FALSE){
+  if (x$model.overall$common == TRUE & x$model.overall$random == FALSE){
 
     cat(crayon::green("\u2713"), crayon::bold(crayon::magenta("[Overall]")),
         "Effects pooled using inverse variance weighting. \n")
