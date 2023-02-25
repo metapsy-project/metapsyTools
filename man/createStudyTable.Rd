@@ -77,7 +77,7 @@ For more details see the help vignette: \code{vignette("metapsyTools")}.
 # using selected information.
 data("depressionPsyCtr")
 
-#' depressionPsyCtr \%>\%
+depressionPsyCtr \%>\%
  filterPriorityRule(
    instrument = c("phq-9", "bdi-1", 
                   "hdrs", "ces-d")) \%>\%

@@ -153,7 +153,7 @@ subgroupAnalysis = function(.model, ...,
       purrr::map2(as.list(variables), function(x,y){
 
         # Effect size in each group
-        if (x$comb.common == TRUE){
+        if (x$common == TRUE){
           g = round(
                 if (identical(.model$.type.es, "RR")){
                    exp(x$TE.common.w)
@@ -170,7 +170,7 @@ subgroupAnalysis = function(.model, ...,
         }
 
         # Confidence interval for g
-        if (x$comb.common == TRUE){
+        if (x$common == TRUE){
           g.ci = paste0("[", 
                         round(
                           if (identical(.model$.type.es, "RR")){

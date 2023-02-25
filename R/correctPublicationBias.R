@@ -222,8 +222,8 @@ correctPublicationBias = function(model,
       }
       with(do.call(meta::trimfill, 
                    c(x = list(M.rd), tf.args)), {
-                     ifelse(isTRUE(fixed) & isTRUE(random),
-                            abs(TE.fixed)^-1, abs(TE.random)^-1)
+                     ifelse(isTRUE(common) & isTRUE(random),
+                            abs(TE.common)^-1, abs(TE.random)^-1)
                    }) -> nnt.raw.bin.es
     }
     
@@ -231,21 +231,21 @@ correctPublicationBias = function(model,
       data.frame(
         k = k,
         g = ifelse(
-          isTRUE(fixed) & isTRUE(random), 
-          TE.fixed, TE.random) %>% 
+          isTRUE(common) & isTRUE(random), 
+          TE.common, TE.random) %>% 
           ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
           round(round.digits),
         g.ci = paste0("[", 
-                      ifelse(isTRUE(fixed) & isTRUE(random),
-                             lower.fixed, lower.random) %>% 
+                      ifelse(isTRUE(common) & isTRUE(random),
+                             lower.common, lower.random) %>% 
                         ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
                         round(round.digits), "; ",
-                      ifelse(isTRUE(fixed) & isTRUE(random),
-                             upper.fixed, upper.random) %>% 
+                      ifelse(isTRUE(common) & isTRUE(random),
+                             upper.common, upper.random) %>% 
                         ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
                         round(round.digits), "]"),
-        p = ifelse(isTRUE(fixed) & isTRUE(random), 
-                   pval.fixed, pval.random) %>% 
+        p = ifelse(isTRUE(common) & isTRUE(random), 
+                   pval.common, pval.random) %>% 
           scales::pvalue(),
         i2 = round(I2*100, 2),
         i2.ci = paste0("[", round(lower.I2*100, 2), "; ", 
@@ -260,8 +260,8 @@ correctPublicationBias = function(model,
                                         exp(upper.predict), upper.predict), 
                                  round.digits), "]"),
         nnt = metapsyNNT(
-          ifelse(isTRUE(fixed) & isTRUE(random), 
-                 TE.fixed, TE.random), nnt.cer) %>%
+          ifelse(isTRUE(common) & isTRUE(random), 
+                 TE.common, TE.random), nnt.cer) %>%
           ifelse(identical(.type.es, "RR"), NA, .) %>% 
           ifelse(isTRUE(.raw.bin.es), 
                  nnt.raw.bin.es, .) %>% 
@@ -509,12 +509,12 @@ correctPublicationBias = function(model,
         meta::metaprop(
           event = round(data$.event.c),
           n = round(data$.n.c),
-          fixed = ifelse(method.tau == "FE", 
+          common = ifelse(method.tau == "FE", 
                          TRUE, FALSE),
           random = ifelse(method.tau == "FE", 
                           FALSE, TRUE)) %>%
-          {ifelse(isTRUE(fixed) & isTRUE(random), 
-                  .$TE.fixed, .$TE.random)} %>% 
+          {ifelse(isTRUE(common) & isTRUE(random), 
+                  .$TE.common, .$TE.random)} %>% 
           {exp(.)/(1+exp(.))}
       }) -> cer    
       

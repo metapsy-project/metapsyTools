@@ -65,7 +65,7 @@
 #' # using selected information.
 #' data("depressionPsyCtr")
 #' 
-#' #' depressionPsyCtr %>%
+#' depressionPsyCtr %>%
 #'  filterPriorityRule(
 #'    instrument = c("phq-9", "bdi-1", 
 #'                   "hdrs", "ces-d")) %>%

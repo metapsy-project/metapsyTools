@@ -617,6 +617,7 @@ fitOverallModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
       method.tau = method.tau.meta,
       method.tau.ci = method.tau.ci,
       prediction = TRUE,
+      common = ifelse(method.tau == "FE", TRUE, FALSE),
       fixed = ifelse(method.tau == "FE", TRUE, FALSE),
       random = ifelse(method.tau == "FE", FALSE, TRUE)) %>% 
       append(selectArguments(meta::metagen, dots))
@@ -636,6 +637,7 @@ fitOverallModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
       method.tau = method.tau.meta,
       method.tau.ci = method.tau.ci,
       prediction = TRUE,
+      common = ifelse(method.tau == "FE", TRUE, FALSE),
       fixed = ifelse(method.tau == "FE", TRUE, FALSE),
       random = ifelse(method.tau == "FE", FALSE, TRUE)) %>% 
       append(selectArguments(meta::metabin, dots))
@@ -645,8 +647,8 @@ fitOverallModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
     
     if (!mGeneral$has.error){
       with(meta::update.meta(mGeneral$value, sm="RD"), {
-        ifelse(isTRUE(fixed) & isTRUE(random),
-               abs(TE.fixed)^-1, abs(TE.random)^-1)
+        ifelse(isTRUE(common) & isTRUE(random),
+               abs(TE.common)^-1, abs(TE.random)^-1)
       }) -> nnt.raw.bin.es
     } else {
       nnt.raw.bin.es = NULL
@@ -664,21 +666,21 @@ fitOverallModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
       data.frame(
         k = k,
         g = ifelse(
-          isTRUE(fixed) & isTRUE(random), 
-          TE.fixed, TE.random) %>% 
+          isTRUE(common) & isTRUE(random), 
+          TE.common, TE.random) %>% 
           ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
           round(round.digits),
         g.ci = paste0("[", 
-                      ifelse(isTRUE(fixed) & isTRUE(random),
-                             lower.fixed, lower.random) %>% 
+                      ifelse(isTRUE(common) & isTRUE(random),
+                             lower.common, lower.random) %>% 
                         ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
                         round(round.digits), "; ",
-                      ifelse(isTRUE(fixed) & isTRUE(random),
-                             upper.fixed, upper.random) %>% 
+                      ifelse(isTRUE(common) & isTRUE(random),
+                             upper.common, upper.random) %>% 
                         ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
                         round(round.digits), "]"),
-        p = ifelse(isTRUE(fixed) & isTRUE(random), 
-                   pval.fixed, pval.random) %>% 
+        p = ifelse(isTRUE(common) & isTRUE(random), 
+                   pval.common, pval.random) %>% 
           scales::pvalue(),
         i2 = round(I2*100, 2),
         i2.ci = paste0("[", round(lower.I2*100, 2), "; ", 
@@ -693,8 +695,8 @@ fitOverallModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
                                         exp(upper.predict), upper.predict), 
                                  round.digits), "]"),
         nnt = metapsyNNT(
-          ifelse(isTRUE(fixed) & isTRUE(random), 
-                 abs(TE.fixed), abs(TE.random)), nnt.cer) %>%
+          ifelse(isTRUE(common) & isTRUE(random), 
+                 abs(TE.common), abs(TE.random)), nnt.cer) %>%
           ifelse(identical(.type.es, "RR"), NA, .) %>% 
           ifelse(isTRUE(.raw.bin.es), 
                  nnt.raw.bin.es, .) %>% 
@@ -742,8 +744,8 @@ fitLowestModel = function(data, study.var, multi.study,
         meta::update.meta(mGeneral$m, exclude = !lowest, id = NULL))
       if (!mLowest$has.error){
         with(meta::update.meta(mLowest$value, sm="RD"), {
-          ifelse(isTRUE(fixed) & isTRUE(random),
-                 abs(TE.fixed)^-1, abs(TE.random)^-1)
+          ifelse(isTRUE(common) & isTRUE(random),
+                 abs(TE.common)^-1, abs(TE.random)^-1)
         }) -> nnt.raw.bin.es
       }
       # Collect results
@@ -757,21 +759,21 @@ fitLowestModel = function(data, study.var, multi.study,
           data.frame(
             k = k,
             g = ifelse(
-              isTRUE(fixed) & isTRUE(random), 
-              TE.fixed, TE.random) %>% 
+              isTRUE(common) & isTRUE(random), 
+              TE.common, TE.random) %>% 
               ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
               round(round.digits),
             g.ci = paste0("[", 
-                          ifelse(isTRUE(fixed) & isTRUE(random),
-                                 lower.fixed, lower.random) %>% 
+                          ifelse(isTRUE(common) & isTRUE(random),
+                                 lower.common, lower.random) %>% 
                             ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
                             round(round.digits), "; ",
-                          ifelse(isTRUE(fixed) & isTRUE(random),
-                                 upper.fixed, upper.random) %>% 
+                          ifelse(isTRUE(common) & isTRUE(random),
+                                 upper.common, upper.random) %>% 
                             ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
                             round(round.digits), "]"),
-            p = ifelse(isTRUE(fixed) & isTRUE(random), 
-                       pval.fixed, pval.random) %>% 
+            p = ifelse(isTRUE(common) & isTRUE(random), 
+                       pval.common, pval.random) %>% 
               scales::pvalue(),
             i2 = round(I2*100, 2),
             i2.ci = paste0("[", round(lower.I2*100, 2), "; ", 
@@ -786,8 +788,8 @@ fitLowestModel = function(data, study.var, multi.study,
                                             exp(upper.predict), upper.predict), 
                                      round.digits), "]"),
             nnt = metapsyNNT(
-              ifelse(isTRUE(fixed) & isTRUE(random), 
-                     abs(TE.fixed), abs(TE.random)), nnt.cer) %>%
+              ifelse(isTRUE(common) & isTRUE(random), 
+                     abs(TE.common), abs(TE.random)), nnt.cer) %>%
               ifelse(identical(.type.es, "RR"), NA, .) %>% 
               ifelse(isTRUE(.raw.bin.es), 
                      nnt.raw.bin.es, .) %>% 
@@ -851,8 +853,8 @@ fitHighestModel = function(data, study.var, multi.study,
       
       if (!mHighest$has.error){
         with(meta::update.meta(mHighest$value, sm="RD"), {
-          ifelse(isTRUE(fixed) & isTRUE(random),
-                 abs(TE.fixed)^-1, abs(TE.random)^-1)
+          ifelse(isTRUE(common) & isTRUE(random),
+                 abs(TE.common)^-1, abs(TE.random)^-1)
         }) -> nnt.raw.bin.es
       }
       
@@ -867,21 +869,21 @@ fitHighestModel = function(data, study.var, multi.study,
           data.frame(
             k = k,
             g = ifelse(
-              isTRUE(fixed) & isTRUE(random), 
-              TE.fixed, TE.random) %>% 
+              isTRUE(common) & isTRUE(random), 
+              TE.common, TE.random) %>% 
               ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
               round(round.digits),
             g.ci = paste0("[", 
-                          ifelse(isTRUE(fixed) & isTRUE(random),
-                                 lower.fixed, lower.random) %>% 
+                          ifelse(isTRUE(common) & isTRUE(random),
+                                 lower.common, lower.random) %>% 
                             ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
                             round(round.digits), "; ",
-                          ifelse(isTRUE(fixed) & isTRUE(random),
-                                 upper.fixed, upper.random) %>% 
+                          ifelse(isTRUE(common) & isTRUE(random),
+                                 upper.common, upper.random) %>% 
                             ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
                             round(round.digits), "]"),
-            p = ifelse(isTRUE(fixed) & isTRUE(random), 
-                       pval.fixed, pval.random) %>% 
+            p = ifelse(isTRUE(common) & isTRUE(random), 
+                       pval.common, pval.random) %>% 
               scales::pvalue(),
             i2 = round(I2*100, 2),
             i2.ci = paste0("[", round(lower.I2*100, 2), "; ", 
@@ -896,8 +898,8 @@ fitHighestModel = function(data, study.var, multi.study,
                                             exp(upper.predict), upper.predict), 
                                      round.digits), "]"),
             nnt = metapsyNNT(
-              ifelse(isTRUE(fixed) & isTRUE(random), 
-                     abs(TE.fixed), abs(TE.random)), nnt.cer) %>%
+              ifelse(isTRUE(common) & isTRUE(random), 
+                     abs(TE.common), abs(TE.random)), nnt.cer) %>%
               ifelse(identical(.type.es, "RR"), NA, .) %>% 
               ifelse(isTRUE(.raw.bin.es), 
                      nnt.raw.bin.es, .) %>% 
@@ -1044,6 +1046,7 @@ fitCombinedModel = function(which.combine, which.combine.var,
       method.tau = method.tau.meta,
       method.tau.ci = method.tau.ci,
       prediction = TRUE,
+      common = ifelse(method.tau == "FE", TRUE, FALSE),
       fixed = ifelse(method.tau == "FE", TRUE, FALSE),
       random = ifelse(method.tau == "FE", FALSE, TRUE)) %>% 
       append(selectArguments(meta::metagen, dots))
@@ -1064,14 +1067,15 @@ fitCombinedModel = function(which.combine, which.combine.var,
         method.tau = method.tau.meta,
         method.tau.ci = method.tau.ci,
         prediction = TRUE,
+        common = ifelse(method.tau == "FE", TRUE, FALSE),
         fixed = ifelse(method.tau == "FE", TRUE, FALSE),
         random = ifelse(method.tau == "FE", FALSE, TRUE))
       
       do.call(meta::metabin, 
               mCombArgsBin) %>% 
         with(., {
-          ifelse(isTRUE(fixed) & isTRUE(random),
-                 abs(TE.fixed)^-1, abs(TE.random)^-1)
+          ifelse(isTRUE(common) & isTRUE(random),
+                 abs(TE.common)^-1, abs(TE.random)^-1)
         }) -> nnt.raw.bin.es
     }
     
@@ -1092,21 +1096,21 @@ fitCombinedModel = function(which.combine, which.combine.var,
         data.frame(
           k = k,
           g = ifelse(
-            isTRUE(fixed) & isTRUE(random), 
-            TE.fixed, TE.random) %>% 
+            isTRUE(common) & isTRUE(random), 
+            TE.common, TE.random) %>% 
             ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
             round(round.digits),
           g.ci = paste0("[", 
-                        ifelse(isTRUE(fixed) & isTRUE(random),
-                               lower.fixed, lower.random) %>% 
+                        ifelse(isTRUE(common) & isTRUE(random),
+                               lower.common, lower.random) %>% 
                           ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
                           round(round.digits), "; ",
-                        ifelse(isTRUE(fixed) & isTRUE(random),
-                               upper.fixed, upper.random) %>% 
+                        ifelse(isTRUE(common) & isTRUE(random),
+                               upper.common, upper.random) %>% 
                           ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
                           round(round.digits), "]"),
-          p = ifelse(isTRUE(fixed) & isTRUE(random), 
-                     pval.fixed, pval.random) %>% 
+          p = ifelse(isTRUE(common) & isTRUE(random), 
+                     pval.common, pval.random) %>% 
             scales::pvalue(),
           i2 = round(I2*100, 2),
           i2.ci = paste0("[", round(lower.I2*100, 2), "; ", 
@@ -1121,8 +1125,8 @@ fitCombinedModel = function(which.combine, which.combine.var,
                                           exp(upper.predict), upper.predict), 
                                    round.digits), "]"),
           nnt = metapsyNNT(
-            ifelse(isTRUE(fixed) & isTRUE(random), 
-                   abs(TE.fixed), abs(TE.random)), nnt.cer) %>%
+            ifelse(isTRUE(common) & isTRUE(random), 
+                   abs(TE.common), abs(TE.random)), nnt.cer) %>%
             ifelse(identical(.type.es, "RR"), NA, .) %>% 
             ifelse(isTRUE(.raw.bin.es), 
                    nnt.raw.bin.es, .) %>% 
@@ -1319,6 +1323,7 @@ fitCombinedHACEModel = function(which.combine, which.combine.var, measure.var,
       method.tau = method.tau.meta,
       method.tau.ci = method.tau.ci,
       prediction = TRUE,
+      common = ifelse(method.tau == "FE", TRUE, FALSE),
       fixed = ifelse(method.tau == "FE", TRUE, FALSE),
       random = ifelse(method.tau == "FE", FALSE, TRUE)) %>% 
       append(selectArguments(meta::metagen, dots))
@@ -1339,14 +1344,15 @@ fitCombinedHACEModel = function(which.combine, which.combine.var, measure.var,
         method.tau = method.tau.meta,
         method.tau.ci = method.tau.ci,
         prediction = TRUE,
+        common = ifelse(method.tau == "FE", TRUE, FALSE),
         fixed = ifelse(method.tau == "FE", TRUE, FALSE),
         random = ifelse(method.tau == "FE", FALSE, TRUE))
       
       do.call(meta::metabin, 
               mCombArgsBin) %>% 
         with(., {
-          ifelse(isTRUE(fixed) & isTRUE(random),
-                 abs(TE.fixed)^-1, abs(TE.random)^-1)
+          ifelse(isTRUE(common) & isTRUE(random),
+                 abs(TE.common)^-1, abs(TE.random)^-1)
         }) -> nnt.raw.bin.es
     }
     
@@ -1367,21 +1373,21 @@ fitCombinedHACEModel = function(which.combine, which.combine.var, measure.var,
         data.frame(
           k = k,
           g = ifelse(
-            isTRUE(fixed) & isTRUE(random), 
-            TE.fixed, TE.random) %>% 
+            isTRUE(common) & isTRUE(random), 
+            TE.common, TE.random) %>% 
             ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
             round(round.digits),
           g.ci = paste0("[", 
-                        ifelse(isTRUE(fixed) & isTRUE(random),
-                               lower.fixed, lower.random) %>% 
+                        ifelse(isTRUE(common) & isTRUE(random),
+                               lower.common, lower.random) %>% 
                           ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
                           round(round.digits), "; ",
-                        ifelse(isTRUE(fixed) & isTRUE(random),
-                               upper.fixed, upper.random) %>% 
+                        ifelse(isTRUE(common) & isTRUE(random),
+                               upper.common, upper.random) %>% 
                           ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
                           round(round.digits), "]"),
-          p = ifelse(isTRUE(fixed) & isTRUE(random), 
-                     pval.fixed, pval.random) %>% 
+          p = ifelse(isTRUE(common) & isTRUE(random), 
+                     pval.common, pval.random) %>% 
             scales::pvalue(),
           i2 = round(I2*100, 2),
           i2.ci = paste0("[", round(lower.I2*100, 2), "; ", 
@@ -1396,8 +1402,8 @@ fitCombinedHACEModel = function(which.combine, which.combine.var, measure.var,
                                           exp(upper.predict), upper.predict), 
                                    round.digits), "]"),
           nnt = metapsyNNT(
-            ifelse(isTRUE(fixed) & isTRUE(random), 
-                   abs(TE.fixed), abs(TE.random)), nnt.cer) %>%
+            ifelse(isTRUE(common) & isTRUE(random), 
+                   abs(TE.common), abs(TE.random)), nnt.cer) %>%
             ifelse(identical(.type.es, "RR"), NA, .) %>% 
             ifelse(isTRUE(.raw.bin.es), 
                    nnt.raw.bin.es, .) %>% 
@@ -1453,8 +1459,8 @@ fitOutliersModel = function(data, study.var, multi.study,
       !mOutliers$has.error){
     with(meta::update.meta(mOutliers$value, 
                            sm = "RD", id = NULL), {
-                             ifelse(isTRUE(fixed) & isTRUE(random),
-                                    abs(TE.fixed)^-1, abs(TE.random)^-1)
+                             ifelse(isTRUE(common) & isTRUE(random),
+                                    abs(TE.common)^-1, abs(TE.random)^-1)
                            }) -> nnt.raw.bin.es
   } else {
     nnt.raw.bin.es = NA
@@ -1472,21 +1478,21 @@ fitOutliersModel = function(data, study.var, multi.study,
       data.frame(
         k = k,
         g = ifelse(
-          isTRUE(fixed) & isTRUE(random), 
-          TE.fixed, TE.random) %>% 
+          isTRUE(common) & isTRUE(random), 
+          TE.common, TE.random) %>% 
           ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
           round(round.digits),
         g.ci = paste0("[", 
-                      ifelse(isTRUE(fixed) & isTRUE(random),
-                             lower.fixed, lower.random) %>% 
+                      ifelse(isTRUE(common) & isTRUE(random),
+                             lower.common, lower.random) %>% 
                         ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
                         round(round.digits), "; ",
-                      ifelse(isTRUE(fixed) & isTRUE(random),
-                             upper.fixed, upper.random) %>% 
+                      ifelse(isTRUE(common) & isTRUE(random),
+                             upper.common, upper.random) %>% 
                         ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
                         round(round.digits), "]"),
-        p = ifelse(isTRUE(fixed) & isTRUE(random), 
-                   pval.fixed, pval.random) %>% 
+        p = ifelse(isTRUE(common) & isTRUE(random), 
+                   pval.common, pval.random) %>% 
           scales::pvalue(),
         i2 = round(I2*100, 2),
         i2.ci = paste0("[", round(lower.I2*100, 2), "; ", 
@@ -1501,8 +1507,8 @@ fitOutliersModel = function(data, study.var, multi.study,
                                         exp(upper.predict), upper.predict), 
                                  round.digits), "]"),
         nnt = metapsyNNT(
-          ifelse(isTRUE(fixed) & isTRUE(random), 
-                 abs(TE.fixed), abs(TE.random)), nnt.cer) %>%
+          ifelse(isTRUE(common) & isTRUE(random), 
+                 abs(TE.common), abs(TE.random)), nnt.cer) %>%
           ifelse(identical(.type.es, "RR"), NA, .) %>% 
           ifelse(isTRUE(.raw.bin.es), 
                  nnt.raw.bin.es, .) %>% 
@@ -1624,8 +1630,8 @@ fitInfluenceModel = function(which.influence, mComb,
   if (isTRUE(.raw.bin.es) &&
       !mInfluence$has.error){
     with(meta::update.meta(mInfluence$value, sm="RD", id = NULL), {
-      ifelse(isTRUE(fixed) & isTRUE(random),
-             abs(TE.fixed)^-1, abs(TE.random)^-1)
+      ifelse(isTRUE(common) & isTRUE(random),
+             abs(TE.common)^-1, abs(TE.random)^-1)
     }) -> nnt.raw.bin.es
   } else {
     nnt.raw.bin.es = NA
@@ -1643,21 +1649,21 @@ fitInfluenceModel = function(which.influence, mComb,
       data.frame(
         k = k,
         g = ifelse(
-          isTRUE(fixed) & isTRUE(random), 
-          TE.fixed, TE.random) %>% 
+          isTRUE(common) & isTRUE(random), 
+          TE.common, TE.random) %>% 
           ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
           round(round.digits),
         g.ci = paste0("[", 
-                      ifelse(isTRUE(fixed) & isTRUE(random),
-                             lower.fixed, lower.random) %>% 
+                      ifelse(isTRUE(common) & isTRUE(random),
+                             lower.common, lower.random) %>% 
                         ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
                         round(round.digits), "; ",
-                      ifelse(isTRUE(fixed) & isTRUE(random),
-                             upper.fixed, upper.random) %>% 
+                      ifelse(isTRUE(common) & isTRUE(random),
+                             upper.common, upper.random) %>% 
                         ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
                         round(round.digits), "]"),
-        p = ifelse(isTRUE(fixed) & isTRUE(random), 
-                   pval.fixed, pval.random) %>% 
+        p = ifelse(isTRUE(common) & isTRUE(random), 
+                   pval.common, pval.random) %>% 
           scales::pvalue(),
         i2 = round(I2*100, 2),
         i2.ci = paste0("[", round(lower.I2*100, 2), "; ", 
@@ -1672,8 +1678,8 @@ fitInfluenceModel = function(which.influence, mComb,
                                         exp(upper.predict), upper.predict), 
                                  round.digits), "]"),
         nnt = metapsyNNT(
-          ifelse(isTRUE(fixed) & isTRUE(random), 
-                 abs(TE.fixed), abs(TE.random)), nnt.cer) %>%
+          ifelse(isTRUE(common) & isTRUE(random), 
+                 abs(TE.common), abs(TE.random)), nnt.cer) %>%
           ifelse(identical(.type.es, "RR"), NA, .) %>% 
           ifelse(isTRUE(.raw.bin.es), 
                  nnt.raw.bin.es, .) %>% 
@@ -1781,8 +1787,8 @@ fitRobModel = function(which.run, which.rob, which.outliers,
     with(meta::update.meta(
       mRob$value, sm="RD",
       id = NULL), {
-        ifelse(isTRUE(fixed) & isTRUE(random),
-               abs(TE.fixed)^-1, abs(TE.random)^-1)
+        ifelse(isTRUE(common) & isTRUE(random),
+               abs(TE.common)^-1, abs(TE.random)^-1)
       }) -> nnt.raw.bin.es
   } else {
     nnt.raw.bin.es = NA
@@ -1799,21 +1805,21 @@ fitRobModel = function(which.run, which.rob, which.outliers,
       data.frame(
         k = k,
         g = ifelse(
-          isTRUE(fixed) & isTRUE(random), 
-          TE.fixed, TE.random) %>% 
+          isTRUE(common) & isTRUE(common), 
+          TE.common, TE.random) %>% 
           ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
           round(round.digits),
         g.ci = paste0("[", 
-                      ifelse(isTRUE(fixed) & isTRUE(random),
-                             lower.fixed, lower.random) %>% 
+                      ifelse(isTRUE(common) & isTRUE(random),
+                             lower.common, lower.random) %>% 
                         ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
                         round(round.digits), "; ",
-                      ifelse(isTRUE(fixed) & isTRUE(random),
-                             upper.fixed, upper.random) %>% 
+                      ifelse(isTRUE(common) & isTRUE(random),
+                             upper.common, upper.random) %>% 
                         ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
                         round(round.digits), "]"),
-        p = ifelse(isTRUE(fixed) & isTRUE(random), 
-                   pval.fixed, pval.random) %>% 
+        p = ifelse(isTRUE(common) & isTRUE(random), 
+                   pval.common, pval.random) %>% 
           scales::pvalue(),
         i2 = round(I2*100, 2),
         i2.ci = paste0("[", round(lower.I2*100, 2), "; ", 
@@ -1828,8 +1834,8 @@ fitRobModel = function(which.run, which.rob, which.outliers,
                                         exp(upper.predict), upper.predict), 
                                  round.digits), "]"),
         nnt = metapsyNNT(
-          ifelse(isTRUE(fixed) & isTRUE(random), 
-                 abs(TE.fixed), abs(TE.random)), nnt.cer) %>%
+          ifelse(isTRUE(common) & isTRUE(random), 
+                 abs(TE.common), abs(TE.random)), nnt.cer) %>%
           ifelse(identical(.type.es, "RR"), NA, .) %>% 
           ifelse(isTRUE(.raw.bin.es), 
                  nnt.raw.bin.es, .) %>% 

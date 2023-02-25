@@ -144,13 +144,13 @@ metapsyFindOutliers = function(x, ...){
       upper = x$TE + 1.96*x$seTE
 
       # Generate mask with outliers (fixed/random)
-      mask.fixed = upper < x$lower.fixed | lower > x$upper.fixed
+      mask.fixed = upper < x$lower.common | lower > x$upper.common
       mask.random = upper < x$lower.random | lower > x$upper.random
 
     } else {
 
       # Generate mask with outliers (fixed/random)
-      mask.fixed = x$upper < x$lower.fixed | x$lower > x$upper.fixed
+      mask.fixed = x$upper < x$lower.common | x$lower > x$upper.common
       mask.random = x$upper < x$lower.random | x$lower > x$upper.random
 
     }
@@ -163,7 +163,7 @@ metapsyFindOutliers = function(x, ...){
     out.study.fixed = x$studlab[mask.fixed]
     out.study.random = x$studlab[mask.random]
 
-    if (x$comb.fixed == TRUE & x$comb.random == FALSE){
+    if (x$common == TRUE & x$random == FALSE){
 
       if (length(out.study.fixed) < 1){
 
@@ -178,7 +178,7 @@ metapsyFindOutliers = function(x, ...){
 
     }
 
-    if (x$comb.fixed == FALSE & x$comb.random == TRUE){
+    if (x$common == FALSE & x$random == TRUE){
 
       if (length(out.study.random) < 1){
 
@@ -193,7 +193,7 @@ metapsyFindOutliers = function(x, ...){
 
     }
 
-    if (x$comb.fixed == TRUE & x$comb.random == TRUE){
+    if (x$common == TRUE & x$random == TRUE){
 
       if (length(out.study.fixed) < 1 & length(out.study.random) < 1){
 
