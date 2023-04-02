@@ -1313,8 +1313,14 @@ print.runMetaAnalysis = function(x, ...){
 #' @param x An object of class \code{runMetaAnalysis}.
 #' @param which Model to be plotted. Can be one of \code{"overall"},
 #' \code{"combined"}, \code{"lowest.highest"}, \code{"outliers"},
-#' \code{"influence"}, \code{"baujat"}, \code{"loo-es"}, \code{"loo-i2"},
+#' \code{"influence"}, \code{"threelevel"}, \code{"threelevel.che"},
+#' \code{"baujat"}, \code{"loo-es"}, \code{"loo-i2"},
 #' \code{"trimfill"}, \code{"limitmeta"} or \code{"selection"}.
+#' @param eb Prints a forest plot with empirical Bayes point estimates and study-specific
+#' prediction intervals as proposed by van Aert (2021). Defaults to `FALSE`.
+#' @param eb.labels If `eb` is `TRUE`, should the empirical Bayes estimates 
+#' and prediction intervals for each study be printed on the right side of the 
+#' forest plot? Defaults to `FALSE`.
 #' @param ... Additional arguments.
 #'
 #' @author Mathias Harrer \email{mathias.h.harrer@@gmail.com},
@@ -1332,327 +1338,343 @@ print.runMetaAnalysis = function(x, ...){
 #'
 #' @export
 #' @method plot runMetaAnalysis
+#' @references 
+#' van Aert, R. C., Schmid, C. H., Svensson, D., & Jackson, D. (2021). 
+#' Study specific prediction intervals for random-effects meta-analysis: A tutorial.
+#'  _Research Synthesis Methods, 12_(4), 429-447.
 
-plot.runMetaAnalysis = function(x, which = NULL, ...){
+plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE, 
+                                eb.labels = FALSE, ...){
 
-  models = list("overall" = "model.overall",
-                "lowest.highest" = c("model.lowest", "model.highest"),
-                "outliers" = "model.outliers", 
-                "influence" = "model.influence",
-                "rob" = "model.rob", 
-                "combined" = "model.combined",
-                "threelevel" = "model.threelevel",
-                "che" = "model.threelevel.che")
-  
-  models.which.run = list("overall" = "overall", 
-                          "combined" = "combined",
-                          "lowest.highest" = "lowest.highest", 
-                          "outliers" = "outliers",
-                          "influence" = "influence", 
-                          "rob" = "rob", 
-                          "threelevel" = "threelevel",
-                          "che" = "threelevel.che",
-                          "threelevel.che" = "threelevel.che")
-  
-  if (!is.null(which)){
-    if (!which %in% names(models.which.run[which])){
-      if (!which %in% c("selection", "baujat",
-                        "loo", "loo-es", "loo-i2", "trimfill",
-                        "limitmeta", "summary")){
-        stop("Model not available for plotting.")
-      }
-    } 
+  if (!is.logical(eb[1])){
+    stop("'eb' must be either TRUE or FALSE.")
   }
-
-  leftCols = c("studlab", "comparison.only", "instrument", "TE", "seTE")
-  leftColsRR = c("studlab", "comparison.only", "instrument")
-  leftLabs = c("Study", "Comparison", "Instrument", "g", "S.E.")
-  leftLabsRR = c("Study", "Comparison", "Instrument")
-
-  # print forest plot by default
-  if (is.null(which)){
-    if (models[[x$which.run[1]]][1] != "model.threelevel" &&
-        models[[x$which.run[1]]][1] != "model.threelevel.che"){
-      message("- ", crayon::green("[OK] "), 
-              "Generating forest plot ('", x$which.run[1], "' model).")
-      if (identical(x$.type.es, "RR")){
-        meta::forest.meta(x[[models[[x$which.run[1]]][1]]],
-                          layout = "JAMA", ...)
-      } else {
-        meta::forest.meta(x[[models[[x$which.run[1]]][1]]], 
-                          layout = "JAMA", ...)
-      }
-    }
-    if (models[[x$which.run[1]]][1] == "lowest.highest"){
-      message("- ", crayon::green("[OK] "), "Generating forest plot ('", 
-              "highest", "' model).")
-      if (identical(x$.type.es, "RR")){
-        meta::forest.meta(x$model.highest, 
-                          layout = "JAMA", ...)
-      } else {
-        meta::forest.meta(x$model.highest, 
-                          layout = "JAMA", ...)
-      }
-    }
-    if (models[[x$which.run[1]]][1] == "model.threelevel"){
-      if (identical(x$.type.es, "RR")){
-        metafor::forest.rma(x$model.threelevel, 
-                            transf = exp, ...)
-      } else {
-        metafor::forest.rma(x$model.threelevel, ...)
-      }
-    }
-    if (models[[x$which.run[1]]][1] == "model.threelevel.che"){
-      if (identical(x$.type.es, "RR")){
-        metafor::forest.rma(x$model.threelevel.che, 
-                            transf = exp, ...)
-      } else {
-        metafor::forest.rma(x$model.threelevel.che, ...)
-      }
-    }
-
-  } else {
-
-    if (which[1] == "overall"){
-      message("- ", crayon::green("[OK] "), 
-              "Generating forest plot ('overall' model).")
-      if (identical(x$.type.es, "RR")){
-        meta::forest.meta(x$model.overall, 
-                          layout = "JAMA",  ...)
-      } else {
-        meta::forest.meta(x$model.overall, 
-                          layout = "JAMA", ...)
-      }
-    }
-
-    if (which[1] == "lowest.highest"){
-      message("- ", crayon::green("[OK] "), 
-              "Generating forest plot ('lowest' model).")
-      if (identical(x$.type.es, "RR")){
-        meta::forest.meta(x$model.lowest, 
-                          layout = "JAMA", ...)
-      } else {
-        meta::forest.meta(x$model.lowest, 
-                          layout = "JAMA", ...)
-      }
-      message("- ", crayon::green("[OK] "), 
-              "Generating forest plot ('highest' model).")
-      if (identical(x$.type.es, "RR")){
-        meta::forest.meta(x$model.highest, 
-                          layout = "JAMA", ...)
-      } else {
-        meta::forest.meta(x$model.highest, 
-                          layout = "JAMA", ...)
-      }
-    }
-
-    if (which[1] == "outliers"){
-      message("- ", crayon::green("[OK] "), 
-              "Generating forest plot ('outliers' model).")
-      if (identical(x$.type.es, "RR")){
-        meta::forest.meta(x$model.outliers, 
-                          layout = "JAMA", ...)
-      } else {
-        meta::forest.meta(x$model.outliers, 
-                          layout = "JAMA", ...)
-      }
-    }
-
-    if (which[1] == "influence"){
-      message("- ", crayon::green("[OK] "), 
-              "Generating forest plot ('influence' model).")
-      if (identical(x$.type.es, "RR")){
-        meta::forest.meta(x$model.influence, 
-                          layout = "JAMA", ...)
-      } else {
-        meta::forest.meta(x$model.influence, 
-                          layout = "JAMA", ...)
-      }
-    }
-
-    if (which[1] == "rob"){
-      message("- ", crayon::green("[OK] "), 
-              "Generating forest plot ('rob' model).")
-      if (identical(x$.type.es, "RR")){
-        meta::forest.meta(x$model.rob, 
-                          layout = "JAMA", ...)
-      } else {
-        meta::forest.meta(x$model.rob, 
-                          layout = "JAMA", ...)
-      }
-    }
-
-    if (which[1] == "combined"){
-      message("- ", crayon::green("[OK] "), 
-              "Generating forest plot ('combined' model).")
-      if (identical(x$.type.es, "RR")){
-        meta::forest.meta(x$model.combined, 
-                          layout = "JAMA", ...)
-      } else {
-        meta::forest.meta(x$model.combined, 
-                          layout = "JAMA", ...)
-      }
-    }
-
-    if (which[1] == "threelevel"){
-      message("- ", crayon::green("[OK] "), 
-              "Generating forest plot ('threelevel' model).")
-      if (identical(x$.type.es, "RR")){
-        metafor::forest.rma(x$model.threelevel, transf = exp, ...)
-      } else {
-        metafor::forest.rma(x$model.threelevel, ...)
-      }
-    }
-
-    if (which[1] == "che"){
-      message("- ", crayon::green("[OK] "), 
-              "Generating forest plot ('threelevel.che' model).")
-      if (identical(x$.type.es, "RR")){
-        metafor::forest.rma(x$model.threelevel.che, transf = exp, ...)
-      } else {
-        metafor::forest.rma(x$model.threelevel.che, ...)
-      }
-    }
-
-    if (which[1] == "threelevel.che"){
-      message("- ", crayon::green("[OK] "), 
-              "Generating forest plot ('threelevel.che' model).")
-      if (identical(x$.type.es, "RR")){
-        metafor::forest.rma(x$model.threelevel.che, transf = exp, ...)
-      } else {
-        metafor::forest.rma(x$model.threelevel.che, ...)
-      }
-    }
-
-    if (which[1] == "baujat"){
-      if (!"influence" %in% x$which.run){
-        stop("Baujat plots are only available when influence analyses have",
-             " been conducted.")
-      }
-      message("- ", crayon::green("[OK] "), 
-              "Generating baujat plot.")
-      plot(x$influence.analysis$BaujatPlot)
-    }
-
-    if (which[1] == "loo" | which[1] == "loo-es"){
-      if (!"influence" %in% x$which.run){
-        stop("L-O-O plots are only available when influence analyses have",
-             " been conducted.")
-      }
-      message("- ", crayon::green("[OK] "), 
-              "Generating leave-one-out forest plot.")
-      suppressWarnings({plot(x$influence.analysis$ForestEffectSize)})
-    }
-
-    if (which[1] == "loo-i2"){
-      if (!"influence" %in% x$which.run){
-        stop("L-O-O plots are only available when influence analyses have",
-             " been conducted.")
-      }
-      message("- ", crayon::green("[OK] "), 
-              "Generating leave-one-out forest plot (sorted by I2).")
-      suppressWarnings({plot(x$influence.analysis$ForestI2)})
+  
+  if (!eb[1]){
+    models = list("overall" = "model.overall",
+                  "lowest.highest" = c("model.lowest", "model.highest"),
+                  "outliers" = "model.outliers", 
+                  "influence" = "model.influence",
+                  "rob" = "model.rob", 
+                  "combined" = "model.combined",
+                  "threelevel" = "model.threelevel",
+                  "che" = "model.threelevel.che")
+    
+    models.which.run = list("overall" = "overall", 
+                            "combined" = "combined",
+                            "lowest.highest" = "lowest.highest", 
+                            "outliers" = "outliers",
+                            "influence" = "influence", 
+                            "rob" = "rob", 
+                            "threelevel" = "threelevel",
+                            "che" = "threelevel.che",
+                            "threelevel.che" = "threelevel.che")
+    
+    if (!is.null(which)){
+      if (!which %in% names(models.which.run[which])){
+        if (!which %in% c("selection", "baujat",
+                          "loo", "loo-es", "loo-i2", "trimfill",
+                          "limitmeta", "summary")){
+          stop("Model not available for plotting.")
+        }
+      } 
     }
     
-    if (which[1] == "trimfill"){
-      if (is.null(x$correctPublicationBias)){
-        stop("No publication bias analysis results found.",
-             " Have you called correctPublicationBias()?")
-      }
-      message("- ", crayon::green("[OK] "), 
-              "Generating funnel plot for the trim-and-fill analysis.")
-      suppressWarnings({meta::funnel.meta(x$correctPublicationBias$model.trimfill)})
-    }
+    leftCols = c("studlab", "comparison.only", "instrument", "TE", "seTE")
+    leftColsRR = c("studlab", "comparison.only", "instrument")
+    leftLabs = c("Study", "Comparison", "Instrument", "g", "S.E.")
+    leftLabsRR = c("Study", "Comparison", "Instrument")
     
-    if (which[1] == "limitmeta"){
-      if (is.null(x$correctPublicationBias)){
-        stop("No publication bias analysis results found.",
-             " Have you called correctPublicationBias()?")
-      }
-      message("- ", crayon::green("[OK] "), 
-              "Generating funnel plot for the limit meta-analysis.")
-      suppressWarnings({
-        metasens::funnel.limitmeta(
-          x$correctPublicationBias$model.limitmeta)})
-    }
-    
-    if (which[1] == "selection"){
-      if (is.null(x$correctPublicationBias)){
-        stop("No publication bias analysis results found.",
-             " Have you called correctPublicationBias()?")
-      }
-      if (inherits(x$correctPublicationBias$model.selection, "try-error")){
-        stop("Selection model could not be calculated.", 
-             " Plot cannot be generated.")
-      } else {
+    # print forest plot by default
+    if (is.null(which)){
+      if (models[[x$which.run[1]]][1] != "model.threelevel" &&
+          models[[x$which.run[1]]][1] != "model.threelevel.che"){
         message("- ", crayon::green("[OK] "), 
-                "Generating selection model likelihood plot.")
+                "Generating forest plot ('", x$which.run[1], "' model).")
+        if (identical(x$.type.es, "RR")){
+          meta::forest.meta(x[[models[[x$which.run[1]]][1]]],
+                            layout = "JAMA", ...)
+        } else {
+          meta::forest.meta(x[[models[[x$which.run[1]]][1]]], 
+                            layout = "JAMA", ...)
+        }
+      }
+      if (models[[x$which.run[1]]][1] == "lowest.highest"){
+        message("- ", crayon::green("[OK] "), "Generating forest plot ('", 
+                "highest", "' model).")
+        if (identical(x$.type.es, "RR")){
+          meta::forest.meta(x$model.highest, 
+                            layout = "JAMA", ...)
+        } else {
+          meta::forest.meta(x$model.highest, 
+                            layout = "JAMA", ...)
+        }
+      }
+      if (models[[x$which.run[1]]][1] == "model.threelevel"){
+        if (identical(x$.type.es, "RR")){
+          metafor::forest.rma(x$model.threelevel, 
+                              transf = exp, ...)
+        } else {
+          metafor::forest.rma(x$model.threelevel, ...)
+        }
+      }
+      if (models[[x$which.run[1]]][1] == "model.threelevel.che"){
+        if (identical(x$.type.es, "RR")){
+          metafor::forest.rma(x$model.threelevel.che, 
+                              transf = exp, ...)
+        } else {
+          metafor::forest.rma(x$model.threelevel.che, ...)
+        }
+      }
+      
+    } else {
+      
+      if (which[1] == "overall"){
+        message("- ", crayon::green("[OK] "), 
+                "Generating forest plot ('overall' model).")
+        if (identical(x$.type.es, "RR")){
+          meta::forest.meta(x$model.overall, 
+                            layout = "JAMA",  ...)
+        } else {
+          meta::forest.meta(x$model.overall, 
+                            layout = "JAMA", ...)
+        }
+      }
+      
+      if (which[1] == "lowest.highest"){
+        message("- ", crayon::green("[OK] "), 
+                "Generating forest plot ('lowest' model).")
+        if (identical(x$.type.es, "RR")){
+          meta::forest.meta(x$model.lowest, 
+                            layout = "JAMA", ...)
+        } else {
+          meta::forest.meta(x$model.lowest, 
+                            layout = "JAMA", ...)
+        }
+        message("- ", crayon::green("[OK] "), 
+                "Generating forest plot ('highest' model).")
+        if (identical(x$.type.es, "RR")){
+          meta::forest.meta(x$model.highest, 
+                            layout = "JAMA", ...)
+        } else {
+          meta::forest.meta(x$model.highest, 
+                            layout = "JAMA", ...)
+        }
+      }
+      
+      if (which[1] == "outliers"){
+        message("- ", crayon::green("[OK] "), 
+                "Generating forest plot ('outliers' model).")
+        if (identical(x$.type.es, "RR")){
+          meta::forest.meta(x$model.outliers, 
+                            layout = "JAMA", ...)
+        } else {
+          meta::forest.meta(x$model.outliers, 
+                            layout = "JAMA", ...)
+        }
+      }
+      
+      if (which[1] == "influence"){
+        message("- ", crayon::green("[OK] "), 
+                "Generating forest plot ('influence' model).")
+        if (identical(x$.type.es, "RR")){
+          meta::forest.meta(x$model.influence, 
+                            layout = "JAMA", ...)
+        } else {
+          meta::forest.meta(x$model.influence, 
+                            layout = "JAMA", ...)
+        }
+      }
+      
+      if (which[1] == "rob"){
+        message("- ", crayon::green("[OK] "), 
+                "Generating forest plot ('rob' model).")
+        if (identical(x$.type.es, "RR")){
+          meta::forest.meta(x$model.rob, 
+                            layout = "JAMA", ...)
+        } else {
+          meta::forest.meta(x$model.rob, 
+                            layout = "JAMA", ...)
+        }
+      }
+      
+      if (which[1] == "combined"){
+        message("- ", crayon::green("[OK] "), 
+                "Generating forest plot ('combined' model).")
+        if (identical(x$.type.es, "RR")){
+          meta::forest.meta(x$model.combined, 
+                            layout = "JAMA", ...)
+        } else {
+          meta::forest.meta(x$model.combined, 
+                            layout = "JAMA", ...)
+        }
+      }
+      
+      if (which[1] == "threelevel"){
+        message("- ", crayon::green("[OK] "), 
+                "Generating forest plot ('threelevel' model).")
+        if (identical(x$.type.es, "RR")){
+          metafor::forest.rma(x$model.threelevel, transf = exp, ...)
+        } else {
+          metafor::forest.rma(x$model.threelevel, ...)
+        }
+      }
+      
+      if (which[1] == "che"){
+        message("- ", crayon::green("[OK] "), 
+                "Generating forest plot ('threelevel.che' model).")
+        if (identical(x$.type.es, "RR")){
+          metafor::forest.rma(x$model.threelevel.che, transf = exp, ...)
+        } else {
+          metafor::forest.rma(x$model.threelevel.che, ...)
+        }
+      }
+      
+      if (which[1] == "threelevel.che"){
+        message("- ", crayon::green("[OK] "), 
+                "Generating forest plot ('threelevel.che' model).")
+        if (identical(x$.type.es, "RR")){
+          metafor::forest.rma(x$model.threelevel.che, transf = exp, ...)
+        } else {
+          metafor::forest.rma(x$model.threelevel.che, ...)
+        }
+      }
+      
+      if (which[1] == "baujat"){
+        if (!"influence" %in% x$which.run){
+          stop("Baujat plots are only available when influence analyses have",
+               " been conducted.")
+        }
+        message("- ", crayon::green("[OK] "), 
+                "Generating baujat plot.")
+        plot(x$influence.analysis$BaujatPlot)
+      }
+      
+      if (which[1] == "loo" | which[1] == "loo-es"){
+        if (!"influence" %in% x$which.run){
+          stop("L-O-O plots are only available when influence analyses have",
+               " been conducted.")
+        }
+        message("- ", crayon::green("[OK] "), 
+                "Generating leave-one-out forest plot.")
+        suppressWarnings({plot(x$influence.analysis$ForestEffectSize)})
+      }
+      
+      if (which[1] == "loo-i2"){
+        if (!"influence" %in% x$which.run){
+          stop("L-O-O plots are only available when influence analyses have",
+               " been conducted.")
+        }
+        message("- ", crayon::green("[OK] "), 
+                "Generating leave-one-out forest plot (sorted by I2).")
+        suppressWarnings({plot(x$influence.analysis$ForestI2)})
+      }
+      
+      if (which[1] == "trimfill"){
+        if (is.null(x$correctPublicationBias)){
+          stop("No publication bias analysis results found.",
+               " Have you called correctPublicationBias()?")
+        }
+        message("- ", crayon::green("[OK] "), 
+                "Generating funnel plot for the trim-and-fill analysis.")
+        suppressWarnings({meta::funnel.meta(x$correctPublicationBias$model.trimfill)})
+      }
+      
+      if (which[1] == "limitmeta"){
+        if (is.null(x$correctPublicationBias)){
+          stop("No publication bias analysis results found.",
+               " Have you called correctPublicationBias()?")
+        }
+        message("- ", crayon::green("[OK] "), 
+                "Generating funnel plot for the limit meta-analysis.")
         suppressWarnings({
-          metafor::plot.rma.uni.selmodel(x$correctPublicationBias$model.selection,
-                                         xlim = c(0, 0.2))})
+          metasens::funnel.limitmeta(
+            x$correctPublicationBias$model.limitmeta)})
+      }
+      
+      if (which[1] == "selection"){
+        if (is.null(x$correctPublicationBias)){
+          stop("No publication bias analysis results found.",
+               " Have you called correctPublicationBias()?")
+        }
+        if (inherits(x$correctPublicationBias$model.selection, "try-error")){
+          stop("Selection model could not be calculated.", 
+               " Plot cannot be generated.")
+        } else {
+          message("- ", crayon::green("[OK] "), 
+                  "Generating selection model likelihood plot.")
+          suppressWarnings({
+            metafor::plot.rma.uni.selmodel(x$correctPublicationBias$model.selection,
+                                           xlim = c(0, 0.2))})
+        }
+      }
+      
+      if (which[1] == "summary"){
+        
+        models = list("overall" = 1, "lowest.highest" = c(2,3), "outliers" = 4,
+                      "influence" = 5, "rob" = 6, "combined" = 7, "threelevel" = 8,
+                      "threelevel.che" = 9)
+        
+        x$summary = x$summary[unlist(models[x$which.run]),]
+        
+        if (x$.type.es == "RR"){
+          stringr::str_replace_all(x$summary$rr.ci, ";|\\]|\\[", "") %>%
+            strsplit(" ") %>% 
+            purrr::map(~as.numeric(.)) %>% do.call(rbind,.) %>%
+            {colnames(.) = c("lower", "upper");.} %>%
+            cbind(model = rownames(x$summary), rr = x$summary$rr,
+                  i2 = round(x$summary$i2,1) %>% format(1), .) %>%
+            data.frame() %>%
+            dplyr::mutate(rr = as.numeric(rr) %>% log(),
+                          lower = as.numeric(lower) %>% log(),
+                          upper = as.numeric(upper) %>% log()) %>%
+            meta::metagen(TE = rr, 
+                          lower = lower - 1e-50, 
+                          upper = upper + 1e-50, 
+                          studlab = model, sm = "RR",
+                          data = .) %>%
+            meta::forest.meta(
+              col.square = "lightblue",
+              rightcols = FALSE,
+              overall.hetstat = FALSE,
+              weight.study = "same",
+              test.overall = FALSE, overall = FALSE,
+              leftcols = c("studlab", "effect", "ci", "i2"),
+              leftlabs = c(expression(bold(Model)), 
+                           expression(bold(RR)),
+                           expression(bold(CI)),
+                           expression(bold(italic(I)^2)))) %>%
+            suppressWarnings()
+        } else {
+          stringr::str_replace_all(x$summary$g.ci, ";|\\]|\\[", "") %>%
+            strsplit(" ") %>% purrr::map(~as.numeric(.)) %>% do.call(rbind,.) %>%
+            {colnames(.) = c("lower", "upper");.} %>%
+            cbind(model = rownames(x$summary), g = x$summary$g,
+                  i2 = round(x$summary$i2,1) %>% format(1), .) %>%
+            data.frame() %>%
+            dplyr::mutate(g = as.numeric(g),
+                          lower = as.numeric(lower) - 1e-50,
+                          upper = as.numeric(upper) + 1e-50) %>%
+            meta::metagen(TE = g, lower = lower, upper = upper, studlab = model,
+                          data = .) %>%
+            meta::forest.meta(col.square = "lightblue",
+                              rightcols = FALSE,
+                              overall.hetstat = FALSE,
+                              weight.study = "same",
+                              test.overall = FALSE, overall = FALSE,
+                              leftcols = c("studlab", "TE", "ci", "i2"),
+                              leftlabs = c(expression(bold(Model)), expression(bold(g)),
+                                           expression(bold(CI)),
+                                           expression(bold(italic(I)^2)))) %>%
+            suppressWarnings()
+        }
       }
     }
-
-    if (which[1] == "summary"){
-
-      models = list("overall" = 1, "lowest.highest" = c(2,3), "outliers" = 4,
-                    "influence" = 5, "rob" = 6, "combined" = 7, "threelevel" = 8,
-                    "threelevel.che" = 9)
-
-      x$summary = x$summary[unlist(models[x$which.run]),]
-      
-      if (x$.type.es == "RR"){
-        stringr::str_replace_all(x$summary$rr.ci, ";|\\]|\\[", "") %>%
-          strsplit(" ") %>% 
-          purrr::map(~as.numeric(.)) %>% do.call(rbind,.) %>%
-          {colnames(.) = c("lower", "upper");.} %>%
-          cbind(model = rownames(x$summary), rr = x$summary$rr,
-                i2 = round(x$summary$i2,1) %>% format(1), .) %>%
-          data.frame() %>%
-          dplyr::mutate(rr = as.numeric(rr) %>% log(),
-                        lower = as.numeric(lower) %>% log(),
-                        upper = as.numeric(upper) %>% log()) %>%
-          meta::metagen(TE = rr, 
-                        lower = lower - 1e-50, 
-                        upper = upper + 1e-50, 
-                        studlab = model, sm = "RR",
-                        data = .) %>%
-          meta::forest.meta(
-            col.square = "lightblue",
-            rightcols = FALSE,
-            overall.hetstat = FALSE,
-            weight.study = "same",
-            test.overall = FALSE, overall = FALSE,
-            leftcols = c("studlab", "effect", "ci", "i2"),
-            leftlabs = c(expression(bold(Model)), 
-                         expression(bold(RR)),
-                         expression(bold(CI)),
-                         expression(bold(italic(I)^2)))) %>%
-          suppressWarnings()
-      } else {
-        stringr::str_replace_all(x$summary$g.ci, ";|\\]|\\[", "") %>%
-          strsplit(" ") %>% purrr::map(~as.numeric(.)) %>% do.call(rbind,.) %>%
-          {colnames(.) = c("lower", "upper");.} %>%
-          cbind(model = rownames(x$summary), g = x$summary$g,
-                i2 = round(x$summary$i2,1) %>% format(1), .) %>%
-          data.frame() %>%
-          dplyr::mutate(g = as.numeric(g),
-                        lower = as.numeric(lower) - 1e-50,
-                        upper = as.numeric(upper) + 1e-50) %>%
-          meta::metagen(TE = g, lower = lower, upper = upper, studlab = model,
-                        data = .) %>%
-          meta::forest.meta(col.square = "lightblue",
-                            rightcols = FALSE,
-                            overall.hetstat = FALSE,
-                            weight.study = "same",
-                            test.overall = FALSE, overall = FALSE,
-                            leftcols = c("studlab", "TE", "ci", "i2"),
-                            leftlabs = c(expression(bold(Model)), expression(bold(g)),
-                                         expression(bold(CI)),
-                                         expression(bold(italic(I)^2)))) %>%
-          suppressWarnings()
-      }
-  }
+  } else {
+    dots = list(...)
+    argsList = append(list(model = x, which = which, 
+                           eb.labels = eb.labels), dots)
+    do.call(forestBlup, argsList)
   }
 }
 
@@ -2019,8 +2041,292 @@ summary.runMetaAnalysis = function(object, forest = TRUE, ...){
 
 
 
+#' Best Linear Unbiased Predictions (BLUPs) for 'runMetaAnalysis' models.
+#' 
+#' Generates empirical Bayes (EB) estimates, also known as best linear unbiased 
+#' predictions (BLUPs), by merging the fitted values obtained from fixed effects 
+#' and estimated contributions of random effects. These estimates represent 
+#' the study-specific true effect sizes or outcomes and are accompanied by 
+#' standard errors and prediction interval bounds. Uses the [metafor::blup.rma.uni()] function
+#' internally.
+#' 
+#' @param x An object of class \code{runMetaAnalysis}.
+#' @param which Model for which estimates should be printed. Can be one of \code{"overall"},
+#' \code{"combined"}, \code{"lowest.highest"}, \code{"outliers"},
+#' \code{"influence"}, \code{"threelevel"}, or \code{"threelevel.che"}.
+#' @param ... Additional arguments.
+#' 
+#' @importFrom crayon green yellow
+#' @importFrom dplyr select ends_with filter group_map group_by
+#' @importFrom stringr str_replace_all str_remove_all
+#' @importFrom metafor rma.uni blup.rma.uni
+#' @importFrom clubSandwich conf_int
+#' @export
+#' @method eb runMetaAnalysis
+eb.runMetaAnalysis = function(x, which = NULL, ...){
+  
+  model = x
+  
+  # Check overall compatibility
+  if (is.null(which[1])){
+    which.run = model$which.run[1]
+  } else {
+    if (!which %in% model$which.run){
+      stop("argument 'which' must be one of ",
+           paste(model$which.run, collapse=", "), ".")
+    } else {
+      which.run = which
+    }
+  }
+  
+  
+  if (which.run %in% c("trimfill", "limitmeta", "selection")){
+    stop("Empirical Bayes estimates are not supported for '",
+         which.run, "' models.")
+  }
+  
+  
+  # Switch to combined if three-level was used
+  threeLevel = FALSE
+  M.3l = NULL
+  if (which.run %in% c("threelevel", "threelevel.che")){
+    threeLevel = TRUE
+    whichThreeLevel = which.run
+    which.run = "combined"
+    if (!which.run %in% model$which.run){
+      stop("Model 'combined' not found. To generate an empirical",
+           " Bayes estimates for a three-level model,",
+           " make sure that 'which.run' includes 'combined'.")
+    }
+  }
+  
+  # Transform model to metafor
+  models = list("overall" = "model.overall",
+                "lowest.highest" = c("model.lowest", "model.highest"),
+                "outliers" = "model.outliers",
+                "influence" = "model.influence",
+                "rob" = "model.rob",
+                "combined" = "model.combined",
+                "threelevel" = "model.threelevel",
+                "che" = "model.threelevel.che",
+                "threelevel.che" = "model.threelevel.che")
+  
+  if (identical(which.run[1], "lowest.highest")){
+    
+    # Generate "lowest" plot
+    M = model[models[[which.run[1]]]][[1]]
+    if (!is.null(M$exclude)){
+      M$data = M$data[!M$exclude,]
+    }
+    dat = escalc(yi=.TE, sei=.seTE, data = M$data)
+    res = metafor::rma(yi = .TE, sei = .seTE, dat = dat, slab = .studlab,
+                       method = M$method.tau, test = ifelse(M$hakn, "knha", "z"))
+    lowest = metafor::blup(res)
+    
+    # Generate "highest" plot
+    M = model[models[[which.run[1]]]][[2]]
+    if (!is.null(M$exclude)){
+      M$data = M$data[!M$exclude,]
+    }
+    dat = escalc(yi=.TE, sei=.seTE, data = M$data)
+    res = metafor::rma(yi = .TE, sei = .seTE, dat = dat, slab = .studlab,
+                       method = M$method.tau, test = ifelse(M$hakn, "knha", "z"))
+    highest = metafor::blup(res)
+    
+    message("- ", crayon::green("[OK] "), 
+            "Calculated EB estimates/BLUPs ('", which.run,"' model).")
+    
+    return(list(lowest = lowest, 
+                highest = highest))
+    
+    
+  } else {
+    
+    M = model[models[[which.run[1]]]][[1]]
+    if (!is.null(M$exclude)){
+      M$data = M$data[!M$exclude,]
+    }
+    if (threeLevel) {
+      warning("Empirical Bayes estimates are not available for three-level models.",
+              " Values were calculated for the 'combined' model.")
+    }
+    dat = escalc(yi=.TE, sei=.seTE, data = M$data)
+    res = metafor::rma(yi = .TE, sei = .seTE, dat = dat, slab = .studlab,
+                       method = M$method.tau, test = ifelse(M$hakn, "knha", "z"))
+    
+    message("- ", crayon::green("[OK] "), 
+            "Calculated EB estimates/BLUPs ('", which.run,"' model).")
+    return(metafor::blup(res))
+  }
+}
 
 
+
+#' Best Linear Unbiased Predictions (BLUPs) for 'runMetaAnalysis' models.
+#' 
+#' Generates empirical Bayes (EB) estimates, also known as best linear unbiased 
+#' predictions (BLUPs), by merging the fitted values obtained from fixed effects 
+#' and estimated contributions of random effects. These estimates represent 
+#' the study-specific true effect sizes or outcomes and are accompanied by 
+#' standard errors and prediction interval bounds. Uses the [metafor::blup.rma.uni()] function
+#' internally.
+#' 
+#' @param x An object of class \code{runMetaAnalysis}.
+#' @param which Model for which estimates should be printed. Can be one of \code{"overall"},
+#' \code{"combined"}, \code{"lowest.highest"}, \code{"outliers"},
+#' \code{"influence"}, \code{"threelevel"}, or \code{"threelevel.che"}.
+#' @param ... Additional arguments.
+#' 
+#' @importFrom crayon green yellow
+#' @importFrom dplyr select ends_with filter group_map group_by
+#' @importFrom stringr str_replace_all str_remove_all
+#' @importFrom metafor rma.uni blup.rma.uni
+#' @importFrom clubSandwich conf_int
+#' @export
+#' @method blup runMetaAnalysis
+blup.runMetaAnalysis = function(x, which = NULL, ...){
+  
+  model = x
+  
+  # Check overall compatibility
+  if (is.null(which[1])){
+    which.run = model$which.run[1]
+  } else {
+    if (!which %in% model$which.run){
+      stop("argument 'which' must be one of ",
+           paste(model$which.run, collapse=", "), ".")
+    } else {
+      which.run = which
+    }
+  }
+  
+  
+  if (which.run %in% c("trimfill", "limitmeta", "selection")){
+    stop("Empirical Bayes estimates are not supported for '",
+         which.run, "' models.")
+  }
+  
+  
+  # Switch to combined if three-level was used
+  threeLevel = FALSE
+  M.3l = NULL
+  if (which.run %in% c("threelevel", "threelevel.che")){
+    threeLevel = TRUE
+    whichThreeLevel = which.run
+    which.run = "combined"
+    if (!which.run %in% model$which.run){
+      stop("Model 'combined' not found. To generate an empirical",
+           " Bayes estimates for a three-level model,",
+           " make sure that 'which.run' includes 'combined'.")
+    }
+  }
+  
+  # Transform model to metafor
+  models = list("overall" = "model.overall",
+                "lowest.highest" = c("model.lowest", "model.highest"),
+                "outliers" = "model.outliers",
+                "influence" = "model.influence",
+                "rob" = "model.rob",
+                "combined" = "model.combined",
+                "threelevel" = "model.threelevel",
+                "che" = "model.threelevel.che",
+                "threelevel.che" = "model.threelevel.che")
+  
+  if (identical(which.run[1], "lowest.highest")){
+    
+    # Generate "lowest" plot
+    M = model[models[[which.run[1]]]][[1]]
+    if (!is.null(M$exclude)){
+      M$data = M$data[!M$exclude,]
+    }
+    dat = escalc(yi=.TE, sei=.seTE, data = M$data)
+    res = metafor::rma(yi = .TE, sei = .seTE, dat = dat, slab = .studlab,
+                       method = M$method.tau, test = ifelse(M$hakn, "knha", "z"))
+    lowest = metafor::blup(res)
+    
+    # Generate "highest" plot
+    M = model[models[[which.run[1]]]][[2]]
+    if (!is.null(M$exclude)){
+      M$data = M$data[!M$exclude,]
+    }
+    dat = escalc(yi=.TE, sei=.seTE, data = M$data)
+    res = metafor::rma(yi = .TE, sei = .seTE, dat = dat, slab = .studlab,
+                       method = M$method.tau, test = ifelse(M$hakn, "knha", "z"))
+    highest = metafor::blup(res)
+    
+    message("- ", crayon::green("[OK] "), 
+            "Calculated EB estimates/BLUPs ('", which.run,"' model).")
+    
+    return(list(lowest = lowest, 
+                highest = highest))
+    
+    
+  } else {
+    
+    M = model[models[[which.run[1]]]][[1]]
+    if (!is.null(M$exclude)){
+      M$data = M$data[!M$exclude,]
+    }
+    if (threeLevel) {
+      warning("Empirical Bayes estimates are not available for three-level models.",
+              " Values were calculated for the 'combined' model.")
+    }
+    dat = escalc(yi=.TE, sei=.seTE, data = M$data)
+    res = metafor::rma(yi = .TE, sei = .seTE, dat = dat, slab = .studlab,
+                       method = M$method.tau, test = ifelse(M$hakn, "knha", "z"))
+    
+    message("- ", crayon::green("[OK] "), 
+            "Calculated EB estimates/BLUPs ('", which.run,"' model).")
+    return(metafor::blup(res))
+  }
+}
+
+
+
+#' Profile Likelihood Plots for 'runMetaAnalysis' models.
+#' 
+#' Profiles the restricted log-likelihood of `threelevel` and `threelevel.che`
+#' models, using the [metafor::profile.rma()] function. This functionality
+#' can be used to check if the two heterogeneity variances (\mjeqn{\tau^2}{\tau^2} within 
+#' and between studies) were identifiable and correctly estimated.
+#' 
+#' @param fitted An object of class \code{runMetaAnalysis}.
+#' @param which Model for which estimates should be printed. Can be one of \code{"threelevel"} 
+#' or \code{"threelevel.che"}.
+#' @param ... Additional arguments.
+#' 
+#' @importFrom crayon green yellow
+#' @importFrom dplyr select ends_with filter group_map group_by
+#' @importFrom stringr str_replace_all str_remove_all
+#' @importFrom metafor rma.uni profile.rma.mv
+#' @export
+#' @method profile runMetaAnalysis
+
+profile.runMetaAnalysis = function(fitted, which = NULL, ...){
+  
+  x = fitted
+  models = list("threelevel" = "model.threelevel",
+                "threelevel.che" = "model.threelevel.che")
+  
+  if(is.null(which)){
+    if (sum(x$which.run %in% c("threelevel", "threelevel.che")) == 0){
+      stop("Either 'threelevel' or 'threelevel.che' needed in the 'runMetaAnalysis' model.")
+    }
+    which.run = x$which.run[x$which.run %in% c("threelevel", "threelevel.che")][1]
+    message("- ", crayon::green("[OK] "), 
+            "Generating profile likelihood plot ('", which.run,"' model).")
+    metafor::profile.rma.mv(x[models[[which.run]]][[1]])
+    
+  } else {
+    if (!which[1] %in% x$which.run){
+      stop("Either 'threelevel' or 'threelevel.che' needed in the 'runMetaAnalysis' model.")
+    }
+    which.run = which
+    message("- ", crayon::green("[OK] "), 
+            "Generating profile likelihood plot ('", which.run,"' model).")
+    metafor::profile.rma.mv(x[models[[which.run]]][[1]])
+  }
+}
 
 
 

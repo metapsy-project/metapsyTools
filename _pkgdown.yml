@@ -71,8 +71,11 @@ reference:
 - title: "S3 Methods & Helper Functions"
   desc: "Additional functionality for core functions."
   contents:
-  - starts_with("metapsy")
+  - blup.runMetaAnalysis
+  - eb.runMetaAnalysis
   - imputeResponse
+  - starts_with("metapsy")
+  - profile.runMetaAnalysis
   - proportionMID
   - starts_with("plot")
   - starts_with("print")

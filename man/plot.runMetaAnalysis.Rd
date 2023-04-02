@@ -4,20 +4,33 @@
 \alias{plot.runMetaAnalysis}
 \title{Plot method for objects of class 'runMetaAnalysis'}
 \usage{
-\method{plot}{runMetaAnalysis}(x, which = NULL, ...)
+\method{plot}{runMetaAnalysis}(x, which = NULL, eb = FALSE, eb.labels = FALSE, ...)
 }
 \arguments{
 \item{x}{An object of class \code{runMetaAnalysis}.}
 
 \item{which}{Model to be plotted. Can be one of \code{"overall"},
 \code{"combined"}, \code{"lowest.highest"}, \code{"outliers"},
-\code{"influence"}, \code{"baujat"}, \code{"loo-es"}, \code{"loo-i2"},
+\code{"influence"}, \code{"threelevel"}, \code{"threelevel.che"},
+\code{"baujat"}, \code{"loo-es"}, \code{"loo-i2"},
 \code{"trimfill"}, \code{"limitmeta"} or \code{"selection"}.}
+
+\item{eb}{Prints a forest plot with empirical Bayes point estimates and study-specific
+prediction intervals as proposed by van Aert (2021). Defaults to \code{FALSE}.}
+
+\item{eb.labels}{If \code{eb} is \code{TRUE}, should the empirical Bayes estimates
+and prediction intervals for each study be printed on the right side of the
+forest plot? Defaults to \code{FALSE}.}
 
 \item{...}{Additional arguments.}
 }
 \description{
 Plot S3 method for objects of class \code{runMetaAnalysis}.
+}
+\references{
+van Aert, R. C., Schmid, C. H., Svensson, D., & Jackson, D. (2021).
+Study specific prediction intervals for random-effects meta-analysis: A tutorial.
+\emph{Research Synthesis Methods, 12}(4), 429-447.
 }
 \author{
 Mathias Harrer \email{mathias.h.harrer@gmail.com},

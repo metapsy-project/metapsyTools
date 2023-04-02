@@ -70,6 +70,12 @@
     <loc>/reference/binaryRR.html</loc>
   </url>
   <url>
+    <loc>/reference/blup.html</loc>
+  </url>
+  <url>
+    <loc>/reference/blup.runMetaAnalysis.html</loc>
+  </url>
+  <url>
     <loc>/reference/calculateEffectSizes.html</loc>
   </url>
   <url>
@@ -95,6 +101,12 @@
   </url>
   <url>
     <loc>/reference/depressionPsyCtr.html</loc>
+  </url>
+  <url>
+    <loc>/reference/eb.html</loc>
+  </url>
+  <url>
+    <loc>/reference/eb.runMetaAnalysis.html</loc>
   </url>
   <url>
     <loc>/reference/expandMultiarmTrials.html</loc>
@@ -140,6 +152,12 @@
   </url>
   <url>
     <loc>/reference/fitThreeLevelModel.html</loc>
+  </url>
+  <url>
+    <loc>/reference/forestBlup.html</loc>
+  </url>
+  <url>
+    <loc>/reference/forestBlupPlotter.html</loc>
   </url>
   <url>
     <loc>/reference/g.binary.html</loc>
@@ -224,6 +242,9 @@
   </url>
   <url>
     <loc>/reference/print.subgroupAnalysis.html</loc>
+  </url>
+  <url>
+    <loc>/reference/profile.runMetaAnalysis.html</loc>
   </url>
   <url>
     <loc>/reference/proportionMID.html</loc>

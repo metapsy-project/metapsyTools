@@ -3338,3 +3338,265 @@ addAllCombinations =
   }
 
 
+
+#' Function to generate forest plots with EB estimates
+#' @importFrom crayon green yellow
+#' @importFrom dplyr select ends_with filter group_map group_by
+#' @importFrom stringr str_replace_all str_remove_all
+#' @importFrom metafor rma.uni
+#' @importFrom clubSandwich conf_int
+#' @importFrom stats coef weights
+#' @keywords internal 
+forestBlup = function(model, which = NULL, col.line = "#a7a9ac",
+                      col.polygon = "#6b58a6", leftlab = "Study",
+                      rightlab = "g [95% CI]", summarylab = "Total (95% CI)",
+                      sort = TRUE, hetstat = TRUE, eb.labels = TRUE){
+  
+  # Check overall compatibility
+  if (is.null(which[1])){
+    which.run = model$which.run[1]
+  } else {
+    if (!which %in% model$which.run){
+      stop("argument 'which' must be one of ",
+           paste(model$which.run, collapse=", "), ".")
+    } else {
+      which.run = which
+    }
+  }
+  
+  
+  if (which.run %in% c("trimfill", "limitmeta", "selection")){
+    stop("Forest plots with empirical Bayes estimates or not supported for '",
+         which.run, "' models.")
+  }
+  
+  
+  # Switch to combined if three-level was used
+  threeLevel = FALSE
+  M.3l = NULL
+  if (which.run %in% c("threelevel", "threelevel.che")){
+    threeLevel = TRUE
+    whichThreeLevel = which.run
+    which.run = "combined"
+    if (!which.run %in% model$which.run){
+      stop("Model 'combined' not found. To generate an empirical",
+           " Bayes plot for a three-level model,",
+           " make sure that 'which.run' includes 'combined'.")
+    }
+  }
+  
+  # Transform model to metafor
+  models = list("overall" = "model.overall",
+                "lowest.highest" = c("model.lowest", "model.highest"),
+                "outliers" = "model.outliers",
+                "influence" = "model.influence",
+                "rob" = "model.rob",
+                "combined" = "model.combined",
+                "threelevel" = "model.threelevel",
+                "che" = "model.threelevel.che",
+                "threelevel.che" = "model.threelevel.che")
+  
+  if (identical(which.run[1], "lowest.highest")){
+    
+    # Generate "lowest" plot
+    M = model[models[[which.run[1]]]][[1]]
+    if (!is.null(M$exclude)){
+      M$data = M$data[!M$exclude,]
+    }
+    dat = escalc(yi=.TE, sei=.seTE, data = M$data)
+    res = metafor::rma(yi = .TE, sei = .seTE, dat = dat, slab = .studlab,
+                       method = M$method.tau, test = ifelse(M$hakn, "knha", "z"))
+    forestBlupPlotter(dat, res, sort, col.line, col.polygon,
+                      hetstat, leftlab, rightlab, summarylab, M.3l,
+                      threeLevel, eb.labels)
+    title("Lowest")
+    
+    # Generate "highest" plot
+    M = model[models[[which.run[1]]]][[2]]
+    if (!is.null(M$exclude)){
+      M$data = M$data[!M$exclude,]
+    }
+    dat = escalc(yi=.TE, sei=.seTE, data = M$data)
+    res = metafor::rma(yi = .TE, sei = .seTE, dat = dat, slab = .studlab,
+                       method = M$method.tau, test = ifelse(M$hakn, "knha", "z"))
+    forestBlupPlotter(dat, res, sort, col.line, col.polygon,
+                      hetstat, leftlab, rightlab, summarylab, M.3l,
+                      threeLevel, eb.labels)
+    title("Highest")
+    
+  } else {
+    
+    M = model[models[[which.run[1]]]][[1]]
+    if (!is.null(M$exclude)){
+      M$data = M$data[!M$exclude,]
+    }
+    if (threeLevel) {
+      M.3l = model[models[[whichThreeLevel[1]]]][[1]]
+    }
+    dat = escalc(yi=.TE, sei=.seTE, data = M$data)
+    res = metafor::rma(yi = .TE, sei = .seTE, dat = dat, slab = .studlab,
+                       method = M$method.tau, test = ifelse(M$hakn, "knha", "z"))
+  
+    if (threeLevel){
+      message("- ", crayon::green("[OK] "), 
+              "Generating forest plot ('", whichThreeLevel,"' model).")
+    } else {
+      message("- ", crayon::green("[OK] "), 
+              "Generating forest plot ('", which.run,"' model).")
+    }
+    forestBlupPlotter(dat, res, sort, col.line, col.polygon,
+                      hetstat, leftlab, rightlab, summarylab, M.3l,
+                      threeLevel, eb.labels)
+  }
+}
+
+
+#' Internal helper function to generate forest plots with EB estimates
+#' @importFrom crayon green yellow
+#' @importFrom dplyr select ends_with filter group_map group_by
+#' @importFrom stringr str_replace_all str_remove_all
+#' @importFrom stats dffits model.matrix rnorm rstudent coef weights
+#' @importFrom utils combn
+#' @importFrom metafor rma.uni blup.rma.uni addpoly
+#' @importFrom clubSandwich conf_int
+#' @importFrom graphics arrows
+#' @keywords internal 
+#' @details Parts of the code in this function is based on van Aert et al. (2021; Supplement).
+#' @references 
+#' van Aert, R. C., Schmid, C. H., Svensson, D., & Jackson, D. (2021). 
+#' Study specific prediction intervals for random-effects meta-analysis: A tutorial: 
+#' Prediction intervals in meta-analysis. _Research Synthesis Methods, 12_(4), 429-447.
+forestBlupPlotter = function(dat, res, sort, col.line, col.polygon,
+                             hetstat, leftlab, rightlab, summarylab, M.3l,
+                             threeLevel, eb.labels){
+  
+  
+  k = nrow(dat)
+  psize = weights(res)
+  psize = 1.2 + (psize - min(psize)) / (max(psize) - min(psize))
+  
+  # Create forest plot
+  if (sort[1]) { order = "yi" } else { order = NULL }
+  sav = metafor::forest(
+    dat$yi, sei = dat$.seTE, ylim=c(-0.5,k), cex=0.88,
+    pch=18, psize=psize, efac=0, refline=NA, lty=c(1,0), xlab="",
+    rowadj=-.07, slab = dat$study, order = order)
+  
+  # Create summary data escalc
+  sumdat = summary(dat)
+  order.te = 1:nrow(dat)
+  if (sort[1]){
+    sumdat = summary(dat)[order(summary(dat)$.TE),]
+    order.te = order(summary(dat)$.TE)
+  }
+  
+  # Add annotations
+  segments(0, -1, 0, k+1.6, col=col.line)
+  if (threeLevel){
+    segments(coef(M.3l), 0, coef(M.3l), k, col=col.polygon, lty="33", lwd=0.8)
+  } else {
+    segments(coef(res), 0, coef(res), k, col=col.polygon, lty="33", lwd=0.8)
+  }
+  segments(sumdat$ci.lb, k:1, sumdat$ci.ub, k:1, col=col.polygon, lwd=1.5)
+  points(sumdat$yi, k:1, pch=18, cex=psize*1.15, col="white")
+  points(sumdat$yi, k:1, pch=18, cex=psize, col=col.polygon)
+  axis(side=1, at=seq(-1,1,by=0.5), col=col.line, labels=FALSE)
+  par(xpd=NA)
+  par(cex=sav$cex, font=2)
+  text(sav$xlim[1], k+.75, pos=4, leftlab)
+  text(sav$xlim[2], k+.75, pos=2, rightlab)
+  par(cex=sav$cex, font=1)
+  if (hetstat[1]){
+    text(sav$xlim[1], -1, pos=4,
+         bquote(paste("Test for heterogeneity: ", tau^2, "=",
+                      .(formatC(res$tau2, digits=2, format="f")), "; ", italic(I)^2, "=",
+                      .(formatC(res$I2, digits=0, format="f")), "%")))
+  }
+  
+  efac = 1
+  rows = sav$rows
+  blups = metafor::blup.rma.uni(res)[order.te,]
+  
+  # Calculate BLUPs
+  arrows(x0 = blups$pi.lb, x1 = blups$pi.ub, y0 = rev(rows-0.3), code = 3,
+         angle = 90, length = 0.02*efac[1], lty = 1, col="darkgray")
+  points(x = blups$pred, y = rev(rows-0.3),
+         cex = psize*0.5, bg="lightgray", col="darkgray", pch=21)
+  
+  ### Add prediction interval for predicted true effect size
+  if (threeLevel){
+    re_lb = M.3l$b[1] - qt(1-.025, df = M.3l$k-2) * sqrt(M.3l$se^2 + M.3l$sigma2[1])
+    re_ub = M.3l$b[1] + qt(1-.025, df = M.3l$k-2) * sqrt(M.3l$se^2 + M.3l$sigma2[1])
+  } else {
+    re_lb = res$b[1] - qt(1-.025, df = res$k-2) * sqrt(res$se^2 + res$tau2)
+    re_ub = res$b[1] + qt(1-.025, df = res$k-2) * sqrt(res$se^2 + res$tau2)
+  }
+  arrows(x0 = re_lb, x1 = re_ub, y0 = sav$ylim[1]+0.5, code = 3,
+         angle = 90, length = 0.02*efac[1], lty = 1, col = "darkgray")
+  
+  if (eb.labels[1]){
+    labels <- paste0(sprintf("%.2f", blups$pred), " [",
+                     sprintf("%.2f", blups$pi.lb), ", ",
+                     sprintf("%.2f", blups$pi.ub), "]")
+    text(x = sav$xlim[2], y = rev(rows-0.35), labels = labels,
+         pos = 2, col = "darkgray", cex=0.88)
+    
+    # Add prediction interval for predicted true effect size in numbers
+    label_theta = paste0(sprintf("%.2f", ifelse(threeLevel, 
+                                                M.3l$b[1], res$b[1])), " [",
+                         sprintf("%.2f", re_lb), ", ",
+                         sprintf("%.2f", re_ub), "]")
+    text(x = sav$xlim[2], y = sav$ylim[1]+0.2, labels = label_theta,
+         pos = 2, col = "gray", cex=0.88)
+  }
+  
+  # Add color segments
+  if (threeLevel){
+    metafor::addpoly(x = coef(M.3l),
+                     ci.lb = clubSandwich::conf_int(M.3l, "CR2")[,5],
+                     ci.ub = clubSandwich::conf_int(M.3l, "CR2")[,6],
+                     row = 0, efac = 2, col=col.polygon, border=col.polygon,
+                     mlab=summarylab)
+  } else {
+    metafor::addpoly(res, row=0, mlab=summarylab, efac=2,
+                     col=col.polygon, border=col.polygon)
+  }
+  
+}
+
+
+#' Best Linear Unbiased Predictions (BLUPs) for 'runMetaAnalysis' models.
+#' 
+#' Generates empirical Bayes (EB) estimates, also known as best linear unbiased 
+#' predictions (BLUPs), by merging the fitted values obtained from fixed effects 
+#' and estimated contributions of random effects. These estimates represent 
+#' the study-specific true effect sizes or outcomes and are accompanied by 
+#' standard errors and prediction interval bounds.
+#'
+#'
+#' @title eb: Empirical Bayes estimates
+#' @param x Model
+#' @param ... Other arguments
+#' @export
+eb <- function (x, ...) {
+  UseMethod("eb", x)
+}
+
+
+#' Best Linear Unbiased Predictions (BLUPs) for 'runMetaAnalysis' models.
+#' 
+#' Generates empirical Bayes (EB) estimates, also known as best linear unbiased 
+#' predictions (BLUPs), by merging the fitted values obtained from fixed effects 
+#' and estimated contributions of random effects. These estimates represent 
+#' the study-specific true effect sizes or outcomes and are accompanied by 
+#' standard errors and prediction interval bounds.
+#'
+#'
+#' @title blup: Empirical Bayes estimates
+#' @param x Model
+#' @param ... Other arguments
+#' @export
+blup <- function (x, ...) {
+  UseMethod("blup", x)
+}
+
