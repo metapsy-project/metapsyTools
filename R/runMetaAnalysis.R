@@ -274,6 +274,7 @@
 #' and influence analyses using the [dmetar::InfluenceAnalysis()] function. The latter function is a wrapper for 
 #' [metafor::influence.rma.uni()].
 #' 
+#' \mjeqn{~}{~}
 #'  
 #' ## Simple or complex variance-covariance approximation
 #' 
@@ -310,6 +311,8 @@
 #' Using the complex approximation method increases the risk that at least one studies' \mjeqn{\Sigma_k}{\Sigma_k} matrix
 #' is not positive definite. In this case, the function automatically switches back to the 
 #' constant sampling correlation approximation.
+#' 
+#' \mjeqn{~}{~}
 #' 
 #' ## Replacement functions
 #' Once a model has been fitted using `runMetaAnalysis`, **replacement functions** 

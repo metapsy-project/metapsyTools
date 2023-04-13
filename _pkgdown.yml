@@ -58,6 +58,7 @@ reference:
   - correctPublicationBias
   - subgroupAnalysis
   - starts_with("metaRegression")
+  - exploreStudies
   - createStudyTable
 - title: "Effect Size Calculators"
   desc: "Default plug-in functions used by `calculateEffectSizes`."

@@ -248,6 +248,8 @@ in \strong{\{metafor\}} (Viechtbauer, \href{https://www.jstatsoft.org/article/vi
 Outlier selection is implemented using the \code{\link[dmetar:find.outliers]{dmetar::find.outliers()}} function,
 and influence analyses using the \code{\link[dmetar:InfluenceAnalysis]{dmetar::InfluenceAnalysis()}} function. The latter function is a wrapper for
 \code{\link[metafor:influence.rma.uni]{metafor::influence.rma.uni()}}.
+
+\mjeqn{~}{~}
 \subsection{Simple or complex variance-covariance approximation}{
 
 The \code{vcov} argument controls if the effect size dependencies within the data
@@ -282,6 +284,8 @@ containing the sample size of each study arm, are provided.
 Using the complex approximation method increases the risk that at least one studies' \mjeqn{\Sigma_k}{\Sigma_k} matrix
 is not positive definite. In this case, the function automatically switches back to the
 constant sampling correlation approximation.
+
+\mjeqn{~}{~}
 }
 
 \subsection{Replacement functions}{
