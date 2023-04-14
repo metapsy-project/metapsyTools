@@ -441,6 +441,16 @@ runMetaAnalysis = function(data,
             "Use a higher number for reliable inferences.")
   }
   
+  # 'subset' is not allowed in data
+  if ("subset" %in% colnames(data)){
+    stop("Columns with the name 'subset' are not allowed in the data set. Did you run checkDataFormat()?")
+  }
+  
+  # 'subset' is not allowed in data
+  if ("exclude" %in% colnames(data)){
+    stop("Columns with the name 'exclude' are not allowed in the data set. Did you run checkDataFormat()?")
+  }
+  
   # Get three-dots arguments;
   # Initialize error model list
   dots = list(...)
@@ -452,6 +462,8 @@ runMetaAnalysis = function(data,
   # Send message (beginning of analyses)
   sendMessage("start", .type.es = .type.es, 
               es.type = es.type)
+  
+  
   
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
   #                                                                           #

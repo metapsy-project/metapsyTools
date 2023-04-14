@@ -161,5 +161,20 @@ checkDataFormat = function(data,
       }
     }
   }
+  
+  # 3. Check if dataset contains 'subset' or 'exclude', rename if necessary
+  if ("subset" %in% colnames(data)){
+    message(paste0("- ", crayon::green("[OK] "), "'subset' is not an allowed variable name. ",
+                   "Changed the name to 'subset.1'."))
+    data$`subset.1` = data[["subset"]]
+    data["subset"] = NULL
+  }
+  if ("exclude" %in% colnames(data)){
+    message(paste0("- ", crayon::green("[OK] "), "'exclude' is not an allowed variable name. ",
+                   "Changed the name to 'exclude.1'."))
+    data$`exclude.1` = data[["exclude"]]
+    data["exclude"] = NULL
+  }
+  
   return(data)
 }
