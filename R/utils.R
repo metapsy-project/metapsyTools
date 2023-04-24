@@ -1752,6 +1752,11 @@ fitRobModel = function(which.run, which.rob, which.outliers,
   
   if ("rob" %in% which.run){
     robVar = strsplit(low.rob.filter, " ")[[1]][1]
+    if (!robVar %in% colnames(data.for.rob)){
+      stop("'", robVar, 
+           "' variable not found in data to conduct analyses with low RoB only.",
+           call. = FALSE)
+    }
     m.for.rob$data[[robVar]] = 
       as.numeric(m.for.rob$data[[robVar]])
     robFilter = paste0("data.for.rob$", low.rob.filter, 
