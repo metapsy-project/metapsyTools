@@ -39,14 +39,14 @@ the intended allocation ratio.
 # Load example data that follows the Metapsy data standard
 data("depressionPsyCtr")
 
-# This is an unexported function, so we need the metapsyTools:: prefix
+# This is an unexported function, so we need the metapsyTools::: prefix
 # Test if all studies follow the 1:1 allocation ratio
-metapsyTools::testRandomizedProportion(
+metapsyTools:::testRandomizedProportion(
   n_arm1, n_arm2, data = depressionPsyCtr, study = study) 
 
 # Provide a comparison-specific allocation ratio
 ratio <- c("1:1", "3:1", "4:5")
-metapsyTools::testRandomizedProportion(
+metapsyTools:::testRandomizedProportion(
   n_arm1, n_arm2, data = depressionPsyCtr[1:3,], 
   study = study, ratio = ratio) 
 }

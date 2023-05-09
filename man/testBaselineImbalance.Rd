@@ -55,9 +55,9 @@ can be adjusted using methods available in \code{\link[stats:p.adjust]{stats::p.
 # Load example data that follows the Metapsy data standard
 data("depressionPsyCtr")
 
-# This is an unexported function, so we need the metapsyTools:: prefix
+# This is an unexported function, so we need the metapsyTools::: prefix
 # Test for differences without p-value adjustment
-metapsyTools::testBaselineImbalance(
+metapsyTools:::testBaselineImbalance(
   bl_mean_arm1, bl_mean_arm2, 
   bl_sd_arm1, bl_sd_arm2, 
   bl_n_arm1, bl_n_arm2, 
@@ -65,7 +65,7 @@ metapsyTools::testBaselineImbalance(
   study = study)
 
 # Provide cluster variable: p-values are adjusted within clusters
-metapsyTools::testBaselineImbalance(
+metapsyTools:::testBaselineImbalance(
   bl_mean_arm1, bl_mean_arm2, 
   bl_sd_arm1, bl_sd_arm2, 
   bl_n_arm1, bl_n_arm2, 
@@ -74,7 +74,7 @@ metapsyTools::testBaselineImbalance(
   study = study)
 
 # Change adjustment method
-metapsyTools::testBaselineImbalance(
+metapsyTools:::testBaselineImbalance(
   bl_mean_arm1, bl_mean_arm2, 
   bl_sd_arm1, bl_sd_arm2, 
   bl_n_arm1, bl_n_arm2, 

@@ -3641,14 +3641,14 @@ catchName <- function(argname, matchcall, data, encl) {
 #' # Load example data that follows the Metapsy data standard
 #' data("depressionPsyCtr")
 #' 
-#' # This is an unexported function, so we need the metapsyTools:: prefix
+#' # This is an unexported function, so we need the metapsyTools::: prefix
 #' # Test if all studies follow the 1:1 allocation ratio
-#' metapsyTools::testRandomizedProportion(
+#' metapsyTools:::testRandomizedProportion(
 #'   n_arm1, n_arm2, data = depressionPsyCtr, study = study) 
 #' 
 #' # Provide a comparison-specific allocation ratio
 #' ratio <- c("1:1", "3:1", "4:5")
-#' metapsyTools::testRandomizedProportion(
+#' metapsyTools:::testRandomizedProportion(
 #'   n_arm1, n_arm2, data = depressionPsyCtr[1:3,], 
 #'   study = study, ratio = ratio) 
 #' }
@@ -3743,9 +3743,9 @@ testRandomizedProportion <-
 #' # Load example data that follows the Metapsy data standard
 #' data("depressionPsyCtr")
 #' 
-#' # This is an unexported function, so we need the metapsyTools:: prefix
+#' # This is an unexported function, so we need the metapsyTools::: prefix
 #' # Test for differences without p-value adjustment
-#' metapsyTools::testBaselineImbalance(
+#' metapsyTools:::testBaselineImbalance(
 #'   bl_mean_arm1, bl_mean_arm2, 
 #'   bl_sd_arm1, bl_sd_arm2, 
 #'   bl_n_arm1, bl_n_arm2, 
@@ -3753,7 +3753,7 @@ testRandomizedProportion <-
 #'   study = study)
 #' 
 #' # Provide cluster variable: p-values are adjusted within clusters
-#' metapsyTools::testBaselineImbalance(
+#' metapsyTools:::testBaselineImbalance(
 #'   bl_mean_arm1, bl_mean_arm2, 
 #'   bl_sd_arm1, bl_sd_arm2, 
 #'   bl_n_arm1, bl_n_arm2, 
@@ -3762,7 +3762,7 @@ testRandomizedProportion <-
 #'   study = study)
 #' 
 #' # Change adjustment method
-#' metapsyTools::testBaselineImbalance(
+#' metapsyTools:::testBaselineImbalance(
 #'   bl_mean_arm1, bl_mean_arm2, 
 #'   bl_sd_arm1, bl_sd_arm2, 
 #'   bl_n_arm1, bl_n_arm2, 
