@@ -3605,3 +3605,275 @@ blup <- function (x, ...) {
   UseMethod("blup", x)
 }
 
+
+
+#' Catch variables from parent frame
+#' @keywords internal 
+catch <- function(argname, matchcall, data, encl) {
+  eval(matchcall[[match(argname, names(matchcall))]], data, enclos = encl)
+}
+
+#' Catch variable names from parent frame
+#' @keywords internal 
+catchName <- function(argname, matchcall, data, encl) {
+  as.character(matchcall[[match(argname, names(matchcall))]])
+}
+
+
+#' Test if the randomized proportion differs from the original allocation ratio
+#' 
+#' This function returns a one-sample proportion test that allows to 
+#' examine if the included sample in a study deviated significantly form
+#' the intended allocation ratio.
+#' 
+#' @param n_arm1 A vector in which the sample size of the first trial arm is stored.
+#' @param n_arm2 A vector in which the sample size of the second trial arm is stored.
+#' @param study An optional vector with study labels.
+#' @param data An optional `data.frame` in which the sample size data is included.
+#' @param ratio A single string or character vector of the expected allocation ratio.
+#' This ratio should be separated by a colon, e.g. `"1:3`, where the left side
+#' indicates the first trial arm (`n_arm1`) and the right side indicates the
+#' second trial arm (`n_arm2`). Defaults to `"1:1`.
+#' @param ... Additional arguments.
+#' 
+#' @examples 
+#' \dontrun{
+#' # Load example data that follows the Metapsy data standard
+#' data("depressionPsyCtr")
+#' 
+#' # This is an unexported function, so we need the metapsyTools:: prefix
+#' # Test if all studies follow the 1:1 allocation ratio
+#' metapsyTools::testRandomizedProportion(
+#'   n_arm1, n_arm2, data = depressionPsyCtr, study = study) 
+#' 
+#' # Provide a comparison-specific allocation ratio
+#' ratio <- c("1:1", "3:1", "4:5")
+#' metapsyTools::testRandomizedProportion(
+#'   n_arm1, n_arm2, data = depressionPsyCtr[1:3,], 
+#'   study = study, ratio = ratio) 
+#' }
+#' 
+#' @importFrom dplyr select ends_with filter group_map group_by tibble
+#' @importFrom stringr str_replace_all str_remove_all
+#' @importFrom stats dffits model.matrix rnorm rstudent p.adjust
+#' @importFrom utils combn
+#' @keywords internal 
+testRandomizedProportion <- 
+  function(n_arm1, n_arm2, study, data = NULL, ratio = "1:1", ...){
+    
+    # get data; extract from parent frame if necessary
+    isNullData <- is.null(data)
+    parentFrame <- sys.frame(sys.parent())
+    mC <- match.call()
+    if (isNullData) { data <- parentFrame}
+    
+    # get data & check missings
+    n_arm1 <- try({catch("n_arm1", mC, data, parentFrame)}, silent = TRUE)
+    n_arm2 <- try({catch("n_arm2", mC, data, parentFrame)}, silent = TRUE)
+    if (!missing(study)) {
+      study <- try({catch("study", mC, data, parentFrame)}, silent = TRUE)
+      if (identical(class(study), "try-error")) 
+        stop(catchName("study", mC, data, parentFrame), 
+             " variable not found in data.") 
+    } else {
+      study = NULL
+    }
+    if (identical(class(n_arm1), "try-error")) 
+      stop(catchName("n_arm1", mC, data, parentFrame), 
+           " variable not found in data.") 
+    if (identical(class(n_arm2), "try-error"))
+      stop(catchName("n_arm2", mC, data, parentFrame),
+           " variable not found in data.") 
+    
+    # check ratio
+    if (sum(!grepl(":", ratio)) > 0) 
+      stop("'ratio' must be a string including two",
+           " numbers separated by a semicolon (e.g. '1:1')") 
+    
+    # define expected proportion
+    e.ratio <- strsplit(ratio, ":")
+    e.prop <- unlist(lapply(e.ratio, function(y) 
+    {y <- as.numeric(y); (y/sum(y))[1]}))
+    
+    # calculate observed proportion
+    o.prop <- n_arm1/(n_arm1 + n_arm2)
+    
+    # calculate test of proportion difference
+    p.diff <- o.prop - e.prop 
+    se <- sqrt(e.prop*(1-e.prop)/(n_arm1 + n_arm2))
+    z <- p.diff/se
+    p <- pnorm(abs(z), lower.tail = FALSE)*2
+    
+    # return results
+    if (is.null(study)[1])
+      study <- 1:length(p.diff)
+    
+    return(tibble(study = study, n.arm1 = n_arm1, n.arm2 = n_arm2,
+                  ratio = ratio, p.expected = e.prop,
+                  p.observed = o.prop, p.diff = p.diff,
+                  se = se, z = z, p = p))
+  }
+
+
+
+#' Test for baseline imbalances
+#' 
+#' This function returns a SMD for baseline imbalance tests, along with
+#' 99% confidence intervals. If the `cluster` argument is specified, _p_-values
+#' can be adjusted using methods available in [stats::p.adjust()].
+#' 
+#' @param m_arm1 A vector with the baseline mean(s) in the first arm. 
+#' @param m_arm2 A vector with the baseline mean(s) in the second arm. 
+#' @param sd_arm1 A vector with the baseline standard deviation(s) in the first arm. 
+#' @param sd_arm2 A vector with the baseline standard deviation(s) in the second arm. 
+#' @param n_arm1 A vector with the baseline sample size(s) in the first arm. 
+#' @param n_arm2 A vector with the baseline sample size(s) in the second arm. 
+#' @param cluster An optional vector of the same length as `m_arm1`, `m_arm2`, etc.,
+#' encoding to which larger cluster/study a comparison belongs to. If specified,
+#' _p_ values of the comparisons will be adjusted according to the method provided in
+#' the `p.adj` argument.
+#' @param study An optional vector with study labels.
+#' @param data An optional `data.frame` that includes the effect size data.
+#' @param p.adj A character string, specifying the type of _p_-value adjustment. For available
+#' options, see the "Details" section in [stats::p.adjust()]. Defaults to `"holm"`.
+#' @param ... Additional arguments.
+#' 
+#' @examples 
+#' \dontrun{
+#' # Load example data that follows the Metapsy data standard
+#' data("depressionPsyCtr")
+#' 
+#' # This is an unexported function, so we need the metapsyTools:: prefix
+#' # Test for differences without p-value adjustment
+#' metapsyTools::testBaselineImbalance(
+#'   bl_mean_arm1, bl_mean_arm2, 
+#'   bl_sd_arm1, bl_sd_arm2, 
+#'   bl_n_arm1, bl_n_arm2, 
+#'   data = depressionPsyCtr,
+#'   study = study)
+#' 
+#' # Provide cluster variable: p-values are adjusted within clusters
+#' metapsyTools::testBaselineImbalance(
+#'   bl_mean_arm1, bl_mean_arm2, 
+#'   bl_sd_arm1, bl_sd_arm2, 
+#'   bl_n_arm1, bl_n_arm2, 
+#'   data = depressionPsyCtr,
+#'   cluster = study,
+#'   study = study)
+#' 
+#' # Change adjustment method
+#' metapsyTools::testBaselineImbalance(
+#'   bl_mean_arm1, bl_mean_arm2, 
+#'   bl_sd_arm1, bl_sd_arm2, 
+#'   bl_n_arm1, bl_n_arm2, 
+#'   data = depressionPsyCtr,
+#'   cluster = study,
+#'   study = study, p.adj = "bonferroni")
+#' }
+#' 
+#' @importFrom dplyr select ends_with filter group_map group_by tibble
+#' @importFrom stringr str_replace_all str_remove_all
+#' @importFrom stats dffits model.matrix rnorm rstudent p.adjust
+#' @importFrom utils combn
+#' @keywords internal 
+testBaselineImbalance <- 
+  function(m_arm1, m_arm2, sd_arm1, sd_arm2, n_arm1, n_arm2, 
+           cluster, study, data = NULL, p.adj = "holm", ...){
+    
+    # get data; extract from parent frame if necessary
+    isNullData <- is.null(data)
+    parentFrame <- sys.frame(sys.parent())
+    mC <- match.call()
+    if (isNullData) { data <- parentFrame}
+    
+    
+    # get data & check missings
+    m_arm1 <- try({catch("m_arm1", mC, data, parentFrame)}, silent = TRUE)
+    m_arm2 <- try({catch("m_arm2", mC, data, parentFrame)}, silent = TRUE)
+    sd_arm1 <- try({catch("sd_arm1", mC, data, parentFrame)}, silent = TRUE)
+    sd_arm2 <- try({catch("sd_arm2", mC, data, parentFrame)}, silent = TRUE)
+    n_arm1 <- try({catch("n_arm1", mC, data, parentFrame)}, silent = TRUE)
+    n_arm2 <- try({catch("n_arm2", mC, data, parentFrame)}, silent = TRUE)
+    
+    if (!missing(study)) {
+      study <- try({catch("study", mC, data, parentFrame)}, silent = TRUE)
+      if (identical(class(study), "try-error")) 
+        stop(catchName("study", mC, data, parentFrame), 
+             " variable not found in data.") 
+    } else {
+      study = NULL 
+    }
+    
+    if (!missing(cluster)) {
+      cluster <- try({catch("cluster", mC, data, parentFrame)}, silent = TRUE)
+      if (identical(class(cluster), "try-error")) 
+        stop(catchName("cluster", mC, data, parentFrame), 
+             " variable not found in data.") 
+    } else {
+      cluster = NULL 
+    }
+    
+    if (identical(class(m_arm1), "try-error")) 
+      stop(catchName("m_arm1", mC, data, parentFrame), 
+           " variable not found in data.") 
+    if (identical(class(n_arm2), "try-error"))
+      stop(catchName("m_arm2", mC, data, parentFrame),
+           " variable not found in data.") 
+    if (identical(class(sd_arm1), "try-error")) 
+      stop(catchName("sd_arm1", mC, data, parentFrame), 
+           " variable not found in data.") 
+    if (identical(class(sd_arm2), "try-error"))
+      stop(catchName("sd_arm1", mC, data, parentFrame),
+           " variable not found in data.") 
+    if (identical(class(n_arm1), "try-error")) 
+      stop(catchName("n_arm1", mC, data, parentFrame), 
+           " variable not found in data.") 
+    if (identical(class(n_arm2), "try-error"))
+      stop(catchName("n_arm1", mC, data, parentFrame),
+           " variable not found in data.") 
+    
+    # Calculate SMDs
+    sdp <- sqrt(((n_arm1-1)*sd_arm1^2 + (n_arm2-1)*sd_arm2^2)/
+                  ((n_arm1-1) + (n_arm2-1)))
+    smd <- (m_arm1 - m_arm2) / sdp
+    se <- sqrt(((n_arm1 + n_arm2)/(n_arm1 * n_arm2)) + 
+                 (smd^2/(2*(n_arm1+n_arm2))))
+    smd.99lower <- smd - (qnorm(1-.005) * se)
+    smd.99upper <- smd + (qnorm(1-.005) * se)
+    z <- smd/se
+    p <- pnorm(abs(z), lower.tail = FALSE)*2
+    
+    # Encode study if missing
+    if (is.null(study)[1])
+      study <- 1:length(smd)
+    
+    
+    # Adjust p-values
+    if (!is.null(cluster)[1]) {
+      message("adjusting p-values based on '", 
+              catchName("cluster", mC, data, parentFrame),
+              "' variable (", p.adj, " method).")
+      adj.p.l <- lapply(split(p, cluster), p.adjust, p.adj)
+      adj.p <- setNames(unlist(adj.p.l, use.names=FALSE), 
+                        rep(names(adj.p.l), lengths(adj.p.l)))
+      
+      p.adjusted <- p
+      for (i in 1:length(unique(cluster))){
+        p.adjusted[which(cluster %in% unique(cluster)[i])] <- 
+          adj.p[which(names(adj.p) %in% unique(cluster)[i])]
+      }
+      
+      return(tibble(study = study, smd = smd, 
+                    smd.99lower = smd.99lower,
+                    smd.99upper = smd.99upper,
+                    se = se, z = z, cluster = cluster,
+                    p = p, p.adjusted = p.adjusted))
+      
+    }
+    
+    return(tibble(study = study, smd = smd, 
+                  smd.99lower = smd.99lower,
+                  smd.99upper = smd.99upper,
+                  se = se, z = z, p = p))
+  }
+
