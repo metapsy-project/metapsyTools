@@ -222,7 +222,7 @@ correctPublicationBias = function(model,
       }
       with(do.call(meta::trimfill, 
                    c(x = list(M.rd), tf.args)), {
-                     ifelse(isTRUE(common) & isTRUE(random),
+                     ifelse(isTRUE(common) & !isTRUE(random),
                             abs(TE.common)^-1, abs(TE.random)^-1)
                    }) -> nnt.raw.bin.es
     }
@@ -231,20 +231,20 @@ correctPublicationBias = function(model,
       data.frame(
         k = k,
         g = ifelse(
-          isTRUE(common) & isTRUE(random), 
+          isTRUE(common) & !isTRUE(random), 
           TE.common, TE.random) %>% 
           ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
           round(round.digits),
         g.ci = paste0("[", 
-                      ifelse(isTRUE(common) & isTRUE(random),
+                      ifelse(isTRUE(common) & !isTRUE(random),
                              lower.common, lower.random) %>% 
                         ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
                         round(round.digits), "; ",
-                      ifelse(isTRUE(common) & isTRUE(random),
+                      ifelse(isTRUE(common) & !isTRUE(random),
                              upper.common, upper.random) %>% 
                         ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
                         round(round.digits), "]"),
-        p = ifelse(isTRUE(common) & isTRUE(random), 
+        p = ifelse(isTRUE(common) & !isTRUE(random), 
                    pval.common, pval.random) %>% 
           scales::pvalue(),
         i2 = round(I2*100, 2),
@@ -260,7 +260,7 @@ correctPublicationBias = function(model,
                                         exp(upper.predict), upper.predict), 
                                  round.digits), "]"),
         nnt = metapsyNNT(
-          ifelse(isTRUE(common) & isTRUE(random), 
+          ifelse(isTRUE(common) & !isTRUE(random), 
                  TE.common, TE.random), nnt.cer) %>%
           ifelse(identical(.type.es, "RR"), NA, .) %>% 
           ifelse(isTRUE(.raw.bin.es), 
@@ -513,7 +513,7 @@ correctPublicationBias = function(model,
                          TRUE, FALSE),
           random = ifelse(method.tau == "FE", 
                           FALSE, TRUE)) %>%
-          {ifelse(isTRUE(common) & isTRUE(random), 
+          {ifelse(isTRUE(common) & !isTRUE(random), 
                   .$TE.common, .$TE.random)} %>% 
           {exp(.)/(1+exp(.))}
       }) -> cer    
