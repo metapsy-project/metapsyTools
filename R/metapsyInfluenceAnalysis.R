@@ -249,53 +249,46 @@ metapsyInfluenceAnalysis = function(x, random = FALSE, subplot.heights = c(30, 1
   rstudent.plot = ggplot2::ggplot(cheungviechtdata, aes(y = rstudent, x = study, color = is.infl, group = 1)) +
     geom_line(color = "black") + geom_point(size = 2) + scale_color_manual(values = c("blue", "red")) +
     theme_minimal() + theme(axis.title.x = element_blank(), legend.position = "none", axis.text.x = element_text(angle = 45,
-                                                                                                                 size = 5), axis.title.y = element_text(size = 7), axis.text.y = element_text(size = 5)) + ylab("Stand. Residual") +
-    scale_y_continuous(labels = scalefun)
+                                                                                                                 size = 5), axis.title.y = element_text(size = 7), axis.text.y = element_text(size = 5)) + ylab("Stand. Residual") 
 
   dffits.thresh = 3 * sqrt(metafor.inf$p/(metafor.inf$k - metafor.inf$p))
   dffits.plot = ggplot2::ggplot(cheungviechtdata, aes(y = dffits, x = study, color = is.infl, group = 1)) +
     geom_line(color = "black") + geom_point(size = 2) + scale_color_manual(values = c("blue", "red")) +
     theme_minimal() + theme(axis.title.x = element_blank(), legend.position = "none", axis.text.x = element_text(angle = 45,
-                                                                                                                 size = 5), axis.title.y = element_text(size = 7), axis.text.y = element_text(size = 5)) + ylab("DFFITS") +
-    scale_y_continuous(labels = scalefun)
+                                                                                                                 size = 5), axis.title.y = element_text(size = 7), axis.text.y = element_text(size = 5)) + ylab("DFFITS") 
   # geom_hline(yintercept = dffits.thresh, linetype='dashed', color='black')
 
   cook.d.plot = ggplot2::ggplot(cheungviechtdata, aes(y = cook.d, x = study, color = is.infl, group = 1)) +
     geom_line(color = "black") + geom_point(size = 2) + scale_color_manual(values = c("blue", "red")) +
     theme_minimal() + theme(axis.title.x = element_blank(), legend.position = "none", axis.text.x = element_text(angle = 45,
-                                                                                                                 size = 5), axis.title.y = element_text(size = 7), axis.text.y = element_text(size = 5)) + ylab("Cook's Distance") +
-    scale_y_continuous(labels = scalefun)
+                                                                                                                 size = 5), axis.title.y = element_text(size = 7), axis.text.y = element_text(size = 5)) + ylab("Cook's Distance") 
 
   cov.r.plot = ggplot2::ggplot(cheungviechtdata, aes(y = cov.r, x = study, color = is.infl, group = 1)) +
     geom_line(color = "black") + geom_point(size = 2) + scale_color_manual(values = c("blue", "red")) +
     theme_minimal() + theme(axis.title.x = element_blank(), legend.position = "none", axis.text.x = element_text(angle = 45,
-                                                                                                                 size = 5), axis.title.y = element_text(size = 7), axis.text.y = element_text(size = 5)) + ylab("Covariance Ratio") +
-    scale_y_continuous(labels = scalefun)
+                                                                                                                 size = 5), axis.title.y = element_text(size = 7), axis.text.y = element_text(size = 5)) + ylab("Covariance Ratio") 
 
   tau2.del.plot = ggplot2::ggplot(cheungviechtdata, aes(y = tau2.del, x = study, color = is.infl, group = 1)) +
     geom_line(color = "black") + geom_point(size = 2) + scale_color_manual(values = c("blue", "red")) +
     theme_minimal() + theme(axis.title.x = element_blank(), legend.position = "none", axis.text.x = element_text(angle = 45,
-                                                                                                                 size = 5), axis.title.y = element_text(size = 7), axis.text.y = element_text(size = 5)) + ylab("tau-squared (L-0-0)") +
-    scale_y_continuous(labels = scalefun)
+                                                                                                                 size = 5), axis.title.y = element_text(size = 7), axis.text.y = element_text(size = 5)) + ylab("tau-squared (L-0-0)") 
 
   QE.del.plot = ggplot2::ggplot(cheungviechtdata, aes(y = QE.del, x = study, color = is.infl, group = 1)) +
     geom_line(color = "black") + geom_point(size = 2) + scale_color_manual(values = c("blue", "red")) +
     theme_minimal() + theme(axis.title.x = element_blank(), legend.position = "none", axis.text.x = element_text(angle = 45,
-                                                                                                                 size = 5), axis.title.y = element_text(size = 7), axis.text.y = element_text(size = 5)) + ylab("Q (L-0-0)") +
-    scale_y_continuous(labels = scalefun)
+                                                                                                                 size = 5), axis.title.y = element_text(size = 7), axis.text.y = element_text(size = 5)) + ylab("Q (L-0-0)") 
 
   hat.thresh = 3 * (metafor.inf$p/metafor.inf$k)
   hat.plot = ggplot2::ggplot(cheungviechtdata, aes(y = hat, x = study, color = is.infl, group = 1)) + geom_line(color = "black") +
     geom_point(size = 2) + scale_color_manual(values = c("blue", "red")) + theme_minimal() + theme(axis.title.x = element_blank(),
                                                                                                    legend.position = "none", axis.text.x = element_text(angle = 45, size = 5), axis.title.y = element_text(size = 7),
-                                                                                                   axis.text.y = element_text(size = 5)) + ylab("hat") + scale_y_continuous(labels = scalefun)
+                                                                                                   axis.text.y = element_text(size = 5)) + ylab("hat") 
   # geom_hline(yintercept = hat.thresh, linetype='dashed', color='black')
 
   weight.plot = ggplot2::ggplot(cheungviechtdata, aes(y = weight, x = study, color = is.infl, group = 1)) +
     geom_line(color = "black") + geom_point(size = 2) + scale_color_manual(values = c("blue", "red")) +
     theme_minimal() + theme(axis.title.x = element_blank(), legend.position = "none", axis.text.x = element_text(angle = 45,
-                                                                                                                 size = 5), axis.title.y = element_text(size = 7), axis.text.y = element_text(size = 5)) + ylab("weight") +
-    scale_y_continuous(labels = scalefun)
+                                                                                                                 size = 5), axis.title.y = element_text(size = 7), axis.text.y = element_text(size = 5)) + ylab("weight") 
 
   rma.influence.plot = gridExtra::arrangeGrob(rstudent.plot, dffits.plot, cook.d.plot, cov.r.plot, tau2.del.plot, QE.del.plot,
                                    hat.plot, weight.plot, ncol = 2)

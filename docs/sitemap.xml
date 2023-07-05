@@ -79,6 +79,12 @@
     <loc>/reference/calculateEffectSizes.html</loc>
   </url>
   <url>
+    <loc>/reference/catch.html</loc>
+  </url>
+  <url>
+    <loc>/reference/catchName.html</loc>
+  </url>
+  <url>
     <loc>/reference/changeES.html</loc>
   </url>
   <url>
@@ -287,6 +293,12 @@
   </url>
   <url>
     <loc>/reference/summary.runMetaAnalysis.html</loc>
+  </url>
+  <url>
+    <loc>/reference/testBaselineImbalance.html</loc>
+  </url>
+  <url>
+    <loc>/reference/testRandomizedProportion.html</loc>
   </url>
   <url>
     <loc>/reference/tryCatch2.html</loc>

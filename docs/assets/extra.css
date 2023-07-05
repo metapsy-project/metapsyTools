@@ -65,14 +65,21 @@ p, #main li {
     margin-top: 0;
     color: var(--text-color);
     margin-bottom: 10px;
-    font-size: 20px !important;
 }
 
 
 code {
-  font-size: 18px !important;
-  font-weight: 400;
-  color: #636363;
+  text-decoration: none;
+}
+
+code a:hover {
+  text-decoration: underline;
+}
+
+code {
+  font-family: "SF Mono Regular";
+  font-weight: 600;
+  color: #474747;
 }
 
 main {
@@ -143,3 +150,106 @@ aside h2 {
 .navbar {
   box-shadow: 0 0 5px black;
 }
+
+
+.fu {
+  font-family: "SF Mono Bold";
+}
+
+/* Font */
+@font-face {
+font-family: 'SF Mono Regular';
+font-style: normal;
+font-weight: normal;
+src: local('SF Mono Regular'), url('fonts/SFMonoRegular.woff') format('woff');
+}
+
+
+@font-face {
+font-family: 'SF Mono Regular Italic';
+font-style: normal;
+font-weight: normal;
+src: local('SF Mono Regular Italic'), url('fonts/SFMonoRegularItalic.woff') format('woff');
+}
+
+
+@font-face {
+font-family: 'SF Mono Light';
+font-style: normal;
+font-weight: normal;
+src: local('SF Mono Light'), url('fonts/SFMonoLight.woff') format('woff');
+}
+
+
+@font-face {
+font-family: 'SF Mono Light Italic';
+font-style: normal;
+font-weight: normal;
+src: local('SF Mono Light Italic'), url('fonts/SFMonoLightItalic.woff') format('woff');
+}
+
+
+@font-face {
+font-family: 'SF Mono Medium';
+font-style: normal;
+font-weight: normal;
+src: local('SF Mono Medium'), url('fonts/SFMonoMedium.woff') format('woff');
+}
+
+
+@font-face {
+font-family: 'SF Mono Medium Italic';
+font-style: normal;
+font-weight: normal;
+src: local('SF Mono Medium Italic'), url('fonts/SFMonoMediumItalic.woff') format('woff');
+}
+
+
+@font-face {
+font-family: 'SF Mono Semibold';
+font-style: normal;
+font-weight: normal;
+src: local('SF Mono Semibold'), url('fonts/SFMonoSemibold.woff') format('woff');
+}
+
+
+@font-face {
+font-family: 'SF Mono Semibold Italic';
+font-style: normal;
+font-weight: normal;
+src: local('SF Mono Semibold Italic'), url('fonts/SFMonoSemiboldItalic.woff') format('woff');
+}
+
+
+@font-face {
+font-family: 'SF Mono Bold';
+font-style: normal;
+font-weight: normal;
+src: local('SF Mono Bold'), url('fonts/SFMonoBold.woff') format('woff');
+}
+
+
+@font-face {
+font-family: 'SF Mono Bold Italic';
+font-style: normal;
+font-weight: normal;
+src: local('SF Mono Bold Italic'), url('fonts/SFMonoBoldItalic.woff') format('woff');
+}
+
+
+@font-face {
+font-family: 'SF Mono Heavy';
+font-style: normal;
+font-weight: normal;
+src: local('SF Mono Heavy'), url('fonts/SFMonoHeavy.woff') format('woff');
+}
+
+
+@font-face {
+font-family: 'SF Mono Heavy Italic';
+font-style: normal;
+font-weight: normal;
+src: local('SF Mono Heavy Italic'), url('fonts/SFMonoHeavyItalic.woff') format('woff');
+}
+
+

@@ -38,7 +38,7 @@ Prepared data sets that follow the [**Metapsy data standard**](https://docs.meta
 
 ![](overview.png){width="685px"}
 
-::: {style="background-color: #f1f3f5 !important; padding: 25px; border-radius: 5px; color: gray; box-shadow: 0px 0px 5px;"}
+::: {style="background-color: #f1f3f5 !important; padding: 25px; padding-bottom: 15px; border-radius: 5px; color: gray; box-shadow: 0px 0px 5px;"}
 <strong>Important</strong>: The preparation module requires a familiarity with the general structure of the database, as well as intermediate-level knowledge of R and the `metapsyTools` package itself, in order to diagnose (potential) issues. We advise that the preparation step (i.e. checking the data format and calculating effect sizes each time the database is updated) should be conducted by a person with some proficiency in R & data wrangling. The analysis module, on the other hand, should be usable by all researchers.
 :::
 
@@ -93,9 +93,8 @@ To use the data preparation module (i.e. calculate effect sizes), **study design
 
 Each Metapsy database also contains variables in which the (raw or pre-calculated) effect size data is stored. In each row, one of the following variable groups (a) to (d) are specified, depending on the type of outcome data reported in the paper. **The rest of the variable groups will contain `NA` in that row.**
 
-<br>
 
-::: {style="background-color: #f1f3f5 !important; padding: 25px; border-radius: 5px; color: gray; box-shadow: 0px 0px 5px;"}
+::: {style="background-color: #f1f3f5 !important; padding: 25px; padding-bottom: 15px; border-radius: 5px; color: gray; box-shadow: 0px 0px 5px;"}
 When preparing the effect size data, it is very important that each row only has data provided for one variable group (as defined below), while the other variable groups are `NA` (i.e., have missing values). Otherwise, the [`calculateEffectSizes`](https://tools.metapsy.org/reference/calculateeffectsizes) function that we use later will not know which type of effect size should be calculated.
 :::
 
@@ -186,7 +185,7 @@ We see that the function has checked the required variables and their class. If 
 
 <br>
 
-::: {style="background-color: #f1f3f5 !important; padding: 25px; border-radius: 5px; color: gray; box-shadow: 0px 0px 5px;"}
+::: {style="background-color: #f1f3f5 !important; padding: 25px; padding-bottom: 15px; border-radius: 5px; color: gray; box-shadow: 0px 0px 5px;"}
 <strong>Required variables for unique IDs</strong>: To function properly, the `metapsyTools` functions must be able to generate a *unique* ID for each comparison. By default, this is achieved by combining information of the `study`, `condition_arm1`, `condition_arm2`, `multi_arm1`, `multi_arm2`, `outcome_type`, `instrument`, `time`, `time_weeks`, `rating` variables. These variables are included by default in the `must.contain` argument in the `checkDataFormat` function. If all required variables are detected, an `OK` message is returned; as is the case in our example.
 :::
 
@@ -336,7 +335,7 @@ The resulting data frame `data` now includes all effect sizes that can theoretic
 
 <br>
 
-::: {style="background-color: #f1f3f5 !important; padding: 25px; border-radius: 5px; color: gray; box-shadow: 0px 0px 5px;"}
+::: {style="background-color: #f1f3f5 !important; padding: 25px; padding-bottom: 15px; border-radius: 5px; color: gray; box-shadow: 0px 0px 5px;"}
 <strong>Should I use include.switched.arms?</strong> It is not essential to calculate all possible arm comparisons. However, having all possible comparisons in your data set is convenient, because all required comparisons pertaining to a particular research question (e.g. "how effective is PST when CBT is the reference group?") can directly be filtered out; there is typically no need for further data manipulation steps then.
 
 The `include.switched.arms` argument can also be helpful if you want to prepare **network meta-analysis** data (which is subsequently analyzed using, e.g., the [`netmeta`](https://bookdown.org/MathiasHarrer/Doing_Meta_Analysis_in_R/netwma.html#frequentist-network-meta-analysis-in-r) package). However, this assumes that the data set already contains all unique **combinations** in multi-arm trials (e.g. all 6 combinations in the four-arm study above, not just a selection).
@@ -994,7 +993,7 @@ By default, `createStudyTable` also returns an HTML table that one can copy and 
 
 <br>
 
-::: {style="background-color: #f1f3f5 !important; padding: 25px; border-radius: 5px; color: gray; box-shadow: 0px 0px 5px;"}
+::: {style="background-color: #f1f3f5 !important; padding: 25px; padding-bottom: 15px; border-radius: 5px; color: gray; box-shadow: 0px 0px 5px;"}
 <strong>Still have questions?</strong> This vignette only provides a superficial overview of `metapsyTools`' functionality. Every function also comes with a detailed documentation, which you may consult to learn more about available options and covered use cases. Please note that `metapsyTools` is still under active development, which means that errors or other problems may still occur under some circumstances. To report an issue or ask for help, you can contact **Mathias** ([mathias.harrer\@tum.de](mailto:mathias.harrer@tum.de){.email}).
 :::
 
