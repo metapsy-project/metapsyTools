@@ -76,11 +76,6 @@ code a:hover {
   text-decoration: underline;
 }
 
-code {
-  font-family: "SF Mono Regular";
-  font-weight: 600;
-  color: #474747;
-}
 
 main {
   box-shadow: 0 0px rgb(12 13 14), 0 1px 6px 3px rgb(59 64 69 / 12%);
@@ -157,9 +152,25 @@ aside {
 }
 
 
-.fu {
-  font-family: "SF Mono Bold";
+.f.fu {
+  font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-weight: 600;
 }
+
+.kw {
+  font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-weight: 600;
+}
+
+p > code {
+  font-weight: 600;
+}
+
+code {
+  font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  color: #474747;
+}
+
 
 /* Font */
 @font-face {
