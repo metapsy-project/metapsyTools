@@ -294,6 +294,10 @@ subgroupAnalysis = function(.model, ...,
                  g = g, g.ci = g.ci, i2 = "-", i2.ci = "-",
                  nnt = nnt, p = x$QMp %>% scales::pvalue())
     }) %>% do.call(rbind, .) %>% {rownames(.) = NULL;.} -> summary
+    
+    if (identical(.model$.type.es, "RR")){
+      colnames(summary)[4:5] = c("rr", "rr.ci")
+    }
 
   }
 

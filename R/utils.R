@@ -1719,6 +1719,8 @@ fitRobModel = function(which.run, which.rob, which.outliers,
                        method.tau, .raw.bin.es, .type.es, round.digits,
                        nnt.cer){
   
+  has.bs = FALSE
+  
   message("- ", crayon::green("[OK] "), 
           "Calculating effect size using only low RoB information... ",
           appendLF = FALSE)
@@ -1757,6 +1759,7 @@ fitRobModel = function(which.run, which.rob, which.outliers,
            "' variable not found in data to conduct analyses with low RoB only.",
            call. = FALSE)
     }
+    
     m.for.rob$data[[robVar]] = 
       as.numeric(m.for.rob$data[[robVar]])
     robFilter = paste0("data.for.rob$", low.rob.filter, 
@@ -1881,6 +1884,8 @@ fitThreeLevelModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
                               dots, es.binary.raw.vars, round.digits,
                               nnt.cer, which.run, mGeneral, mCombined,
                               use.rve, i2.ci.boot, nsim.boot){
+  
+  has.bs = FALSE
   
   # Define multi.study
   multi.study = names(table(data[[study.var]])
@@ -2089,9 +2094,6 @@ fitThreeLevelModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
       
       has.bs = TRUE
     } 
-    else {
-      has.bs = FALSE
-    }
   }
   
   if (use.rve[1] == FALSE){
@@ -2278,6 +2280,8 @@ fitThreeLevelCHEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
                                  nnt.cer, which.run, mGeneral, mCombined,
                                  use.rve, rho.within.study, phi.within.study,
                                  i2.ci.boot, nsim.boot){
+  
+  has.bs = FALSE
   
   if (rho.within.study[1] >.99){
     message("- ", crayon::yellow("[!] "), 
@@ -2719,6 +2723,8 @@ fitThreeLevelHACEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
                                   phi.within.study, n.var.arm1, 
                                   n.var.arm2, w1.var, w2.var, time.var,
                                   near.pd, i2.ci.boot, nsim.boot){
+  
+  has.bs = FALSE
   
   if (rho.within.study[1] >.99){
     message("- ", crayon::yellow("[!] "), 
