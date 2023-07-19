@@ -91,7 +91,7 @@ subgroupAnalysis = function(.model, ...,
           model.type, "' used for subgroup analyses.")
 
   # Throw error if which.run is not included
-  if (.which.run[1] == "combined" & .model$model.combined$k == 1){
+  if (.which.run[1] == "combined" & !is.null(.model$model.combined$k)){
     if (.model$model.combined$k == 1){
       stop("'which.run' is set to 'combined', but there is only k=1 study/ES.")
     }
