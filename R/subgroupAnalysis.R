@@ -217,14 +217,23 @@ subgroupAnalysis = function(.model, ...,
             round(.round.digits) %>% abs() -> nnt
         }
 
+        
+        if (M$common[1] & !M$random[1]) {
+          pval.q.test = ifelse(is.na(x$pval.Q.b.common), NA,
+                 scales::pvalue(x$pval.Q.b.common))
+        } else {
+          pval.q.test = ifelse(is.na(x$pval.Q.b.random), NA,
+                 scales::pvalue(x$pval.Q.b.random))
+        }
 
         data.frame(variable = y,
                    group = x$bylevs,
                    n.comp = x$k.w, g = g, g.ci = g.ci,
                    i2 = i2, i2.ci = i2.ci,
                    nnt = nnt,
-                   p = ifelse(is.na(x$pval.Q.b.random), NA,
-                              scales::pvalue(x$pval.Q.b.random)))
+                   p = pval.q.test)
+        
+        
       }) %>% do.call(rbind, .) %>% {rownames(.) = NULL;.} -> summary
     
     if (identical(.model$.type.es, "RR")){
