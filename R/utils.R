@@ -730,7 +730,8 @@ fitLowestModel = function(data, study.var, multi.study,
     if (length(multi.study) > 0){
       data$.TE = mGeneral$m$TE
       data %>%
-        split(.[[study.var]]) %>%
+        split(.[[study.var]]) %>% 
+        {.[unique(data[[study.var]])]} %>% 
         purrr::map(function(x){
           tiebreaker = rnorm(nrow(x), sd=1e-10)
           x$.TE + tiebreaker == suppressWarnings(min(x$.TE + tiebreaker))}) %>%
@@ -836,6 +837,7 @@ fitHighestModel = function(data, study.var, multi.study,
       data$.TE = mGeneral$m$TE
       data %>%
         split(.[[study.var]]) %>%
+        {.[unique(data[[study.var]])]} %>% 
         purrr::map(function(x){
           tiebreaker = rnorm(nrow(x), sd=1e-10)
           x$.TE + tiebreaker == 
