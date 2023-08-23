@@ -97,7 +97,8 @@ metaRegression.rma = function(x, formula = NULL, ...){
      "Use the exp() function to transform estimates into regular RR values.")
   }
 
-  if (class(x$V)[1] == "dgCMatrix"){
+  if (class(x$V)[1] == "dgCMatrix" |
+      class(x$V)[1] == "dsCMatrix"){
 
     if (is.null(formula)){
       formula.new = x$formula.yi
@@ -106,7 +107,7 @@ metaRegression.rma = function(x, formula = NULL, ...){
                           "~", as.character(x$formula.yi)[3], "+",
                           as.character(formula)[2])}
 
-    with(x, {metafor::rma.mv(as.formula(formula.new), V = V,
+    with(x, {metafor::rma.mv(yi = as.formula(formula.new), V = V,
                              test = test, data = legacy$data,
                              method = method,
                              random = legacy$formula.rnd,
