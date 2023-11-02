@@ -11,7 +11,7 @@
 #' @importFrom purrr pmap_dfr
 #' @importFrom esc esc_mean_sd
 #' @importFrom stats dffits model.matrix rnorm rstudent
-#' @importFrom utils combn
+#' @importFrom utils combnx
 #' @export g.m.sd
 #' @keywords internal
 
@@ -3261,7 +3261,7 @@ checkProblemsNMA = function(dat.netmeta){
 
 #' Add all trial arm combinations for multiarm trials in NMA.
 #' @importFrom crayon green yellow
-#' @importFrom dplyr select ends_with filter group_map group_by
+#' @importFrom dplyr select ends_with filter group_map group_by all_of any_of
 #' @importFrom stringr str_replace_all str_remove_all
 #' @importFrom stats dffits model.matrix rnorm rstudent
 #' @importFrom utils combn
@@ -3301,6 +3301,12 @@ addAllCombinations =
       x[[condition.vars[1]]] == x[[condition.vars[2]]])]) %>% 
       {names(.[.>1])} -> multiarm.studies
     
+    str_remove_all(colnames(data), groups.column.indicator[1]) %>% 
+      str_remove_all(groups.column.indicator[2]) %>% table() %>% 
+      {.[.==2]} %>% names() -> arm.cols
+    
+    paste0(rep(arm.cols,2), groups.column.indicator) -> arm.var.cols
+    
     
     multiarm.list = list()
     for (i in 1:length(multiarm.studies)){
@@ -3311,7 +3317,7 @@ addAllCombinations =
       
       # Part of df that does not have arm info
       df.equal = x %>% 
-        select(!ends_with(groups.column.indicator))
+        select(!all_of(arm.var.cols))
       
       # Part with info on arm 1
       df.arm1 = x %>% 
@@ -3328,8 +3334,14 @@ addAllCombinations =
           groups.column.indicator[2], groups.column.indicator[1], colnames(.));.}
       
       # Combine
-      df.comb = list(arm1 = rbind(df.arm1, df.arm2.1),
-                     arm2 = rbind(df.arm2, df.arm1.1))
+      df.comb = list(
+        arm1 = rbind(
+          select(df.arm1, any_of(arm.var.cols)), 
+          select(df.arm2.1, any_of(arm.var.cols))),
+        arm2 = rbind(
+          select(df.arm2, any_of(arm.var.cols)), 
+          select(df.arm1.1, any_of(arm.var.cols)))
+        )
       
       apply(combinations, 1, function(z){
         cbind(
@@ -3339,7 +3351,7 @@ addAllCombinations =
         do.call(rbind, .) -> df.arms
       
       cbind(df.equal[rep(1, nrow(df.arms)),], df.arms) %>% 
-        dplyr::select(colnames(x)) -> multiarm.list[[i]]
+        dplyr::select(any_of(colnames(x))) -> multiarm.list[[i]]
     }
     
     rbind(data[!data$id.multiarm %in% multiarm.studies,],
@@ -3348,7 +3360,7 @@ addAllCombinations =
     
     rownames(return.data) = NULL
     return(return.data)
-  }
+}
 
 
 
