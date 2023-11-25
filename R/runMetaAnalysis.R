@@ -1899,7 +1899,8 @@ summary.runMetaAnalysis = function(object, forest = TRUE, ...){
           "Three-level model estimated via restricted maximum likelihood, using the 'rma.mv'
   function in {metafor}. \n")
 
-      if (x$model.threelevel$test[1] == "t" | x$model.threelevel.che$test[1] == "t"){
+      if (any(isTRUE(x$model.threelevel$test[1] == "t"),
+              isTRUE(x$model.threelevel.che$test[1] == "t"))){
         cat(crayon::green("\u2713"), crayon::bold(crayon::magenta("[Three-Level Model]")),
             "Test statistics and CIs of the three-level model calculated based on
   a t-distribution. \n")
