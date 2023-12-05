@@ -73,11 +73,14 @@ reference:
   desc: "Additional functionality for core functions."
   contents:
   - blup.runMetaAnalysis
+  - blup
   - eb.runMetaAnalysis
+  - eb
   - imputeResponse
   - starts_with("metapsy")
   - profile.runMetaAnalysis
   - proportionMID
+  - addTrialArmInfo
   - starts_with("plot")
   - starts_with("print")
   - starts_with("summary")

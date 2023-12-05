@@ -11,7 +11,7 @@
 #' @importFrom purrr pmap_dfr
 #' @importFrom esc esc_mean_sd
 #' @importFrom stats dffits model.matrix rnorm rstudent
-#' @importFrom utils combnx
+#' @importFrom utils combn
 #' @export g.m.sd
 #' @keywords internal
 

@@ -55,6 +55,7 @@
 #' @importFrom stats dffits model.matrix rnorm rstudent
 #' @importFrom utils combn
 #' @export expandMultiarmTrials
+#' @keywords internal
 
 expandMultiarmTrials = function(data,
                                 vars.for.id = c("study", "primary",

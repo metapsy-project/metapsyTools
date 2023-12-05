@@ -1,5 +1,5 @@
 pandoc: 2.19.2
-pkgdown: 2.0.2
+pkgdown: 2.0.7
 pkgdown_sha: ~
 articles:
   data-validator: app/data-validator.html
@@ -7,5 +7,5 @@ articles:
   get-started: web/get-started.html
   installation: web/installation.html
   look_inside: web/look_inside.html
-last_built: 2023-07-05T10:26Z
+last_built: 2023-12-05T17:19Z
 

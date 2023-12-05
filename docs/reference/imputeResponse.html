@@ -3,7 +3,7 @@
 means, standard deviations and sample size using the normal-approximation
 method by Furukawa et al. (2005). Response rates can be imputed using the 50%
 symptom decrease threshold, user-defined cut-off values, or the reliable
-change index (Jacobson &amp;amp; Truax, 1991)."><title>Impute response rates based on continuous outcome data — imputeResponse • metapsyTools</title><!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png"><link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png"><link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png"><link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png"><link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png"><link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png"><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.2.2/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.2.2/bootstrap.bundle.min.js"></script><link href="../deps/Fira_Sans-0.4.6/font.css" rel="stylesheet"><link href="../deps/Fira_Code-0.4.6/font.css" rel="stylesheet"><link href="../deps/Roboto_Slab-0.4.6/font.css" rel="stylesheet"><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous"><!-- bootstrap-toc --><script src="https://cdn.rawgit.com/afeld/bootstrap-toc/v1.0.1/dist/bootstrap-toc.min.js"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Impute response rates based on continuous outcome data — imputeResponse"><meta property="og:description" content="This function allows to impute response rates based on the post-test
+change index (Jacobson &amp;amp; Truax, 1991)."><title>Impute response rates based on continuous outcome data — imputeResponse • metapsyTools</title><!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png"><link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png"><link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png"><link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png"><link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png"><link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png"><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.2.2/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.2.2/bootstrap.bundle.min.js"></script><link href="../deps/Fira_Sans-0.4.6/font.css" rel="stylesheet"><link href="../deps/Fira_Code-0.4.6/font.css" rel="stylesheet"><link href="../deps/Roboto_Slab-0.4.6/font.css" rel="stylesheet"><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous"><!-- bootstrap-toc --><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@v1.0.1/dist/bootstrap-toc.min.js" integrity="sha256-4veVQbu7//Lk5TSmc7YV48MxtMy98e26cf5MrgZYnwo=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Impute response rates based on continuous outcome data — imputeResponse"><meta property="og:description" content="This function allows to impute response rates based on the post-test
 means, standard deviations and sample size using the normal-approximation
 method by Furukawa et al. (2005). Response rates can be imputed using the 50%
 symptom decrease threshold, user-defined cut-off values, or the reliable
@@ -81,43 +81,75 @@ change index (Jacobson &amp; Truax, 1991).</p>
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
     <dl><dt>m.trt.pre</dt>
 <dd><p>Pre-test mean in the (treatment) arm.</p></dd>
+
+
 <dt>m.trt.post</dt>
 <dd><p>Post-test mean in the (treatment) arm.</p></dd>
+
+
 <dt>sd.trt.post</dt>
 <dd><p>Post-test standard deviation in the (treatment) arm.</p></dd>
+
+
 <dt>n.trt</dt>
 <dd><p>Sample size in the (treatment) arm.</p></dd>
+
+
 <dt>m.ctr.pre</dt>
 <dd><p><em>Optional</em>. Pre-test mean in the control arm.</p></dd>
+
+
 <dt>m.ctr.post</dt>
 <dd><p><em>Optional</em>. Post-test mean in the control arm.</p></dd>
+
+
 <dt>sd.ctr.post</dt>
 <dd><p><em>Optional</em>. Post-test standard deviation in the control arm.</p></dd>
+
+
 <dt>n.ctr</dt>
 <dd><p><em>Optional</em>. Sample size in the control arm.</p></dd>
+
+
 <dt>sd.trt.pre</dt>
 <dd><p>Pre-test standard deviation in the (treatment)
 group. Required if <code>method = "rci"</code>.</p></dd>
+
+
 <dt>sd.ctr.pre</dt>
 <dd><p><em>Optional</em>. Pre-test standard deviation in the control
 group. Required if <code>method = "rci"</code>.</p></dd>
+
+
 <dt>rho</dt>
 <dd><p>Reliability coefficient, used to calculate the reliable change when
 <code>method = "rci"</code>. Set to 0.8 by default.</p></dd>
+
+
 <dt>cutoff</dt>
 <dd><p>User defined cut-off score for response. <code>NULL</code> by default,
 which means that 50% symptom decrease is used as the response criterion.</p></dd>
+
+
 <dt>lower.is.better</dt>
 <dd><p>Do lower values indicate better outcomes (e.g. less
 depression)? <code>TRUE</code> by default.</p></dd>
+
+
 <dt>method</dt>
 <dd><p>Method to define response. Either <code>"cutpoint"</code> (default; uses
 50% symptom decrease as criterion, or a user-specified score in <code>cutoff</code>) or
 <code>"rci"</code>, which means that the reliable change index (Jacobson &amp; Truax, 1991) is used.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>If only values for the treatment arm are specified, <code>imputeResponse</code>returns a <code>data.frame</code> with two columns:</p><ul><li><p><code>trtResponder</code>: Number of responders</p></li>
+    
+
+<p>If only values for the treatment arm are specified, <code>imputeResponse</code></p>
+
+
+<p>returns a <code>data.frame</code> with two columns:</p><ul><li><p><code>trtResponder</code>: Number of responders</p></li>
 <li><p><code>nTrt</code>: Total sample size of the treatment arm</p></li>
 </ul><p>If values are also specified for the control group, six additional columns are
 returned:</p><ul><li><p><code>ctrResponder</code>: Number of responders in the control group</p></li>
@@ -222,8 +254,7 @@ https://doi.org/10.1037//0022-006x.59.1.12</p>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p></p><p>Developed by Mathias Harrer, Paula Kuper, Antonia Sprenger, Pim
-Cuijpers.</p>
+  <p></p><p>Developed by Mathias Harrer, Paula Kuper, Antonia Sprenger, Pim Cuijpers.</p>
 </div>
 
 <div class="pkgdown-footer-right">

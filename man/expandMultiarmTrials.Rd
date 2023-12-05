@@ -70,3 +70,4 @@ expandMultiarmTrials(inpatients)
 \author{
 Mathias Harrer \email{mathias.h.harrer@gmail.com}, Paula Kuper \email{paula.r.kuper@gmail.com}, Pim Cuijpers \email{p.cuijpers@vu.nl}
 }
+\keyword{internal}

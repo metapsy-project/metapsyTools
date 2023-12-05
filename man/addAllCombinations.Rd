@@ -6,8 +6,7 @@
 \usage{
 addAllCombinations(
   data,
-  vars.for.id = c("study", "outcome_type", "instrument", "time", "time_weeks",
-    "rating"),
+  vars.for.id = c("study", "outcome_type", "instrument", "time", "time_weeks", "rating"),
   vars.for.es = c("mean", "sd", "n", "mean_change", "sd_change", "n_change", "event",
     "totaln"),
   condition = "condition",

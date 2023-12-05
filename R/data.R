@@ -40,6 +40,7 @@
 #' }
 #' @author Mathias Harrer, Paula Kuper, Pim Cuijpers
 #' @usage data("inpatients")
+#' @keywords internal
 "inpatients"
 
 
@@ -56,6 +57,7 @@
 #' @format A \code{data.frame} with 503 rows and 60 variables.
 #' @author Mathias Harrer, Paula Kuper, Pim Cuijpers
 #' @usage data("psyCtrSubset")
+#' @keywords internal
 "psyCtrSubset"
 
 
@@ -72,6 +74,7 @@
 #' @format A \code{data.frame} with 175 rows and 64 variables.
 #' @author Mathias Harrer, Paula Kuper, Clara Miguel, Pim Cuijpers
 #' @usage data("psyCtrSubsetWide")
+#' @keywords internal
 "psyCtrSubsetWide"
 
 
@@ -85,6 +88,7 @@
 #' @format A \code{data.frame} with 381 rows and 63 variables.
 #' @author Mathias Harrer, Paula Kuper, Pim Cuijpers
 #' @usage data("database2021Subset")
+#' @keywords internal
 "database2021Subset"
 
 

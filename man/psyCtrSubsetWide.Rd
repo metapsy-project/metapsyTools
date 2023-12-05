@@ -22,4 +22,4 @@ The dataset has been included to showcase the correct formatting necessary to us
 \author{
 Mathias Harrer, Paula Kuper, Clara Miguel, Pim Cuijpers
 }
-\keyword{datasets}
+\keyword{internal}

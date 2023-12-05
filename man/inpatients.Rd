@@ -35,4 +35,4 @@ are important for effect size calculation and more.
 \author{
 Mathias Harrer, Paula Kuper, Pim Cuijpers
 }
-\keyword{datasets}
+\keyword{internal}

@@ -22,8 +22,4 @@ Print S3 method for objects of class \code{runMetaAnalysis}.
 Mathias Harrer \email{mathias.h.harrer@gmail.com},
 Paula Kuper \email{paula.r.kuper@gmail.com}, Pim Cuijpers
 \email{p.cuijpers@vu.nl}
-
-Mathias Harrer \email{mathias.h.harrer@gmail.com},
-Paula Kuper \email{paula.r.kuper@gmail.com}, Pim Cuijpers
-\email{p.cuijpers@vu.nl}
 }
