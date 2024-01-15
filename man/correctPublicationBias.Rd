@@ -77,9 +77,8 @@ correctPublicationBias(res) \%>\% plot("selection")
 
 # Returned object is of class "runMetaAnalysis"; therefore,
 # all S3 methods are available:
-res \%>\% 
-  correctPublicationBias() \%>\% 
-  metaRegression(country)
+res <- res \%>\% correctPublicationBias()
+metaRegression(res$model.overall, ~country)
 }
 
 }

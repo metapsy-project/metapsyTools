@@ -55,9 +55,8 @@
 #' 
 #' # Returned object is of class "runMetaAnalysis"; therefore,
 #' # all S3 methods are available:
-#' res %>% 
-#'   correctPublicationBias() %>% 
-#'   metaRegression(country)
+#' res <- res %>% correctPublicationBias()
+#' metaRegression(res$model.overall, ~country)
 #' }
 #'
 #' @author Mathias Harrer \email{mathias.h.harrer@@gmail.com},
@@ -215,8 +214,8 @@ correctPublicationBias = function(model,
   } else {
     
     if (isTRUE(.raw.bin.es)) {
-      M.rd = meta::update.meta(M, sm="RD")
-      M.orig.rd = meta::update.meta(M.orig, sm="RD")
+      M.rd = updateMeta(M, sm="RD")
+      M.orig.rd = updateMeta(M.orig, sm="RD")
       if (sum(M.rd$exclude) == 0){
         M.rd$exclude = NULL
       }

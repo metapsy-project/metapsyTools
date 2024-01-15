@@ -201,7 +201,7 @@ Returns an object of class \code{"runMetaAnalysis"}. This object includes, among
 a \code{data.frame} with the name \code{summary}, in which all results are summarized - including the
 studies which were removed for some analysis steps. Other objects are the "raw" model objects returned
 by all selected analysis types. This allows to conduct further operations on some models specifically (e.g.
-run a meta-regression by plugging one of the model objects in \code{update.meta}.
+run a meta-regression by plugging one of the model objects in \code{meta:::update.meta}.
 }
 \description{
 This wrapper function allows to simultaneously pool effect sizes using

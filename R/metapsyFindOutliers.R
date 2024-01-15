@@ -49,7 +49,6 @@
 #' removed (using the same settings as in the meta-analysis object provided).
 #'}
 #' @importFrom metafor rma.uni
-#' @importFrom meta update.meta
 #' @importFrom stats dffits model.matrix rnorm rstudent
 #' @importFrom utils combn
 #'
@@ -156,8 +155,8 @@ metapsyFindOutliers = function(x, ...){
     }
 
     # Update meta-analysis with outliers removed
-    m.fixed = update.meta(x, exclude = mask.fixed, id = NULL, ...)
-    m.random = update.meta(x, exclude = mask.random, id = NULL, ...)
+    m.fixed = updateMeta(x, exclude = mask.fixed, id = NULL, ...)
+    m.random = updateMeta(x, exclude = mask.random, id = NULL, ...)
 
     # Select names of outlying studies
     out.study.fixed = x$studlab[mask.fixed]

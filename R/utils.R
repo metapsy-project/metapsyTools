@@ -646,7 +646,7 @@ fitOverallModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
       tryCatch2(do.call(meta::metabin, mGeneralArgs))
     
     if (!mGeneral$has.error){
-      with(meta::update.meta(mGeneral$value, sm="RD"), {
+      with(updateMeta(mGeneral$value, sm="RD"), {
         ifelse(isTRUE(common) & !isTRUE(random),
                abs(TE.common)^-1, abs(TE.random)^-1)
       }) -> nnt.raw.bin.es
@@ -742,9 +742,9 @@ fitLowestModel = function(data, study.var, multi.study,
     }
     mLowest = {
       mLowest = tryCatch2(
-        meta::update.meta(mGeneral$m, exclude = !lowest, id = NULL))
+        updateMeta(mGeneral$m, exclude = !lowest, id = NULL))
       if (!mLowest$has.error){
-        with(meta::update.meta(mLowest$value, sm="RD"), {
+        with(updateMeta(mLowest$value, sm="RD"), {
           ifelse(isTRUE(common) & !isTRUE(random),
                  abs(TE.common)^-1, abs(TE.random)^-1)
         }) -> nnt.raw.bin.es
@@ -851,10 +851,10 @@ fitHighestModel = function(data, study.var, multi.study,
     mHighest = {
       
       mHighest = tryCatch2(
-        meta::update.meta(mGeneral$m, exclude = !highest, id = NULL))
+        updateMeta(mGeneral$m, exclude = !highest, id = NULL))
       
       if (!mHighest$has.error){
-        with(meta::update.meta(mHighest$value, sm="RD"), {
+        with(updateMeta(mHighest$value, sm="RD"), {
           ifelse(isTRUE(common) & !isTRUE(random),
                  abs(TE.common)^-1, abs(TE.random)^-1)
         }) -> nnt.raw.bin.es
@@ -1459,7 +1459,7 @@ fitOutliersModel = function(data, study.var, multi.study,
   }
   if (isTRUE(.raw.bin.es) &&
       !mOutliers$has.error){
-    with(meta::update.meta(mOutliers$value, 
+    with(updateMeta(mOutliers$value, 
                            sm = "RD", id = NULL), {
                              ifelse(isTRUE(common) & !isTRUE(random),
                                     abs(TE.common)^-1, abs(TE.random)^-1)
@@ -1624,14 +1624,14 @@ fitInfluenceModel = function(which.influence, mComb,
   
   mInfluence = 
     tryCatch2(
-      meta::update.meta(
+      updateMeta(
         m.for.influence,
         exclude = influenceRes$Data$is.infl == "yes",
         id = NULL))
   
   if (isTRUE(.raw.bin.es) &&
       !mInfluence$has.error){
-    with(meta::update.meta(mInfluence$value, sm="RD", id = NULL), {
+    with(updateMeta(mInfluence$value, sm="RD", id = NULL), {
       ifelse(isTRUE(common) & !isTRUE(random),
              abs(TE.common)^-1, abs(TE.random)^-1)
     }) -> nnt.raw.bin.es
@@ -1777,24 +1777,24 @@ fitRobModel = function(which.run, which.rob, which.outliers,
         robMask = rep(TRUE, nrow(mGeneral$m$data))
       }
       mRob = tryCatch2(
-        meta::update.meta(
+        updateMeta(
           mGeneral$m, exclude = !robMask,id = NULL))
       which.run[!which.run == "rob"] -> which.run
       warn.end = TRUE
     } else {
       mRob = tryCatch2(
-        meta::update.meta(
+        updateMeta(
           m.for.rob, exclude = !robMask, id = NULL))
     }
   } else {
     robMask = rep(TRUE, nrow(mGeneral$m$data))
     mRob = tryCatch2(
-      meta::update.meta(
+      updateMeta(
         mGeneral$m, exclude = !robMask, id = NULL))
   }
   if (isTRUE(.raw.bin.es) &&
       !mRob$has.error) {
-    with(meta::update.meta(
+    with(updateMeta(
       mRob$value, sm="RD",
       id = NULL), {
         ifelse(isTRUE(common) & !isTRUE(random),
@@ -3896,4 +3896,24 @@ testBaselineImbalance <-
                   smd.99upper = smd.99upper,
                   se = se, z = z, p = p))
   }
+
+
+#' Import 'update.meta' for internal use
+#' 
+#' This function imports the `update.meta` function of the `meta` package,
+#' which has ceased being an exported function since version 7.0-0.
+#' 
+#' @param ... Arguments forwarded to `update.meta`.
+#' 
+#' @import meta utils
+#' @keywords internal 
+
+updateMeta = function(...) {
+  func = getFromNamespace("update.meta", "meta")
+  dots = list(...)
+  do.call(func, dots)
+}
+
+
+
 

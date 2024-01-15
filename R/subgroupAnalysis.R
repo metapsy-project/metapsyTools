@@ -64,7 +64,7 @@
 #' @importFrom crayon green yellow cyan bold
 #' @importFrom scales pvalue
 #' @importFrom purrr map
-#' @importFrom meta update.meta metagen
+#' @importFrom meta metagen
 #' @importFrom metafor escalc aggregate.escalc rma.mv
 #' @importFrom stats dffits model.matrix rnorm rstudent
 #' @importFrom utils combn
@@ -412,7 +412,7 @@ print.subgroupAnalysis = function(x, ...){
 #' @author Mathias Harrer \email{mathias.h.harrer@@gmail.com},
 #' Paula Kuper \email{paula.r.kuper@@gmail.com}, Pim Cuijpers \email{p.cuijpers@@vu.nl}
 #'
-#' @importFrom meta forest.meta update.meta
+#' @importFrom meta forest
 #'
 #' @export
 #' @method plot subgroupAnalysis
@@ -427,15 +427,15 @@ plot.subgroupAnalysis = function(x, which = NULL, ...){
     message("- ", crayon::green("[OK] "), "'", 
             names(x$subgroup.analysis.list)[1], "' used for forest plot.")
     if (identical(x$.type.es, "RR")){
-      x$subgroup.analysis.list[[1]] = meta::update.meta(
+      x$subgroup.analysis.list[[1]] = updateMeta(
         x$subgroup.analysis.list[[1]], sm = "RR")
     }
-    meta::forest.meta(x$subgroup.analysis.list[[1]], layout = "JAMA")
+    meta::forest(x$subgroup.analysis.list[[1]], layout = "JAMA")
   } else {
     if (identical(x$.type.es, "RR")){
-      x$subgroup.analysis.list[[which[1]]] = meta::update.meta(
+      x$subgroup.analysis.list[[which[1]]] = updateMeta(
         x$subgroup.analysis.list[[which[1]]], sm = "RR")
     }
-    meta::forest.meta(x$subgroup.analysis.list[[which[1]]], layout = "JAMA")
+    meta::forest(x$subgroup.analysis.list[[which[1]]], layout = "JAMA")
   }
 }

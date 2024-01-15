@@ -167,7 +167,7 @@
 #' a \code{data.frame} with the name \code{summary}, in which all results are summarized - including the
 #' studies which were removed for some analysis steps. Other objects are the "raw" model objects returned
 #' by all selected analysis types. This allows to conduct further operations on some models specifically (e.g.
-#' run a meta-regression by plugging one of the model objects in \code{update.meta}.
+#' run a meta-regression by plugging one of the model objects in \code{meta:::update.meta}.
 #'
 #'
 #' @examples
@@ -332,7 +332,7 @@
 #' @importFrom crayon green yellow cyan bold
 #' @importFrom scales pvalue
 #' @importFrom purrr map
-#' @importFrom meta update.meta metagen
+#' @importFrom meta metagen
 #' @importFrom metafor escalc aggregate.escalc rma.mv vcalc blsplit simulate.rma
 #' @importFrom clubSandwich coef_test conf_int
 #' @importFrom stats dffits model.matrix rnorm rstudent complete.cases median quantile
@@ -1341,13 +1341,13 @@ print.runMetaAnalysis = function(x, ...){
 #' @author Mathias Harrer \email{mathias.h.harrer@@gmail.com},
 #' Paula Kuper \email{paula.r.kuper@@gmail.com}, Pim Cuijpers \email{p.cuijpers@@vu.nl}
 #'
-#' @importFrom meta metagen forest.meta
+#' @importFrom meta metagen forest
 #' @importFrom metafor forest.rma
 #' @importFrom stringr str_replace_all
 #' @importFrom purrr map
 #' @importFrom dplyr mutate
 #' @importFrom metasens funnel.limitmeta
-#' @importFrom meta funnel.meta
+#' @importFrom meta funnel
 #' @importFrom metafor plot.rma.uni.selmodel
 #' @importFrom crayon green yellow cyan bold
 #'
@@ -1407,10 +1407,10 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
         message("- ", crayon::green("[OK] "), 
                 "Generating forest plot ('", x$which.run[1], "' model).")
         if (identical(x$.type.es, "RR")){
-          meta::forest.meta(x[[models[[x$which.run[1]]][1]]],
+          meta::forest(x[[models[[x$which.run[1]]][1]]],
                             layout = "JAMA", ...)
         } else {
-          meta::forest.meta(x[[models[[x$which.run[1]]][1]]], 
+          meta::forest(x[[models[[x$which.run[1]]][1]]], 
                             layout = "JAMA", ...)
         }
       }
@@ -1418,10 +1418,10 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
         message("- ", crayon::green("[OK] "), "Generating forest plot ('", 
                 "highest", "' model).")
         if (identical(x$.type.es, "RR")){
-          meta::forest.meta(x$model.highest, 
+          meta::forest(x$model.highest, 
                             layout = "JAMA", ...)
         } else {
-          meta::forest.meta(x$model.highest, 
+          meta::forest(x$model.highest, 
                             layout = "JAMA", ...)
         }
       }
@@ -1448,10 +1448,10 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
         message("- ", crayon::green("[OK] "), 
                 "Generating forest plot ('overall' model).")
         if (identical(x$.type.es, "RR")){
-          meta::forest.meta(x$model.overall, 
+          meta::forest(x$model.overall, 
                             layout = "JAMA",  ...)
         } else {
-          meta::forest.meta(x$model.overall, 
+          meta::forest(x$model.overall, 
                             layout = "JAMA", ...)
         }
       }
@@ -1460,19 +1460,19 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
         message("- ", crayon::green("[OK] "), 
                 "Generating forest plot ('lowest' model).")
         if (identical(x$.type.es, "RR")){
-          meta::forest.meta(x$model.lowest, 
+          meta::forest(x$model.lowest, 
                             layout = "JAMA", ...)
         } else {
-          meta::forest.meta(x$model.lowest, 
+          meta::forest(x$model.lowest, 
                             layout = "JAMA", ...)
         }
         message("- ", crayon::green("[OK] "), 
                 "Generating forest plot ('highest' model).")
         if (identical(x$.type.es, "RR")){
-          meta::forest.meta(x$model.highest, 
+          meta::forest(x$model.highest, 
                             layout = "JAMA", ...)
         } else {
-          meta::forest.meta(x$model.highest, 
+          meta::forest(x$model.highest, 
                             layout = "JAMA", ...)
         }
       }
@@ -1481,10 +1481,10 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
         message("- ", crayon::green("[OK] "), 
                 "Generating forest plot ('outliers' model).")
         if (identical(x$.type.es, "RR")){
-          meta::forest.meta(x$model.outliers, 
+          meta::forest(x$model.outliers, 
                             layout = "JAMA", ...)
         } else {
-          meta::forest.meta(x$model.outliers, 
+          meta::forest(x$model.outliers, 
                             layout = "JAMA", ...)
         }
       }
@@ -1493,10 +1493,10 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
         message("- ", crayon::green("[OK] "), 
                 "Generating forest plot ('influence' model).")
         if (identical(x$.type.es, "RR")){
-          meta::forest.meta(x$model.influence, 
+          meta::forest(x$model.influence, 
                             layout = "JAMA", ...)
         } else {
-          meta::forest.meta(x$model.influence, 
+          meta::forest(x$model.influence, 
                             layout = "JAMA", ...)
         }
       }
@@ -1505,10 +1505,10 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
         message("- ", crayon::green("[OK] "), 
                 "Generating forest plot ('rob' model).")
         if (identical(x$.type.es, "RR")){
-          meta::forest.meta(x$model.rob, 
+          meta::forest(x$model.rob, 
                             layout = "JAMA", ...)
         } else {
-          meta::forest.meta(x$model.rob, 
+          meta::forest(x$model.rob, 
                             layout = "JAMA", ...)
         }
       }
@@ -1517,10 +1517,10 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
         message("- ", crayon::green("[OK] "), 
                 "Generating forest plot ('combined' model).")
         if (identical(x$.type.es, "RR")){
-          meta::forest.meta(x$model.combined, 
+          meta::forest(x$model.combined, 
                             layout = "JAMA", ...)
         } else {
-          meta::forest.meta(x$model.combined, 
+          meta::forest(x$model.combined, 
                             layout = "JAMA", ...)
         }
       }
@@ -1592,7 +1592,7 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
         }
         message("- ", crayon::green("[OK] "), 
                 "Generating funnel plot for the trim-and-fill analysis.")
-        suppressWarnings({meta::funnel.meta(x$correctPublicationBias$model.trimfill)})
+        suppressWarnings({meta::funnel(x$correctPublicationBias$model.trimfill)})
       }
       
       if (which[1] == "limitmeta"){
@@ -1648,7 +1648,7 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
                           upper = upper + 1e-50, 
                           studlab = model, sm = "RR",
                           data = .) %>%
-            meta::forest.meta(
+            meta::forest(
               col.square = "lightblue",
               rightcols = FALSE,
               overall.hetstat = FALSE,
@@ -1672,15 +1672,15 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
                           upper = as.numeric(upper) + 1e-50) %>%
             meta::metagen(TE = g, lower = lower, upper = upper, studlab = model,
                           data = .) %>%
-            meta::forest.meta(col.square = "lightblue",
-                              rightcols = FALSE,
-                              overall.hetstat = FALSE,
-                              weight.study = "same",
-                              test.overall = FALSE, overall = FALSE,
-                              leftcols = c("studlab", "TE", "ci", "i2"),
-                              leftlabs = c(expression(bold(Model)), expression(bold(g)),
-                                           expression(bold(CI)),
-                                           expression(bold(italic(I)^2)))) %>%
+            meta::forest(col.square = "lightblue",
+                         rightcols = FALSE,
+                         overall.hetstat = FALSE,
+                         weight.study = "same",
+                         test.overall = FALSE, overall = FALSE,
+                         leftcols = c("studlab", "TE", "ci", "i2"),
+                         leftlabs = c(expression(bold(Model)), expression(bold(g)),
+                                      expression(bold(CI)),
+                                      expression(bold(italic(I)^2)))) %>%
             suppressWarnings()
         }
       }
@@ -1708,7 +1708,7 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
 #' Paula Kuper \email{paula.r.kuper@@gmail.com}, Pim Cuijpers \email{p.cuijpers@@vu.nl}
 #'
 #' @importFrom knitr kable
-#' @importFrom meta metagen forest.meta
+#' @importFrom meta metagen forest
 #' @importFrom dplyr as_tibble
 #' @importFrom kableExtra kable_styling column_spec footnote
 #' @importFrom stringr str_replace_all
@@ -2016,7 +2016,7 @@ summary.runMetaAnalysis = function(object, forest = TRUE, ...){
                       upper = upper + 1e-50, 
                       studlab = model, sm = "RR",
                       data = .) %>%
-        meta::forest.meta(
+        meta::forest(
           col.square = "lightblue",
           rightcols = FALSE,
           overall.hetstat = FALSE,
@@ -2040,15 +2040,15 @@ summary.runMetaAnalysis = function(object, forest = TRUE, ...){
                       upper = as.numeric(upper) + 1e-50) %>%
         meta::metagen(TE = g, lower = lower, upper = upper, studlab = model,
                       data = .) %>%
-        meta::forest.meta(col.square = "lightblue",
-                          rightcols = FALSE,
-                          overall.hetstat = FALSE,
-                          weight.study = "same",
-                          test.overall = FALSE, overall = FALSE,
-                          leftcols = c("studlab", "TE", "ci", "i2"),
-                          leftlabs = c(expression(bold(Model)), expression(bold(g)),
-                                       expression(bold(CI)),
-                                       expression(bold(italic(I)^2)))) %>%
+        meta::forest(col.square = "lightblue",
+                     rightcols = FALSE,
+                     overall.hetstat = FALSE,
+                     weight.study = "same",
+                     test.overall = FALSE, overall = FALSE,
+                     leftcols = c("studlab", "TE", "ci", "i2"),
+                     leftlabs = c(expression(bold(Model)), expression(bold(g)),
+                                  expression(bold(CI)),
+                                  expression(bold(italic(I)^2)))) %>%
         suppressWarnings()
     }
   }
