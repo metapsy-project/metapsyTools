@@ -418,7 +418,7 @@ convertNetmeta = function(mean_arm1, mean_arm2,
     
     # Create SMD using Chinn transformation
     within(pw.dich, {
-      studlab = paste(studlab, "(reponse)")
+      studlab = paste(studlab, "(response)")
       TE = (TE/(pi/sqrt(3)))*-1
       seTE = sqrt(seTE^2/((pi^2)/3))
     }) -> pw.dich
