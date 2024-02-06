@@ -15,9 +15,9 @@
 <link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../../apple-touch-icon-60x60.png">
 <script src="../../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../../deps/bootstrap-5.2.2/bootstrap.min.css" rel="stylesheet">
-<script src="../../deps/bootstrap-5.2.2/bootstrap.bundle.min.js"></script><link href="../../deps/Fira_Sans-0.4.6/font.css" rel="stylesheet">
-<link href="../../deps/Fira_Code-0.4.6/font.css" rel="stylesheet">
-<link href="../../deps/Roboto_Slab-0.4.6/font.css" rel="stylesheet">
+<script src="../../deps/bootstrap-5.2.2/bootstrap.bundle.min.js"></script><link href="../../deps/Fira_Sans-0.4.7/font.css" rel="stylesheet">
+<link href="../../deps/Fira_Code-0.4.7/font.css" rel="stylesheet">
+<link href="../../deps/Roboto_Slab-0.4.7/font.css" rel="stylesheet">
 <!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- bootstrap-toc --><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@v1.0.1/dist/bootstrap-toc.min.js" integrity="sha256-4veVQbu7//Lk5TSmc7YV48MxtMy98e26cf5MrgZYnwo=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../../pkgdown.js"></script><meta property="og:title" content="Installation Guide">
@@ -37,7 +37,7 @@
     
     <a class="navbar-brand me-2" href="../../index.html">metapsyTools</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.10</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.11</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -107,41 +107,41 @@ repository</a>. This is fairly easy to achieve using the
 <code>install_github</code> function in the <a href="https://devtools.r-lib.org/index.html" class="external-link"><code>devtools</code></a>
 package. If you run the following code in R:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="st"><a href="https://devtools.r-lib.org/" class="external-link">"devtools"</a></span><span class="op">)</span><span class="op">)</span>
-  <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"devtools"</span><span class="op">)</span>
-
-<span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org/reference/remote-reexports.html" class="external-link">install_github</a></span><span class="op">(</span>
-    <span class="st">"metapsy-project/metapsyTools"</span>,
-    build_vignettes <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="st"><a href="https://devtools.r-lib.org/" class="external-link">"devtools"</a></span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"devtools"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span></span>
+<span>    <span class="st">"metapsy-project/metapsyTools"</span>,</span>
+<span>    build_vignettes <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <p>R will automatically check if <code>devtools</code> is installed on
 your computer, and install it for you if necessary; download the
 <code>metapsyTools</code> package from Github; and install the package.
 Following a succesfull installation, the package can be loaded from your
 library and is then ready to be used.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/metapsy-project/metapsyTools" class="external-link">metapsyTools</a></span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/metapsy-project/metapsyTools" class="external-link">metapsyTools</a></span><span class="op">)</span></span></code></pre></div>
 <p>During the installation process, you may receive the following
 <strong>prompts</strong>:</p>
-<pre><code><span class="co">## These packages have more recent versions available.</span>
-<span class="co">## Which would you like to update?</span>
-<span class="co">##</span>
-<span class="co">## 1: All</span>
-<span class="co">## 2: CRAN packages only</span>
-<span class="co">## 3: None</span>
-<span class="co">## 4: ggpubr (0.2.2 -&gt; 0.2.3) [CRAN]</span>
-<span class="co">## 5: zip    (2.0.3 -&gt; 2.0.4) [CRAN]</span>
-<span class="co">##</span>
-<span class="co">## Enter one or more numbers, or an empty line to skip updates:</span></code></pre>
+<pre><code><span><span class="co">## These packages have more recent versions available.</span></span>
+<span><span class="co">## Which would you like to update?</span></span>
+<span><span class="co">##</span></span>
+<span><span class="co">## 1: All</span></span>
+<span><span class="co">## 2: CRAN packages only</span></span>
+<span><span class="co">## 3: None</span></span>
+<span><span class="co">## 4: ggpubr (0.2.2 -&gt; 0.2.3) [CRAN]</span></span>
+<span><span class="co">## 5: zip    (2.0.3 -&gt; 2.0.4) [CRAN]</span></span>
+<span><span class="co">##</span></span>
+<span><span class="co">## Enter one or more numbers, or an empty line to skip updates:</span></span></code></pre>
 <p>When you get this message, it is best to tell the installation
 manager that no packages should be updated. In our example, this means
 pasting <code>3</code> into the console and then hitting Enter. In the
 same vein, when the installation manager asks this question:</p>
-<pre><code><span class="co">## There are binary versions available but the source versions are later:</span>
-<span class="co">##</span>
-<span class="co">##  [...]</span>
-<span class="co">##</span>
-<span class="co">##   Do you want to install from sources the package which needs compilation?</span>
-<span class="co">##   y/n:</span></code></pre>
+<pre><code><span><span class="co">## There are binary versions available but the source versions are later:</span></span>
+<span><span class="co">##</span></span>
+<span><span class="co">##  [...]</span></span>
+<span><span class="co">##</span></span>
+<span><span class="co">##   Do you want to install from sources the package which needs compilation?</span></span>
+<span><span class="co">##   y/n:</span></span></code></pre>
 <p>It is best to choose <code>n</code> (no). If the installation fails
 with this strategy (meaning that you get an Error), run the installation
 again, but update all packages this time.</p>
@@ -156,7 +156,7 @@ after some time, a new version may be available. You can check the
 current version of of <code>metapsyTools</code> installed on your
 computer using this code:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/packageDescription.html" class="external-link">packageVersion</a></span><span class="op">(</span><span class="st">"metapsyTools"</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/packageDescription.html" class="external-link">packageVersion</a></span><span class="op">(</span><span class="st">"metapsyTools"</span><span class="op">)</span></span></code></pre></div>
 <p>The header of this website displays the most recent version of the
 package available for users. To use novel functionalities integrated
 into the package since your last installation, you have to update the
@@ -165,9 +165,9 @@ package version that you have locally on your computer.</p>
 the current version on your computer. You can do this using the
 following code:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># Note: this code assumes you are working with RStudio</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/remove.packages.html" class="external-link">remove.packages</a></span><span class="op">(</span><span class="st">"metapsyTools"</span><span class="op">)</span>
-<span class="fu">.rs.restartR</span><span class="op">(</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="co"># Note: this code assumes you are working with RStudio</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/remove.packages.html" class="external-link">remove.packages</a></span><span class="op">(</span><span class="st">"metapsyTools"</span><span class="op">)</span></span>
+<span><span class="fu">.rs.restartR</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p>You can then use the same code as used above to (re-)install the
 latest package version.</p>
 <p><br></p>
