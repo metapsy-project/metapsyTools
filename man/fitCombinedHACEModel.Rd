@@ -32,7 +32,8 @@ fitCombinedHACEModel(
   w1.var,
   w2.var,
   time.var,
-  near.pd
+  near.pd,
+  rob.data
 )
 }
 \description{

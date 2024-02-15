@@ -37,6 +37,7 @@ runMetaAnalysis(data,
                 measure.var = "instrument",
                 low.rob.filter = "rob > 2",
                 round.digits = 2,
+                rob.data = NULL,
                 
                 # Model specifications
                 which.combine = c("arms", "studies"),
@@ -137,6 +138,8 @@ include studies for the "low RoB only" analysis. Please note that the name of
 the variable must be included as a column in \code{data}.}
 
 \item{round.digits}{\code{numeric}. Number of digits to round the (presented) results by. Default is \code{2}.}
+
+\item{rob.data}{\code{list}. Optional list detailing how risk of bias data should be appended to the model (see Details).}
 
 \item{which.combine}{\code{character}. Should multiple effect sizes within one study be pooled
 on an \code{"arms"} (default) or \code{"studies"} level? When a study is a multi-arm trial, setting
@@ -299,6 +302,28 @@ all other settings the same, we could run e.g. \code{method.tau(m) <- "PM"}, fol
 \code{rerun(m)}. This would provide results using the Paule-Mandel estimator. A list of all available
 setting replacement functions is provided \href{https://tools.metapsy.org/reference/replacement-functions}{here}.
 
+\mjeqn{~}{~}
+}
+
+\subsection{Risk of Bias data}{
+
+Using the \code{rob.data} argument, it is possible to specify which variables in the data set provided in
+\code{data} contain Risk of Bias (ROB) assessment information. If specified, this allows to generate
+forest plots with added ROB information when using \code{\link[=plot.runMetaAnalysis]{plot.runMetaAnalysis()}}. ROB information added this
+way can also be used to create ROB summary plots using \code{\link[=createRobSummary]{createRobSummary()}}.
+
+The object provided to \code{rob.data} must be a \code{list} element with these elements:
+\itemize{
+\item \code{domains}: A vector of characters, specifying variables that contain ratings for different ROB domains (e.g. allocation concealment, missing data handling, ...).
+\item \code{domain.names} (\emph{Optional}): A vector of characters with the same length as \code{domains}, which provides long-format labels for each included domain.
+\item \code{overall.rob} (\emph{Optional}): A single character specifying the variable in \code{data} that contains the overall ROB rating.
+\item \code{categories}: A vector of characters, specifying how ROB ratings were coded in the selected variables (e.g., \verb{"low}, \code{"high"}, \code{"unclear"}).
+\item \code{symbols} (\emph{Optional}): A vector of single-letter characters (or symbols) that should be used when plotting ROB rating in the forest plot.
+\item \code{colors} (\emph{Optional}): A vector of characters of the same length as \code{categories}, specifying colors for each rating code.
+}
+
+For concrete usage examples with this functionality, see "Examples".
+
 For more details see the \href{https://tools.metapsy.org/articles/metapsytools}{Get Started} vignette.
 }
 }
@@ -352,6 +377,35 @@ correctPublicationBias(res)
 data \%>\% 
   runMetaAnalysis(which.combine = "studies") \%>\% 
   plot("combined")
+  
+# Define ROB data to be added to the models
+robData = list(
+  # Names of ROB variables included in 'data'
+  domains = c("sg", "ac", "ba", "itt"),
+  # Long-format labels for each ROB domain
+  domain.names = c("Sequence Generation", 
+                   "Allocation Concealment", 
+                   "Blinding of Assessors", 
+                   "ITT Analyses"),
+  # Codes used to rate the risk of bias (sr=self-report)
+  categories = c("0", "1", "sr"),
+  # Symbols that should be used for these codes in forest plots
+  symbols = c("-", "+", "s"),
+  # Colors to be used in forest plots for each of these codes
+  colors = c("red", "green", "yellow"))
+
+# Re-run model with appended ROB data
+res = runMetaAnalysis(data, rob.data = robData) 
+
+# Generate forest plot with ROB data
+plot(res, "combined")
+
+# Create a summary plot
+createRobSummary(res, 
+                 name.low = "1", 
+                 name.high = "0", 
+                 name.unclear = "sr",
+                 which.run = "combined")
 
 # Run meta-analysis using raw response rate data
 data \%>\% 

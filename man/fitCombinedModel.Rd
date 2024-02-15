@@ -23,7 +23,8 @@ fitCombinedModel(
   method.tau.ci,
   dots,
   es.binary.raw.vars,
-  phi.within.study
+  phi.within.study,
+  rob.data
 )
 }
 \description{

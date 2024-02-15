@@ -574,7 +574,7 @@ fitOverallModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
                            measure.var, study.var, .raw.bin.es, .type.es, hakn,
                            method.tau.meta, method.tau.ci, method.tau,
                            dots, es.binary.raw.vars, round.digits,
-                           nnt.cer, which.run){
+                           nnt.cer, which.run, rob.data){
   
   data.original = data
   round.digits = abs(round.digits)
@@ -705,6 +705,12 @@ fitOverallModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
       )
     })
   }
+  
+  # Add rob data if specified
+  if (!is.null(rob.data[1])) {
+    mGeneral$value = addRobData(mGeneral$value, rob.data)
+  }
+  
   return(list(m = mGeneral$value, 
               res = mGeneralRes,
               has.error = mGeneral$has.error,
@@ -717,7 +723,7 @@ fitOverallModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
 #' @keywords internal 
 fitLowestModel = function(data, study.var, multi.study,
                           mGeneral, .type.es, round.digits,
-                          .raw.bin.es, nnt.cer){
+                          .raw.bin.es, nnt.cer, rob.data){
   
   message("- ", crayon::green("[OK] "), 
           "Calculating effect size using only lowest effect... ",
@@ -814,6 +820,12 @@ fitLowestModel = function(data, study.var, multi.study,
       mLowest$m$data$comparison[mLowest$m$exclude],
       collapse = "; ")
   }
+  
+  # Add rob data if specified
+  if (!is.null(rob.data[1])) {
+    mLowest$value = addRobData(mLowest$m, rob.data)
+  }
+  
   return(mLowest)
 }
 
@@ -822,7 +834,7 @@ fitLowestModel = function(data, study.var, multi.study,
 #' @keywords internal 
 fitHighestModel = function(data, study.var, multi.study,
                            mGeneral, .type.es, round.digits,
-                           .raw.bin.es, nnt.cer){
+                           .raw.bin.es, nnt.cer, rob.data){
   
   message("- ", crayon::green("[OK] "), 
           "Calculating effect size using only highest effect... ",
@@ -925,6 +937,12 @@ fitHighestModel = function(data, study.var, multi.study,
       paste(mHighest$m$data$comparison[mHighest$m$exclude],
             collapse = "; ")
   }
+  
+  # Add rob data if specified
+  if (!is.null(rob.data[1])) {
+    mHighest$value = addRobData(mHighest$m, rob.data)
+  }
+  
   return(mHighest)
 }
 
@@ -936,7 +954,8 @@ fitCombinedModel = function(which.combine, which.combine.var,
                             mGeneral, .type.es, round.digits, hakn,
                             .raw.bin.es, nnt.cer, rho.within.study,
                             method.tau, method.tau.ci, dots,
-                            es.binary.raw.vars, phi.within.study){
+                            es.binary.raw.vars, phi.within.study,
+                            rob.data){
   
   message("- ", crayon::green("[OK] "), 
           "Calculating effect size using combined effects (rho=", 
@@ -1153,6 +1172,11 @@ fitCombinedModel = function(which.combine, which.combine.var,
       ifelse(identical(study.var.comb[1], "study.var.comb"), "arms", "studies")
     mComb$which.combine.var = which.combine.var
     
+    # Add rob data if specified
+    if (!is.null(rob.data[1])) {
+      mComb$value = addRobData(mComb$value, rob.data)
+    }
+    
     # return
     return(list(m = mComb$value, 
                 res = mCombRes,
@@ -1171,7 +1195,7 @@ fitCombinedHACEModel = function(which.combine, which.combine.var, measure.var,
                                 es.binary.raw.vars, arm.var.1, arm.var.2,
                                 phi.within.study, n.var.arm1, 
                                 n.var.arm2, w1.var, w2.var, time.var,
-                                near.pd){
+                                near.pd, rob.data){
   
   message("- ", crayon::green("[OK] "), 
           "Calculating effect size using combined effects (rho=", 
@@ -1430,6 +1454,11 @@ fitCombinedHACEModel = function(which.combine, which.combine.var, measure.var,
       ifelse(identical(study.var.comb[1], "study.var.comb"), "arms", "studies")
     mComb$which.combine.var = which.combine.var
     
+    # Add rob data if specified
+    if (!is.null(rob.data[1])) {
+      mComb$value = addRobData(mComb$value, rob.data)
+    }
+    
     # return
     return(list(m = mComb$value, 
                 res = mCombRes,
@@ -1445,7 +1474,7 @@ fitOutliersModel = function(data, study.var, multi.study,
                             mGeneral, .type.es, round.digits,
                             .raw.bin.es, nnt.cer, which.run,
                             which.outliers, method.tau,
-                            m.for.outliers){
+                            m.for.outliers, rob.data){
   if (method.tau == "FE"){
     mOutliers = 
       tryCatch2(
@@ -1531,6 +1560,10 @@ fitOutliersModel = function(data, study.var, multi.study,
   } else {
     mOutliersRes$excluded = "no outliers detected"
   }
+  # Add rob data if specified
+  if (!is.null(rob.data[1])) {
+    mOutliers$value = addRobData(mOutliers$value, rob.data)
+  }
   return(list(m = mOutliers$value, 
               res = mOutliersRes,
               has.error = mOutliers$has.error,
@@ -1583,7 +1616,7 @@ selectOutlierModel = function(
 fitInfluenceModel = function(which.influence, mComb,
                              mGeneral, which.run, method.tau,
                              .raw.bin.es, .type.es, round.digits,
-                             nnt.cer){
+                             nnt.cer, rob.data){
   
   message("- ", crayon::green("[OK] "), 
           "Calculating effect size with influential cases removed... ",
@@ -1705,6 +1738,10 @@ fitInfluenceModel = function(which.influence, mComb,
                          [influenceRes$Data$is.infl == "yes"],
                          collapse = "; "), "none"))
   }
+  # Add rob data if specified
+  if (!is.null(rob.data[1])) {
+    mInfluence$value = addRobData(mInfluence$value, rob.data)
+  }
   
   return(list(m = mInfluence$value, 
               res = mInfluenceRes,
@@ -1719,7 +1756,7 @@ fitInfluenceModel = function(which.influence, mComb,
 fitRobModel = function(which.run, which.rob, which.outliers,
                        mGeneral, mComb, low.rob.filter,
                        method.tau, .raw.bin.es, .type.es, round.digits,
-                       nnt.cer){
+                       nnt.cer, rob.data){
   
   has.bs = FALSE
   
@@ -1869,6 +1906,10 @@ fitRobModel = function(which.run, which.rob, which.outliers,
     mRobRes$excluded = paste0(
       "no studies removed; ",
       low.rob.filter, " applies to all studies")
+  }
+  # Add rob data if specified
+  if (!is.null(rob.data[1])) {
+    mRob$value = addRobData(mRob$value, rob.data)
   }
   mRob$value$title2 = paste("Only", low.rob.filter)
   return(list(m = mRob$value, 
@@ -3206,6 +3247,49 @@ fitThreeLevelHACEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
 }
 
 
+#' Add `meta::rob()` element to model
+#' @keywords internal
+addRobData = function(mdl, rob.data) {
+  
+  # Get data from model
+  data = mdl$data
+  
+  # Perform data input checks
+  if (is.null(rob.data$domains)) 
+    stop("Please provide 'domains' for the 'rob.data' specification.")
+  if (is.null(rob.data$categories)) 
+    stop("Please provide 'categories' for the 'rob.data' specification.")
+  domains = try({data[rob.data$domains]}, silent=TRUE)
+  if (class(domains)[1] == "try-error")
+    stop("None of the provided domains could be found in 'data'.")
+  if (!is.null(rob.data$domain.names) && 
+      length(rob.data$domains)!=length(rob.data$domain.names)) 
+    stop("Number of 'domains' and 'domain.names' do not match.")
+  overall.rob = try({data[rob.data$overall.rob]}, silent=TRUE)
+  if (class(overall.rob)[1] == "try-error")
+    stop("'",rob.data$overall.rob, "' could be found in 'data'.")
+  
+  # Create args list
+  args = lapply(as.list(domains), as.character)
+  names(args) = paste0("item", 1:length(args))
+  args$domains = if (is.null(rob.data$domain.names)) {
+    colnames(domains)} else {rob.data$domain.names}
+  args$overall = if (ncol(overall.rob)==0) {
+    NULL } else { as.character(unlist(overall.rob)) }
+  args$categories = rob.data$categories
+  args$symbols = if (is.null(rob.data$symbols)) {
+    substring(args$categories, 1, 1)} else {rob.data$symbols}
+  args$col = rob.data$colors
+  args$data = mdl
+  args$overwrite = TRUE
+  
+  # Run rob function
+  res = do.call(meta::rob, args)
+  
+  return(res)
+}
+
+
 #' Set colnames
 #' @keywords internal 
 setColnames = function (x, value) 
@@ -3915,5 +3999,249 @@ updateMeta = function(...) {
 }
 
 
+#' Create a RevMan-style risk of bias summary chart
+#'
+#' This function generates summary plots for study quality assessments using the
+#' \href{https://bit.ly/2KGQtfG}{Cochrance Risk of Bias Tool}.
+#' Summary plots follow the style of \href{https://bit.ly/30eJK29}{RevMan} Risk of Bias (RoB) summary charts.
+#'
+#' @usage robSummary(data, name.high="High", name.unclear="Unclear",
+#'     name.low="Low", studies, name.missing, table = FALSE)
+#'
+#' @param data A \code{data.frame} containing a column for each risk of bias criterion, where
+#' rows represent each individual studies. The risk of bias assessment for each criterion in each
+#' study must be coded as a character string. Up to four codes can be used, referring to low risk of bias,
+#' unclear risk of bias, high risk of bias, or missing information. The string used to specify the categories
+#' must be specified in \code{name.high}, \code{name.unclear}, \code{name.low} and/or \code{name.missing},
+#' unless defaults for those parameters are used.
+#' @param name.high Character specifying how the "high risk of bias" category was coded in \code{data}
+#' (e.g., \code{name.high = "high"}). Default is \code{"High"}.
+#' @param name.unclear Character specifying how the "unclear risk of bias" category was coded in \code{data}
+#' (e.g., \code{name.unclear = "unclear"}). Default is \code{"Unclear"}.
+#' @param name.low Character specifying how the "low risk of bias" category was coded in \code{data}
+#' (e.g., \code{name.low = "low"}). Default is \code{"Low"}.
+#' @param name.missing Character specifying how missing information was coded in \code{data}
+#' (e.g., \code{name.missing} = \code{"missing"}). Default is \code{"Missing"}. All ratings, including missing
+#' information, must be coded as strings, so using \code{NA} in \code{data} to signify missing information
+#' is not valid.
+#' @param studies A vector of the same length as the number of rows in \code{data} specifying the study
+#' labels for the risk of bias ratings. Only has to be specified when \code{table = TRUE}.
+#' @param table Should an additional RevMan style risk of bias table be produced? If set to \code{TRUE},
+#' \code{studies} must be specified. \code{FALSE} by default.
+#'
+#' @details The function automatically removes separators like "-" or "." from column names/risk of bias criteria. To produce
+#' a "clean" plot, you may therefore separate words in the column names of the \code{data} data frame using these
+#' symbols (e.g. \code{"Allocation_Concealment"} to return "Allocation Concealment").
+#'
+#' @references Harrer, M., Cuijpers, P., Furukawa, T.A, & Ebert, D. D. (2019).
+#' \emph{Doing Meta-Analysis in R: A Hands-on Guide}. DOI: 10.5281/zenodo.2551803.
+#' \href{https://bookdown.org/MathiasHarrer/Doing_Meta_Analysis_in_R/creating-a-revman-style-risk-of-bias-summary.html}{Chapter 10}
+#'
+#' @author Mathias Harrer & David Daniel Ebert
+#'
+#' @import ggplot2
+#'
+#' @keywords internal
+
+robSummary = function (data, name.high = "High", name.unclear = "Unclear",
+                        name.low = "Low", studies, name.missing, table = FALSE) {
+  
+  
+  if (class(data) != "data.frame") {
+    stop("'data' must be of class 'data.frame'.")
+  }
+  if (missing(name.missing)) {
+    colnames.rob = character()
+    for (i in 1:ncol(data)) {
+      vect = as.character(data[, i])
+      for (j in 1:length(data[, i])) {
+        if (vect[j] %in% c(name.high, name.unclear, name.low)) {
+          colnames.rob[i] = TRUE
+        }
+        else {
+          colnames.rob[i] = FALSE
+          message(cat("Column '", colnames(data)[i],
+                      "' removed from plot because it did not contain the specified RoB ratings (only). \n",
+                      sep = ""))
+          break
+        }
+      }
+    }
+    rob = data[, as.logical(colnames.rob)]
+    for (i in 1:ncol(rob)) {
+      rob[, i] = as.character(rob[, i])
+      rob[rob[, i] == name.high, i] = "High"
+      rob[rob[, i] == name.unclear, i] = "Unclear"
+      rob[rob[, i] == name.low, i] = "Low"
+    }
+    if (table == TRUE) {
+      if (missing(studies)) {
+        stop("'studies' has to be specified when 'table = TRUE'.")
+      }
+      if (length(as.vector(studies)) != nrow(data)) {
+        stop("'studies' vector is not of equal length as the data.")
+      }
+      if (length(unique(studies)) != length(studies)) {
+        stop("'studies' cannot contain duplicate study labels.")
+      }
+      robby = rob
+      robby = data.frame(study = studies, condition = rep(colnames(robby),
+                                                          each = length(studies)), measurement = unlist(robby))
+      rownames(robby) = NULL
+      robby$condition = gsub("_", " ", robby$condition)
+      robby$condition = gsub("-", " ", robby$condition)
+      robby$condition = gsub("\\.", " ", robby$condition)
+      robby[robby$measurement == "Low", "measurement"] = "+"
+      robby[robby$measurement == "Unclear", "measurement"] = "?"
+      robby[robby$measurement == "High", "measurement"] = "-"
+      robby$study = factor(robby$study, levels = unique(studies)[rev(order(unique(robby$study)))])
+      rob.table = ggplot(data = robby, aes(y = study, x = condition)) +
+        geom_tile(color = "black", fill = "white", size = 0.8) +
+        geom_point(aes(color = as.factor(measurement)),
+                   size = 20) + geom_text(aes(label = measurement),
+                                          size = 8) + scale_x_discrete(position = "top") +
+        scale_color_manual(values = c(`?` = "#E2DF07",
+                                      `-` = "#BF0000", `+` = "#02C100")) + theme_minimal() +
+        coord_equal() + theme(axis.title.x = element_blank(),
+                              axis.title.y = element_blank(), axis.ticks.y = element_blank(),
+                              axis.text.y = element_text(size = 15, color = "black"),
+                              axis.text.x = element_text(size = 13, color = "black",
+                                                         angle = 90, hjust = 0), legend.position = "none",
+                              panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+                              panel.background = element_blank())
+    }
+    rob.long = data.frame(condition = rep(colnames(rob),
+                                          each = nrow(rob)), measurement = unlist(rob))
+    rownames(rob.long) = NULL
+    rob.long$condition = gsub("_", " ", rob.long$condition)
+    rob.long$condition = gsub("-", " ", rob.long$condition)
+    rob.long$condition = gsub("\\.", " ", rob.long$condition)
+    rob.long$measurement = as.factor(rob.long$measurement)
+    rob.long$measurement = factor(rob.long$measurement,
+                                  levels(rob.long$measurement)[c(1, 3, 2)])
+    rob.plot = ggplot(data = rob.long) +
+      geom_bar(mapping = aes(x = condition, fill = measurement),
+               width = 0.7, position = "fill", color = "black") +
+      coord_flip(ylim = c(0, 1)) +
+      guides(fill = guide_legend(reverse = TRUE)) +
+      scale_fill_manual("Risk of Bias",
+                        labels = c(`High` = "    High risk of bias          ",
+                                   `Unclear` = "    Unclear risk of bias       ",
+                                   `Low` = "    Low risk of bias  "),
+                        values = c(High = "#BF0000",
+                                   Unclear = "#E2DF07",
+                                   Low = "#02C100")) +
+      scale_y_continuous(labels = scales::percent) +
+      theme(axis.title.x = element_blank(), axis.title.y = element_blank(),
+            axis.ticks.y = element_blank(), axis.text.y = element_text(size = 18,
+                                                                       color = "black"), axis.line.x = element_line(colour = "black",
+                                                                                                                    linewidth = 0.5, linetype = "solid"), legend.position = "bottom",
+            panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+            panel.background = element_blank(), legend.background = element_rect(linetype = "solid",
+                                                                                 colour = "black"), legend.title = element_blank(),
+            legend.key.size = unit(0.75, "cm"), legend.text = element_text(size = 14))
+    plot(rob.plot)
+    if (table == TRUE) {
+      plot(rob.table)
+    }
+  }
+  else {
+    data = as.data.frame(data)
+    colnames.rob = character()
+    for (i in 1:ncol(data)) {
+      vect = as.character(data[, i])
+      for (j in 1:length(data[, i])) {
+        if (vect[j] %in% c(name.high, name.unclear, name.low,
+                           name.missing)) {
+          colnames.rob[i] = TRUE
+        }
+        else {
+          colnames.rob[i] = FALSE
+          message(cat("Column '", colnames(data)[i],
+                      "' removed from plot because it did not contain the specified RoB ratings (only). \n",
+                      sep = ""))
+          break
+        }
+      }
+    }
+    rob = data[, as.logical(colnames.rob)]
+    for (i in 1:ncol(rob)) {
+      rob[, i] = as.character(rob[, i])
+      rob[rob[, i] == name.high, i] = "High"
+      rob[rob[, i] == name.unclear, i] = "Unclear"
+      rob[rob[, i] == name.low, i] = "Low"
+      rob[rob[, i] == name.missing, i] = "Missing"
+    }
+    if (table == TRUE) {
+      if (missing(studies)) {
+        stop("'studies' has to be specified when 'table = TRUE'.")
+      }
+      if (length(as.vector(studies)) != nrow(data)) {
+        stop("'studies' vector is not of equal length as the data.")
+      }
+      robby = rob
+      robby = data.frame(study = as.factor(studies), condition = rep(colnames(robby),
+                                                                     each = length(studies)), measurement = unlist(robby))
+      rownames(robby) = NULL
+      robby$condition = gsub("_", " ", robby$condition)
+      robby$condition = gsub("-", " ", robby$condition)
+      robby$condition = gsub("\\.", " ", robby$condition)
+      robby[robby$measurement == "Low", "measurement"] = "+"
+      robby[robby$measurement == "Unclear", "measurement"] = "?"
+      robby[robby$measurement == "High", "measurement"] = "-"
+      robby[robby$measurement == "Missing", "measurement"] = " "
+      robby$study = factor(robby$study, levels = unique(studies)[rev(order(unique(robby$study)))])
+      rob.table = ggplot(data = robby, aes(y = study, x = condition)) +
+        geom_tile(color = "black", fill = "white", size = 0.8) +
+        geom_point(aes(color = as.factor(measurement)),
+                   size = 20) + geom_text(aes(label = measurement),
+                                          size = 8) + scale_x_discrete(position = "top") +
+        scale_color_manual(values = c(`?` = "#E2DF07",
+                                      `-` = "#BF0000", `+` = "#02C100", ` ` = "white")) +
+        theme_minimal() + coord_equal() + theme(axis.title.x = element_blank(),
+                                                axis.title.y = element_blank(), axis.ticks.y = element_blank(),
+                                                axis.text.y = element_text(size = 15, color = "black"),
+                                                axis.text.x = element_text(size = 13, color = "black",
+                                                                           angle = 90, hjust = 0), legend.position = "none",
+                                                panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+                                                panel.background = element_blank())
+    }
+    rob.long = data.frame(condition = rep(colnames(rob),
+                                          each = nrow(rob)), measurement = unlist(rob))
+    rownames(rob.long) = NULL
+    rob.long$condition = gsub("_", " ", rob.long$condition)
+    rob.long$condition = gsub("-", " ", rob.long$condition)
+    rob.long$condition = gsub("\\.", " ", rob.long$condition)
+    rob.long$measurement = as.factor(rob.long$measurement)
+    rob.long$measurement = factor(rob.long$measurement, levels(rob.long$measurement)[c(3,
+                                                                                       1, 4, 2)])
+    rob.plot = ggplot(data = rob.long) + geom_bar(mapping = aes(x = condition,
+                                                                fill = measurement), width = 0.7, position = "fill",
+                                                  color = "black") + coord_flip(ylim = c(0, 1)) + guides(fill = guide_legend(reverse = TRUE)) +
+      scale_fill_manual("Risk of Bias", labels = c(`High` = "    High risk of bias          ",
+                                                   `Unclear` = "    Unclear risk of bias       ",
+                                                   `Low` = "    Low risk of bias  ",
+                                                   `Missing` = "    Missing information      "),
+                        values = c(Missing = "white",
+                                   High = "#BF0000",
+                                   Unclear = "#E2DF07",
+                                   Low = "#02C100")) +
+      scale_y_continuous(labels = scales::percent) + 
+      theme(axis.title.x = element_blank(),
+            axis.title.y = element_blank(), axis.ticks.y = element_blank(),
+            axis.text.y = element_text(size = 18, color = "black"),
+            axis.line.x = element_line(colour = "black", linewidth = 0.5,
+                                       linetype = "solid"), legend.position = "bottom",
+            panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+            panel.background = element_blank(), legend.background = 
+              element_rect(linetype = "solid",
+              colour = "black"), legend.title = element_blank(),
+            legend.key.size = unit(0.75, "cm"), legend.text = element_text(size = 14))
+    plot(rob.plot)
+    if (table == TRUE) {
+      plot(rob.table)
+    }
+  }
+}
 
 

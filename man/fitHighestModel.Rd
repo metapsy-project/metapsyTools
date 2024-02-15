@@ -12,7 +12,8 @@ fitHighestModel(
   .type.es,
   round.digits,
   .raw.bin.es,
-  nnt.cer
+  nnt.cer,
+  rob.data
 )
 }
 \description{

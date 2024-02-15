@@ -16,7 +16,8 @@ fitOutliersModel(
   which.run,
   which.outliers,
   method.tau,
-  m.for.outliers
+  m.for.outliers,
+  rob.data
 )
 }
 \description{

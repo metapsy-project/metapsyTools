@@ -97,6 +97,7 @@ different meta-analytic approaches.
 <span>                measure.var <span class="op">=</span> <span class="st">"instrument"</span>,</span>
 <span>                low.rob.filter <span class="op">=</span> <span class="st">"rob &gt; 2"</span>,</span>
 <span>                round.digits <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>                rob.data <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>                </span>
 <span>                <span class="co"># Model specifications</span></span>
 <span>                which.combine <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"arms"</span>, <span class="st">"studies"</span><span class="op">)</span>,</span>
@@ -234,6 +235,10 @@ the variable must be included as a column in <code>data</code>.</p></dd>
 
 <dt>round.digits</dt>
 <dd><p><code>numeric</code>. Number of digits to round the (presented) results by. Default is <code>2</code>.</p></dd>
+
+
+<dt>rob.data</dt>
+<dd><p><code>list</code>. Optional list detailing how risk of bias data should be appended to the model (see Details).</p></dd>
 
 
 <dt>which.combine</dt>
@@ -418,6 +423,24 @@ to check the results using a different estimator of <em></em>\(\tau^2\), leaving
 all other settings the same, we could run e.g. <code>method.tau(m) &lt;- "PM"</code>, followed by
 <code>rerun(m)</code>. This would provide results using the Paule-Mandel estimator. A list of all available
 setting replacement functions is provided <a href="https://tools.metapsy.org/reference/replacement-functions" class="external-link">here</a>.</p>
+<p><em></em>\(~\)</p>
+</div>
+
+<div class="section">
+<h3 id="risk-of-bias-data">Risk of Bias data<a class="anchor" aria-label="anchor" href="#risk-of-bias-data"></a></h3>
+
+
+<p>Using the <code>rob.data</code> argument, it is possible to specify which variables in the data set provided in
+<code>data</code> contain Risk of Bias (ROB) assessment information. If specified, this allows to generate
+forest plots with added ROB information when using <code><a href="plot.runMetaAnalysis.html">plot.runMetaAnalysis()</a></code>. ROB information added this
+way can also be used to create ROB summary plots using <code><a href="createRobSummary.html">createRobSummary()</a></code>.</p>
+<p>The object provided to <code>rob.data</code> must be a <code>list</code> element with these elements:</p><ul><li><p><code>domains</code>: A vector of characters, specifying variables that contain ratings for different ROB domains (e.g. allocation concealment, missing data handling, ...).</p></li>
+<li><p><code>domain.names</code> (<em>Optional</em>): A vector of characters with the same length as <code>domains</code>, which provides long-format labels for each included domain.</p></li>
+<li><p><code>overall.rob</code> (<em>Optional</em>): A single character specifying the variable in <code>data</code> that contains the overall ROB rating.</p></li>
+<li><p><code>categories</code>: A vector of characters, specifying how ROB ratings were coded in the selected variables (e.g., <code>"low</code>, <code>"high"</code>, <code>"unclear"</code>).</p></li>
+<li><p><code>symbols</code> (<em>Optional</em>): A vector of single-letter characters (or symbols) that should be used when plotting ROB rating in the forest plot.</p></li>
+<li><p><code>colors</code> (<em>Optional</em>): A vector of characters of the same length as <code>categories</code>, specifying colors for each rating code.</p></li>
+</ul><p>For concrete usage examples with this functionality, see "Examples".</p>
 <p>For more details see the <a href="https://tools.metapsy.org/articles/metapsytools" class="external-link">Get Started</a> vignette.</p>
 </div>
 
@@ -485,6 +508,35 @@ Paula Kuper <a href="mailto:paula.r.kuper@gmail.com">paula.r.kuper@gmail.com</a>
 <span class="r-in"><span><span class="va">data</span> <span class="op"><a href="pipe.html">%&gt;%</a></span> </span></span>
 <span class="r-in"><span>  <span class="fu">runMetaAnalysis</span><span class="op">(</span>which.combine <span class="op">=</span> <span class="st">"studies"</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span> </span></span>
 <span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="st">"combined"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  </span></span>
+<span class="r-in"><span><span class="co"># Define ROB data to be added to the models</span></span></span>
+<span class="r-in"><span><span class="va">robData</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="co"># Names of ROB variables included in 'data'</span></span></span>
+<span class="r-in"><span>  domains <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"sg"</span>, <span class="st">"ac"</span>, <span class="st">"ba"</span>, <span class="st">"itt"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  <span class="co"># Long-format labels for each ROB domain</span></span></span>
+<span class="r-in"><span>  domain.names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Sequence Generation"</span>, </span></span>
+<span class="r-in"><span>                   <span class="st">"Allocation Concealment"</span>, </span></span>
+<span class="r-in"><span>                   <span class="st">"Blinding of Assessors"</span>, </span></span>
+<span class="r-in"><span>                   <span class="st">"ITT Analyses"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  <span class="co"># Codes used to rate the risk of bias (sr=self-report)</span></span></span>
+<span class="r-in"><span>  categories <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"0"</span>, <span class="st">"1"</span>, <span class="st">"sr"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  <span class="co"># Symbols that should be used for these codes in forest plots</span></span></span>
+<span class="r-in"><span>  symbols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"-"</span>, <span class="st">"+"</span>, <span class="st">"s"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  <span class="co"># Colors to be used in forest plots for each of these codes</span></span></span>
+<span class="r-in"><span>  colors <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"red"</span>, <span class="st">"green"</span>, <span class="st">"yellow"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Re-run model with appended ROB data</span></span></span>
+<span class="r-in"><span><span class="va">res</span> <span class="op">=</span> <span class="fu">runMetaAnalysis</span><span class="op">(</span><span class="va">data</span>, rob.data <span class="op">=</span> <span class="va">robData</span><span class="op">)</span> </span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Generate forest plot with ROB data</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span>, <span class="st">"combined"</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Create a summary plot</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="createRobSummary.html">createRobSummary</a></span><span class="op">(</span><span class="va">res</span>, </span></span>
+<span class="r-in"><span>                 name.low <span class="op">=</span> <span class="st">"1"</span>, </span></span>
+<span class="r-in"><span>                 name.high <span class="op">=</span> <span class="st">"0"</span>, </span></span>
+<span class="r-in"><span>                 name.unclear <span class="op">=</span> <span class="st">"sr"</span>,</span></span>
+<span class="r-in"><span>                 which.run <span class="op">=</span> <span class="st">"combined"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Run meta-analysis using raw response rate data</span></span></span>
 <span class="r-in"><span><span class="va">data</span> <span class="op"><a href="pipe.html">%&gt;%</a></span> </span></span>

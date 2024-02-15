@@ -22,7 +22,8 @@ fitOverallModel(
   es.binary.raw.vars,
   round.digits,
   nnt.cer,
-  which.run
+  which.run,
+  rob.data
 )
 }
 \description{

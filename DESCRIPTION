@@ -22,7 +22,7 @@ Imports:
     graphics (>= 3.5.2), stats (>= 3.5.2),
     utils (>= 3.5.2), methods (>= 3.5.2),
     tidyr, forcats, ggplot2, ggrepel, 
-    gridExtra, kableExtra, knitr, meta (>= 5.0-0),
+    gridExtra, kableExtra, knitr, meta (>= 7.0-0),
     metafor, metasens, rlang, scales,
     mathjaxr, numDeriv
 Suggests: 

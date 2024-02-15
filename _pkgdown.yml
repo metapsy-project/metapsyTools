@@ -60,6 +60,7 @@ reference:
   - starts_with("metaRegression")
   - exploreStudies
   - createStudyTable
+  - createRobSummary
 - title: "Effect Size Calculators"
   desc: "Default plug-in functions used by `calculateEffectSizes`."
   contents:

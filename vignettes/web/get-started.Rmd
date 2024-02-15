@@ -13,7 +13,7 @@ options(rmarkdown.html_vignette.check_title = FALSE)
 
 <img src="https://tools.metapsy.org/figures/arrow.jpg" style="width: 100%; border-radius: 5px; box-shadow: 0px 0px 5px;"/>
 
-**This article showcases core functionalities of the package, and how to apply them in practice.**
+**This article showcases core functionalities of the package, and how to apply them in practice.** 
 
 <br></br>
 
@@ -934,6 +934,53 @@ metaRegression(res$model.threelevel,
     # Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
 Please note that, to be available in `metaRegression`, is is necessary that the moderator variable(s) are already included in the data set that we originally used to call `runMetaAnalysis`.
+
+<br></br>
+
+### Risk of Bias
+
+Databases formatted using the [Metapsy data standard](https://docs.metapsy.org/data-preparation/format/) will typically also contain risk of bias ratings for each included study. The `metapsyTools` package also includes some functionality to include and display this information during the analysis.
+
+To include risk of bias data, the `data.rob` argument has to be specified when running `runMetaAnalysis`. In particular, we need to first create and then provide a list element with all the specifications. A documentation on how to specify this list element is provided [here](https://tools.metapsy.org/reference/runmetaanalysis#risk-of-bias-data). 
+
+```{r, eval=FALSE}
+# Define ROB data to be added to the models
+robData = list(
+  domains = c("sg", "ac", "ba", "itt"),
+  domain.names = c("Sequence Generation", 
+                   "Allocation Concealment", 
+                   "Blinding of Assessors", 
+                   "ITT Analyses"),
+  categories = c("0", "1", "sr"),
+  symbols = c("-", "+", "s"),
+  colors = c("red", "green", "yellow"))
+
+# Re-run model with appended ROB data
+res = runMetaAnalysis(ma.data, rob.data = robData) 
+```
+
+Once this is set up, we can use the `runMetaAnalysis` object to easily produce forest plots that
+include risk of bias information. 
+
+```{r, eval=FALSE}
+plot(res, "combined", 
+     smlab = "", fontfamily = "Tahoma",
+     col.square = "lavender", 
+     col.predict = "black")
+```
+
+![](forest_rob.webp){width="685px"}
+
+It is also possible to create a summary risk of bias plot, using the `createRobSummary` function.
+
+```{r, eval=F}
+createRobSummary(res, 
+                 name.low = "1", 
+                 name.high = "0", 
+                 name.unclear = "sr")
+```
+
+![](rob_summary.webp){width="500px"}
 
 <br></br>
 

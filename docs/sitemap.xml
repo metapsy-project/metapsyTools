@@ -64,6 +64,9 @@
     <loc>/reference/addAllCombinations.html</loc>
   </url>
   <url>
+    <loc>/reference/addRobData.html</loc>
+  </url>
+  <url>
     <loc>/reference/addTrialArmInfo.html</loc>
   </url>
   <url>
@@ -104,6 +107,9 @@
   </url>
   <url>
     <loc>/reference/correctPublicationBias.html</loc>
+  </url>
+  <url>
+    <loc>/reference/createRobSummary.html</loc>
   </url>
   <url>
     <loc>/reference/createStudyTable.html</loc>
@@ -272,6 +278,9 @@
   </url>
   <url>
     <loc>/reference/psyCtrSubsetWide.html</loc>
+  </url>
+  <url>
+    <loc>/reference/robSummary.html</loc>
   </url>
   <url>
     <loc>/reference/rr.binary.html</loc>

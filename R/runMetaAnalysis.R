@@ -37,6 +37,7 @@
 #'                 measure.var = "instrument",
 #'                 low.rob.filter = "rob > 2",
 #'                 round.digits = 2,
+#'                 rob.data = NULL,
 #'                 
 #'                 # Model specifications
 #'                 which.combine = c("arms", "studies"),
@@ -119,6 +120,7 @@
 #' include studies for the "low RoB only" analysis. Please note that the name of 
 #' the variable must be included as a column in \code{data}.
 #' @param round.digits \code{numeric}. Number of digits to round the (presented) results by. Default is \code{2}.
+#' @param rob.data `list`. Optional list detailing how risk of bias data should be appended to the model (see Details).
 #' @param which.combine `character`. Should multiple effect sizes within one study be pooled
 #' on an `"arms"` (default) or `"studies"` level? When a study is a multi-arm trial, setting
 #' `which.combine = "arms"` will aggregate the effect sizes for each trial arm individually before pooling;
@@ -220,6 +222,35 @@
 #' data %>% 
 #'   runMetaAnalysis(which.combine = "studies") %>% 
 #'   plot("combined")
+#'   
+#' # Define ROB data to be added to the models
+#' robData = list(
+#'   # Names of ROB variables included in 'data'
+#'   domains = c("sg", "ac", "ba", "itt"),
+#'   # Long-format labels for each ROB domain
+#'   domain.names = c("Sequence Generation", 
+#'                    "Allocation Concealment", 
+#'                    "Blinding of Assessors", 
+#'                    "ITT Analyses"),
+#'   # Codes used to rate the risk of bias (sr=self-report)
+#'   categories = c("0", "1", "sr"),
+#'   # Symbols that should be used for these codes in forest plots
+#'   symbols = c("-", "+", "s"),
+#'   # Colors to be used in forest plots for each of these codes
+#'   colors = c("red", "green", "yellow"))
+#' 
+#' # Re-run model with appended ROB data
+#' res = runMetaAnalysis(data, rob.data = robData) 
+#' 
+#' # Generate forest plot with ROB data
+#' plot(res, "combined")
+#' 
+#' # Create a summary plot
+#' createRobSummary(res, 
+#'                  name.low = "1", 
+#'                  name.high = "0", 
+#'                  name.unclear = "sr",
+#'                  which.run = "combined")
 #' 
 #' # Run meta-analysis using raw response rate data
 #' data %>% 
@@ -324,6 +355,24 @@
 #' `rerun(m)`. This would provide results using the Paule-Mandel estimator. A list of all available
 #' setting replacement functions is provided [here](https://tools.metapsy.org/reference/replacement-functions).
 #' 
+#' \mjeqn{~}{~}
+#' 
+#' ## Risk of Bias data
+#' Using the `rob.data` argument, it is possible to specify which variables in the data set provided in
+#' `data` contain Risk of Bias (ROB) assessment information. If specified, this allows to generate
+#' forest plots with added ROB information when using [plot.runMetaAnalysis()]. ROB information added this 
+#' way can also be used to create ROB summary plots using [createRobSummary()].
+#' 
+#' The object provided to `rob.data` must be a `list` element with these elements:
+#' 
+#' - `domains`: A vector of characters, specifying variables that contain ratings for different ROB domains (e.g. allocation concealment, missing data handling, ...).
+#' - `domain.names` (_Optional_): A vector of characters with the same length as `domains`, which provides long-format labels for each included domain.
+#' - `overall.rob` (_Optional_): A single character specifying the variable in `data` that contains the overall ROB rating.
+#' - `categories`: A vector of characters, specifying how ROB ratings were coded in the selected variables (e.g., `"low`, `"high"`, `"unclear"`).
+#' - `symbols` (_Optional_): A vector of single-letter characters (or symbols) that should be used when plotting ROB rating in the forest plot. 
+#' - `colors` (_Optional_): A vector of characters of the same length as `categories`, specifying colors for each rating code.
+#' 
+#' For concrete usage examples with this functionality, see "Examples".
 #' 
 #' For more details see the [Get Started](https://tools.metapsy.org/articles/metapsytools) vignette.
 #'
@@ -332,7 +381,7 @@
 #' @importFrom crayon green yellow cyan bold
 #' @importFrom scales pvalue
 #' @importFrom purrr map
-#' @importFrom meta metagen
+#' @importFrom meta metagen rob
 #' @importFrom metafor escalc aggregate.escalc rma.mv vcalc blsplit simulate.rma
 #' @importFrom clubSandwich coef_test conf_int
 #' @importFrom stats dffits model.matrix rnorm rstudent complete.cases median quantile
@@ -364,6 +413,7 @@ runMetaAnalysis = function(data,
                            measure.var = "instrument",
                            low.rob.filter = "rob > 2",
                            round.digits = 2,
+                           rob.data = NULL,
                            which.combine = c("arms", "studies"),
                            which.combine.var = "multi_arm1",
                            which.outliers = c("overall", "combined"),
@@ -451,6 +501,11 @@ runMetaAnalysis = function(data,
     stop("Columns with the name 'exclude' are not allowed in the data set. Did you run checkDataFormat()?")
   }
   
+  # check if 'rob.data' is either NULL or a list
+  if (!is.null(rob.data) && !(class(rob.data)[1]=="list")) {
+    stop("'rob.data' must be either NULL or a list element.")
+  }
+  
   # Get three-dots arguments;
   # Initialize error model list
   dots = list(...)
@@ -477,7 +532,7 @@ runMetaAnalysis = function(data,
                     measure.var, study.var, .raw.bin.es, .type.es, hakn,
                     method.tau.meta, method.tau.ci, method.tau,
                     dots, es.binary.raw.vars, round.digits,
-                    nnt.cer, which.run)
+                    nnt.cer, which.run, rob.data)
   rownames(mGeneral$res) = "Overall"
   sendMessage(mGeneral, "overall", which.run)
   
@@ -496,7 +551,7 @@ runMetaAnalysis = function(data,
     
     mLowest = fitLowestModel(data, study.var, multi.study,
                              mGeneral, .type.es, round.digits,
-                             .raw.bin.es, nnt.cer)
+                             .raw.bin.es, nnt.cer, rob.data)
     rownames(mLowest$res) = "One ES/study (lowest)"
     
     # If model failed, add to error model list
@@ -522,7 +577,7 @@ runMetaAnalysis = function(data,
       fitHighestModel(
         data, study.var, multi.study,
         mGeneral, .type.es, round.digits,
-        .raw.bin.es, nnt.cer)
+        .raw.bin.es, nnt.cer, rob.data)
     rownames(mHighest$res) = "One ES/study (highest)"
     # If model failed, add to error model list
     if (mHighest$has.error){
@@ -553,7 +608,7 @@ runMetaAnalysis = function(data,
                                    es.binary.raw.vars, arm.var.1, arm.var.2,
                                    phi.within.study, n.var.arm1, 
                                    n.var.arm2, w1.var, w2.var, time.var,
-                                   near.pd)
+                                   near.pd, rob.data)
       sendMessage(mComb, "combined", which.run)
       if (mComb$has.error){
         message("- ", crayon::yellow("[!] "), 
@@ -569,7 +624,8 @@ runMetaAnalysis = function(data,
                                mGeneral, .type.es, round.digits, hakn,
                                .raw.bin.es, nnt.cer, rho.within.study,
                                method.tau, method.tau.ci, dots,
-                               es.binary.raw.vars, phi.within.study)
+                               es.binary.raw.vars, phi.within.study,
+                               rob.data)
       # If model failed, add to error model list
       if (mComb$has.error){
         error.model.list = append(error.model.list, "combined")
@@ -601,7 +657,7 @@ runMetaAnalysis = function(data,
                                  mGeneral, .type.es, round.digits,
                                  .raw.bin.es, nnt.cer, which.run,
                                  which.outliers, method.tau,
-                                 m.for.outliers)
+                                 m.for.outliers, rob.data)
     # If model failed, add to error model list
     if (mOutliers$has.error){
       error.model.list = append(error.model.list, "outliers")
@@ -621,7 +677,7 @@ runMetaAnalysis = function(data,
     mInfluence = fitInfluenceModel(which.influence, mComb, mGeneral,
                                    which.run, method.tau,
                                    .raw.bin.es, .type.es, round.digits,
-                                   nnt.cer)
+                                   nnt.cer, rob.data)
     influenceRes = mInfluence$influenceRes
     sendMessage(mInfluence, "influence", which.run)
     # If model failed, add to error model list
@@ -642,7 +698,8 @@ runMetaAnalysis = function(data,
   if ("rob" %in% which.run){
     mRob = fitRobModel(which.run, which.rob, which.outliers,
                        mGeneral, mComb, low.rob.filter, method.tau,
-                       .raw.bin.es, .type.es, round.digits, nnt.cer)
+                       .raw.bin.es, .type.es, round.digits, nnt.cer,
+                       rob.data)
     sendMessage(mRob, "rob", which.run)
     # If model failed, add to error model list
     if (mRob$has.error){
@@ -1407,22 +1464,18 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
         message("- ", crayon::green("[OK] "), 
                 "Generating forest plot ('", x$which.run[1], "' model).")
         if (identical(x$.type.es, "RR")){
-          meta::forest(x[[models[[x$which.run[1]]][1]]],
-                            layout = "JAMA", ...)
+          meta::forest(x[[models[[x$which.run[1]]][1]]], leftcols = "study", ...)
         } else {
-          meta::forest(x[[models[[x$which.run[1]]][1]]], 
-                            layout = "JAMA", ...)
+          meta::forest(x[[models[[x$which.run[1]]][1]]], leftcols = "study", ...)
         }
       }
       if (models[[x$which.run[1]]][1] == "lowest.highest"){
         message("- ", crayon::green("[OK] "), "Generating forest plot ('", 
                 "highest", "' model).")
         if (identical(x$.type.es, "RR")){
-          meta::forest(x$model.highest, 
-                            layout = "JAMA", ...)
+          meta::forest(x$model.highest, leftcols = "study", ...)
         } else {
-          meta::forest(x$model.highest, 
-                            layout = "JAMA", ...)
+          meta::forest(x$model.highest, leftcols = "study", ...)
         }
       }
       if (models[[x$which.run[1]]][1] == "model.threelevel"){
@@ -1448,11 +1501,9 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
         message("- ", crayon::green("[OK] "), 
                 "Generating forest plot ('overall' model).")
         if (identical(x$.type.es, "RR")){
-          meta::forest(x$model.overall, 
-                            layout = "JAMA",  ...)
+          meta::forest(x$model.overall, leftcols = "study", ...)
         } else {
-          meta::forest(x$model.overall, 
-                            layout = "JAMA", ...)
+          meta::forest(x$model.overall, leftcols = "study", ...)
         }
       }
       
@@ -1460,20 +1511,16 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
         message("- ", crayon::green("[OK] "), 
                 "Generating forest plot ('lowest' model).")
         if (identical(x$.type.es, "RR")){
-          meta::forest(x$model.lowest, 
-                            layout = "JAMA", ...)
+          meta::forest(x$model.lowest, leftcols = "study", ...)
         } else {
-          meta::forest(x$model.lowest, 
-                            layout = "JAMA", ...)
+          meta::forest(x$model.lowest, leftcols = "study", ...)
         }
         message("- ", crayon::green("[OK] "), 
                 "Generating forest plot ('highest' model).")
         if (identical(x$.type.es, "RR")){
-          meta::forest(x$model.highest, 
-                            layout = "JAMA", ...)
+          meta::forest(x$model.highest, leftcols = "study", ...)
         } else {
-          meta::forest(x$model.highest, 
-                            layout = "JAMA", ...)
+          meta::forest(x$model.highest, leftcols = "study", ...)
         }
       }
       
@@ -1481,11 +1528,9 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
         message("- ", crayon::green("[OK] "), 
                 "Generating forest plot ('outliers' model).")
         if (identical(x$.type.es, "RR")){
-          meta::forest(x$model.outliers, 
-                            layout = "JAMA", ...)
+          meta::forest(x$model.outliers, leftcols = "study", ...)
         } else {
-          meta::forest(x$model.outliers, 
-                            layout = "JAMA", ...)
+          meta::forest(x$model.outliers, leftcols = "study", ...)
         }
       }
       
@@ -1493,11 +1538,9 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
         message("- ", crayon::green("[OK] "), 
                 "Generating forest plot ('influence' model).")
         if (identical(x$.type.es, "RR")){
-          meta::forest(x$model.influence, 
-                            layout = "JAMA", ...)
+          meta::forest(x$model.influence, leftcols = "study", ...)
         } else {
-          meta::forest(x$model.influence, 
-                            layout = "JAMA", ...)
+          meta::forest(x$model.influence, leftcols = "study", ...)
         }
       }
       
@@ -1505,11 +1548,9 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
         message("- ", crayon::green("[OK] "), 
                 "Generating forest plot ('rob' model).")
         if (identical(x$.type.es, "RR")){
-          meta::forest(x$model.rob, 
-                            layout = "JAMA", ...)
+          meta::forest(x$model.rob, leftcols = "study", ...)
         } else {
-          meta::forest(x$model.rob, 
-                            layout = "JAMA", ...)
+          meta::forest(x$model.rob, leftcols = "study", ...)
         }
       }
       
@@ -1517,11 +1558,9 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
         message("- ", crayon::green("[OK] "), 
                 "Generating forest plot ('combined' model).")
         if (identical(x$.type.es, "RR")){
-          meta::forest(x$model.combined, 
-                            layout = "JAMA", ...)
+          meta::forest(x$model.combined, leftcols = "study", ...)
         } else {
-          meta::forest(x$model.combined, 
-                            layout = "JAMA", ...)
+          meta::forest(x$model.combined, leftcols = "study", ...)
         }
       }
       
