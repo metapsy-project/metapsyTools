@@ -379,7 +379,7 @@ data \%>\%
   plot("combined")
   
 # Define ROB data to be added to the models
-robData = list(
+robData <- list(
   # Names of ROB variables included in 'data'
   domains = c("sg", "ac", "ba", "itt"),
   # Long-format labels for each ROB domain
@@ -395,7 +395,7 @@ robData = list(
   colors = c("red", "green", "yellow"))
 
 # Re-run model with appended ROB data
-res = runMetaAnalysis(data, rob.data = robData) 
+res <- runMetaAnalysis(data, rob.data = robData) 
 
 # Generate forest plot with ROB data
 plot(res, "combined")

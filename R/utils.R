@@ -565,7 +565,7 @@ sendMessage = function(obj, model.name = NULL,
                 obj$message)
       }
     }
-  }}
+}}
 
 
 #' Fit 'overall' model

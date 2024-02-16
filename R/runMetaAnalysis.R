@@ -224,7 +224,7 @@
 #'   plot("combined")
 #'   
 #' # Define ROB data to be added to the models
-#' robData = list(
+#' robData <- list(
 #'   # Names of ROB variables included in 'data'
 #'   domains = c("sg", "ac", "ba", "itt"),
 #'   # Long-format labels for each ROB domain
@@ -240,7 +240,7 @@
 #'   colors = c("red", "green", "yellow"))
 #' 
 #' # Re-run model with appended ROB data
-#' res = runMetaAnalysis(data, rob.data = robData) 
+#' res <- runMetaAnalysis(data, rob.data = robData) 
 #' 
 #' # Generate forest plot with ROB data
 #' plot(res, "combined")
@@ -1399,7 +1399,7 @@ print.runMetaAnalysis = function(x, ...){
 #' Paula Kuper \email{paula.r.kuper@@gmail.com}, Pim Cuijpers \email{p.cuijpers@@vu.nl}
 #'
 #' @importFrom meta metagen forest
-#' @importFrom metafor forest.rma
+#' @importFrom metafor forest.rma predict.rma
 #' @importFrom stringr str_replace_all
 #' @importFrom purrr map
 #' @importFrom dplyr mutate
@@ -1407,6 +1407,7 @@ print.runMetaAnalysis = function(x, ...){
 #' @importFrom meta funnel
 #' @importFrom metafor plot.rma.uni.selmodel
 #' @importFrom crayon green yellow cyan bold
+#' @importFrom clubSandwich conf_int
 #'
 #' @export
 #' @method plot runMetaAnalysis
@@ -1480,18 +1481,100 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
       }
       if (models[[x$which.run[1]]][1] == "model.threelevel"){
         if (identical(x$.type.es, "RR")){
-          metafor::forest.rma(x$model.threelevel, 
-                              transf = exp, ...)
+          x$model.overall %>% 
+            {.$TE.random = x$model.threelevel$b[,1]
+            .$lower.random = 
+              ifelse(x$use.rve, clubSandwich::conf_int(x$model.threelevel, "CR2")[,5], 
+                     x$model.threelevel$ci.lb)
+            .$upper.random = 
+              ifelse(x$use.rve, clubSandwich::conf_int(x$model.threelevel, "CR2")[,6], 
+                     x$model.threelevel$ci.ub)
+            .$lower.predict = metafor::predict.rma(x$model.threelevel)[[5]];
+            .$upper.predict = metafor::predict.rma(x$model.threelevel)[[6]];
+            .$tau = sqrt(x$model.threelevel$sigma2[1])
+            .$tau2 = x$model.threelevel$sigma2[1];
+            .$I2 = x$model.threelevel.var.comp[1,"i2"]/100;
+            .$common = FALSE; .$random = TRUE; .} %>% 
+            meta::forest(rightcols = c("effect", "ci"),
+                         print.I2 = FALSE, print.pval.Q = FALSE,
+                         hetlab = "Heterogeneity (Between): ",
+                         digits.tau2 = 3, 
+                         text.random = 
+                           ifelse(x$use.rve, "3-Level Model (RVE)",
+                                  "3-Level Hierarchical Model"),
+                         ...)
         } else {
-          metafor::forest.rma(x$model.threelevel, ...)
+          x$model.overall %>% 
+            {.$TE.random = x$model.threelevel$b[,1]
+             .$lower.random = 
+               ifelse(x$use.rve, clubSandwich::conf_int(x$model.threelevel, "CR2")[,5], 
+                      x$model.threelevel$ci.lb)
+             .$upper.random = 
+               ifelse(x$use.rve, clubSandwich::conf_int(x$model.threelevel, "CR2")[,6], 
+                      x$model.threelevel$ci.ub)
+             .$lower.predict = metafor::predict.rma(x$model.threelevel)[[5]];
+             .$upper.predict = metafor::predict.rma(x$model.threelevel)[[6]];
+             .$tau = sqrt(x$model.threelevel$sigma2[1])
+             .$tau2 = x$model.threelevel$sigma2[1];
+             .$I2 = x$model.threelevel.var.comp[1,"i2"]/100;
+             .$common = FALSE; .$random = TRUE; .} %>% 
+            meta::forest(rightcols = c("effect", "ci"),
+                         print.I2 = FALSE, print.pval.Q = FALSE,
+                         hetlab = "Heterogeneity (Between): ",
+                         digits.tau2 = 3, 
+                         text.random = 
+                           ifelse(x$use.rve, "3-Level Hierarchical Model (RVE)",
+                                  "3-Level Hierarchical Model"),
+                         ...)
         }
       }
       if (models[[x$which.run[1]]][1] == "model.threelevel.che"){
         if (identical(x$.type.es, "RR")){
-          metafor::forest.rma(x$model.threelevel.che, 
-                              transf = exp, ...)
+          x$model.overall %>% 
+            {.$TE.random = x$model.threelevel.che$b[,1]
+            .$lower.random = 
+              ifelse(x$use.rve, clubSandwich::conf_int(x$model.threelevel.che, "CR2")[,5], 
+                     x$model.threelevel.che$ci.lb)
+            .$upper.random = 
+              ifelse(x$use.rve, clubSandwich::conf_int(x$model.threelevel.che, "CR2")[,6], 
+                     x$model.threelevel.che$ci.ub)
+            .$lower.predict = metafor::predict.rma(x$model.threelevel.che)[[5]];
+            .$upper.predict = metafor::predict.rma(x$model.threelevel.che)[[6]];
+            .$tau = sqrt(x$model.threelevel.che$sigma2[1])
+            .$tau2 = x$model.threelevel.che$sigma2[1];
+            .$I2 = x$model.threelevel.che.var.comp[1,"i2"]/100;
+            .$common = FALSE; .$random = TRUE; .} %>% 
+            meta::forest(rightcols = c("effect", "ci"),
+                         print.I2 = FALSE, print.pval.Q = FALSE,
+                         hetlab = "Heterogeneity (Between): ",
+                         digits.tau2 = 3, 
+                         text.random = 
+                           ifelse(x$use.rve, "3-Level CHE Model (RVE)",
+                                  "3-Level CHE Model"),
+                         ...)
         } else {
-          metafor::forest.rma(x$model.threelevel.che, ...)
+          x$model.overall %>% 
+            {.$TE.random = x$model.threelevel.che$b[,1]
+            .$lower.random = 
+              ifelse(x$use.rve, clubSandwich::conf_int(x$model.threelevel.che, "CR2")[,5], 
+                     x$model.threelevel.che$ci.lb)
+            .$upper.random = 
+              ifelse(x$use.rve, clubSandwich::conf_int(x$model.threelevel.che, "CR2")[,6], 
+                     x$model.threelevel.che$ci.ub)
+            .$lower.predict = metafor::predict.rma(x$model.threelevel.che)[[5]];
+            .$upper.predict = metafor::predict.rma(x$model.threelevel.che)[[6]];
+            .$tau = sqrt(x$model.threelevel.che$sigma2[1])
+            .$tau2 = x$model.threelevel.che$sigma2[1];
+            .$I2 = x$model.threelevel.che.var.comp[1,"i2"]/100;
+            .$common = FALSE; .$random = TRUE; .} %>% 
+            meta::forest(rightcols = c("effect", "ci"),
+                         print.I2 = FALSE, print.pval.Q = FALSE,
+                         hetlab = "Heterogeneity (Between): ",
+                         digits.tau2 = 3, 
+                         text.random = 
+                           ifelse(x$use.rve, "3-Level CHE Model (RVE)",
+                                  "3-Level CHE Model"),
+                         ...)
         }
       }
       
@@ -1568,9 +1651,51 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
         message("- ", crayon::green("[OK] "), 
                 "Generating forest plot ('threelevel' model).")
         if (identical(x$.type.es, "RR")){
-          metafor::forest.rma(x$model.threelevel, transf = exp, ...)
+          x$model.overall %>% 
+            {.$TE.random = x$model.threelevel$b[,1]
+            .$lower.random = 
+              ifelse(x$use.rve, clubSandwich::conf_int(x$model.threelevel, "CR2")[,5], 
+                     x$model.threelevel$ci.lb)
+            .$upper.random = 
+              ifelse(x$use.rve, clubSandwich::conf_int(x$model.threelevel, "CR2")[,6], 
+                     x$model.threelevel$ci.ub)
+            .$lower.predict = metafor::predict.rma(x$model.threelevel)[[5]];
+            .$upper.predict = metafor::predict.rma(x$model.threelevel)[[6]];
+            .$tau = sqrt(x$model.threelevel$sigma2[1])
+            .$tau2 = x$model.threelevel$sigma2[1];
+            .$I2 = x$model.threelevel.var.comp[1,"i2"]/100;
+            .$common = FALSE; .$random = TRUE; .} %>% 
+            meta::forest(rightcols = c("effect", "ci"),
+                         print.I2 = FALSE, print.pval.Q = FALSE,
+                         hetlab = "Heterogeneity (Between): ",
+                         digits.tau2 = 3, 
+                         text.random = 
+                           ifelse(x$use.rve, "3-Level Hierarchical Model (RVE)",
+                                  "3-Level Hierarchical Model"),
+                         ...)
         } else {
-          metafor::forest.rma(x$model.threelevel, ...)
+          x$model.overall %>% 
+            {.$TE.random = x$model.threelevel$b[,1]
+            .$lower.random = 
+              ifelse(x$use.rve, clubSandwich::conf_int(x$model.threelevel, "CR2")[,5], 
+                     x$model.threelevel$ci.lb)
+            .$upper.random = 
+              ifelse(x$use.rve, clubSandwich::conf_int(x$model.threelevel, "CR2")[,6], 
+                     x$model.threelevel$ci.ub)
+            .$lower.predict = metafor::predict.rma(x$model.threelevel)[[5]];
+            .$upper.predict = metafor::predict.rma(x$model.threelevel)[[6]];
+            .$tau = sqrt(x$model.threelevel$sigma2[1])
+            .$tau2 = x$model.threelevel$sigma2[1];
+            .$I2 = x$model.threelevel.var.comp[1,"i2"]/100;
+            .$common = FALSE; .$random = TRUE; .} %>% 
+            meta::forest(rightcols = c("effect", "ci"),
+                         print.I2 = FALSE, print.pval.Q = FALSE,
+                         hetlab = "Heterogeneity (Between): ",
+                         digits.tau2 = 3, 
+                         text.random = 
+                           ifelse(x$use.rve, "3-Level Hierarchical Model (RVE)",
+                                  "3-Level Hierarchical Model"),
+                         ...)
         }
       }
       
@@ -1578,9 +1703,51 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
         message("- ", crayon::green("[OK] "), 
                 "Generating forest plot ('threelevel.che' model).")
         if (identical(x$.type.es, "RR")){
-          metafor::forest.rma(x$model.threelevel.che, transf = exp, ...)
+          x$model.overall %>% 
+            {.$TE.random = x$model.threelevel.che$b[,1]
+            .$lower.random = 
+              ifelse(x$use.rve, clubSandwich::conf_int(x$model.threelevel.che, "CR2")[,5], 
+                     x$model.threelevel.che$ci.lb)
+            .$upper.random = 
+              ifelse(x$use.rve, clubSandwich::conf_int(x$model.threelevel.che, "CR2")[,6], 
+                     x$model.threelevel.che$ci.ub)
+            .$lower.predict = metafor::predict.rma(x$model.threelevel.che)[[5]];
+            .$upper.predict = metafor::predict.rma(x$model.threelevel.che)[[6]];
+            .$tau = sqrt(x$model.threelevel.che$sigma2[1])
+            .$tau2 = x$model.threelevel.che$sigma2[1];
+            .$I2 = x$model.threelevel.che.var.comp[1,"i2"]/100;
+            .$common = FALSE; .$random = TRUE; .} %>% 
+            meta::forest(rightcols = c("effect", "ci"),
+                         print.I2 = FALSE, print.pval.Q = FALSE,
+                         hetlab = "Heterogeneity (Between): ",
+                         digits.tau2 = 3, 
+                         text.random = 
+                           ifelse(x$use.rve, "3-Level CHE Model (RVE)",
+                                  "3-Level CHE Model"),
+                         ...)
         } else {
-          metafor::forest.rma(x$model.threelevel.che, ...)
+          x$model.overall %>% 
+            {.$TE.random = x$model.threelevel.che$b[,1]
+            .$lower.random = 
+              ifelse(x$use.rve, clubSandwich::conf_int(x$model.threelevel.che, "CR2")[,5], 
+                     x$model.threelevel.che$ci.lb)
+            .$upper.random = 
+              ifelse(x$use.rve, clubSandwich::conf_int(x$model.threelevel.che, "CR2")[,6], 
+                     x$model.threelevel.che$ci.ub)
+            .$lower.predict = metafor::predict.rma(x$model.threelevel.che)[[5]];
+            .$upper.predict = metafor::predict.rma(x$model.threelevel.che)[[6]];
+            .$tau = sqrt(x$model.threelevel.che$sigma2[1])
+            .$tau2 = x$model.threelevel.che$sigma2[1];
+            .$I2 = x$model.threelevel.che.var.comp[1,"i2"]/100;
+            .$common = FALSE; .$random = TRUE; .} %>% 
+            meta::forest(rightcols = c("effect", "ci"),
+                         print.I2 = FALSE, print.pval.Q = FALSE,
+                         hetlab = "Heterogeneity (Between): ",
+                         digits.tau2 = 3, 
+                         text.random = 
+                           ifelse(x$use.rve, "3-Level CHE Model (RVE)",
+                                  "3-Level CHE Model"),
+                         ...)
         }
       }
       
@@ -1588,9 +1755,51 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
         message("- ", crayon::green("[OK] "), 
                 "Generating forest plot ('threelevel.che' model).")
         if (identical(x$.type.es, "RR")){
-          metafor::forest.rma(x$model.threelevel.che, transf = exp, ...)
+          x$model.overall %>% 
+            {.$TE.random = x$model.threelevel.che$b[,1]
+            .$lower.random = 
+              ifelse(x$use.rve, clubSandwich::conf_int(x$model.threelevel.che, "CR2")[,5], 
+                     x$model.threelevel.che$ci.lb)
+            .$upper.random = 
+              ifelse(x$use.rve, clubSandwich::conf_int(x$model.threelevel.che, "CR2")[,6], 
+                     x$model.threelevel.che$ci.ub)
+            .$lower.predict = metafor::predict.rma(x$model.threelevel.che)[[5]];
+            .$upper.predict = metafor::predict.rma(x$model.threelevel.che)[[6]];
+            .$tau = sqrt(x$model.threelevel.che$sigma2[1])
+            .$tau2 = x$model.threelevel.che$sigma2[1];
+            .$I2 = x$model.threelevel.che.var.comp[1,"i2"]/100;
+            .$common = FALSE; .$random = TRUE; .} %>% 
+            meta::forest(rightcols = c("effect", "ci"),
+                         print.I2 = FALSE, print.pval.Q = FALSE,
+                         hetlab = "Heterogeneity (Between): ",
+                         digits.tau2 = 3, 
+                         text.random = 
+                           ifelse(x$use.rve, "3-Level CHE Model (RVE)",
+                                  "3-Level CHE Model"),
+                         ...)
         } else {
-          metafor::forest.rma(x$model.threelevel.che, ...)
+          x$model.overall %>% 
+            {.$TE.random = x$model.threelevel.che$b[,1]
+            .$lower.random = 
+              ifelse(x$use.rve, clubSandwich::conf_int(x$model.threelevel.che, "CR2")[,5], 
+                     x$model.threelevel.che$ci.lb)
+            .$upper.random = 
+              ifelse(x$use.rve, clubSandwich::conf_int(x$model.threelevel.che, "CR2")[,6], 
+                     x$model.threelevel.che$ci.ub)
+            .$lower.predict = metafor::predict.rma(x$model.threelevel.che)[[5]];
+            .$upper.predict = metafor::predict.rma(x$model.threelevel.che)[[6]];
+            .$tau = sqrt(x$model.threelevel.che$sigma2[1])
+            .$tau2 = x$model.threelevel.che$sigma2[1];
+            .$I2 = x$model.threelevel.che.var.comp[1,"i2"]/100;
+            .$common = FALSE; .$random = TRUE; .} %>% 
+            meta::forest(rightcols = c("effect", "ci"),
+                         print.I2 = FALSE, print.pval.Q = FALSE,
+                         hetlab = "Heterogeneity (Between): ",
+                         digits.tau2 = 3, 
+                         text.random = 
+                           ifelse(x$use.rve, "3-Level CHE Model (RVE)",
+                                  "3-Level CHE Model"),
+                         ...)
         }
       }
       

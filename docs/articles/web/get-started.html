@@ -1496,10 +1496,11 @@ element is provided <a href="https://tools.metapsy.org/reference/runmetaanalysis
 object to easily produce forest plots that include risk of bias
 information.</p>
 <div class="sourceCode" id="cb56"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span>, <span class="st">"combined"</span>, </span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span>, <span class="st">"threelevel.che"</span>, </span>
+<span>     leftcols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"study"</span>, <span class="st">"instrument"</span><span class="op">)</span>,</span>
+<span>     leftlabs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Study"</span>, <span class="st">"Instrument"</span><span class="op">)</span>,</span>
 <span>     smlab <span class="op">=</span> <span class="st">""</span>, fontfamily <span class="op">=</span> <span class="st">"Tahoma"</span>,</span>
-<span>     col.square <span class="op">=</span> <span class="st">"lavender"</span>, </span>
-<span>     col.predict <span class="op">=</span> <span class="st">"black"</span><span class="op">)</span></span></code></pre></div>
+<span>     col.square <span class="op">=</span> <span class="st">"lavender"</span>, col.predict <span class="op">=</span> <span class="st">"black"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="forest_rob.webp" width="685"></p>
 <p>It is also possible to create a summary risk of bias plot, using the
 <code>createRobSummary</code> function.</p>

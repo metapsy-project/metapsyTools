@@ -963,10 +963,11 @@ Once this is set up, we can use the `runMetaAnalysis` object to easily produce f
 include risk of bias information. 
 
 ```{r, eval=FALSE}
-plot(res, "combined", 
+plot(res, "threelevel.che", 
+     leftcols = c("study", "instrument"),
+     leftlabs = c("Study", "Instrument"),
      smlab = "", fontfamily = "Tahoma",
-     col.square = "lavender", 
-     col.predict = "black")
+     col.square = "lavender", col.predict = "black")
 ```
 
 ![](forest_rob.webp){width="685px"}
