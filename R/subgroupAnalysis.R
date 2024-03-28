@@ -392,7 +392,7 @@ print.subgroupAnalysis = function(x, ...){
     x$summary %>%
       {.$p = ifelse(.$p == "<0.001", "&lt;0.001", .$p);.} %>% 
       {colnames(.) = colNames;.} %>%
-      knitr::kable(escape = FALSE) %>%
+      knitr::kable(escape = FALSE, format = "html") %>%
       kableExtra::kable_styling(font_size = 8, full_width = FALSE) %>%
       kableExtra::column_spec(1, bold = TRUE) %>%
       kableExtra::collapse_rows(columns = 1, valign = "top") %>%

@@ -998,7 +998,7 @@ print.runMetaAnalysis = function(x, ...){
                       "CI", "<i>p</i>",
                       "<i>I</i><sup>2</sup>",
                       "CI", "PI", "NNT")) %>%
-        knitr::kable(escape = FALSE) %>%
+        knitr::kable(escape = FALSE, format = "html") %>%
         kableExtra::kable_styling(font_size = 8, full_width = FALSE) %>%
         kableExtra::column_spec(1, bold = TRUE, width_min = "13em") %>%
         kableExtra::footnote(general = "Excluded effect sizes/studies:",
@@ -1089,7 +1089,7 @@ print.runMetaAnalysis = function(x, ...){
                       "CI", "<i>p</i>",
                       "<i>I</i><sup>2</sup>",
                       "CI", "PI", "NNT")) %>%
-        knitr::kable(escape = FALSE) %>%
+        knitr::kable(escape = FALSE, format = "html") %>%
         kableExtra::kable_styling(font_size = 8, full_width = FALSE) %>%
         kableExtra::column_spec(1, bold = TRUE, width_min = "13em") %>%
         kableExtra::footnote(general = "Excluded effect sizes/studies:",
@@ -1256,7 +1256,7 @@ print.runMetaAnalysis = function(x, ...){
                                  "CI", "<i>p</i>",
                                  "<i>I</i><sup>2</sup>",
                                  "CI", "PI", "NNT")) %>%
-        knitr::kable(escape = FALSE) %>%
+        knitr::kable(escape = FALSE, format = "html") %>%
         kableExtra::kable_styling(font_size = 8, full_width = FALSE) %>%
         kableExtra::column_spec(1, bold = TRUE, width_min = "13em") %>%
         kableExtra::footnote(general = "Excluded effect sizes/studies:",
@@ -1366,7 +1366,7 @@ print.runMetaAnalysis = function(x, ...){
                                  "CI", "<i>p</i>",
                                  "<i>I</i><sup>2</sup>",
                                  "CI", "PI", "NNT")) %>%
-        knitr::kable(escape = FALSE) %>%
+        knitr::kable(escape = FALSE, format = "html") %>%
         kableExtra::kable_styling(font_size = 8, full_width = FALSE) %>%
         kableExtra::column_spec(1, bold = TRUE, width_min = "13em") %>%
         kableExtra::footnote(general = "Excluded effect sizes/studies:",

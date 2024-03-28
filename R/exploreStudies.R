@@ -357,7 +357,7 @@ print.exploreStudies = function(x, ...){
         paste("Total number of patients: n=", patients.total, sep=""))
       
       x$summary$comparisons %>% 
-        knitr::kable(escape = FALSE) %>%
+        knitr::kable(escape = FALSE, format = "html") %>%
         kableExtra::kable_styling(font_size = 8, full_width = FALSE) %>%
         kableExtra::column_spec(1, bold = TRUE, width_min = "13em") %>%
         kableExtra::footnote(alphabet = footnote) %>% 
@@ -392,7 +392,7 @@ print.exploreStudies = function(x, ...){
         paste("Total number of patients: n=", patients.total, sep=""))
       
       x$summary$conditions %>% 
-        knitr::kable(escape = FALSE) %>%
+        knitr::kable(escape = FALSE, format = "html") %>%
         kableExtra::kable_styling(font_size = 8, full_width = FALSE) %>%
         kableExtra::column_spec(1, bold = TRUE, width_min = "13em") %>%
         kableExtra::footnote(alphabet = footnote) %>% 
