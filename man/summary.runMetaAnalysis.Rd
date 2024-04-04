@@ -11,7 +11,7 @@
 
 \item{forest}{\code{logical}. Should a summary forest plot be returned? \code{TRUE} by default.}
 
-\item{...}{Additional arguments.}
+\item{...}{Additional arguments passed to \code{\link[meta:forest.meta]{meta::forest()}}.}
 }
 \description{
 S3 method showing analysis settings for objects of class \code{runMetaAnalysis}.

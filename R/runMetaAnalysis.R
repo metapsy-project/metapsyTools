@@ -1950,7 +1950,7 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
 #'
 #' @param object An object of class \code{runMetaAnalysis}.
 #' @param forest \code{logical}. Should a summary forest plot be returned? \code{TRUE} by default.
-#' @param ... Additional arguments.
+#' @param ... Additional arguments passed to [meta::forest()].
 #'
 #' @author Mathias Harrer \email{mathias.h.harrer@@gmail.com},
 #' Paula Kuper \email{paula.r.kuper@@gmail.com}, Pim Cuijpers \email{p.cuijpers@@vu.nl}
@@ -2245,8 +2245,10 @@ summary.runMetaAnalysis = function(object, forest = TRUE, ...){
       run.models[["rob"]] = 
         rownames(x$summary)[grepl("Only", rownames(x$summary))]
     }
-
     x$summary = x$summary[run.models,]
+    if (!is.null(x$correctPublicationBias)) {
+      x$summary = rbind(x$summary, x$correctPublicationBias$summary)
+    }
 
     if (x$.type.es == "RR"){
       stringr::str_replace_all(x$summary$rr.ci, ";|\\]|\\[", "") %>%
@@ -2257,25 +2259,34 @@ summary.runMetaAnalysis = function(object, forest = TRUE, ...){
               i2 = round(x$summary$i2,1) %>% format(1), .) %>%
         data.frame() %>%
         dplyr::mutate(rr = as.numeric(rr) %>% log(),
+                      TE = as.numeric(rr) %>% log(),
                       lower = as.numeric(lower) %>% log(),
                       upper = as.numeric(upper) %>% log()) %>%
         meta::metagen(TE = rr, 
                       lower = lower - 1e-50, 
                       upper = upper + 1e-50, 
                       studlab = model, sm = "RR",
-                      data = .) %>%
-        meta::forest(
-          col.square = "lightblue",
-          rightcols = FALSE,
-          overall.hetstat = FALSE,
-          weight.study = "same",
-          test.overall = FALSE, overall = FALSE,
-          leftcols = c("studlab", "effect", "ci", "i2"),
-          leftlabs = c(expression(bold(Model)), 
-                       expression(bold(RR)),
-                       expression(bold(CI)),
-                       expression(bold(italic(I)^2)))) %>%
-        suppressWarnings()
+                      data = .) %>% 
+        suppressWarnings() -> M
+      dots = list(...)
+      if (!is.null(dots$sortvar[1])) {
+        if (dots$sortvar[1] %in% colnames(M$data)) {
+          dots$sortvar = M$data[[dots$sortvar[1]]]
+        } else {
+          dots$sortvar = NULL
+        }
+      }
+      list(x = M, col.square = "lightblue", rightcols = FALSE,
+        overall.hetstat = FALSE, weight.study = "same",
+        test.overall = FALSE, overall = FALSE,
+        leftcols = c("studlab", "effect", "ci", "i2"),
+        leftlabs = c(expression(bold(Model)), 
+                     expression(bold(RR)),
+                     expression(bold(CI)),
+                     expression(bold(italic(I)^2)))) -> forest.args
+      append(forest.args[!names(forest.args) %in% names(dots)], dots) %>% 
+        {.[unique(names(.))]} -> forest.args
+      do.call(meta::forest, forest.args) %>% suppressWarnings()
     } else {
       stringr::str_replace_all(x$summary$g.ci, ";|\\]|\\[", "") %>%
         strsplit(" ") %>% purrr::map(~as.numeric(.)) %>% do.call(rbind,.) %>%
@@ -2284,24 +2295,35 @@ summary.runMetaAnalysis = function(object, forest = TRUE, ...){
               i2 = round(x$summary$i2,1) %>% format(1), .) %>%
         data.frame() %>%
         dplyr::mutate(g = as.numeric(g),
+                      TE = as.numeric(g),
                       lower = as.numeric(lower) - 1e-50,
                       upper = as.numeric(upper) + 1e-50) %>%
         meta::metagen(TE = g, lower = lower, upper = upper, studlab = model,
-                      data = .) %>%
-        meta::forest(col.square = "lightblue",
-                     rightcols = FALSE,
-                     overall.hetstat = FALSE,
-                     weight.study = "same",
-                     test.overall = FALSE, overall = FALSE,
-                     leftcols = c("studlab", "TE", "ci", "i2"),
-                     leftlabs = c(expression(bold(Model)), expression(bold(g)),
-                                  expression(bold(CI)),
-                                  expression(bold(italic(I)^2)))) %>%
-        suppressWarnings()
+                      data = .) %>% 
+        suppressWarnings() -> M
+      dots = list(...)
+      if (!is.null(dots$sortvar[1])) {
+        if (dots$sortvar[1] %in% colnames(M$data)) {
+          dots$sortvar = M$data[[dots$sortvar[1]]]
+        } else {
+          dots$sortvar = NULL
+        }
+      }
+      list(x = M, col.square = "lightblue", rightcols = FALSE,
+           overall.hetstat = FALSE, weight.study = "same",
+           test.overall = FALSE, overall = FALSE, 
+           leftcols = c("studlab", "g", "ci", "i2"),
+           leftlabs = c(expression(bold(Model)), expression(bold(g)),
+                        expression(bold(CI)),
+                        expression(bold(italic(I)^2)))) -> forest.args
+      append(forest.args[!names(forest.args) %in% names(dots)], dots) %>% 
+        {.[unique(names(.))]} -> forest.args
+      do.call(meta::forest, forest.args) %>% suppressWarnings()
     }
   }
 
 }
+
 
 
 
