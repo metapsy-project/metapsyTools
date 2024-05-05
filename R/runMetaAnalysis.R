@@ -506,6 +506,11 @@ runMetaAnalysis = function(data,
     stop("'rob.data' must be either NULL or a list element.")
   }
   
+  # check if study.var is in dataset and arrange
+  if ((!study.var %in% colnames(data))[1]) {
+    stop(paste0("Study variable '", study.var,"' was not found in the dataset."))
+  } else { data = data[order(data[[study.var]]),] }
+  
   # Get three-dots arguments;
   # Initialize error model list
   dots = list(...)
