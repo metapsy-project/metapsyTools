@@ -465,6 +465,83 @@ tryCatch2 = function(expr) {
 }
 
 
+#' Domain 1 RoB Algorithm
+#' @keywords internal 
+domain1Algorithm = function(d1_1, d1_2, d1_3, d1_4) {
+  if (identical(d1_2, "No")) {"high risk"}
+  else if (identical(d1_2, "NI") & (identical(d1_3, "No")|identical(d1_4, "No"))) {"high risk"}
+  else if (identical(d1_2, "NI") & ((identical(d1_3, "Yes")|identical(d1_3, "NI"))|(identical(d1_4, "Yes")|identical(d1_4, "NI")))) {"some concerns"}
+  else if (identical(d1_2, "Yes") & identical(d1_1, "No")) {"some concerns"}
+  else if (identical(d1_2, "Yes") & (identical(d1_1, "Yes")|identical(d1_1, "NI")) & (identical(d1_3, "No")|identical(d1_4, "No"))) {"some concerns"}
+  else if (identical(d1_2, "Yes") & (identical(d1_1, "Yes")|identical(d1_1, "NI")) & ((identical(d1_3, "Yes")|identical(d1_3, "NI"))|(identical(d1_4, "Yes")|identical(d1_4, "NI")))) {"low risk"}
+  else NA
+}
+
+#' Domain 2 RoB Algorithm
+#' @keywords internal 
+domain2Algorithm = function(d2_5, d2_6, d2_7, d2_8, d2_9) {
+  if (identical(d2_5, "Yes") & identical(d2_6, "Yes")) {"low risk"}
+  else if ((identical(d2_7, "NI")|identical(d2_7, "Yes")) & identical(d2_8, "Yes")) {"low risk"}
+  else if ((identical(d2_7, "NI")|identical(d2_7, "Yes")) & (identical(d2_8, "No")|identical(d2_8, "NI")) & (identical(d2_9, "Yes"))) {"some concerns"}
+  else if ((identical(d2_7, "NI")|identical(d2_7, "Yes")) & (identical(d2_8, "No")|identical(d2_8, "NI")) & (identical(d2_9, "No")|identical(d2_9, "NI"))) {"high risk"}
+  else if (identical(d2_7, "No") & (d2_8 %in% c("Yes", "No", "NI")) & (d2_9 %in% c("Yes", "No", "NI"))) {"high risk"}
+  else NA
+}
+
+#' Domain 3 RoB Algorithm
+#' @keywords internal 
+domain3Algorithm = function(d3_10, d3_11, d3_12, d3_13, d3_14) {
+  if (identical(d3_10, "Yes")) {"low risk"}
+  else if ((identical(d3_11, "No")|identical(d3_11, "NI")) & identical(d3_12, "Yes") & identical(d3_13, "Yes") & identical(d3_14, "Yes")) {"some concerns"}
+  else if ((identical(d3_11, "No")|identical(d3_11, "NI")) & identical(d3_12, "Yes") & (identical(d3_13, "No")|identical(d3_13, "NI")) & identical(d3_14, "Yes")) {"some concerns"}
+  else if ((identical(d3_11, "No")|identical(d3_11, "NI")) & identical(d3_12, "Yes") & identical(d3_13, "Yes") & (identical(d3_14, "No")|identical(d3_14, "NI"))) {"some concerns"}
+  else if ((identical(d3_11, "No")|identical(d3_11, "NI")) & identical(d3_12, "Yes") & (identical(d3_13, "No")|identical(d3_13, "NI")) & (identical(d3_14, "No")|identical(d3_14, "NI"))) {"high risk"}
+  else if ((identical(d3_11, "No")|identical(d3_11, "NI")) & (identical(d3_12, "No")|identical(d3_12, "NI")) & identical(d3_13, "Yes") & identical(d3_14, "Yes")) {"some concerns"}
+  else if ((identical(d3_11, "No")|identical(d3_11, "NI")) & (identical(d3_12, "No")|identical(d3_12, "NI")) & (identical(d3_13, "No")|identical(d3_13, "NI")) & identical(d3_14, "Yes")) {"high risk"}
+  else if ((identical(d3_11, "No")|identical(d3_11, "NI")) & (identical(d3_12, "No")|identical(d3_12, "NI")) & identical(d3_13, "Yes") & (identical(d3_14, "No")|identical(d3_14, "NI"))) {"high risk"}
+  else if ((identical(d3_11, "No")|identical(d3_11, "NI")) & (identical(d3_12, "No")|identical(d3_12, "NI")) & (identical(d3_13, "No")|identical(d3_13, "NI")) & (identical(d3_14, "No")|identical(d3_14, "NI"))) {"high risk"}
+  else NA
+}
+
+#' Domain 4 RoB Algorithm
+#' @keywords internal 
+domain4Algorithm = function(d4_15, d4_16, d4_17, d4_18) {
+  if (identical(d4_16, "Yes") & identical(d4_17, "No")) {"low risk"}
+  else if (identical(d4_16, "No") & identical(d4_17, "Yes") & identical(d4_18, "Yes")) {"low risk"}
+  else if (identical(d4_16, "No") & identical(d4_17, "Yes") & (identical(d4_18, "No")|identical(d4_18, "NI"))) {"high risk"}
+  else if (identical(d4_16, "Yes") & identical(d4_17, "Yes") & identical(d4_18, "Yes")) {"low risk"}
+  else if (identical(d4_16, "Yes") & identical(d4_17, "Yes") & (identical(d4_18, "No")|identical(d4_18, "NI"))) {"high risk"}
+  else NA
+}
+
+#' Domain 5 RoB Algorithm
+#' @keywords internal 
+domain5Algorithm = function(d5_19, d5_20, d5_21, d5_22, d5_23, d5_24) {
+  if ((identical(d5_19, "NI")|identical(d5_19, "No"))) {"some concerns"}
+  else if ((identical(d5_21, "NI")|identical(d5_21, "No"))) {"some concerns"}
+  else if (identical(d5_22, "Yes") & identical(d5_24, "No")) {"high risk"}
+  else if (identical(d5_22, "Yes")) {"low risk"}
+  else if (identical(d5_22, "NI") & identical(d5_24, "No")) {"high risk"}
+  else if (identical(d5_22, "NI")) {"some concerns"}
+  else if (identical(d5_22, "No")) {"high risk"}
+  else NA
+}
+
+#' Overall RoB Algorithm
+#' @keywords internal 
+overallAlgorithm = function(d1, d2, d3, d4, d5) {
+  ratings = c(d1, d2, d3, d4, d5)
+  if (sum(is.na(ratings))>0) { NA } else {
+    lows = sum(ratings=="low risk"); highs = sum(ratings=="high risk")
+    concerns = sum(ratings=="some concerns")
+    if (lows==5) {"low risk"}
+    else if (highs > 0 | concerns > 2) {"high risk"}
+    else if (concerns > 0 | concerns <= 2) {"some concerns"}
+    else NA
+  }
+}
+
+
 #' Tests if value is `NA` or `NaN`
 #'
 #' @param expr R expression.
