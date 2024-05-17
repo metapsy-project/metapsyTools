@@ -61,6 +61,9 @@ tmp$rob.data
 }
 
 }
+\seealso{
+\code{\link{checkRobDiscrepancies}}
+}
 \author{
 Mathias Harrer \email{mathias.h.harrer@gmail.com},
 Clara Miguel Sanz \email{clara.miguelsanz@vu.nl},

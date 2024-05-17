@@ -50,10 +50,11 @@
 #' # Show extraction sheet
 #' tmp$rob.data
 #' }
-#'
 #' @author Mathias Harrer \email{mathias.h.harrer@@gmail.com},
 #' Clara Miguel Sanz \email{clara.miguelsanz@@vu.nl}, 
 #' Pim Cuijpers \email{p.cuijpers@@vu.nl}
+#' 
+#' @seealso \code{\link{checkRobDiscrepancies}}
 #'
 #' @import dplyr
 #' @importFrom crayon green yellow cyan bold
@@ -61,7 +62,6 @@
 #' @keywords internal
 
 createRobRatings = function(database, rob.data) {
-  
   
   # Define required variables
   data = database
@@ -309,6 +309,170 @@ print.createRobRatings = function(x, ...){
       length(x$miss.studies), ")\n", sep = "")
 }
 
+
+#' Check for inconsistencies between two RoB extraction sheets
+#'
+#' Based on prepared extraction sheets by two independent raters, this function allows you 
+#' to automatically check for differing studies and/or inconsistencies in the
+#' ratings. Cohen's kappa is calculated automatically, differentiating between
+#' "Yes" vs. "No"/"No Information" ratings to obtain the base rate of agreement.
+#'
+#' @usage checkRobDiscrepancies(data.1, data.2)
+#'
+#' @param data.1 An RoB extraction sheet. Columns of this file must have the same name as in the
+#' [RoB extraction sheet template](https://www.metapsy.org/assets/files/rob-template.xlsx) 
+#' provided by the Metapsy initative. If the Metapsy template has been
+#' used, make sure to delete the top rows before importing, so that only the metapsyTools variables
+#' remain as the column names. Required columns are: `study`, `d1_1`, `d1_2`, `d1_3`, `d1_4`, `d1_notes`, 
+#' `d2_5`, `d2_6`, `d2_7`, `d2_8`, `d2_9`, `d2_notes`, `d3_10`, `d3_11`, `d3_12`, `d3_13`, 
+#' `d3_14`, `d3_notes`, `d4_15`, `d4_16`, `d4_17`, `d4_18`, `d4_notes`, `d5_19`, 
+#' `d5_20`, `d5_21`, `d5_22`, `d5_23`, `d5_24`, `d5_notes`. 
+#' @param data.2 The same extraction sheet from another (i.e., second) rater.
+#'
+#' @return If discrepancies are found, the function will return a data frame with
+#' the respective study/studies, along with the diverging ratings (`discrepancies` element). 
+#' If different studies are included in both sheets, they will be saved under `diff.studies`.
+#'
+#' @examples
+#' \dontrun{
+#' library(readxl)
+#' 
+#' # Get example extraction sheet from metapsy.org/assets/files/rob_data.xlsx
+#' rob_data <- read_excel("rob_data.xlsx")
+#' 
+#' # Create second sheet with partly different ratings
+#' rob_data -> rob_data_2
+#' rob_data_2[-1,] -> rob_data_2
+#' rob_data_2[1,"d2_5"] = "NI"
+#' rob_data_2[1,"d4_15"] = "No"
+#' 
+#' # Check for discrepancies
+#' tmp <- metapsyTools:::checkRobDiscrepancies(rob_data, rob_data_2)
+#' tmp
+#' }
+#'
+#' @author Mathias Harrer \email{mathias.h.harrer@@gmail.com},
+#' Clara Miguel Sanz \email{clara.miguelsanz@@vu.nl}, 
+#' Pim Cuijpers \email{p.cuijpers@@vu.nl}
+#' 
+#' @seealso \code{\link{createRobRatings}}
+#'
+#' @import dplyr
+#' @importFrom crayon green yellow cyan bold
+#' @keywords internal
+
+checkRobDiscrepancies = function(data.1, data.2) {
+  
+  # Required variables
+  req.variables = c("study", "d1_1", "d1_2", 
+                    "d1_3", "d1_4", "d1_notes", 
+                    "d2_5", "d2_6", "d2_7", 
+                    "d2_8", "d2_9", "d2_notes", 
+                    "d3_10", "d3_11", "d3_12", 
+                    "d3_13", "d3_14", "d3_notes", 
+                    "d4_15", "d4_16", "d4_17", 
+                    "d4_18", "d4_notes", "d5_19", 
+                    "d5_20", "d5_21", "d5_22", 
+                    "d5_23", "d5_24", 
+                    "d5_notes")
+  
+  # Check if required variables are included
+  if (sum(!req.variables %in% colnames(data.1)) > 0) {
+    stop("Required variables ", 
+         paste(req.variables[!req.variables %in% colnames(data.1)], 
+               collapse = ", "), 
+         " not found in 'data.1'.",
+         call. = FALSE)
+  }
+  if (sum(!req.variables %in% colnames(data.2)) > 0) {
+    stop("Required variables ", 
+         paste(req.variables[!req.variables %in% colnames(data.2)], 
+               collapse = ", "), 
+         " not found in 'data.2'.",
+         call. = FALSE)
+  }
+  
+  # Select required variables
+  data.1[req.variables] -> data.1
+  data.1[,-1] %>% as.list() %>% 
+    lapply(function(x){x[!x %in% c("Yes", "No", "NI")] = NA; x}) %>% 
+    as.data.frame() %>% cbind(data.1[,1],.) -> data.1
+  data.2[req.variables] -> data.2
+  data.2[,-1] %>% as.list() %>% 
+    lapply(function(x){x[!x %in% c("Yes", "No", "NI")] = NA; x}) %>% 
+    as.data.frame() %>% cbind(data.2[,1],.) -> data.2
+  
+  # Check if required variables are in data
+  if (!"study" %in% colnames(data.1)) {
+    stop("'study' variable not found in data.1.", call. = FALSE)
+  }
+  if (!"study" %in% colnames(data.2)) {
+    stop("'study' variable not found in data.2.", call. = FALSE)
+  }
+  
+  # Find inconsistent studies
+  setdiff(union(data.1$study,data.2$study), 
+          intersect(data.1$study,data.2$study)) -> diff.studies
+  if (length(diff.studies)>0) {
+    message("- ", crayon::yellow("[!] "), 
+            "Studies differ between datasets (",
+            length(diff.studies), ").") } else {
+              message("- ", crayon::green("[OK] "), 
+                      "Studies match between datasets.")}
+  
+  # Get common studies
+  data.1[data.1$study %in% intersect(data.1$study,data.2$study),] -> data.1
+  data.2[data.2$study %in% intersect(data.1$study,data.2$study),] -> data.2
+  if (nrow(data.1)==0|nrow(data.2)==0) {
+    stop("No overlapping studies found in both datasets. Check the 'study' variables.", 
+         call. = FALSE)
+  }
+  data.1[order(data.1$study),] -> data.1
+  data.2[order(data.2$study),] -> data.2
+  list(data.1, data.2) %>% Reduce(`==`,.) %>% {!.} -> mat
+  l = list()
+  for (i in 1:nrow(mat)) {
+    data.frame(
+      data.1 = (data.1[i,mat[i,] & !is.na(mat[i,])]) %>% 
+        paste(names(.), ., collapse = "; "),
+      data.2 = (data.2[i,mat[i,] & !is.na(mat[i,])]) %>% 
+        paste(names(.), ., collapse = "; ")) -> l[[i]]
+  }
+  cbind(study = data.1$study[rowSums(mat, na.rm=T)>0],
+        do.call(rbind, l)[rowSums(mat, na.rm=T)>0,]) -> discrepancies
+  
+  # Calculate Cohen's kappa
+  sum(!is.na(mat[,colnames(mat)!="study"]), na.rm = TRUE) -> n
+  (n-sum(mat[,colnames(mat)!="study"], na.rm = TRUE))/n -> p0
+  c((sum(data.1[,colnames(data.1)!="study"] == "Yes", na.rm = T)/n),
+    (sum(data.2[,colnames(data.2)!="study"] == "Yes", na.rm = T)/n)) %>% 
+    {prod(.)+prod(1-.)} -> pe
+  kappa = (p0-pe)/(1-pe)
+  
+  if (nrow(discrepancies)==0) {
+    message("- ", crayon::green("[OK] "), 
+            "No discrepancies detected!")
+    message("- ", crayon::green("[OK] "), 
+            "Inter-rater agreement (Cohen's kappa): ", round(kappa,2))
+    if (length(diff.studies)>0) {
+      return(list(diff.studies = diff.studies,
+                  kappa = kappa))
+    }
+  } else {
+    message("- ", crayon::yellow("[!] "), 
+            "Discrepancies detected (", nrow(discrepancies), ").")
+    message("- ", crayon::green("[OK] "), 
+            "Inter-rater agreement (Cohen's kappa): ", round(kappa,2))
+    if (length(diff.studies)>0) {
+      return(list(discrepancies = discrepancies,
+                  diff.studies = diff.studies,
+                  kappa = kappa))
+    } else {
+      return(list(discrepancies = discrepancies,
+                  kappa = kappa)) 
+    }
+  }
+}
 
 
 

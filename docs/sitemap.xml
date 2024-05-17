@@ -103,10 +103,16 @@
     <loc>/reference/checkProblemsNMA.html</loc>
   </url>
   <url>
+    <loc>/reference/checkRobDiscrepancies.html</loc>
+  </url>
+  <url>
     <loc>/reference/convertNetmeta.html</loc>
   </url>
   <url>
     <loc>/reference/correctPublicationBias.html</loc>
+  </url>
+  <url>
+    <loc>/reference/createRobRatings.html</loc>
   </url>
   <url>
     <loc>/reference/createRobSummary.html</loc>
@@ -119,6 +125,21 @@
   </url>
   <url>
     <loc>/reference/depressionPsyCtr.html</loc>
+  </url>
+  <url>
+    <loc>/reference/domain1Algorithm.html</loc>
+  </url>
+  <url>
+    <loc>/reference/domain2Algorithm.html</loc>
+  </url>
+  <url>
+    <loc>/reference/domain3Algorithm.html</loc>
+  </url>
+  <url>
+    <loc>/reference/domain4Algorithm.html</loc>
+  </url>
+  <url>
+    <loc>/reference/domain5Algorithm.html</loc>
   </url>
   <url>
     <loc>/reference/eb.html</loc>
@@ -241,6 +262,9 @@
     <loc>/reference/multiarmExpander.html</loc>
   </url>
   <url>
+    <loc>/reference/overallAlgorithm.html</loc>
+  </url>
+  <url>
     <loc>/reference/pipe.html</loc>
   </url>
   <url>
@@ -254,6 +278,9 @@
   </url>
   <url>
     <loc>/reference/print.checkConflicts.html</loc>
+  </url>
+  <url>
+    <loc>/reference/print.createRobRatings.html</loc>
   </url>
   <url>
     <loc>/reference/print.exploreStudies.html</loc>

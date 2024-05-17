@@ -704,7 +704,7 @@ runMetaAnalysis = function(data,
     mRob = fitRobModel(which.run, which.rob, which.outliers,
                        mGeneral, mComb, low.rob.filter, method.tau,
                        .raw.bin.es, .type.es, round.digits, nnt.cer,
-                       rob.data)
+                       rob.data) %>% suppressWarnings()
     sendMessage(mRob, "rob", which.run)
     # If model failed, add to error model list
     if (mRob$has.error){
