@@ -468,11 +468,15 @@ tryCatch2 = function(expr) {
 #' Collapse signalling question ratings
 #' @keywords internal 
 collapseRatings = function(x, var){
-  prio = c("No" = 3, "NI" = 2, "Yes" = 1)
   x[[var]] -> r.rating
-  suppressWarnings(names(
-    which(prio==max(prio[unique(r.rating)], na.rm = T)))) -> r.new
-  ifelse(length(r.new)>0, r.new, NA)
+  if ((var %in% c("d4_16", "d4_17")) & 
+      length(r.rating > 1) & 
+      ("Yes" %in% r.rating)) { "Yes" } else {
+    prio = c("No" = 3, "NI" = 2, "Yes" = 1)
+    suppressWarnings(names(
+      which(prio==max(prio[unique(r.rating)], na.rm = T)))) -> r.new
+    ifelse(length(r.new)>0, r.new, NA)
+  }
 }
 
 #' Collapse domain ratings
