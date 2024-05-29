@@ -197,7 +197,7 @@ createRobRatings = function(database, rob.data) {
   # Adapt D1_3 (Randomized Sample Size Balance)
   apply(d.merge, 1, function(x){
     try(testRandomizedProportion(
-      as.numeric(x[["n_arm1"]]), as.numeric(x[["n_arm2"]]), 
+      as.numeric(x[["rand_arm1"]]), as.numeric(x[["rand_arm2"]]), 
       x[["study"]], ratio = x[["rand_ratio"]]), 
     silent = TRUE) -> tmp
     if (class(tmp)[1]=="try-error") {"NI"}
