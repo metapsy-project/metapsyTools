@@ -67,6 +67,7 @@ xlsx::write.xlsx(tmp$rob.data, "data_rated.xlsx",
                  sheetName = "rob", showNA = FALSE,
                  append = TRUE)
 }
+
 }
 \seealso{
 \code{\link{checkRobDiscrepancies}}

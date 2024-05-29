@@ -2,7 +2,7 @@
 #'
 #' Based on a prepared extraction sheet, this function allows you 
 #' to automatically generate risk of bias judgments for an entire
-#' Metapsy database, using the RoB-2 Metapsy extension.
+#' Metapsy database, using the RoB-2 Metapsy extension. 
 #'
 #' @usage createRobRatings(database, rob.data)
 #'
@@ -58,6 +58,7 @@
 #'                  sheetName = "rob", showNA = FALSE,
 #'                  append = TRUE)
 #' }
+#' 
 #' @author Mathias Harrer \email{mathias.h.harrer@@gmail.com},
 #' Clara Miguel Sanz \email{clara.miguelsanz@@vu.nl}, 
 #' Pim Cuijpers \email{p.cuijpers@@vu.nl}
