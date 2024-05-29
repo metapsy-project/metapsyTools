@@ -475,6 +475,16 @@ collapseRatings = function(x, var){
   ifelse(length(r.new)>0, r.new, NA)
 }
 
+#' Collapse domain ratings
+#' @keywords internal 
+collapseDomainRatings = function(x, var){
+  prio = c("high risk" = 3, "some concerns" = 2, "low risk" = 1)
+  x[[var]] -> r.rating
+  suppressWarnings(names(
+    which(prio==max(prio[unique(r.rating)], na.rm = T)))) -> r.new
+  ifelse(length(r.new)>0, r.new, NA)
+}
+
 
 #' Domain 1 RoB Algorithm
 #' @keywords internal 

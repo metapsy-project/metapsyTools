@@ -332,6 +332,11 @@ createRobRatings = function(database, rob.data) {
       d5_22 = lapply(.,collapseRatings, var="d5_22") %>% do.call(c,.),
       d5_23 = lapply(.,collapseRatings, var="d5_23") %>% do.call(c,.),
       d5_24 = lapply(.,collapseRatings, var="d5_24") %>% do.call(c,.),
+      d1 = lapply(.,collapseDomainRatings, var="d1") %>% do.call(c,.),
+      d2 = lapply(.,collapseDomainRatings, var="d2") %>% do.call(c,.),
+      d3 = lapply(.,collapseDomainRatings, var="d3") %>% do.call(c,.),
+      d4 = lapply(.,collapseDomainRatings, var="d4") %>% do.call(c,.),
+      d5 = lapply(.,collapseDomainRatings, var="d5") %>% do.call(c,.),
       attr_arm1 = lapply(., function(x) 
         suppressWarnings(max(x$attr_arm1/x$rand_arm1, na.rm = TRUE))) %>% 
         do.call(c,.) %>% {.[.==-Inf]=NA;round(.,3)*100},
@@ -340,7 +345,7 @@ createRobRatings = function(database, rob.data) {
         do.call(c,.) %>% {.[.==-Inf]=NA;round(.,3)*100})} %>% 
     {cbind(rob.data[!colnames(rob.data) %in% colnames(.)] %>% 
              dplyr::distinct(study, .keep_all = TRUE),.)} %>% 
-    {.[colnames(rob.data)]} %>% dplyr::select(-rand_arm1, -rand_arm2) %>% 
+    {.[colnames(rob.data)]} %>% dplyr::select(-rand_arm1, -rand_arm2, -rob) %>% 
     {rownames(.)=NULL;.} -> rob.data
   
   message("- ", crayon::green("[OK] "), "Done!")
