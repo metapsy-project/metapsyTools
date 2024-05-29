@@ -32,6 +32,7 @@
 #' @examples
 #' \dontrun{
 #' library(readxl)
+#' library(xlsx)
 #' 
 #' # Get example database from metapsy.org/assets/files/data.xlsx
 #' data <- read_excel("data.xlsx")
@@ -49,6 +50,13 @@
 #' 
 #' # Show extraction sheet
 #' tmp$rob.data
+#' 
+#' # Save both files into a new MS Excel file
+#' xlsx::write.xlsx(tmp$database, "data_rated.xlsx", 
+#'                  sheetName = "database", showNA = FALSE)
+#' xlsx::write.xlsx(tmp$rob.data, "data_rated.xlsx", 
+#'                  sheetName = "rob", showNA = FALSE,
+#'                  append = TRUE)
 #' }
 #' @author Mathias Harrer \email{mathias.h.harrer@@gmail.com},
 #' Clara Miguel Sanz \email{clara.miguelsanz@@vu.nl}, 
@@ -105,6 +113,12 @@ createRobRatings = function(database, rob.data) {
   if (!"rating" %in% colnames(data)) {
     stop("'rating' variable not found in data.", call. = FALSE)
   }
+  if (!"rand_ratio" %in% colnames(data)) {
+    stop("'rand_ratio' variable not found in data.",
+         " This variable should provide the allocation ratio ('1 to 1', ",
+         "'2 to 1', ...) for each effect.", 
+         call. = FALSE)
+  }
   
   # Sort data
   data = data[order(data$study),]
@@ -121,16 +135,21 @@ createRobRatings = function(database, rob.data) {
     {colnames(.) = colnames(d.rob); .[,"study"] = miss.studies;.} %>% 
     as.data.frame() %>% rbind(d.rob, .) -> d.rob
   
+  # Check for RoB studies not in database
+  miss.studies.rob = unique(d.rob[!d.rob$study %in% data$study,][["study"]])
+  d.rob = d.rob[!d.rob$study %in% miss.studies.rob,]
+  
   # Expand rob data
   data %>% split(.$study) %>% lapply(nrow) -> recoder
-  d.rob$.rep = recode(d.rob$study, !!!recoder)
+  d.rob$.rep = dplyr::recode(d.rob$study, !!!recoder)
   d.rob %>% split(.$study) %>% lapply(function(x) x[rep(1,x$.rep),]) %>% 
     do.call(rbind,.) -> d.rob
   
   # Check if join is possible; merge
   if (sum(!data$study==d.rob$study)==0) {
-    message("- ", crayon::green("[OK] "), "Datasets joined.")}
-  cbind(data, d.rob[,-c(1,ncol(d.rob))]) %>% {rownames(.)=NULL;.} -> d.merge
+    message("- ", crayon::green("[OK] "), "Datasets joined.")} else {
+      stop("Datasets could not be merged.", call. = FALSE)
+    }; cbind(data, d.rob[,-c(1,ncol(d.rob))]) %>% {rownames(.)=NULL;.} -> d.merge
   
   # Prepare required MP-standard variables
   if (!is.numeric(d.merge$rand_arm1)) 
@@ -155,10 +174,18 @@ createRobRatings = function(database, rob.data) {
     .attr_arm1 = attr_arm1; .attr_arm2 = attr_arm2
     attr_arm1 = attr_arm1/rand_arm1; attr_arm2 = attr_arm2/rand_arm2;
   }) -> data
-  if (sum(data$attr_arm1>=1, na.rm=TRUE)>0)
-    stop("'attr_arm1' contains sample sizes larger than 'rand_arm1'", call. = FALSE)
-  if (sum(data$attr_arm2>=1, na.rm=TRUE)>0)
-    stop("'attr_arm2' contains sample sizes larger than 'rand_arm2'", call. = FALSE)
+  if (sum(data$attr_arm1>=1, na.rm=TRUE)>0) {
+    stdy = data[data$attr_arm1>=1 & !is.na(data$attr_arm1),][["study"]] %>% 
+      unique() %>% paste(collapse = "; ")
+    stop("'attr_arm1' contains sample sizes larger than 'rand_arm1' in ", 
+         stdy, ".", call. = FALSE)
+  }
+  if (sum(data$attr_arm2>=1, na.rm=TRUE)>0) {
+    stdy = data[data$attr_arm2>=1 & !is.na(data$attr_arm2),][["study"]] %>% 
+      unique() %>% paste(collapse = "; ")
+    stop("'attr_arm2' contains sample sizes larger than 'rand_arm2' in ", 
+         stdy, ".", call. = FALSE)
+  }
   
   # Prepare ratio variables
   strsplit(d.merge$rand_ratio, "to") %>% 
@@ -198,12 +225,20 @@ createRobRatings = function(database, rob.data) {
           "Rated item 4 (Domain 1) from database.")
   
   # Adapt D3_10 & D3_13 (missingness)
-  ifelse(ifelse(d.merge$attr_arm1<.05, "Yes", "No") == "Yes" &
-           ifelse(d.merge$attr_arm2<.05, "Yes", "No") == "Yes",
-         "Yes", "No") %>% {.[is.na(d.merge$attr_arm1)]="NI";.} -> d.merge$d3_10
-  ifelse(ifelse(d.merge$attr_arm1<=.3, "Yes", "No") == "Yes" &
-           ifelse(d.merge$attr_arm2<=.3, "Yes", "No") == "Yes",
-         "Yes", "No") %>% {.[is.na(d.merge$attr_arm1)]="NI";.} -> d.merge$d3_13
+  d.merge$attr_arm1/d.merge$rand_arm1 -> p.attr.arm1
+  d.merge$attr_arm2/d.merge$rand_arm2 -> p.attr.arm2
+  ifelse(ifelse(p.attr.arm1<.05, "Yes", "No") == "Yes" &
+           ifelse(p.attr.arm2<.05, "Yes", "No") == "Yes",
+         "Yes", "No") %>% {.[is.na(d.merge$attr_arm1)]="NI";.} %>% 
+                          {.[is.na(d.merge$attr_arm2)]="NI";.} %>%
+                          {.[is.na(d.merge$rand_arm1)]="NI";.} %>% 
+                          {.[is.na(d.merge$attr_arm2)]="NI";.}-> d.merge$d3_10
+  ifelse(ifelse(p.attr.arm1<=.3, "Yes", "No") == "Yes" &
+           ifelse(p.attr.arm2<=.3, "Yes", "No") == "Yes",
+         "Yes", "No") %>% {.[is.na(d.merge$attr_arm1)]="NI";.} %>% 
+                          {.[is.na(d.merge$attr_arm2)]="NI";.} %>% 
+                          {.[is.na(d.merge$rand_arm1)]="NI";.} %>% 
+                          {.[is.na(d.merge$attr_arm2)]="NI";.}-> d.merge$d3_13
   ifelse(d.merge$rating=="self-report", "Yes", "No") %>% 
     {.[is.na(d.merge$rating)]="NI";.} -> d.merge$d4_16
   ifelse(d.merge$rating=="self-report", "No", "Yes") %>% 
@@ -263,16 +298,56 @@ createRobRatings = function(database, rob.data) {
     c("study", "d1_1", "d1_2", "d1_3", "d1_4", "d1_notes", "d2_5", "d2_6", "d2_7", "d2_8", 
       "d2_9", "d2_notes", "d3_10", "d3_11", "d3_12", "d3_13", "d3_14", "d3_notes", 
       "d4_15", "d4_16", "d4_17", "d4_18", "d4_notes", "d5_19", "d5_20", "d5_21", 
-      "d5_22", "d5_23", "d5_24", "d5_notes", "attr_arm1", "d1", "d2", "d3", 
-      "d4", "d5", "rob", "rob_study_lvl")] -> rob.data
+      "d5_22", "d5_23", "d5_24", "d5_notes", "attr_arm1", "attr_arm2", "rand_arm1",
+      "rand_arm2", "d1", "d2", "d3", "d4", "d5", "rob", "rob_study_lvl")] -> rob.data
   try({d.merge[d.merge$study %in% has.studies, ".id"] -> rob.data$.id}, 
       silent = TRUE)
+  
+  # Collapse rob.data per study
+  rob.data[order(rob.data$study),] -> rob.data
+  rob.data %>% split(.$study) %>% 
+    {data.frame(
+      d1_1 = lapply(.,collapseRatings, var="d1_1") %>% do.call(c,.),
+      d1_2 = lapply(.,collapseRatings, var="d1_2") %>% do.call(c,.),
+      d1_3 = lapply(.,collapseRatings, var="d1_3") %>% do.call(c,.),
+      d1_4 = lapply(.,collapseRatings, var="d1_4") %>% do.call(c,.),
+      d2_5 = lapply(.,collapseRatings, var="d2_5") %>% do.call(c,.),
+      d2_6 = lapply(.,collapseRatings, var="d2_6") %>% do.call(c,.),
+      d2_7 = lapply(.,collapseRatings, var="d2_7") %>% do.call(c,.),
+      d2_8 = lapply(.,collapseRatings, var="d2_8") %>% do.call(c,.),
+      d2_9 = lapply(.,collapseRatings, var="d2_9") %>% do.call(c,.),
+      d3_10 = lapply(.,collapseRatings, var="d3_10") %>% do.call(c,.),
+      d3_11 = lapply(.,collapseRatings, var="d3_11") %>% do.call(c,.),
+      d3_12 = lapply(.,collapseRatings, var="d3_12") %>% do.call(c,.),
+      d3_13 = lapply(.,collapseRatings, var="d3_13") %>% do.call(c,.),
+      d3_14 = lapply(.,collapseRatings, var="d3_14") %>% do.call(c,.),
+      d4_15 = lapply(.,collapseRatings, var="d4_15") %>% do.call(c,.),
+      d4_16 = lapply(.,collapseRatings, var="d4_16") %>% do.call(c,.),
+      d4_17 = lapply(.,collapseRatings, var="d4_17") %>% do.call(c,.),
+      d4_18 = lapply(.,collapseRatings, var="d4_18") %>% do.call(c,.),
+      d5_19 = lapply(.,collapseRatings, var="d5_19") %>% do.call(c,.),
+      d5_20 = lapply(.,collapseRatings, var="d5_20") %>% do.call(c,.),
+      d5_21 = lapply(.,collapseRatings, var="d5_21") %>% do.call(c,.),
+      d5_22 = lapply(.,collapseRatings, var="d5_22") %>% do.call(c,.),
+      d5_23 = lapply(.,collapseRatings, var="d5_23") %>% do.call(c,.),
+      d5_24 = lapply(.,collapseRatings, var="d5_24") %>% do.call(c,.),
+      attr_arm1 = lapply(., function(x) 
+        suppressWarnings(max(x$attr_arm1/x$rand_arm1, na.rm = TRUE))) %>% 
+        do.call(c,.) %>% {.[.==-Inf]=NA;round(.,3)*100},
+      attr_arm2 = lapply(., function(x) 
+        suppressWarnings(max(x$attr_arm2/x$rand_arm2, na.rm = TRUE))) %>% 
+        do.call(c,.) %>% {.[.==-Inf]=NA;round(.,3)*100})} %>% 
+    {cbind(rob.data[!colnames(rob.data) %in% colnames(.)] %>% 
+             dplyr::distinct(study, .keep_all = TRUE),.)} %>% 
+    {.[colnames(rob.data)]} %>% dplyr::select(-rand_arm1, -rand_arm2) %>% 
+    {rownames(.)=NULL;.} -> rob.data
   
   message("- ", crayon::green("[OK] "), "Done!")
   
   ret.obj = list(database = database,
                  rob.data = rob.data,
-                 miss.studies = miss.studies)
+                 miss.studies = miss.studies,
+                 miss.studies.rob = miss.studies.rob)
   
   class(ret.obj) = c("createRobRatings", "list")
   return(ret.obj)
@@ -305,8 +380,11 @@ print.createRobRatings = function(x, ...){
       nrow(x$rob.data), " rows, ", length(unique(x$rob.data[["study"]])), 
       " studies)\n", sep = "")
   cat("- ", crayon::bold(crayon::green("miss.studies")), 
-      ": studies not found in extraction sheet (", 
+      ": database studies not found in extraction sheet (", 
       length(x$miss.studies), ")\n", sep = "")
+  cat("- ", crayon::bold(crayon::green("miss.studies.rob")), 
+      ": extraction sheet studies not found in database (", 
+      length(x$miss.studies.rob), ")\n", sep = "")
 }
 
 

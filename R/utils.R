@@ -465,6 +465,17 @@ tryCatch2 = function(expr) {
 }
 
 
+#' Collapse signalling question ratings
+#' @keywords internal 
+collapseRatings = function(x, var){
+  prio = c("No" = 3, "NI" = 2, "Yes" = 1)
+  x[[var]] -> r.rating
+  suppressWarnings(names(
+    which(prio==max(prio[unique(r.rating)], na.rm = T)))) -> r.new
+  ifelse(length(r.new)>0, r.new, NA)
+}
+
+
 #' Domain 1 RoB Algorithm
 #' @keywords internal 
 domain1Algorithm = function(d1_1, d1_2, d1_3, d1_4) {

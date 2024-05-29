@@ -41,6 +41,7 @@ Metapsy database, using the RoB-2 Metapsy extension.
 \examples{
 \dontrun{
 library(readxl)
+library(xlsx)
 
 # Get example database from metapsy.org/assets/files/data.xlsx
 data <- read_excel("data.xlsx")
@@ -58,8 +59,14 @@ tmp$database
 
 # Show extraction sheet
 tmp$rob.data
-}
 
+# Save both files into a new MS Excel file
+xlsx::write.xlsx(tmp$database, "data_rated.xlsx", 
+                 sheetName = "database", showNA = FALSE)
+xlsx::write.xlsx(tmp$rob.data, "data_rated.xlsx", 
+                 sheetName = "rob", showNA = FALSE,
+                 append = TRUE)
+}
 }
 \seealso{
 \code{\link{checkRobDiscrepancies}}
