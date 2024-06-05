@@ -297,13 +297,13 @@ createRobRatings = function(database, rob.data) {
         unique() %>% paste(collapse = "; ") -> tmp2
       c(tmp1, tmp2) %>% paste(collapse = " | ") %>% 
         rep(nrow(x))
-    }) %>% unlist() -> d.merge$.comparisons
+    }) %>% unlist() -> d.merge$`.comparisons`
   
   # Create instruments variable
   d.merge %>% split(.$study) %>% 
     lapply(function(x) {
         rep(unique(x$instrument) %>% paste(collapse = "; "), nrow(x))
-    }) %>% unlist() -> d.merge$.instruments
+    }) %>% unlist() -> d.merge$`.instruments`
   
   d.merge[colnames(data)] %>% 
     {.$rob = NULL;.} %>% 

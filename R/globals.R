@@ -14,4 +14,4 @@ utils::globalVariables(c("es", "se", ".", "condition", "study", "NNT",
                          ".seTE", ".studlab", "x", "multi_arm2",
                          "N1", "N2", "N", "g1", "multi", "out1", 
                          "out2", "measurement", "rand_arm1",
-                         "rand_arm2"))
+                         "rand_arm2", ".instruments", ".comparisons"))
