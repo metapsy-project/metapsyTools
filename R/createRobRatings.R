@@ -286,6 +286,25 @@ createRobRatings = function(database, rob.data) {
   }) %>% do.call(rbind, .) %>% 
     {rownames(.) = NULL;.} -> d.merge
   
+  # Create comparisons variable
+  d.merge %>% split(.$study) %>% 
+    lapply(function(x) {
+     paste0(x$condition_arm1, 
+           ifelse(!is.na(x$multi_arm1), paste0(" [", x$multi_arm1, "]"), "")) %>% 
+        unique() %>% paste(collapse = "; ") -> tmp1
+      paste0(x$condition_arm2, 
+             ifelse(!is.na(x$multi_arm2), paste0(" [", x$multi_arm2, "]"), "")) %>% 
+        unique() %>% paste(collapse = "; ") -> tmp2
+      c(tmp1, tmp2) %>% paste(collapse = " | ") %>% 
+        rep(nrow(x))
+    }) %>% unlist() -> d.merge$.comparisons
+  
+  # Create instruments variable
+  d.merge %>% split(.$study) %>% 
+    lapply(function(x) {
+        rep(unique(x$instrument) %>% paste(collapse = "; "), nrow(x))
+    }) %>% unlist() -> d.merge$.instruments
+  
   d.merge[colnames(data)] %>% 
     {.$rob = NULL;.} %>% 
     {cbind(., d.merge[c("d1", "d2", "d3", "d4", "d5", 
@@ -296,11 +315,12 @@ createRobRatings = function(database, rob.data) {
   
   d.merge[
     d.merge$study %in% has.studies,
-    c("study", "d1_1", "d1_2", "d1_3", "d1_4", "d1_notes", "d2_5", "d2_6", "d2_7", "d2_8", 
-      "d2_9", "d2_notes", "d3_10", "d3_11", "d3_12", "d3_13", "d3_14", "d3_notes", 
-      "d4_15", "d4_16", "d4_17", "d4_18", "d4_notes", "d5_19", "d5_20", "d5_21", 
-      "d5_22", "d5_23", "d5_24", "d5_notes", "attr_arm1", "attr_arm2", "rand_arm1",
-      "rand_arm2", "d1", "d2", "d3", "d4", "d5", "rob", "rob_study_lvl")] -> rob.data
+    c("study", ".comparisons", ".instruments", "d1_1", "d1_2", "d1_3", "d1_4", 
+      "d1_notes", "d2_5", "d2_6", "d2_7", "d2_8", "d2_9", "d2_notes", "d3_10", 
+      "d3_11", "d3_12", "d3_13", "d3_14", "d3_notes", "d4_15", "d4_16", "d4_17", 
+      "d4_18", "d4_notes", "d5_19", "d5_20", "d5_21", "d5_22", "d5_23", "d5_24", 
+      "d5_notes", "attr_arm1", "attr_arm2", "rand_arm1","rand_arm2", "d1", 
+      "d2", "d3", "d4", "d5", "rob", "rob_study_lvl")] -> rob.data
   try({d.merge[d.merge$study %in% has.studies, ".id"] -> rob.data$.id}, 
       silent = TRUE)
   
@@ -346,6 +366,7 @@ createRobRatings = function(database, rob.data) {
     {cbind(rob.data[!colnames(rob.data) %in% colnames(.)] %>% 
              dplyr::distinct(study, .keep_all = TRUE),.)} %>% 
     {.[colnames(rob.data)]} %>% dplyr::select(-rand_arm1, -rand_arm2, -rob) %>% 
+    rename(instruments = .instruments, comparisons = .comparisons) %>% 
     {rownames(.)=NULL;.} -> rob.data
   
   message("- ", crayon::green("[OK] "), "Done!")
