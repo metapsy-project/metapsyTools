@@ -366,7 +366,8 @@ createRobRatings = function(database, rob.data) {
     {cbind(rob.data[!colnames(rob.data) %in% colnames(.)] %>% 
              dplyr::distinct(study, .keep_all = TRUE),.)} %>% 
     {.[colnames(rob.data)]} %>% dplyr::select(-rand_arm1, -rand_arm2, -rob) %>% 
-    rename(instruments = .instruments, comparisons = .comparisons) %>% 
+    rename(instruments = .instruments, comparisons = .comparisons,
+           p_attr_arm1 = attr_arm1, p_attr_arm2 = attr_arm2) %>% 
     {rownames(.)=NULL;.} -> rob.data
   
   message("- ", crayon::green("[OK] "), "Done!")
@@ -469,17 +470,10 @@ print.createRobRatings = function(x, ...){
 checkRobDiscrepancies = function(data.1, data.2) {
   
   # Required variables
-  req.variables = c("study", "d1_1", "d1_2", 
-                    "d1_3", "d1_4", "d1_notes", 
-                    "d2_5", "d2_6", "d2_7", 
-                    "d2_8", "d2_9", "d2_notes", 
-                    "d3_10", "d3_11", "d3_12", 
-                    "d3_13", "d3_14", "d3_notes", 
-                    "d4_15", "d4_16", "d4_17", 
-                    "d4_18", "d4_notes", "d5_19", 
-                    "d5_20", "d5_21", "d5_22", 
-                    "d5_23", "d5_24", 
-                    "d5_notes")
+  req.variables = c("study", "d1_1", "d1_2", "d1_3", "d1_4", "d2_5", "d2_6", 
+                    "d2_7", "d2_8", "d2_9", "d3_10", "d3_11", "d3_12", 
+                    "d3_13", "d3_14", "d4_15", "d4_16", "d4_17", "d4_18", 
+                    "d5_19", "d5_20", "d5_21", "d5_22", "d5_23", "d5_24")
   
   # Check if required variables are included
   if (sum(!req.variables %in% colnames(data.1)) > 0) {
@@ -534,14 +528,18 @@ checkRobDiscrepancies = function(data.1, data.2) {
   }
   data.1[order(data.1$study),] -> data.1
   data.2[order(data.2$study),] -> data.2
-  list(data.1, data.2) %>% Reduce(`==`,.) %>% {!.} -> mat
+  list(list(data.1, data.2) %>% Reduce(`==`,.) %>% {!.} %>% {.[is.na(.)] = FALSE;.},
+       list(is.na(data.1), is.na(data.2)) %>% Reduce(`==`,.) %>% {!.}) %>% 
+    Reduce(`+`,.) %>% {.!=0} -> mat
+  
   l = list()
   for (i in 1:nrow(mat)) {
     data.frame(
       data.1 = (data.1[i,mat[i,] & !is.na(mat[i,])]) %>% 
-        paste(names(.), ., collapse = "; "),
+        paste(colnames(data.1)[mat[i,]] %>% {.[!is.na(.)]}, ., collapse = "; "),
       data.2 = (data.2[i,mat[i,] & !is.na(mat[i,])]) %>% 
-        paste(names(.), ., collapse = "; ")) -> l[[i]]
+        paste(colnames(data.2)[mat[i,]] %>% {.[!is.na(.)]}, ., collapse = "; ")
+      ) -> l[[i]]
   }
   cbind(study = data.1$study[rowSums(mat, na.rm=T)>0],
         do.call(rbind, l)[rowSums(mat, na.rm=T)>0,]) -> discrepancies
