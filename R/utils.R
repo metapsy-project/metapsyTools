@@ -517,6 +517,7 @@ domain2Algorithm = function(d2_5, d2_6, d2_7, d2_8, d2_9) {
 #' @keywords internal 
 domain3Algorithm = function(d3_10, d3_11, d3_12, d3_13, d3_14) {
   if (identical(d3_10, "Yes")) {"low risk"}
+  else if ((identical(d3_10, "No")|identical(d3_10, "NI")) & identical(d3_11, "Yes")) {"low risk"}
   else if ((identical(d3_11, "No")|identical(d3_11, "NI")) & identical(d3_12, "Yes") & identical(d3_13, "Yes") & identical(d3_14, "Yes")) {"some concerns"}
   else if ((identical(d3_11, "No")|identical(d3_11, "NI")) & identical(d3_12, "Yes") & (identical(d3_13, "No")|identical(d3_13, "NI")) & identical(d3_14, "Yes")) {"some concerns"}
   else if ((identical(d3_11, "No")|identical(d3_11, "NI")) & identical(d3_12, "Yes") & identical(d3_13, "Yes") & (identical(d3_14, "No")|identical(d3_14, "NI"))) {"some concerns"}
