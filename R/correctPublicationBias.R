@@ -260,7 +260,7 @@ correctPublicationBias = function(model,
                                  round.digits), "]"),
         nnt = metapsyNNT(
           ifelse(isTRUE(common) & !isTRUE(random), 
-                 TE.common, TE.random), nnt.cer) %>%
+                 abs(TE.common), abs(TE.random)), nnt.cer) %>%
           ifelse(identical(.type.es, "RR"), NA, .) %>% 
           ifelse(isTRUE(.raw.bin.es), 
                  nnt.raw.bin.es, .) %>% 
@@ -422,7 +422,7 @@ correctPublicationBias = function(model,
                          exp(.), .), 
                 round.digits), "]"),
         nnt = metapsyNNT(
-          TE.adjust, nnt.cer) %>%
+          abs(TE.adjust), nnt.cer) %>%
           ifelse(identical(.type.es, "RR"), NA, .) %>% 
           ifelse(isTRUE(.raw.bin.es), 
                  nnt.raw.bin.es, .) %>% 
@@ -540,7 +540,7 @@ correctPublicationBias = function(model,
                             alternative = 
                               ifelse(lower.is.better, "less", "greater"),
                             steps = selmodel.steps) %>% 
-          {metapsyNNT(as.numeric(.$b), 
+          {metapsyNNT(abs(as.numeric(.$b)), 
                       CER = cer)} -> nnt.g
       } else {
         metafor::rma.uni(yi = es, sei = se, 
@@ -551,7 +551,7 @@ correctPublicationBias = function(model,
                             alternative = 
                               ifelse(lower.is.better, "less", "greater"),
                             steps = selmodel.steps) %>% 
-          {metapsyNNT(as.numeric(.$b), 
+          {metapsyNNT(abs(as.numeric(.$b)), 
                       CER = cer)} -> nnt.g
       }
     }
@@ -591,7 +591,7 @@ correctPublicationBias = function(model,
                   ifelse(identical(.type.es, "RR"), exp(.), .), 
                 r.digits), "]"),
         nnt = ifelse(identical(.type.es, "RR"), 
-                     NA, metapsyNNT(as.numeric(b[,1]), m.nnt.cer)) %>% 
+                     NA, metapsyNNT(abs(as.numeric(b[,1])), m.nnt.cer)) %>% 
                      ifelse(isTRUE(.raw.bin.es), nnt.g, .) %>% 
                      round(round.digits) %>% abs(),
         excluded = paste0(
