@@ -265,7 +265,7 @@ createRobRatings = function(database, rob.data) {
       d4 = domain4Algorithm(x[["d4_15"]], x[["d4_16"]], x[["d4_17"]], x[["d4_18"]]),
       d5 = domain5Algorithm(x[["d5_19"]], x[["d5_20"]], x[["d5_21"]], x[["d5_22"]], x[["d5_23"]], x[["d5_24"]])) %>% 
       {.$.rob = overallAlgorithm(.$d1, .$d2, .$d3, .$d4, .$d5);.}
-  }) %>% do.call(rbind, .) %>% cbind(d.merge, .) %>% 
+  }) %>% do.call(rbind, .) %>% cbind(d.merge[!colnames(d.merge) %in% colnames(.)], .) %>% 
     within({rob = .rob; .rob = NULL}) -> d.merge
   
   # Re-attach old 'attr' variables
