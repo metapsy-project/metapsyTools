@@ -160,6 +160,12 @@ subgroupAnalysis = function(.model, ...,
                 } else {
                   x$TE.common.w
                 }, .round.digits)
+          g.full = 
+            if (identical(.model$.type.es, "RR")){
+              exp(x$TE.common.w)
+            } else {
+              x$TE.common.w
+            }
         } else {
           g = round(
                 if (identical(.model$.type.es, "RR")){
@@ -167,6 +173,12 @@ subgroupAnalysis = function(.model, ...,
                 } else {
                   x$TE.random.w
                 }, .round.digits)
+          g.full = 
+            if (identical(.model$.type.es, "RR")){
+              exp(x$TE.random.w)
+            } else {
+              x$TE.random.w
+            }
         }
 
         # Confidence interval for g
@@ -210,10 +222,10 @@ subgroupAnalysis = function(.model, ...,
 
         # NNT
         if (is.null(.nnt.cer)){
-          metapsyNNT(abs(g), .model$nnt.cer) %>%
+          metapsyNNT(abs(g.full), .model$nnt.cer) %>%
             round(.round.digits) %>% abs() -> nnt
         } else {
-          metapsyNNT(abs(g), .nnt.cer) %>%
+          metapsyNNT(abs(g.full), .nnt.cer) %>%
             round(.round.digits) %>% abs() -> nnt
         }
 
@@ -278,22 +290,26 @@ subgroupAnalysis = function(.model, ...,
       if (identical(.model$.type.es, "RR")){
         g = c(exp(as.numeric(x$b)[1]),
               exp(as.numeric(x$b)[-1] + as.numeric(x$b)[1])) %>% round(.round.digits)
+        g.full = c(exp(as.numeric(x$b)[1]),
+              exp(as.numeric(x$b)[-1] + as.numeric(x$b)[1])) 
         g.lower = {exp(as.numeric(x$b)[1] + x$ci.lb)} %>% round(.round.digits)
         g.upper = {exp(as.numeric(x$b)[1] + x$ci.ub)} %>% round(.round.digits)
         g.ci = paste0("[", g.lower, "; ", g.upper, "]")
       } else {
         g = c(as.numeric(x$b)[1],
               as.numeric(x$b)[-1] + as.numeric(x$b)[1]) %>% round(.round.digits)
+        g.full = c(as.numeric(x$b)[1],
+              as.numeric(x$b)[-1] + as.numeric(x$b)[1]) 
         g.lower = {as.numeric(x$b)[1] + x$ci.lb} %>% round(.round.digits)
         g.upper = {as.numeric(x$b)[1] + x$ci.ub} %>% round(.round.digits)
         g.ci = paste0("[", g.lower, "; ", g.upper, "]")
       }
 
       if (is.null(.nnt.cer)){
-        metapsyNNT(abs(g), .model$nnt.cer) %>%
+        metapsyNNT(abs(g.full), .model$nnt.cer) %>%
           round(.round.digits) %>% abs() -> nnt
       } else {
-        metapsyNNT(abs(g), .nnt.cer) %>%
+        metapsyNNT(abs(g.full), .nnt.cer) %>%
           round(.round.digits) %>% abs() -> nnt
       }
 
