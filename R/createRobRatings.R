@@ -89,6 +89,10 @@ createRobRatings = function(database, rob.data) {
          call. = FALSE)
   }
   
+  # Check for duplicates in rob.data
+  table(rob.data[["study"]]) %>% {.[.>1]} %>% 
+    names() -> duplicate.rob.data
+  
   # Select required variables
   rob.data[req.variables] -> d.rob
   d.rob[,-1] %>% as.list() %>% 
@@ -143,7 +147,7 @@ createRobRatings = function(database, rob.data) {
   # Expand rob data
   data %>% split(.$study) %>% lapply(nrow) -> recoder
   d.rob$.rep = dplyr::recode(d.rob$study, !!!recoder)
-  d.rob %>% split(.$study) %>% lapply(function(x) x[rep(1,x$.rep),]) %>% 
+  d.rob %>% split(.$study) %>% lapply(function(x) x[rep(1,x$.rep[1]),]) %>% 
     do.call(rbind,.) -> d.rob
   
   # Check if join is possible; merge
@@ -371,6 +375,12 @@ createRobRatings = function(database, rob.data) {
     {rownames(.)=NULL;.} -> rob.data
   
   message("- ", crayon::green("[OK] "), "Done!")
+  
+  if (length(duplicate.rob.data)[1]>0) {
+    warning("'rob.data' contains duplicate studies ", 
+            paste(duplicate.rob.data, collapse = "; "), ".",
+            call. = FALSE) 
+  }
   
   ret.obj = list(database = database,
                  rob.data = rob.data,

@@ -467,8 +467,9 @@ runMetaAnalysis = function(data,
     .raw.bin.es = TRUE
   } else {
     data = data[!is.na(data[[es.var[1]]]) & 
-                  data[[es.var[1]]] != Inf & 
-                  data[[es.var[1]]] != -Inf,]
+                !is.na(data[[se.var[1]]]) & 
+                data[[es.var[1]]] != Inf & 
+                data[[es.var[1]]] != -Inf,]
     .type.es = ifelse(identical(es.measure[1], "g"), "g", "RR")
     .raw.bin.es = FALSE
   }
