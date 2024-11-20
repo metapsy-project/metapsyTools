@@ -81,6 +81,7 @@ reference:
   - starts_with("metapsy")
   - profile.runMetaAnalysis
   - proportionMID
+  - simulateTreatmentCycles
   - addTrialArmInfo
   - starts_with("plot")
   - starts_with("print")

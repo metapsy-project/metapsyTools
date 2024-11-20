@@ -280,6 +280,9 @@
     <loc>/reference/plot.runMetaAnalysis.html</loc>
   </url>
   <url>
+    <loc>/reference/plot.simulateTreatmentCycles.html</loc>
+  </url>
+  <url>
     <loc>/reference/plot.subgroupAnalysis.html</loc>
   </url>
   <url>
@@ -296,6 +299,9 @@
   </url>
   <url>
     <loc>/reference/print.runMetaAnalysis.html</loc>
+  </url>
+  <url>
+    <loc>/reference/print.simulateTreatmentCycles.html</loc>
   </url>
   <url>
     <loc>/reference/print.subgroupAnalysis.html</loc>
@@ -335,6 +341,9 @@
   </url>
   <url>
     <loc>/reference/setColnames.html</loc>
+  </url>
+  <url>
+    <loc>/reference/simulateTreatmentCycles.html</loc>
   </url>
   <url>
     <loc>/reference/subgroupAnalysis.html</loc>
