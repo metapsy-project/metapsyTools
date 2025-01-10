@@ -4,13 +4,9 @@
 \alias{createRobRatings}
 \title{Generate RoB rating for a Metapsy database}
 \usage{
-createRobRatings(database, rob.data)
+createRobRatings(rob.data, database = NULL)
 }
 \arguments{
-\item{database}{A meta-analytic database conforming with the Metapsy data standard. In particular, the
-variables \code{rand_ratio}, \code{rand_arm1}/\code{rand_arm2}, \code{attr_arm1}/\code{attr_arm2} and \code{rating} must be populated
-according to the Metapsy \href{https://docs.metapsy.org/data-preparation/format/}{data standard}.}
-
 \item{rob.data}{An RoB extraction sheet. Columns of this file must have the same name as in the
 \href{https://www.metapsy.org/assets/files/rob-template.xlsx}{RoB extraction sheet template}
 provided by the Metapsy initative. If the Metapsy template has been
@@ -19,18 +15,26 @@ remain as the column names. Required columns are: \code{study}, \code{d1_1}, \co
 \code{d2_5}, \code{d2_6}, \code{d2_7}, \code{d2_8}, \code{d2_9}, \code{d2_notes}, \code{d3_10}, \code{d3_11}, \code{d3_12}, \code{d3_13},
 \code{d3_14}, \code{d3_notes}, \code{d4_15}, \code{d4_16}, \code{d4_17}, \code{d4_18}, \code{d4_notes}, \code{d5_19},
 \code{d5_20}, \code{d5_21}, \code{d5_22}, \code{d5_23}, \code{d5_24}, \code{d5_notes}.}
+
+\item{database}{A meta-analytic database conforming with the Metapsy data standard. In particular, the
+variables \code{rand_ratio}, \code{rand_arm1}/\code{rand_arm2}, \code{attr_arm1}/\code{attr_arm2} and \code{rating} must be populated
+according to the Metapsy \href{https://docs.metapsy.org/data-preparation/format/}{data standard}. This argument is \code{NULL} by default,
+which means that only domain-specific and overall RoB ratings are generated from the RoB extraction
+sheet provided to \code{rob.data}.}
 }
 \value{
 Returns an object of class \code{"createRobRatings"}. This includes:
 \itemize{
-\item \code{database}. The database with the RoB ratings appended on a domain level:
-\code{rob_d1}, \code{rob_d2}, etc. This dataset also includes the comparison-level (\code{rob}) and
-study-level (\code{rob_study_lvl}) overall RoB judgments.
 \item \code{rob.data}. The original extraction sheet, with signalling question responses
 based on the database information appended. If a study has more than one comparison
 in the database, ratings are displayed for each comparison in a study.
+\item \code{database}. The database with the RoB ratings appended on a domain level:
+\code{rob_d1}, \code{rob_d2}, etc. This dataset also includes the comparison-level (\code{rob}) and
+study-level (\code{rob_study_lvl}) overall RoB judgments. \code{NULL} if no database was provided.
 \item \code{miss.studies}. A vector of studies that appear in the database, but were not
-found in the extraction sheet.
+found in the extraction sheet. \code{NULL} if no database was provided.
+\item \code{miss.studies.rob}. A vector of studies that appear in the extraction sheet, but
+were not found in the database. \code{NULL} if no database was provided.
 }
 }
 \description{
@@ -50,8 +54,8 @@ data <- read_excel("data.xlsx")
 rob_data <- read_excel("rob_data.xlsx")
 
 # Create ratings
-tmp <- metapsyTools:::createRobRatings(database = data, 
-                                       rob.data = rob_data)
+tmp <- metapsyTools:::createRobRatings(rob.data = rob_data,
+                                       database = data)
 tmp
 
 # Show database

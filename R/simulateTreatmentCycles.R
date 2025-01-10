@@ -264,6 +264,3 @@ plot.simulateTreatmentCycles = function(x, ...) {
          col = cols, lty = 1, cex = 0.6, lwd = 2)
 }
 
-
-
-

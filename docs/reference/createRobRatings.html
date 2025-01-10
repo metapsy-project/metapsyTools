@@ -64,18 +64,12 @@ Metapsy database, using the RoB-2 Metapsy extension.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">createRobRatings</span><span class="op">(</span><span class="va">database</span>, <span class="va">rob.data</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">createRobRatings</span><span class="op">(</span><span class="va">rob.data</span>, database <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
-    <dl><dt>database</dt>
-<dd><p>A meta-analytic database conforming with the Metapsy data standard. In particular, the
-variables <code>rand_ratio</code>, <code>rand_arm1</code>/<code>rand_arm2</code>, <code>attr_arm1</code>/<code>attr_arm2</code> and <code>rating</code> must be populated
-according to the Metapsy <a href="https://docs.metapsy.org/data-preparation/format/" class="external-link">data standard</a>.</p></dd>
-
-
-<dt>rob.data</dt>
+    <dl><dt>rob.data</dt>
 <dd><p>An RoB extraction sheet. Columns of this file must have the same name as in the
 <a href="https://www.metapsy.org/assets/files/rob-template.xlsx" class="external-link">RoB extraction sheet template</a>
 provided by the Metapsy initative. If the Metapsy template has been
@@ -85,19 +79,29 @@ remain as the column names. Required columns are: <code>study</code>, <code>d1_1
 <code>d3_14</code>, <code>d3_notes</code>, <code>d4_15</code>, <code>d4_16</code>, <code>d4_17</code>, <code>d4_18</code>, <code>d4_notes</code>, <code>d5_19</code>,
 <code>d5_20</code>, <code>d5_21</code>, <code>d5_22</code>, <code>d5_23</code>, <code>d5_24</code>, <code>d5_notes</code>.</p></dd>
 
+
+<dt>database</dt>
+<dd><p>A meta-analytic database conforming with the Metapsy data standard. In particular, the
+variables <code>rand_ratio</code>, <code>rand_arm1</code>/<code>rand_arm2</code>, <code>attr_arm1</code>/<code>attr_arm2</code> and <code>rating</code> must be populated
+according to the Metapsy <a href="https://docs.metapsy.org/data-preparation/format/" class="external-link">data standard</a>. This argument is <code>NULL</code> by default,
+which means that only domain-specific and overall RoB ratings are generated from the RoB extraction
+sheet provided to <code>rob.data</code>.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     
 
-<p>Returns an object of class <code>"createRobRatings"</code>. This includes:</p><ul><li><p><code>database</code>. The database with the RoB ratings appended on a domain level:
-<code>rob_d1</code>, <code>rob_d2</code>, etc. This dataset also includes the comparison-level (<code>rob</code>) and
-study-level (<code>rob_study_lvl</code>) overall RoB judgments.</p></li>
-<li><p><code>rob.data</code>. The original extraction sheet, with signalling question responses
+<p>Returns an object of class <code>"createRobRatings"</code>. This includes:</p><ul><li><p><code>rob.data</code>. The original extraction sheet, with signalling question responses
 based on the database information appended. If a study has more than one comparison
 in the database, ratings are displayed for each comparison in a study.</p></li>
+<li><p><code>database</code>. The database with the RoB ratings appended on a domain level:
+<code>rob_d1</code>, <code>rob_d2</code>, etc. This dataset also includes the comparison-level (<code>rob</code>) and
+study-level (<code>rob_study_lvl</code>) overall RoB judgments. <code>NULL</code> if no database was provided.</p></li>
 <li><p><code>miss.studies</code>. A vector of studies that appear in the database, but were not
-found in the extraction sheet.</p></li>
+found in the extraction sheet. <code>NULL</code> if no database was provided.</p></li>
+<li><p><code>miss.studies.rob</code>. A vector of studies that appear in the extraction sheet, but
+were not found in the database. <code>NULL</code> if no database was provided.</p></li>
 </ul></div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
@@ -123,8 +127,8 @@ Pim Cuijpers <a href="mailto:p.cuijpers@vu.nl">p.cuijpers@vu.nl</a></p>
 <span class="r-in"><span><span class="va">rob_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://readxl.tidyverse.org/reference/read_excel.html" class="external-link">read_excel</a></span><span class="op">(</span><span class="st">"rob_data.xlsx"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Create ratings</span></span></span>
-<span class="r-in"><span><span class="va">tmp</span> <span class="op">&lt;-</span> <span class="fu">metapsyTools</span><span class="fu">:::</span><span class="fu">createRobRatings</span><span class="op">(</span>database <span class="op">=</span> <span class="va">data</span>, </span></span>
-<span class="r-in"><span>                                       rob.data <span class="op">=</span> <span class="va">rob_data</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">tmp</span> <span class="op">&lt;-</span> <span class="fu">metapsyTools</span><span class="fu">:::</span><span class="fu">createRobRatings</span><span class="op">(</span>rob.data <span class="op">=</span> <span class="va">rob_data</span>,</span></span>
+<span class="r-in"><span>                                       database <span class="op">=</span> <span class="va">data</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">tmp</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Show database</span></span></span>

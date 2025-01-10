@@ -40,7 +40,7 @@ rob_data <- read_excel("rob_data.xlsx")
 rob_data -> rob_data_2
 rob_data_2[-1,] -> rob_data_2
 rob_data_2[1,"d2_5"] = "NI"
-rob_data_2[1,"d4_15"] = "No"
+rob_data_2[1,"d4_15"] = "No/PN"
 
 # Check for discrepancies
 tmp <- metapsyTools:::checkRobDiscrepancies(rob_data, rob_data_2)
