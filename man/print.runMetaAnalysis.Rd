@@ -5,8 +5,6 @@
 \title{Print method for objects of class 'runMetaAnalysis'}
 \usage{
 \method{print}{runMetaAnalysis}(x, ...)
-
-\method{print}{runMetaAnalysis}(x, ...)
 }
 \arguments{
 \item{x}{An object of class \code{runMetaAnalysis}.}
@@ -14,8 +12,6 @@
 \item{...}{Additional arguments.}
 }
 \description{
-Print S3 method for objects of class \code{runMetaAnalysis}.
-
 Print S3 method for objects of class \code{runMetaAnalysis}.
 }
 \author{

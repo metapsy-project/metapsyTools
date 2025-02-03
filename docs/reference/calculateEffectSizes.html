@@ -12,7 +12,7 @@ prepared in the Metapsy data format."><meta property="og:image" content="/logo.p
     
     <a class="navbar-brand me-2" href="../index.html">metapsyTools</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.11</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.12</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -70,6 +70,7 @@ prepared in the <a href="https://docs.metapsy.org/data-preparation/format/" clas
 <span>                                     rr.precalc <span class="op">=</span> <span class="va">rr.precalc</span><span class="op">)</span>,</span>
 <span>                     include.switched.arms <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>                     change.sign <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>                     impute.response <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>                     vars.for.id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"study"</span>, <span class="st">"outcome_type"</span>,</span>
 <span>                                     <span class="st">"instrument"</span>, <span class="st">"time"</span>,</span>
 <span>                                     <span class="st">"time_weeks"</span>,</span>
@@ -77,7 +78,15 @@ prepared in the <a href="https://docs.metapsy.org/data-preparation/format/" clas
 <span>                     .condition <span class="op">=</span> <span class="st">"condition"</span>,</span>
 <span>                     .condition.specification <span class="op">=</span> <span class="st">"multi"</span>,</span>
 <span>                     .groups.column.indicator <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"_arm1"</span>, <span class="st">"_arm2"</span><span class="op">)</span>,</span>
-<span>                     .trt.indicator <span class="op">=</span> <span class="st">"arm"</span><span class="op">)</span></span></code></pre></div>
+<span>                     .trt.indicator <span class="op">=</span> <span class="st">"arm"</span>,</span>
+<span>                     .impute.response.vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>m.trt.pre <span class="op">=</span> <span class="st">"baseline_m_arm1"</span>, </span>
+<span>                                               m.trt.post <span class="op">=</span> <span class="st">"mean_arm1"</span>, </span>
+<span>                                               sd.trt.post <span class="op">=</span> <span class="st">"sd_arm1"</span>, </span>
+<span>                                               n.trt <span class="op">=</span> <span class="st">"n_arm1"</span>,</span>
+<span>                                               m.ctr.pre <span class="op">=</span> <span class="st">"baseline_m_arm2"</span>, </span>
+<span>                                               m.ctr.post <span class="op">=</span> <span class="st">"mean_arm2"</span>, </span>
+<span>                                               sd.ctr.post <span class="op">=</span> <span class="st">"sd_arm2"</span>, </span>
+<span>                                               n.ctr <span class="op">=</span> <span class="st">"n_arm2"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -108,6 +117,12 @@ sign of a calculated effect size should be reversed (<code>TRUE</code>) or not (
 no changes should be made.</p></dd>
 
 
+<dt>impute.response</dt>
+<dd><p><code>logical</code>. When calculating the (log)-risk ratios, should response rates be computed
+using the <code><a href="imputeResponse.html">imputeResponse()</a></code> function? <code>FALSE</code> by default. If defined, the column specified in <code>change.sign</code>
+will also be considered when calculating the response.</p></dd>
+
+
 <dt>vars.for.id</dt>
 <dd><p><code>character</code> vector, containing column names of all variables
 used to construct unique comparison IDs.</p></dd>
@@ -130,6 +145,11 @@ representing the suffix used to differentiate between the first and second arm i
 
 <dt>.trt.indicator</dt>
 <dd><p><code>character</code>. A character specifying the name used to indicate the treatment arm.</p></dd>
+
+
+<dt>.impute.response.vars</dt>
+<dd><p><code>list</code>. Named list with the names of columns in <code>data</code> and the specific argument in
+<code><a href="imputeResponse.html">imputeResponse()</a></code> they should be used for.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -206,7 +226,7 @@ themselves must be included.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p><code><a href="checkDataFormat.html">checkDataFormat</a></code></p></div>
+    <div class="dont-index"><p><code><a href="checkDataFormat.html">checkDataFormat</a></code>, <code><a href="imputeResponse.html">imputeResponse</a></code></p></div>
     </div>
     <div class="section level2">
     <h2 id="author">Author<a class="anchor" aria-label="anchor" href="#author"></a></h2>

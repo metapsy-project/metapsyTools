@@ -83,6 +83,7 @@ subgroupAnalysis = function(.model, ...,
 
   variables = .model$data %>% dplyr::select(...) %>% colnames()
   .round.digits = abs(.round.digits)
+  .has.event.rate = (.model$.type.es=="CER"||.model$.type.es=="EER")[1]
 
   # Get model type
   model.type = paste0("model.", .which.run)
@@ -138,6 +139,9 @@ subgroupAnalysis = function(.model, ...,
                     subgroup = M$data[[x]][na.mask],
                     fixed = M$common,
                     random = M$random,
+                    sm = switch(.model$.type.es, 
+                                "CER" = "PLOGIT", 
+                                "EER" = "PLOGIT", NULL),
                     tau.common = .tau.common)
 
     }) -> subgroup.analysis.list
@@ -158,26 +162,26 @@ subgroupAnalysis = function(.model, ...,
                 if (identical(.model$.type.es, "RR")){
                    exp(x$TE.common.w)
                 } else {
-                  x$TE.common.w
+                  if (.has.event.rate) {plogis(x$TE.common.w)} else { x$TE.common.w }
                 }, .round.digits)
           g.full = 
             if (identical(.model$.type.es, "RR")){
               exp(x$TE.common.w)
             } else {
-              x$TE.common.w
+              if (.has.event.rate) {plogis(x$TE.common.w)} else {x$TE.common.w}
             }
         } else {
           g = round(
                 if (identical(.model$.type.es, "RR")){
                   exp(x$TE.random.w)
                 } else {
-                  x$TE.random.w
+                  if (.has.event.rate) {plogis(x$TE.random.w)} else {x$TE.random.w}
                 }, .round.digits)
           g.full = 
             if (identical(.model$.type.es, "RR")){
               exp(x$TE.random.w)
             } else {
-              x$TE.random.w
+              if (.has.event.rate) {plogis(x$TE.random.w)} else {x$TE.random.w}
             }
         }
 
@@ -188,13 +192,13 @@ subgroupAnalysis = function(.model, ...,
                           if (identical(.model$.type.es, "RR")){
                             exp(x$lower.common.w)
                           } else {
-                            x$lower.common.w
+                            if (.has.event.rate) {plogis(x$lower.common.w)} else {x$lower.common.w}
                           }, .round.digits), "; ",
                         round(
                           if (identical(.model$.type.es, "RR")){
                             exp(x$upper.common.w)
                           } else {
-                            x$upper.common.w
+                            if (.has.event.rate) {plogis(x$upper.common.w)} else {x$upper.common.w}
                           }, .round.digits), "]")
         } else {
           g.ci = paste0("[", 
@@ -202,13 +206,13 @@ subgroupAnalysis = function(.model, ...,
                           if (identical(.model$.type.es, "RR")){
                             exp(x$lower.random.w)
                           } else {
-                            x$lower.random.w
+                            if (.has.event.rate) {plogis(x$lower.random.w)} else {x$lower.random.w}
                           }, .round.digits), "; ",
                         round(
                           if (identical(.model$.type.es, "RR")){
                             exp(x$upper.random.w)
                           } else {
-                            x$upper.random.w
+                            if (.has.event.rate) {plogis(x$upper.random.w)} else {x$upper.random.w}
                           }, .round.digits), "]")
         }
 
@@ -252,8 +256,12 @@ subgroupAnalysis = function(.model, ...,
       summary["nnt"] = "-"
       colnames(summary)[4:5] = c("rr", "rr.ci")
     }
+    if (.has.event.rate){
+      summary["nnt"] = "-"
+      colnames(summary)[4:5] = c(tolower(.model$.type.es), 
+                                 paste0(tolower(.model$.type.es),".ci"))
+    }
   }
-
 
   if (class(M)[1] == "rma.mv"){
 
@@ -270,7 +278,7 @@ subgroupAnalysis = function(.model, ...,
                      purrr::map_dfr(~as.factor(.)))
 
     purrr::map(as.list(variables), function(x){
-      form = as.formula(paste0("~", x))
+      form = as.formula(paste0("~ 0 +", x))
       tryCatch2({
         metafor::rma.mv(yi = yi,
                         V = vi,
@@ -288,21 +296,25 @@ subgroupAnalysis = function(.model, ...,
                 function(x, y){
       
       if (identical(.model$.type.es, "RR")){
-        g = c(exp(as.numeric(x$b)[1]),
-              exp(as.numeric(x$b)[-1] + as.numeric(x$b)[1])) %>% round(.round.digits)
-        g.full = c(exp(as.numeric(x$b)[1]),
-              exp(as.numeric(x$b)[-1] + as.numeric(x$b)[1])) 
-        g.lower = {exp(as.numeric(x$b)[1] + x$ci.lb)} %>% round(.round.digits)
-        g.upper = {exp(as.numeric(x$b)[1] + x$ci.ub)} %>% round(.round.digits)
+        g = c(exp(as.numeric(x$b))) %>% round(.round.digits)
+        g.full = c(exp(as.numeric(x$b)))
+        g.lower = {exp(x$ci.lb)} %>% round(.round.digits)
+        g.upper = {exp(x$ci.ub)} %>% round(.round.digits)
         g.ci = paste0("[", g.lower, "; ", g.upper, "]")
       } else {
-        g = c(as.numeric(x$b)[1],
-              as.numeric(x$b)[-1] + as.numeric(x$b)[1]) %>% round(.round.digits)
-        g.full = c(as.numeric(x$b)[1],
-              as.numeric(x$b)[-1] + as.numeric(x$b)[1]) 
-        g.lower = {as.numeric(x$b)[1] + x$ci.lb} %>% round(.round.digits)
-        g.upper = {as.numeric(x$b)[1] + x$ci.ub} %>% round(.round.digits)
-        g.ci = paste0("[", g.lower, "; ", g.upper, "]")
+        if (.has.event.rate) {
+          g = as.numeric(x$b) %>% plogis() %>% round(.round.digits)
+          g.full = as.numeric(x$b) %>% plogis()
+          g.lower = {x$ci.lb} %>% plogis() %>% round(.round.digits)
+          g.upper = {x$ci.ub} %>% plogis() %>% round(.round.digits)
+          g.ci = paste0("[", g.lower, "; ", g.upper, "]")
+        } else {
+          g = as.numeric(x$b) %>% round(.round.digits)
+          g.full = as.numeric(x$b)
+          g.lower = {as.numeric(x$ci.lb)} %>% round(.round.digits)
+          g.upper = {as.numeric(x$ci.ub)} %>% round(.round.digits)
+          g.ci = paste0("[", g.lower, "; ", g.upper, "]")
+        }
       }
 
       if (is.null(.nnt.cer)){
@@ -323,6 +335,9 @@ subgroupAnalysis = function(.model, ...,
     if (identical(.model$.type.es, "RR")){
       colnames(summary)[4:5] = c("rr", "rr.ci")
     }
+    if (.has.event.rate) {
+      colnames(summary)[4:5] = c(tolower(.model$.type.es), paste0(tolower(.model$.type.es), ".ci"))
+    }
 
   }
 
@@ -335,6 +350,9 @@ subgroupAnalysis = function(.model, ...,
             !is.na(summary)] = "-"
   
   if (identical(.model$.type.es, "RR")){
+    summary$nnt = "-"
+  }
+  if (.has.event.rate) {
     summary$nnt = "-"
   }
   
@@ -400,9 +418,15 @@ print.subgroupAnalysis = function(x, ...){
                    "<i>RR</i>", "CI", "<i>I</i><sup>2</sup>",
                    "CI", "NNT", "<i>p</i>")
     } else {
-      colNames = c("Variable", "Level", "<i>n</i><sub>comp</sub>",
-                   "<i>g</i>", "CI", "<i>I</i><sup>2</sup>",
-                   "CI", "NNT", "<i>p</i>")
+      if (identical(x$.type.es, "EER")||identical(x$.type.es, "CER")) {
+        colNames = c("Variable", "Level", "<i>n</i><sub>comp</sub>",
+                     paste0("<i>", x$.type.es, "</i>"), "CI", "<i>I</i><sup>2</sup>",
+                     "CI", "NNT", "<i>p</i>")
+      } else {
+        colNames = c("Variable", "Level", "<i>n</i><sub>comp</sub>",
+                     "<i>g</i>", "CI", "<i>I</i><sup>2</sup>",
+                     "CI", "NNT", "<i>p</i>") 
+      }
     }
 
     x$summary %>%

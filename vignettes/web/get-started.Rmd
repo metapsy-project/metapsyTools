@@ -588,7 +588,8 @@ summary(res)
 
 The `runMetaAnalysis` function allows to tweak many, many details of the specific meta-analysis models (run `?runMetaAnalysis` to see the entire documentation). The most important arguments one may want to specify are:
 
--   `es.measure`. By default, the function conducts analyses using the Hedges $g$ values stored in the data set. To conduct analyses using dichotomous outcome data (i.e. response, remission, etc.), one has to set this argument to `"RR"`.
+-   `es.measure`. By default, the function conducts analyses using the Hedges' $g$ values stored in the data set. To conduct analyses using dichotomous outcome data (i.e. response, remission, etc.), one has to set this argument to `"RR"` (for risk ratios), `"EER"` (for intervention group
+response rates), or `"CER"` (for control group response rates).
 -   `es.type`. By default, analyses are conducted using the `"precalculated"` effect sizes stored in the prepared data set. For risk ratios, one can alternatively set this argument to `"raw"`, which means that the "raw" event counts are used for computations (instead of the pre-calculated log-risk ratio and its standard error). This is typically preferable, but may not be possible if this information could not be extracted from all primary studies.
 -   `method.tau`. This argument controls the method to be used for estimating the between-study heterogeneity variance $\tau^2$. The default is `"REML"` (restricted maximum likelihood), but other options such as the DerSimonian-Laird estimator (`"DL"`) are also available (see the [`runMetaAnalysis`](https://tools.metapsy.org/reference/runmetaanalysis) function documentation for more details). Note that three-level meta-analysis models can only be fitted using (restricted) maximum likelihood.
 -   `nnt.cer`. The `runMetaAnalysis` function uses the method by Furukawa and Leucht ([2011](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0019070)) to calculate the Number Needed to Treat (NNT) for each pooled effect size. This method needs an estimate of the control group event rate (CER). By default, `nnt.cer = 0.2` is used, but you can set this to another value if desired.
@@ -659,7 +660,7 @@ When `runMetaAnalysis` was run with `i2.ci.boot` set to `TRUE`, the $I^2$ (or, m
 
 <br>
 
-#### **Complex Variance-Covariance Approximation**
+#### Complex Variance-Covariance Approximation
 
 The `vcov` argument in `runMetaAnalysis`controls if the effect size dependencies within the data should be approximated using a `"simple"` (default) or more `"complex"` (but potentially more accurate) method. This argument is only relevant for the `"combined"` and `"threelevel.che"` models. The default "simple" method constructs variance-covariance matrices $\Sigma_k$ for each study using a constant sampling correlation $\rho$ (defined by `rho.within.study`), which is identical across all studies, outcomes, and time points. This simplifying assumption is part of the formulation of the CHE model originally provided by Pustejovsky and Tipton ([2022](https://link.springer.com/article/10.1007/s11121-021-01246-3)).
 

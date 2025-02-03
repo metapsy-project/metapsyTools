@@ -94,7 +94,7 @@
 #' @importFrom scales pvalue
 #' @importFrom meta trimfill
 #' @importFrom metasens limitmeta
-#' @importFrom metafor selmodel rma.uni confint.rma.uni.selmodel
+#' @importFrom metafor selmodel rma.uni confint.rma.uni.selmodel predict.rma
 #' @importFrom stats dffits model.matrix rnorm rstudent quantile
 #' @importFrom utils combn argsAnywhere
 #' @export correctPublicationBias
@@ -286,6 +286,32 @@ correctPublicationBias = function(model,
         mTrimFillRes$nnt = Inf
       }
     }
+    
+    if (identical(.type.es, "EER")||identical(.type.es, "CER")) {
+      mTrimFill$value %>% {
+        mTrimFillRes$g = ifelse(
+            isTRUE(.$common) & !isTRUE(.$random), 
+            .$TE.common, .$TE.random) %>% 
+            plogis() %>% round(round.digits)
+        mTrimFillRes$g.ci = paste0("[", 
+                        ifelse(isTRUE(.$common) & !isTRUE(.$random),
+                               .$lower.common, .$lower.random) %>% 
+                          plogis() %>% round(round.digits), "; ",
+                        ifelse(isTRUE(.$common) & !isTRUE(.$random),
+                               .$upper.common, .$upper.random) %>% 
+                          plogis() %>% round(round.digits), "]")
+        mTrimFillRes$p = "-"
+        mTrimFillRes$prediction.ci = paste0("[", 
+                                 round(
+                                   plogis(.$lower.predict),
+                                   round.digits), "; ",
+                                 round(
+                                   plogis(.$upper.predict), 
+                                   round.digits), "]")
+        mTrimFillRes$nnt = "-"
+        mTrimFillRes$excluded = "none"; mTrimFillRes
+      } -> mTrimFillRes
+    }
   }
   
   M = M.orig
@@ -434,15 +460,46 @@ correctPublicationBias = function(model,
     })
     
     if (identical(.type.es, "RR")){
-      if (mLimitRes$g == 1 & isTRUE(.raw.bin.es)){
-        mLimitRes$nnt = Inf
+        if (mLimitRes$g == 1 & isTRUE(.raw.bin.es)){
+          mLimitRes$nnt = Inf
+        }
       }
     }
+    
+    if (identical(.type.es, "EER")||identical(.type.es, "CER")) {
+      mLimit$value %>% {
+        sd.pi = (qt(0.975, .$k-1) * sqrt(.$seTE.adjust^2 + .$tau^2))
+        lower.predict = .$TE.adjust - sd.pi
+        upper.predict = .$TE.adjust + sd.pi
+        mLimitRes$g = ifelse(
+          isTRUE(.$common) & !isTRUE(.$random), 
+          .$TE.common, .$TE.random) %>% 
+          plogis() %>% round(round.digits)
+        mLimitRes$g.ci = paste0("[", 
+                                ifelse(isTRUE(.$common) & !isTRUE(.$random),
+                                       .$lower.common, .$lower.random) %>% 
+                                  plogis() %>% round(round.digits), "; ",
+                                ifelse(isTRUE(.$common) & !isTRUE(.$random),
+                                       .$upper.common, .$upper.random) %>% 
+                                  plogis() %>% round(round.digits), "]")
+        mLimitRes$p = "-"
+        mLimitRes$prediction.ci = paste0("[", 
+                                         round(
+                                           plogis(lower.predict),
+                                           round.digits), "; ",
+                                         round(
+                                           plogis(upper.predict), 
+                                           round.digits), "]")
+        mLimitRes$nnt = "-"
+        mLimitRes$excluded = "none"; mLimitRes
+      } -> mLimitRes
+    }  
+  
     rownames(mLimitRes) = "Limit meta-analysis"
     message("- ", crayon::green("[OK] "),
             "Shrunken estimate of the limit meta-analysis based on the '", 
             mLimit$value["method.adjust"], "' estimator.")
-    }
+    
   
   
   
@@ -584,10 +641,10 @@ correctPublicationBias = function(model,
           round(i2.upper, r.digits), "]"),
         prediction.ci = paste0(
           "[", 
-          round(predict(mSelmodel)[["pi.lb"]] %>% 
+          round(predict.rma(mSelmodel)[["pi.lb"]] %>% 
                   ifelse(identical(.type.es, "RR"), exp(.), .), 
                 r.digits), "; ",
-          round(predict(mSelmodel)[["pi.ub"]] %>% 
+          round(predict.rma(mSelmodel)[["pi.ub"]] %>% 
                   ifelse(identical(.type.es, "RR"), exp(.), .), 
                 r.digits), "]"),
         nnt = ifelse(identical(.type.es, "RR"), 
@@ -607,13 +664,33 @@ correctPublicationBias = function(model,
     })
   }
   
+  if (identical(.type.es, "EER")||identical(.type.es, "CER")) {
+    
+    mSelmodel %>% {
+      mSelmodelRes$g = .$b %>% plogis() %>% round(r.digits)
+      mSelmodelRes$g.ci = paste0("[", 
+        .$ci.lb %>% plogis() %>% round(r.digits),"; ",
+        .$ci.ub %>% plogis() %>% round(r.digits), "]")
+      mSelmodelRes$p = "-"
+      mSelmodelRes$prediction.ci = 
+        paste0(
+          "[", 
+          round(predict.rma(.)[["pi.lb"]] %>% plogis(), r.digits), "; ",
+          round(predict.rma(.)[["pi.ub"]] %>% plogis(), r.digits), "]")
+      mSelmodelRes$nnt = "-"
+      mSelmodelRes$excluded = "none"; mSelmodelRes
+    } -> mSelmodelRes
+    
+  }
+  
   rownames(mSelmodelRes) = "Selection model"
+  
   
   if (!isTRUE(.selmodel.error)){
     message("- ", crayon::green("[OK] "),
             "Estimated effect using step function selection model (p=",
             paste(selmodel.steps*2, collapse = ", "), ").")
-  } 
+    } 
   
   
   
@@ -631,6 +708,12 @@ correctPublicationBias = function(model,
   if (identical(.type.es, "RR")){
     colnames(summary)[2:3] = c("rr", "rr.ci")
   }
+  if (identical(.type.es, "EER")){
+    colnames(summary)[2:3] = c("eer", "eer.ci")
+  }
+  if (identical(.type.es, "CER")){
+    colnames(summary)[2:3] = c("cer", "cer.ci")
+  }
   
   # Prepare for return
   returnlist = model
@@ -646,4 +729,8 @@ correctPublicationBias = function(model,
   return(returnlist)
   
 }
+
+
+
+
 

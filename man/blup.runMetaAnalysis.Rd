@@ -11,7 +11,8 @@
 
 \item{which}{Model for which estimates should be printed. Can be one of \code{"overall"},
 \code{"combined"}, \code{"lowest.highest"}, \code{"outliers"},
-\code{"influence"}, \code{"threelevel"}, or \code{"threelevel.che"}.}
+\code{"influence"}, \code{"threelevel"}, \code{"threelevel.che"}, \code{"ccrem"},
+or \code{"ccrem.che"}.}
 
 \item{...}{Additional arguments.}
 }

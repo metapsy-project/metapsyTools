@@ -10,13 +10,13 @@
 \item{fitted}{An object of class \code{runMetaAnalysis}.}
 
 \item{which}{Model for which estimates should be printed. Can be one of \code{"threelevel"}
-or \code{"threelevel.che"}.}
+\code{"threelevel.che"}, \code{"ccrem"}, or \code{"ccrem.che"}.}
 
 \item{...}{Additional arguments.}
 }
 \description{
-Profiles the restricted log-likelihood of \code{threelevel} and \code{threelevel.che}
+Profiles the restricted log-likelihood of \code{threelevel}, \code{threelevel.che}, \code{ccrem}, or \code{ccrem.che}
 models, using the \code{\link[metafor:profile.rma]{metafor::profile.rma()}} function. This functionality
-can be used to check if the two heterogeneity variances (\mjeqn{\tau^2}{\tau^2} within
+can be used to check if the heterogeneity variances (\mjeqn{\tau^2}{\tau^2} within
 and between studies) were identifiable and correctly estimated.
 }

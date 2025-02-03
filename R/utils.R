@@ -3350,6 +3350,1490 @@ fitThreeLevelHACEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
 }
 
 
+#' Fit 'ccrem' model
+#' @keywords internal 
+fitCcremModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
+                         measure.var, study.var, .raw.bin.es, .type.es, hakn,
+                         method.tau.meta, method.tau.ci, method.tau,
+                         dots, es.binary.raw.vars, round.digits,
+                         nnt.cer, which.run, mGeneral, mCombined,
+                         use.rve, i2.ci.boot, nsim.boot){
+  
+  has.bs = FALSE
+  
+  # Check if instrument is available
+  if (!measure.var[1] %in% colnames(data)) {
+    message("- ", crayon::green("[OK] "), 
+            "Calculating effect size using three-level CCREM model... ",
+            appendLF = FALSE)
+    warn.end = TRUE
+    which.run[!which.run == "ccrem"] -> which.run
+    return(list(m = NULL, 
+                res = NULL,
+                has.error = TRUE,
+                message = paste0("'", measure.var, "' (measure.var variable) not found in data.")))
+  }
+  
+  # Define multi.study
+  multi.study = names(table(data[[study.var]])
+                      [table(data[[study.var]]) > 1])
+  
+  data$es.id = 1:nrow(data)
+  formula = list(as.formula(paste0("~ 1 | ", colnames(data[study.var]), " / es.id")),
+                 as.formula(paste0("~ 1 | ", measure.var)))
+  
+  mCcremArgs = list(
+    yi = mGeneral$m[["TE"]],
+    V = mGeneral$m[["seTE"]]^2,
+    slab = mGeneral$m[["studlab"]],
+    data = data,
+    random = formula,
+    test = ifelse(hakn == TRUE, "t", "z"),
+    method = "REML") %>% 
+    append(selectArguments(metafor::rma.mv, dots))
+  
+  mCcrem = 
+    tryCatch2(do.call(metafor::rma.mv, mCcremArgs))
+  
+  model.ccrem.legacy = list(
+    slab = data[[study.var]],
+    data = data,
+    es.var = es.var[1],
+    se.var = se.var[1],
+    yi = mGeneral$m[["TE"]],
+    V = mGeneral$m[["seTE"]]*mGeneral$m[["seTE"]],
+    formula.rnd = formula)
+  mCcrem$value$legacy = model.ccrem.legacy
+  
+  if (isTRUE(.raw.bin.es)){
+    # For RR analyses: re-run analyses using g
+    # This is needed for NNTs
+    event.data = 
+      data.frame(event = data[[es.binary.raw.vars[2]]],
+                 n = data[[es.binary.raw.vars[4]]])
+    tryCatch2(
+      meta::metaprop(
+        event = event, n = n,
+        data = event.data[complete.cases(event.data),])) -> m.metaprop
+    
+    if (m.metaprop$has.error) {
+      cer = NA
+    } else {
+      m.metaprop$value %>% 
+        {.$TE.random} %>% 
+        {exp(.)/(1+exp(.))} -> cer    
+    }
+    
+    apply(data, 1, function(x){
+      esc::esc_2x2(grp1yes = as.numeric(x[[es.binary.raw.vars[1]]]) + 0.5, 
+                   grp1no = as.numeric(x[[es.binary.raw.vars[3]]]) - 
+                     as.numeric(x[[es.binary.raw.vars[1]]]) + 0.5,
+                   grp2yes = as.numeric(x[[es.binary.raw.vars[2]]]) + 0.5,
+                   grp2no = as.numeric(x[[es.binary.raw.vars[4]]]) -
+                     as.numeric(x[[es.binary.raw.vars[2]]]) + 0.5,
+                   es.type = "g") %>% 
+        suppressWarnings() %>% 
+        {data.frame(es = .$es, se = .$se)}
+    }) %>% 
+      do.call(rbind, .) -> data.g
+    
+    tryCatch2(
+      metafor::rma.mv(
+        yi = data.g$es, V = data.g$se^2, 
+        data = data, random = formula,
+        test = ifelse(hakn == TRUE, "t", "z"),
+        method = "REML")) -> mCcrem.g
+    
+    if (mCcrem.g$has.error){
+      nnt.g = NA
+    } else {
+      mCcrem.g$value %>% 
+        {.[["b"]][1]} %>% 
+        {ifelse(.==0, Inf, 
+                metapsyNNT(abs(.), cer))} -> nnt.g
+    }
+  } else {
+    nnt.g = NA
+  }
+  
+  if (mCcrem$has.error){
+    mCcrem$value$I2 = NA
+    mCcrem$value$I2.between.studies = NA
+    mCcrem$value$I2.within.studies = NA
+    mCcrem$value$variance.components = NA
+  } else {
+    # Calculate total I2
+    W = diag(1/(mGeneral$m[["seTE"]]^2))
+    X = model.matrix(mCcrem$value)
+    P = W - W %*% X %*% 
+      solve(t(X) %*% W %*% X) %*% 
+      t(X) %*% W
+    with(mCcrem$value, {
+      100 * sum(sigma2) / 
+        (sum(sigma2) + (k-p)/sum(diag(P)))
+    }) -> mCcrem$value$I2 
+    
+    # Calculate I2 per level
+    with(mCcrem$value, {
+      (100 * sigma2 / 
+         (sum(sigma2) + (k-p)/sum(diag(P))))
+    }) -> I2.bw
+    mCcrem$value$I2.between.studies = I2.bw[1]
+    mCcrem$value$I2.within.studies = I2.bw[2]
+    mCcrem$value$I2.between.instruments = I2.bw[3]
+    
+    # Get tau and I2
+    with(mCcrem$value, 
+         {data.frame(
+           tau2 = c(sigma2, sum(sigma2)),
+           i2 = c(I2.between.studies, 
+                  I2.within.studies,
+                  I2.between.instruments,
+                  I2))}) -> mCcrem$value$variance.components
+    mCcrem$value$variance.components$tau2 = 
+      round(mCcrem$value$variance.components$tau2, 4)
+    mCcrem$value$variance.components$i2 = 
+      round(mCcrem$value$variance.components$i2, 1)
+    rownames(mCcrem$value$variance.components) = 
+      c("Between Studies", "Within Studies", 
+        "Between Instruments", "Total")
+    
+    # Calculate bootstrapped CIs
+    if (i2.ci.boot){
+      message(
+        crayon::cyan(
+          crayon::bold(
+            "- Parametric bootstrap for i2 confidence intervals (three-level MA model) ...")))
+      
+      # Run bootstrapping
+      sim = metafor::simulate.rma(mCcrem$value, nsim=nsim.boot)
+      counter = 0
+      mCcremArgs.bs = mCcremArgs
+      
+      sav = lapply(sim, function(x) {
+        tmp = try({
+          mCcremArgs.bs$yi = x
+          do.call(metafor::rma.mv, mCcremArgs.bs)}, silent=TRUE) 
+        if (inherits(tmp, "try-error")) { 
+          counter <<- counter + 1
+          NA
+        } else {
+          counter <<- counter + 1
+          if (counter %in% seq(0, nsim.boot, nsim.boot/100)){
+            cat(crayon::green(
+              paste0((counter/nsim.boot)*100, "% completed | ")))
+          }
+          if (identical(counter,nsim.boot)){
+            cat(crayon::green("DONE \n"))
+          }
+          tmp
+        }})
+      
+      sav = sav[!is.na(sav)]
+      
+      # Extract bootstrap cis (sigma)
+      rbind(
+        sapply(sav, function(x) x$sigma2[1]) %>% 
+          quantile(c(.025, .975)),
+        sapply(sav, function(x) x$sigma2[2]) %>% 
+          quantile(c(.025, .975)),
+        sapply(sav, function(x) x$sigma2[3]) %>% 
+          quantile(c(.025, .975)),
+        sapply(sav, function(x) x$sigma2[1] + x$sigma2[2] + x$sigma2[3]) %>% 
+          quantile(c(.025, .975))) -> sigma2.ci
+      
+      # Extract bootstrap SD (sigma)
+      rbind(
+        sapply(sav, function(x) x$sigma2[1]) %>% sd(),
+        sapply(sav, function(x) x$sigma2[2]) %>% sd(),
+        sapply(sav, function(x) x$sigma2[3]) %>% sd(),
+        sapply(sav, function(x) x$sigma2[1] + x$sigma2[2] + x$sigma2[3]) %>% 
+          sd()) -> se.sigma2
+      
+      # Extract bootstrap cis (i2)
+      rbind(
+        sapply(sav, function(x) 100 * x$sigma2[1] / 
+                 (sum(x$sigma2) + (mCcrem$value$k-mCcrem$value$p)/
+                    sum(diag(P)))) %>% 
+          quantile(c(.025, .975)),
+        sapply(sav, function(x) 100 * x$sigma2[2] / 
+                 (sum(x$sigma2) + (mCcrem$value$k-mCcrem$value$p)/
+                    sum(diag(P)))) %>% 
+          quantile(c(.025, .975)),
+        sapply(sav, function(x) 100 * x$sigma2[3] / 
+                 (sum(x$sigma2) + (mCcrem$value$k-mCcrem$value$p)/
+                    sum(diag(P)))) %>% 
+          quantile(c(.025, .975)),
+        sapply(sav, function(x) 100 * sum(x$sigma2) / 
+                 (sum(x$sigma2) + (mCcrem$value$k-mCcrem$value$p)/
+                    sum(diag(P)))) %>% 
+          quantile(c(.025, .975))) -> i2.ci
+      
+      mCcrem$value$variance.components$tau2.ci = 
+        c(paste0("[", round(sigma2.ci[1,], round.digits+1) %>% 
+                   paste(collapse = "; "), "]"),
+          paste0("[", round(sigma2.ci[2,], round.digits+1) %>% 
+                   paste(collapse = "; "), "]"), 
+          paste0("[", round(sigma2.ci[3,], round.digits+1) %>% 
+                   paste(collapse = "; "), "]"),
+          paste0("[", round(sigma2.ci[4,], round.digits+1) %>% 
+                   paste(collapse = "; "), "]"))
+      
+      mCcrem$value$variance.components$i2.ci = 
+        c(paste0("[", round(i2.ci[1,], round.digits) %>% 
+                   paste(collapse = "; "), "]"),
+          paste0("[", round(i2.ci[2,], round.digits) %>% 
+                   paste(collapse = "; "), "]"), 
+          paste0("[", round(i2.ci[3,], round.digits) %>% 
+                   paste(collapse = "; "), "]"),
+          paste0("[", round(i2.ci[4,], round.digits) %>% 
+                   paste(collapse = "; "), "]"))
+      
+      mCcrem$value$variance.components =
+        mCcrem$value$variance.components[,c("tau2", "tau2.ci", "i2", "i2.ci")] 
+      
+      mCcrem$value$se.sigma2 = se.sigma2
+      
+      has.bs = TRUE
+    } 
+  }
+  
+  if (use.rve[1] == FALSE){
+    
+    if ("threelevel" %in% which.run){
+      message("- ", crayon::green("[OK] "), 
+              "Calculating effect size using three-level CCREM model... ",
+              appendLF = FALSE)
+    }
+    
+    if (mCcrem$has.error){
+      mThreeLevelRes = 
+        data.frame(k = NA, g = NA, g.ci = NA,
+                   p = NA, i2 = NA, i2.ci = NA,
+                   prediction.ci = NA, nnt = NA,
+                   excluded = "none")
+    } else {
+      mCcremRes = with(mCcrem$value, {
+        data.frame(k = k.all,
+                   g = as.numeric(b[,1]) %>%
+                     ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
+                     round(round.digits),
+                   g.ci = paste0("[", 
+                                 ci.lb %>% 
+                                   ifelse(identical(.type.es, "RR"), 
+                                          exp(.), .) %>% 
+                                   round(round.digits), "; ",
+                                 ci.ub %>% 
+                                   ifelse(identical(.type.es, "RR"), 
+                                          exp(.), .) %>% 
+                                   round(round.digits), "]"),
+                   p = pval %>% scales::pvalue(),
+                   i2 = round(I2, 1),
+                   i2.ci = ifelse(has.bs, variance.components$i2.ci[3], "-"),
+                   prediction.ci = paste0("[", 
+                                          round(predict(mCcrem$value)$pi.lb %>% 
+                                                  ifelse(identical(.type.es, "RR"), exp(.), .), 
+                                                round.digits), "; ",
+                                          round(predict(mCcrem$value)$pi.ub %>% 
+                                                  ifelse(identical(.type.es, "RR"), exp(.), .), 
+                                                round.digits), "]"),
+                   nnt = ifelse(identical(.type.es, "RR"), 
+                                NA, metapsyNNT(abs(as.numeric(b[,1])), nnt.cer)) %>% 
+                     ifelse(isTRUE(.raw.bin.es), nnt.g, .) %>% 
+                     round(round.digits) %>% abs(),
+                   excluded = "none")
+      })
+    }
+    rownames(mCcremRes) = "Three-Level CCREM"
+    
+    if (!mCcrem$has.error){
+      mCcremRes$excluded = 
+        paste("Number of clusters/studies:", 
+              mCcrem$value$s.nlevels[1]) 
+    }
+    
+    sendMessage(mCcrem, "ccrem")
+    
+    if (length(multi.study) == 0 & 
+        "ccrem" %in% which.run){
+      message("\n- ", crayon::yellow("[!] "), 
+              "All included ES seem to be independent.",
+              " A three-level (CCREM) model is not adequate and ",
+              "tau/I2 estimates are not trustworthy! ",
+              appendLF = FALSE)
+      warn.end = TRUE
+      which.run[!which.run == "ccrem"] -> which.run
+    }
+    
+  } else {
+    
+    if ("ccrem" %in% which.run){
+      message("- ", crayon::green("[OK] "),
+              "Calculating effect size using three-level CCREM model... ",
+              appendLF = FALSE)
+      message(crayon::green("DONE"))
+      message("- ", crayon::green("[OK] "),
+              "Robust variance estimation (RVE) used for three-level CCREM model... ",
+              appendLF = FALSE)
+    }
+    
+    if (mCcrem$has.error){
+      mCcremRes.RVE = 
+        with(mCcrem$value, {
+          data.frame(k = NA, g = NA, g.ci = NA,
+                     p = NA, i2 = NA, i2.ci = NA,
+                     prediction.ci = NA, nnt = NA,
+                     excluded = "none")})
+    } else {
+      # Get results: RVE used
+      crit = qt(0.025, mCcrem$value$ddf[[1]], lower.tail = FALSE)
+      tau2 = sum(mCcrem$value$sigma2)
+      cluster.var = mCcrem$value$data[[study.var]]
+      # Obtain CR1-cluster robust values
+      SE = metafor::robust(mCcrem$value, cluster = cluster.var)[["se"]]
+      pi.lb.rve = 
+        mCcrem$value$b[,1][[1]] -
+        crit * sqrt(tau2 + (SE^2))
+      pi.ub.rve = 
+        mCcrem$value$b[,1][[1]] +
+        crit * sqrt(tau2 + (SE^2))
+      if (isTRUE(.raw.bin.es)){
+        as.numeric(mCcrem.g$value$b) %>% 
+          {ifelse(.==0, Inf, metapsyNNT(abs(.), cer))} -> nnt.g
+      }
+      mCcremRes.RVE = with(mCcrem$value, {
+        data.frame(k = k.all,
+                   g = as.numeric(mCcrem$value[["beta"]]) %>%
+                     ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
+                     round(round.digits),
+                   g.ci = paste0(
+                     "[",
+                     metafor::robust(mCcrem$value, cluster = cluster.var)[["ci.lb"]] %>%
+                       ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
+                       round(round.digits), "; ",
+                     metafor::robust(mCcrem$value, cluster = cluster.var)[["ci.ub"]] %>%
+                       ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
+                       round(round.digits), "]"),
+                   p = metafor::robust(mCcrem$value, cluster = cluster.var)[["pval"]] %>%
+                     scales::pvalue(),
+                   i2 = round(I2, 1),
+                   i2.ci = ifelse(has.bs, variance.components$i2.ci[4], "-"),
+                   prediction.ci = paste0(
+                     "[", 
+                     round(pi.lb.rve %>% 
+                             ifelse(identical(.type.es, "RR"), exp(.), .), 
+                           round.digits), "; ",
+                     round(pi.ub.rve %>% 
+                             ifelse(identical(.type.es, "RR"), exp(.), .), 
+                           round.digits), "]"),
+                   nnt = ifelse(identical(.type.es, "RR"), 
+                                NA, metapsyNNT(abs(as.numeric(
+                                  mCcrem$value[["b"]])), 
+                                  nnt.cer)) %>% 
+                     ifelse(isTRUE(.raw.bin.es), nnt.g, .) %>% 
+                     round(round.digits) %>% abs(),
+                   excluded = "none")
+      })
+      mCcremRes.RVE$excluded = 
+        paste0("Number of clusters/studies: ", 
+               mCcrem$value$s.nlevels[1], 
+               "; robust variance estimation (RVE; CR1 estimator) used.")
+    }
+    rownames(mCcremRes.RVE) = "Three-Level CCREM"
+    mCcremRes = mCcremRes.RVE
+    
+    sendMessage(mCcrem, "ccrem")
+    
+    if (length(multi.study) == 0 & "ccrem" %in% which.run){
+      message("\n- ", crayon::yellow("[!] "), 
+              "All included ES seem to be independent.",
+              " A three-level model is not adequate and",
+              " tau/I2 estimates are not trustworthy! ",
+              appendLF = FALSE)
+      warn.end = TRUE
+      which.run[!which.run == "ccrem"] -> which.run
+    }
+  }
+  
+  if (has.bs){
+    mCcrem$value$i2.ci.boot = TRUE
+  } else {
+    mCcrem$value$i2.ci.boot = FALSE
+  }
+  
+  return(list(m = mCcrem$value, 
+              res = mCcremRes,
+              has.error = mCcrem$has.error,
+              message = mCcrem$error$message))
+}
+
+
+#' Fit 'ccrem.che' model
+#' @keywords internal 
+fitCcremCHEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
+                            measure.var, study.var, .raw.bin.es, .type.es, hakn,
+                            method.tau.meta, method.tau.ci, method.tau,
+                            dots, es.binary.raw.vars, round.digits,
+                            nnt.cer, which.run, mGeneral, mCombined,
+                            use.rve, rho.within.study, phi.within.study,
+                            i2.ci.boot, nsim.boot){
+  
+  has.bs = FALSE
+  
+  # Check if instrument is available
+  if (!measure.var[1] %in% colnames(data)) {
+    message("- ", crayon::green("[OK] "), 
+            "Calculating effect size using three-level CCREM model... ",
+            appendLF = FALSE)
+    warn.end = TRUE
+    which.run[!which.run == "ccrem.che"] -> which.run
+    return(list(m = NULL, 
+                res = NULL,
+                has.error = TRUE,
+                message = paste0("'", measure.var, "' (measure.var variable) not found in data.")))
+  }
+  
+  if (rho.within.study[1] >.99){
+    message("- ", crayon::yellow("[!] "), 
+            "'rho.within.study' is very close to 1.",
+            " This can lead to non-positive-definite variance-covariance matrices.",
+            " If the V matrix is not positive-definite, assume a lower value...")
+    warn.end = TRUE}
+  if (phi.within.study[1] >.91){
+    message("- ", crayon::yellow("[!] "), 
+            "'phi.within.study' is very close to 1.",
+            " This can lead to non-positive-definite variance-covariance matrices.",
+            " If the V matrix is not positive-definite, assume a lower value...")
+    warn.end = TRUE}
+  if (phi.within.study[1] <.1){
+    message("- ", crayon::yellow("[!] "), 
+            "'phi.within.study' is very close to 0.",
+            " This can lead to non-positive-definite variance-covariance matrices.",
+            " If the V matrix is not positive-definite, assume a higher value...")
+    warn.end = TRUE
+  }
+  if (rho.within.study[1] <.01){
+    message("- ", crayon::yellow("[!] "), 
+            "'rho.within.study' is very close to 0.",
+            " This can lead to non-positive-definite variance-covariance matrices.",
+            " If the V matrix is not positive-definite, assume a higher value...")
+    warn.end = TRUE
+  }
+  
+  # Define multi.study
+  multi.study = names(table(data[[study.var]])
+                      [table(data[[study.var]]) > 1])
+  
+  data$es.id = 1:nrow(data)
+  formula.fixed = as.formula("TE ~ 1")
+  formula.rnd = list(as.formula(paste0("~ 1 | ", colnames(data[study.var]), " / es.id")),
+                     as.formula(paste0("~ 1 | ", measure.var)))
+  data.che = data
+  data.che$TE = mGeneral$m[["TE"]]
+  
+  Vmat = clubSandwich::impute_covariance_matrix(
+    mGeneral$m[["seTE"]]^2,
+    cluster = data[[study.var]],
+    r = rho.within.study,
+    smooth_vi = TRUE)
+  
+  mCHEArgs = list(
+    formula.fixed,
+    V = Vmat,
+    slab = data[[study.var]],
+    data = data.che,
+    random = formula.rnd,
+    test = ifelse(hakn == TRUE, "t", "z"),
+    method = "REML", 
+    sparse = TRUE) %>% 
+    append(selectArguments(metafor::rma.mv, dots))
+  
+  mCHE = 
+    tryCatch2(
+      do.call(metafor::rma.mv, mCHEArgs))
+  
+  model.threelevel.che.legacy = list(
+    slab = data.che[[study.var]],
+    data = data.che,
+    formula.rnd = formula.rnd,
+    formula.fixed = formula.fixed,
+    Vmat = Vmat)
+  mCHE$value$legacy = 
+    model.threelevel.che.legacy
+  
+  if (isTRUE(.raw.bin.es)){
+    # For RR analyses: re-run analyses using g
+    # This is needed for NNTs
+    event.data = 
+      data.frame(event = data.che[[es.binary.raw.vars[2]]],
+                 n = data.che[[es.binary.raw.vars[4]]])
+    tryCatch2(
+      meta::metaprop(
+        event = event, n = n,
+        data = event.data[complete.cases(event.data),])) -> m.metaprop
+    
+    if (m.metaprop$has.error) {
+      cer = NA
+    } else {
+      m.metaprop$value %>% 
+        {.$TE.random} %>% 
+        {exp(.)/(1+exp(.))} -> cer    
+    }
+    
+    apply(data.che, 1, function(x){
+      esc::esc_2x2(grp1yes = as.numeric(x[[es.binary.raw.vars[1]]]) + 0.5, 
+                   grp1no = as.numeric(x[[es.binary.raw.vars[3]]]) - 
+                     as.numeric(x[[es.binary.raw.vars[1]]]) + 0.5,
+                   grp2yes = as.numeric(x[[es.binary.raw.vars[2]]]) + 0.5,
+                   grp2no = as.numeric(x[[es.binary.raw.vars[4]]]) -
+                     as.numeric(x[[es.binary.raw.vars[2]]]) + 0.5,
+                   es.type = "g") %>% 
+        suppressWarnings() %>% 
+        {data.frame(es = .$es, se = .$se)}
+    }) %>% 
+      do.call(rbind, .) -> data.g
+    
+    Vmat.g = clubSandwich::impute_covariance_matrix(
+      data.g$se^2,
+      cluster = data.che[[study.var]],
+      r = rho.within.study,
+      smooth_vi = TRUE)
+    
+    data.che$TE = data.g$es
+    tryCatch2(
+      metafor::rma.mv(
+        formula.fixed,
+        V = Vmat.g,
+        slab = data.che[[study.var]],
+        data = data.che,
+        random = formula.rnd,
+        test = ifelse(hakn == TRUE, "t", "z"),
+        method = "REML", 
+        sparse = TRUE)) -> mCHE.g
+    
+    if (mCHE.g$has.error){
+      nnt.g = NA
+    } else {
+      mCHE.g$value %>% 
+        {.[["b"]][1]} %>% 
+        {ifelse(.==0, Inf, 
+                metapsyNNT(abs(.), cer))} -> nnt.g
+    }
+  } else {
+    nnt.g = NA
+  }
+  
+  if (mCHE$has.error){
+    mCHE$value$I2 = NA
+    mCHE$value$I2.between.studies = NA
+    mCHE$value$I2.within.studies = NA
+    mCHE$value$variance.components = NA
+  } else {
+    # Calculate total I2
+    W = diag(1/(mGeneral$m[["seTE"]]^2))
+    X = model.matrix(mCHE$value)
+    P = W - W %*% X %*% 
+      solve(t(X) %*% W %*% X) %*% 
+      t(X) %*% W
+    with(mCHE$value, {
+      100 * sum(sigma2) / 
+        (sum(sigma2) + (k-p)/sum(diag(P)))
+    }) -> mCHE$value$I2 
+    
+    # Calculate I2 per level
+    with(mCHE$value, {
+      (100 * sigma2 / 
+         (sum(sigma2) + (k-p)/sum(diag(P))))
+    }) -> I2.bw
+    
+    mCHE$value$I2.between.studies = I2.bw[1]
+    mCHE$value$I2.within.studies = I2.bw[2]
+    mCHE$value$I2.between.instruments = I2.bw[3]
+    
+    # Get tau and I2
+    with(mCHE$value, 
+         {data.frame(
+           tau2 = c(sigma2, sum(sigma2)),
+           i2 = c(I2.between.studies, 
+                  I2.within.studies,
+                  I2.between.instruments,
+                  I2))}) -> mCHE$value$variance.components
+    
+    mCHE$value$variance.components$tau2 = 
+      round(mCHE$value$variance.components$tau2, 4)
+    mCHE$value$variance.components$i2 = 
+      round(mCHE$value$variance.components$i2, 1)
+    rownames(mCHE$value$variance.components) = 
+      c("Between Studies", "Within Studies", "Between Instruments", "Total")
+    
+    # Calculate bootstrapped CIs
+    if (i2.ci.boot){
+      message(
+        crayon::cyan(
+          crayon::bold(
+            "- Parametric bootstrap for i2 confidence intervals (three-level CHE model) ...")))
+      
+      # Run bootstrapping
+      sim = metafor::simulate.rma(mCHE$value, nsim=nsim.boot)
+      counter = 0
+      mCHEArgs.bs = mCHEArgs
+      
+      sav = lapply(sim, function(x) {
+        tmp = try({
+          mCHEArgs.bs$data$TE = x
+          do.call(metafor::rma.mv, mCHEArgs.bs)}, silent=TRUE) 
+        if (inherits(tmp, "try-error")) { 
+          counter <<- counter + 1
+          NA
+        } else {
+          counter <<- counter + 1
+          if (counter %in% seq(0, nsim.boot, nsim.boot/100)){
+            cat(crayon::green(
+              paste0((counter/nsim.boot)*100, "% completed | ")))
+          }
+          if (identical(counter,nsim.boot)){
+            cat(crayon::green("DONE \n"))
+          }
+          tmp
+        }})
+      
+      sav = sav[!is.na(sav)]
+      
+      # Extract bootstrap cis (sigma)
+      rbind(
+        sapply(sav, function(x) x$sigma2[1]) %>% 
+          quantile(c(.025, .975)),
+        sapply(sav, function(x) x$sigma2[2]) %>% 
+          quantile(c(.025, .975)),
+        sapply(sav, function(x) x$sigma2[3]) %>% 
+          quantile(c(.025, .975)),
+        sapply(sav, function(x) x$sigma2[1] + x$sigma2[2] + x$sigma2[3]) %>% 
+          quantile(c(.025, .975))) -> sigma2.ci
+      
+      # Extract bootstrap SD (sigma)
+      rbind(
+        sapply(sav, function(x) x$sigma2[1]) %>% sd(),
+        sapply(sav, function(x) x$sigma2[2]) %>% sd(),
+        sapply(sav, function(x) x$sigma2[3]) %>% sd(),
+        sapply(sav, function(x) x$sigma2[1] + x$sigma2[2] + x$sigma2[3]) %>% 
+          sd()) -> se.sigma2
+      
+      # Extract bootstrap cis (i2)
+      rbind(
+        sapply(sav, function(x) 100 * x$sigma2[1] / 
+                 (sum(x$sigma2) + (mCHE$value$k-mCHE$value$p)/
+                    sum(diag(P)))) %>% 
+          quantile(c(.025, .975)),
+        sapply(sav, function(x) 100 * x$sigma2[2] / 
+                 (sum(x$sigma2) + (mCHE$value$k-mCHE$value$p)/
+                    sum(diag(P)))) %>% 
+          quantile(c(.025, .975)),
+        sapply(sav, function(x) 100 * x$sigma2[3] / 
+                 (sum(x$sigma2) + (mCHE$value$k-mCHE$value$p)/
+                    sum(diag(P)))) %>% 
+          quantile(c(.025, .975)),
+        sapply(sav, function(x) 100 * sum(x$sigma2) / 
+                 (sum(x$sigma2) + (mCHE$value$k-mCHE$value$p)/
+                    sum(diag(P)))) %>% 
+          quantile(c(.025, .975))) -> i2.ci
+      
+      mCHE$value$variance.components$tau2.ci = 
+        c(paste0("[", round(sigma2.ci[1,], round.digits+1) %>% 
+                   paste(collapse = "; "), "]"),
+          paste0("[", round(sigma2.ci[2,], round.digits+1) %>% 
+                   paste(collapse = "; "), "]"), 
+          paste0("[", round(sigma2.ci[3,], round.digits+1) %>% 
+                   paste(collapse = "; "), "]"),
+          paste0("[", round(sigma2.ci[4,], round.digits+1) %>% 
+                   paste(collapse = "; "), "]"))
+      
+      mCHE$value$variance.components$i2.ci = 
+        c(paste0("[", round(i2.ci[1,], round.digits) %>% 
+                   paste(collapse = "; "), "]"),
+          paste0("[", round(i2.ci[2,], round.digits) %>% 
+                   paste(collapse = "; "), "]"), 
+          paste0("[", round(i2.ci[3,], round.digits) %>% 
+                   paste(collapse = "; "), "]"),
+          paste0("[", round(i2.ci[4,], round.digits) %>% 
+                   paste(collapse = "; "), "]"))
+      
+      mCHE$value$variance.components =
+        mCHE$value$variance.components[,c("tau2", "tau2.ci", "i2", "i2.ci")] 
+      
+      mCHE$value$se.sigma2 = se.sigma2
+      
+      has.bs = TRUE
+    } 
+    else {
+      has.bs = FALSE
+    }
+  }
+  
+  
+  # Get results: no RVE
+  if (use.rve[1] == FALSE){
+    if ("ccrem.che" %in% which.run){
+      message("- ", crayon::green("[OK] "), 
+              "Calculating effect size using CCREM-CHE model... ",
+              appendLF = FALSE)
+    }
+    
+    if (mCHE$has.error){
+      mCHERes = 
+        data.frame(k = NA, g = NA, g.ci = NA,
+                   p = NA, i2 = NA, i2.ci = NA,
+                   prediction.ci = NA, nnt = NA,
+                   excluded = "none")
+    } else {
+      mCHERes = with(mCHE$value, {
+        data.frame(k = k.all,
+                   g = as.numeric(b[,1]) %>%
+                     ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
+                     round(round.digits),
+                   g.ci = paste0("[", 
+                                 ci.lb %>% 
+                                   ifelse(identical(.type.es, "RR"), 
+                                          exp(.), .) %>% 
+                                   round(round.digits), "; ",
+                                 ci.ub %>% 
+                                   ifelse(identical(.type.es, "RR"), 
+                                          exp(.), .) %>% 
+                                   round(round.digits), "]"),
+                   p = pval %>% scales::pvalue(),
+                   i2 = round(I2, 1),
+                   i2.ci = ifelse(has.bs, variance.components$i2.ci[4], "-"),
+                   prediction.ci = paste0(
+                     "[", 
+                     round(predict(mCHE$value)$pi.lb %>% 
+                             ifelse(identical(.type.es, "RR"), exp(.), .), 
+                           round.digits), "; ",
+                     round(predict(mCHE$value)$pi.ub %>% 
+                             ifelse(identical(.type.es, "RR"), exp(.), .), 
+                           round.digits), "]"),
+                   nnt = ifelse(identical(.type.es, "RR"), 
+                                NA, metapsyNNT(abs(as.numeric(b[,1])), nnt.cer)) %>% 
+                     ifelse(isTRUE(.raw.bin.es), nnt.g, .) %>% 
+                     round(round.digits) %>% abs(),
+                   excluded = "none")
+      })
+      mCHERes$excluded = paste("Number of clusters/studies:", 
+                               mCHE$value$s.nlevels[1])
+    }
+    rownames(mCHERes) = "Three-Level CCREM (CHE)"
+    sendMessage(mCHE, "ccrem.che")
+    
+    if (length(multi.study) == 0 & "ccrem.che" %in% which.run){
+      message("\n- ", crayon::yellow("[!] "), 
+              "All included ES seem to be independent.",
+              " A CCREM-CHE model is not adequate and ",
+              "tau/I2 estimates are not trustworthy! ",
+              appendLF = FALSE)
+      warn.end = TRUE
+      which.run[!which.run == "ccrem.che"] -> which.run
+    }
+  } else {
+    
+    if ("ccrem.che" %in% which.run){
+      message("- ", crayon::green("[OK] "), 
+              "Calculating effect size using CCREM-CHE model (rho=", 
+              rho.within.study, ")... ",
+              appendLF = FALSE)
+      message(crayon::green("DONE"))
+      message("- ", crayon::green("[OK] "), 
+              "Robust variance estimation (RVE) used for CCREM-CHE model... ",
+              appendLF = FALSE)
+    }
+    
+    if (mCHE$has.error){
+      mCHERes.RVE = 
+        data.frame(k = NA, g = NA, g.ci = NA,
+                   p = NA, i2 = NA, i2.ci = NA,
+                   prediction.ci = NA, nnt = NA,
+                   excluded = "none")
+    } else {
+      # Get results: RVE used
+      crit = qt(0.025, mCHE$value$ddf[[1]], lower.tail = FALSE)
+      tau2 = sum(mCHE$value$sigma2)
+      cluster.var = mCHE$value$data[[study.var]]
+      SE = metafor::robust(mCHE$value, cluster=cluster.var)[["se"]]
+      pi.lb.rve = as.numeric(mCHE$value[["b"]]) -
+        crit * sqrt(tau2 + (SE^2))
+      pi.ub.rve = as.numeric(mCHE$value[["b"]]) +
+        crit * sqrt(tau2 + (SE^2))
+      if (isTRUE(.raw.bin.es)){
+        as.numeric(mCHE$value[["b"]]) %>% 
+          {ifelse(.==0, Inf, metapsyNNT(abs(.), cer))} -> nnt.g
+      }
+      mCHERes.RVE = with(mCHE$value, {
+        data.frame(k = k.all,
+                   g = as.numeric(mCHE$value[["b"]]) %>%
+                     ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
+                     round(round.digits),
+                   g.ci = paste0(
+                     "[",
+                     metafor::robust(mCHE$value, cluster=cluster.var)[["ci.lb"]] %>%
+                       ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
+                       round(round.digits), "; ",
+                     metafor::robust(mCHE$value, cluster=cluster.var)[["ci.ub"]] %>%
+                       ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
+                       round(round.digits), "]"),
+                   p = metafor::robust(mCHE$value, cluster=cluster.var)[["pval"]] %>%
+                     scales::pvalue(),
+                   i2 = round(I2, 1),
+                   i2.ci = ifelse(has.bs, variance.components$i2.ci[4], "-"),
+                   prediction.ci = paste0(
+                     "[", 
+                     round(pi.lb.rve %>% 
+                             ifelse(identical(.type.es, "RR"), exp(.), .), 
+                           round.digits), "; ",
+                     round(pi.ub.rve %>% 
+                             ifelse(identical(.type.es, "RR"), exp(.), .), 
+                           round.digits), "]"),
+                   nnt = ifelse(identical(.type.es, "RR"), 
+                                NA, metapsyNNT(abs(as.numeric(mCHE$value[["b"]])), nnt.cer)) %>% 
+                     ifelse(isTRUE(.raw.bin.es), nnt.g, .) %>% 
+                     round(round.digits) %>% abs(),
+                   excluded = "none")
+      })
+      mCHERes.RVE$excluded = 
+        paste0("Number of clusters/studies: ", mCHE$value$s.nlevels[1],
+               "; robust variance estimation (RVE) used.")
+    }
+    
+    rownames(mCHERes.RVE) = "Three-Level CCREM (CHE)"
+    mCHERes = mCHERes.RVE
+    sendMessage(mCHE, "ccrem.che")
+    
+    if (length(multi.study) == 0 & "ccrem.che" %in% which.run){
+      message("\n- ", crayon::yellow("[!] "), 
+              "All included ES seem to be independent.",
+              " A CCREM-CHE model is not adequate and ",
+              "tau/I2 estimates are not trustworthy! ",
+              appendLF = FALSE)
+      warn.end = TRUE
+      which.run[!which.run == "ccrem.che"] -> which.run
+    }
+  }
+  if (has.bs){
+    mCHE$value$i2.ci.boot = TRUE
+  } else {
+    mCHE$value$i2.ci.boot = FALSE
+  }
+  
+  return(list(m = mCHE$value, 
+              res = mCHERes,
+              has.error = mCHE$has.error,
+              message = mCHE$error$message))
+}
+
+
+
+#' Fit 'ccrem' complex model
+#' @keywords internal 
+fitCcremHACEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
+                             measure.var, study.var, .raw.bin.es, .type.es, hakn,
+                             method.tau.meta, method.tau.ci, method.tau,
+                             dots, es.binary.raw.vars, round.digits,
+                             nnt.cer, which.run, mGeneral, mCombined,
+                             use.rve, rho.within.study, which.combine.var,
+                             phi.within.study, n.var.arm1, 
+                             n.var.arm2, w1.var, w2.var, time.var,
+                             near.pd, i2.ci.boot, nsim.boot){
+  
+  has.bs = FALSE
+  
+  # Check if instrument is available
+  if (!measure.var[1] %in% colnames(data)) {
+    message("- ", crayon::green("[OK] "), 
+            "Calculating effect size using three-level CCREM model... ",
+            appendLF = FALSE)
+    warn.end = TRUE
+    which.run[!which.run == "ccrem.che"] -> which.run
+    return(list(m = NULL, 
+                res = NULL,
+                has.error = TRUE,
+                message = paste0("'", measure.var, "' (measure.var variable) not found in data.")))
+  }
+  
+  if (rho.within.study[1] >.99){
+    message("- ", crayon::yellow("[!] "), 
+            "'rho.within.study' is very close to 1.",
+            " This can lead to non-positive-definite variance-covariance matrices.",
+            " If the V matrix is not positive-definite, assume a lower value...")
+    warn.end = TRUE}
+  if (phi.within.study[1] >.91){
+    message("- ", crayon::yellow("[!] "), 
+            "'phi.within.study' is very close to 1.",
+            " This can lead to non-positive-definite variance-covariance matrices.",
+            " If the V matrix is not positive-definite, assume a lower value...")
+    warn.end = TRUE}
+  if (phi.within.study[1] <.1){
+    message("- ", crayon::yellow("[!] "), 
+            "'phi.within.study' is very close to 0.",
+            " This can lead to non-positive-definite variance-covariance matrices.",
+            " If the V matrix is not positive-definite, assume a higher value...")
+    warn.end = TRUE
+  }
+  if (rho.within.study[1] <.01){
+    message("- ", crayon::yellow("[!] "), 
+            "'rho.within.study' is very close to 0.",
+            " This can lead to non-positive-definite variance-covariance matrices.",
+            " If the V matrix is not positive-definite, assume a higher value...")
+    warn.end = TRUE
+  }
+  
+  # Define multi.study
+  multi.study = names(table(data[[study.var]])
+                      [table(data[[study.var]]) > 1])
+  
+  data$es.id = 1:nrow(data)
+  formula.fixed = as.formula("TE ~ 1")
+  formula.rnd = list(as.formula(paste0("~ 1 | ", colnames(data[study.var]), " / es.id")),
+                     as.formula(paste0("~ 1 | ", measure.var)))
+  data.che = data
+  data.che$TE = mGeneral$m[["TE"]]
+  data.che$seTE = mGeneral$m[["seTE"]]
+  
+  # Define required variables
+  data.che$study = data.che[[study.var]]
+  data.che$instrument = data.che[[measure.var]]
+  data.che$condition_arm1 = data.che[[arm.var.1]]
+  data.che$condition_arm2 = data.che[[arm.var.2]]
+  data.che$multi_arm1 = data.che[[which.combine.var]]
+  data.che$n_arm1 = data.che[[w1.var]]
+  data.che$n_arm2 = data.che[[w2.var]]
+  data.che$time_weeks = data.che[[time.var]]
+  within(data.che, {
+    instrument[is.na(instrument)] = "missing"
+    vcalc_arm1 = paste(
+      study, condition_arm1, multi_arm1, "arm1")
+    vcalc_arm2 = paste(
+      study, condition_arm2, "arm2") 
+    time_weeks[is.na(time_weeks)] = median(time_weeks, na.rm=T)
+    n_arm1[is.na(n_arm1)] = 20
+    n_arm2[is.na(n_arm2)] = 20
+    es = TE; V = seTE^2
+  }) -> dat.che
+  
+  # Approximate Vcovs
+  tryCatch2(metafor::vcalc(vi = V, cluster = study, 
+                           obs = instrument, time1 = time_weeks,
+                           grp1 = vcalc_arm1, grp2 = vcalc_arm2,
+                           w1 = n_arm1, w2 = n_arm2, 
+                           rho = rho.within.study, 
+                           phi = phi.within.study, data = dat.che, 
+                           nearpd = near.pd)) -> vcalc.res
+  if (!is.null(vcalc.res$warning[1])){
+    append.error = TRUE
+  } else {
+    append.error = FALSE
+  }
+  metafor::blsplit(vcalc.res$value, dat.che$study) -> Vcov
+  
+  mCHEArgs = list(
+    formula.fixed,
+    V = Vcov,
+    slab = data[[study.var]],
+    data = data.che,
+    random = formula.rnd,
+    test = ifelse(hakn == TRUE, "t", "z"),
+    method = "REML", 
+    sparse = TRUE) %>% 
+    append(selectArguments(metafor::rma.mv, dots))
+  
+  mCHE = 
+    tryCatch2(
+      do.call(metafor::rma.mv, mCHEArgs))
+  
+  model.threelevel.che.legacy = list(
+    slab = data.che[[study.var]],
+    data = data.che,
+    formula.rnd = formula.rnd,
+    formula.fixed = formula.fixed,
+    Vmat = Vcov)
+  mCHE$value$legacy = 
+    model.threelevel.che.legacy
+  
+  if (isTRUE(.raw.bin.es)){
+    # For RR analyses: re-run analyses using g
+    # This is needed for NNTs
+    event.data = 
+      data.frame(event = data.che[[es.binary.raw.vars[2]]],
+                 n = data.che[[es.binary.raw.vars[4]]])
+    tryCatch2(
+      meta::metaprop(
+        event = event, n = n,
+        data = event.data[complete.cases(event.data),])) -> m.metaprop
+    
+    if (m.metaprop$has.error) {
+      cer = NA
+    } else {
+      m.metaprop$value %>% 
+        {.$TE.random} %>% 
+        {exp(.)/(1+exp(.))} -> cer    
+    }
+    
+    apply(data.che, 1, function(x){
+      esc::esc_2x2(grp1yes = as.numeric(x[[es.binary.raw.vars[1]]]) + 0.5, 
+                   grp1no = as.numeric(x[[es.binary.raw.vars[3]]]) - 
+                     as.numeric(x[[es.binary.raw.vars[1]]]) + 0.5,
+                   grp2yes = as.numeric(x[[es.binary.raw.vars[2]]]) + 0.5,
+                   grp2no = as.numeric(x[[es.binary.raw.vars[4]]]) -
+                     as.numeric(x[[es.binary.raw.vars[2]]]) + 0.5,
+                   es.type = "g") %>% 
+        suppressWarnings() %>% 
+        {data.frame(es = .$es, se = .$se)}
+    }) %>% 
+      do.call(rbind, .) -> data.g
+    
+    # Approximate Vcovs
+    tryCatch2(
+      metafor::vcalc(vi = data.g$se^2, cluster = study, 
+                     obs = instrument, time1 = time_weeks,
+                     grp1 = vcalc_arm1, grp2 = vcalc_arm2,
+                     w1 = n_arm1, w2 = n_arm2, 
+                     rho = rho.within.study, 
+                     phi = phi.within.study, data = dat.che, 
+                     nearpd = near.pd)) -> vcalc.res
+    if (!is.null(vcalc.res$warning[1])){
+      append.error = TRUE
+    } else {
+      append.error = FALSE
+    }
+    metafor::blsplit(vcalc.res$value, dat.che$study) -> Vmat.g
+    
+    data.che$TE = data.g$es
+    tryCatch2(
+      metafor::rma.mv(
+        formula.fixed,
+        V = Vmat.g,
+        slab = data.che[[study.var]],
+        data = data.che,
+        random = formula.rnd,
+        test = ifelse(hakn == TRUE, "t", "z"),
+        method = "REML", 
+        sparse = TRUE)) -> mCHE.g
+    
+    if (mCHE.g$has.error){
+      nnt.g = NA
+    } else {
+      mCHE.g$value %>% 
+        {.[["b"]][1]} %>% 
+        {ifelse(.==0, Inf, 
+                metapsyNNT(abs(.), cer))} -> nnt.g
+    }
+  } else {
+    nnt.g = NA
+  }
+  
+  if (mCHE$has.error){
+    mCHE$value$I2 = NA
+    mCHE$value$I2.between.studies = NA
+    mCHE$value$I2.within.studies = NA
+    mCHE$value$variance.components = NA
+  } else {
+    # Calculate total I2
+    W = diag(1/(mGeneral$m[["seTE"]]^2))
+    X = model.matrix(mCHE$value)
+    P = W - W %*% X %*% 
+      solve(t(X) %*% W %*% X) %*% 
+      t(X) %*% W
+    with(mCHE$value, {
+      100 * sum(sigma2) / 
+        (sum(sigma2) + (k-p)/sum(diag(P)))
+    }) -> mCHE$value$I2 
+    
+    # Calculate I2 per level
+    with(mCHE$value, {
+      (100 * sigma2 / 
+         (sum(sigma2) + (k-p)/sum(diag(P))))
+    }) -> I2.bw
+    
+    mCHE$value$I2.between.studies = I2.bw[1]
+    mCHE$value$I2.within.studies = I2.bw[2]
+    mCHE$value$I2.between.instruments = I2.bw[3]
+    
+    # Get tau and I2
+    with(mCHE$value, 
+         {data.frame(
+           tau2 = c(sigma2, sum(sigma2)),
+           i2 = c(I2.between.studies, 
+                  I2.within.studies,
+                  I2.between.instruments,
+                  I2))}) -> mCHE$value$variance.components
+    
+    mCHE$value$variance.components$tau2 = 
+      round(mCHE$value$variance.components$tau2, 4)
+    mCHE$value$variance.components$i2 = 
+      round(mCHE$value$variance.components$i2, 1)
+    rownames(mCHE$value$variance.components) = 
+      c("Between Studies", "Within Studies", "Between Instruments", "Total")
+    
+    # Calculate bootstrapped CIs
+    if (i2.ci.boot){
+      message(
+        crayon::cyan(
+          crayon::bold(
+            "- Parametric bootstrap for i2 confidence intervals (three-level CHE model) ...")))
+      
+      # Run bootstrapping
+      sim = metafor::simulate.rma(mCHE$value, nsim=nsim.boot)
+      counter = 0
+      mCHEArgs.bs = mCHEArgs
+      
+      sav = lapply(sim, function(x) {
+        tmp = try({
+          mCHEArgs.bs$data$TE = x
+          do.call(metafor::rma.mv, mCHEArgs.bs)}, silent=TRUE) 
+        if (inherits(tmp, "try-error")) { 
+          counter <<- counter + 1
+          NA
+        } else {
+          counter <<- counter + 1
+          if (counter %in% seq(0, nsim.boot, nsim.boot/100)){
+            cat(crayon::green(
+              paste0((counter/nsim.boot)*100, "% completed | ")))
+          }
+          if (identical(counter,nsim.boot)){
+            cat(crayon::green("DONE \n"))
+          }
+          tmp
+        }})
+      
+      sav = sav[!is.na(sav)]
+      
+      # Extract bootstrap cis (sigma)
+      rbind(
+        sapply(sav, function(x) x$sigma2[1]) %>% 
+          quantile(c(.025, .975)),
+        sapply(sav, function(x) x$sigma2[2]) %>% 
+          quantile(c(.025, .975)),
+        sapply(sav, function(x) x$sigma2[3]) %>% 
+          quantile(c(.025, .975)),
+        sapply(sav, function(x) x$sigma2[1] + x$sigma2[2] + x$sigma2[3]) %>% 
+          quantile(c(.025, .975))) -> sigma2.ci
+      
+      # Extract bootstrap SD (sigma)
+      rbind(
+        sapply(sav, function(x) x$sigma2[1]) %>% sd(),
+        sapply(sav, function(x) x$sigma2[2]) %>% sd(),
+        sapply(sav, function(x) x$sigma2[3]) %>% sd(),
+        sapply(sav, function(x) x$sigma2[1] + x$sigma2[2] + x$sigma2[3]) %>% 
+          sd()) -> se.sigma2
+      
+      # Extract bootstrap cis (i2)
+      rbind(
+        sapply(sav, function(x) 100 * x$sigma2[1] / 
+                 (sum(x$sigma2) + (mCHE$value$k-mCHE$value$p)/
+                    sum(diag(P)))) %>% 
+          quantile(c(.025, .975)),
+        sapply(sav, function(x) 100 * x$sigma2[2] / 
+                 (sum(x$sigma2) + (mCHE$value$k-mCHE$value$p)/
+                    sum(diag(P)))) %>% 
+          quantile(c(.025, .975)),
+        sapply(sav, function(x) 100 * x$sigma2[3] / 
+                 (sum(x$sigma2) + (mCHE$value$k-mCHE$value$p)/
+                    sum(diag(P)))) %>% 
+          quantile(c(.025, .975)),
+        sapply(sav, function(x) 100 * sum(x$sigma2) / 
+                 (sum(x$sigma2) + (mCHE$value$k-mCHE$value$p)/
+                    sum(diag(P)))) %>% 
+          quantile(c(.025, .975))) -> i2.ci
+      
+      mCHE$value$variance.components$tau2.ci = 
+        c(paste0("[", round(sigma2.ci[1,], round.digits+1) %>% 
+                   paste(collapse = "; "), "]"),
+          paste0("[", round(sigma2.ci[2,], round.digits+1) %>% 
+                   paste(collapse = "; "), "]"), 
+          paste0("[", round(sigma2.ci[3,], round.digits+1) %>% 
+                   paste(collapse = "; "), "]"), 
+          paste0("[", round(sigma2.ci[4,], round.digits+1) %>% 
+                   paste(collapse = "; "), "]"))
+      
+      mCHE$value$variance.components$i2.ci = 
+        c(paste0("[", round(i2.ci[1,], round.digits) %>% 
+                   paste(collapse = "; "), "]"),
+          paste0("[", round(i2.ci[2,], round.digits) %>% 
+                   paste(collapse = "; "), "]"), 
+          paste0("[", round(i2.ci[3,], round.digits) %>% 
+                   paste(collapse = "; "), "]"), 
+          paste0("[", round(i2.ci[4,], round.digits) %>% 
+                   paste(collapse = "; "), "]"))
+      
+      mCHE$value$variance.components =
+        mCHE$value$variance.components[,c("tau2", "tau2.ci", "i2", "i2.ci")]
+      
+      mCHE$value$se.sigma2 = se.sigma2
+      
+      has.bs = TRUE
+    } 
+    else {
+      has.bs = FALSE
+    }
+  }
+  
+  
+  # Get results: no RVE
+  if (use.rve[1] == FALSE){
+    if ("ccrem.che" %in% which.run){
+      message("- ", crayon::green("[OK] "), 
+              "Calculating effect size using CCREM-CHE model (rho=", 
+              rho.within.study, "; phi=", phi.within.study,
+              "; multiarm corr.)... ",
+              appendLF = FALSE)
+    }
+    
+    if (mCHE$has.error){
+      mCHERes = 
+        data.frame(k = NA, g = NA, g.ci = NA,
+                   p = NA, i2 = NA, i2.ci = NA,
+                   prediction.ci = NA, nnt = NA,
+                   excluded = "none")
+    } else {
+      mCHERes = with(mCHE$value, {
+        data.frame(k = k.all,
+                   g = as.numeric(b[,1]) %>%
+                     ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
+                     round(round.digits),
+                   g.ci = paste0("[", 
+                                 ci.lb %>% 
+                                   ifelse(identical(.type.es, "RR"), 
+                                          exp(.), .) %>% 
+                                   round(round.digits), "; ",
+                                 ci.ub %>% 
+                                   ifelse(identical(.type.es, "RR"), 
+                                          exp(.), .) %>% 
+                                   round(round.digits), "]"),
+                   p = pval %>% scales::pvalue(),
+                   i2 = round(I2, 1),
+                   i2.ci = ifelse(has.bs, variance.components$i2.ci[3], "-"),
+                   prediction.ci = paste0(
+                     "[", 
+                     round(predict(mCHE$value)$pi.lb %>% 
+                             ifelse(identical(.type.es, "RR"), exp(.), .), 
+                           round.digits), "; ",
+                     round(predict(mCHE$value)$pi.ub %>% 
+                             ifelse(identical(.type.es, "RR"), exp(.), .), 
+                           round.digits), "]"),
+                   nnt = ifelse(identical(.type.es, "RR"), 
+                                NA, metapsyNNT(abs(as.numeric(b[,1])), nnt.cer)) %>% 
+                     ifelse(isTRUE(.raw.bin.es), nnt.g, .) %>% 
+                     round(round.digits) %>% abs(),
+                   excluded = "none")
+      })
+      mCHERes$excluded = paste("Number of clusters/studies:", 
+                               mCHE$value$s.nlevels[1])
+    }
+    rownames(mCHERes) = "Three-Level CCREM (CHE)"
+    sendMessage(mCHE, "ccrem.che")
+    
+    if (length(multi.study) == 0 & "ccrem.che" %in% which.run){
+      message("\n- ", crayon::yellow("[!] "), 
+              "All included ES seem to be independent.",
+              " A CCREM-CHE model is not adequate and ",
+              "tau/I2 estimates are not trustworthy! ",
+              appendLF = FALSE)
+      warn.end = TRUE
+      which.run[!which.run == "ccrem.che"] -> which.run
+    }
+  } else {
+    
+    if ("ccrem.che" %in% which.run){
+      message("- ", crayon::green("[OK] "), 
+              "Calculating effect size using CCREM-CHE model (rho=", 
+              rho.within.study, "; phi=", phi.within.study,
+              "; multiarm corr.)... ",
+              appendLF = FALSE)
+      message(crayon::green("DONE"))
+      message("- ", crayon::green("[OK] "), 
+              "Robust variance estimation (RVE) used for CCREM-CHE model... ",
+              appendLF = FALSE)
+    }
+    
+    if (mCHE$has.error){
+      mCHERes.RVE = 
+        data.frame(k = NA, g = NA, g.ci = NA,
+                   p = NA, i2 = NA, i2.ci = NA,
+                   prediction.ci = NA, nnt = NA,
+                   excluded = "none")
+    } else {
+      # Get results: RVE used
+      crit = qt(0.025, mCHE$value$ddf[[1]], lower.tail = FALSE)
+      tau2 = sum(mCHE$value$sigma2)
+      cluster.var = mCHE$value$data[[study.var]]
+      SE = metafor::robust(mCHE$value, cluster=cluster.var)[["se"]]
+      pi.lb.rve = as.numeric(mCHE$value[["b"]]) -
+        crit * sqrt(tau2 + (SE^2))
+      pi.ub.rve = as.numeric(mCHE$value[["b"]]) +
+        crit * sqrt(tau2 + (SE^2))
+      if (isTRUE(.raw.bin.es)){
+        as.numeric(mCHE$value[["b"]]) %>% 
+          {ifelse(.==0, Inf, metapsyNNT(abs(.), cer))} -> nnt.g
+      }
+      mCHERes.RVE = with(mCHE$value, {
+        data.frame(k = k.all,
+                   g = as.numeric(mCHE$value[["b"]]) %>%
+                     ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
+                     round(round.digits),
+                   g.ci = paste0(
+                     "[",
+                     metafor::robust(mCHE$value, cluster=cluster.var)[["ci.lb"]] %>%
+                       ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
+                       round(round.digits), "; ",
+                     metafor::robust(mCHE$value, cluster=cluster.var)[["ci.ub"]] %>%
+                       ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
+                       round(round.digits), "]"),
+                   p = metafor::robust(mCHE$value, cluster=cluster.var)[["pval"]] %>%
+                     scales::pvalue(),
+                   i2 = round(I2, 1),
+                   i2.ci = ifelse(has.bs, variance.components$i2.ci[4], "-"),
+                   prediction.ci = paste0(
+                     "[", 
+                     round(pi.lb.rve %>% 
+                             ifelse(identical(.type.es, "RR"), exp(.), .), 
+                           round.digits), "; ",
+                     round(pi.ub.rve %>% 
+                             ifelse(identical(.type.es, "RR"), exp(.), .), 
+                           round.digits), "]"),
+                   nnt = ifelse(identical(.type.es, "RR"), 
+                                NA, metapsyNNT(abs(as.numeric(mCHE$value[["b"]])), nnt.cer)) %>% 
+                     ifelse(isTRUE(.raw.bin.es), nnt.g, .) %>% 
+                     round(round.digits) %>% abs(),
+                   excluded = "none")
+      })
+      mCHERes.RVE$excluded = 
+        paste0("Number of clusters/studies: ", mCHE$value$s.nlevels[1],
+               "; robust variance estimation (RVE) used.")
+    }
+    
+    rownames(mCHERes.RVE) = "Three-Level CCREM (CHE)"
+    mCHERes = mCHERes.RVE
+    sendMessage(mCHE, "ccrem.che")
+    
+    if (length(multi.study) == 0 & "threelevel.che" %in% which.run){
+      message("\n- ", crayon::yellow("[!] "), 
+              "All included ES seem to be independent.",
+              " A CCREM CHE model is not adequate and ",
+              "tau/I2 estimates are not trustworthy! ",
+              appendLF = FALSE)
+      warn.end = TRUE
+      which.run[!which.run == "threelevel.che"] -> which.run
+    }
+  }
+  
+  # If non-PD was found, append error 
+  if (append.error){
+    mCHE$has.error = TRUE
+    mCHE$error$message = paste(vcalc.res$warning) 
+  }
+  if (has.bs){
+    mCHE$value$i2.ci.boot = TRUE
+  } else {
+    mCHE$value$i2.ci.boot = FALSE
+  }
+  
+  return(list(m = mCHE$value, 
+              res = mCHERes,
+              has.error = mCHE$has.error,
+              message = mCHE$error$message))
+}
+
+
+#' Adapt "plogit" elements
+#' @keywords internal 
+adaptPlogit = function(M, use.rve, round.digits = round.digits,
+                       clubsandwich = FALSE, study.var = NULL) {
+  if (is.null(M)) {return(M)}
+  if (class(M$m)[1]=="metagen") {
+    M$m$sm = "PLOGIT"
+    excluded = M$res$excluded
+    rownames = rownames(M$res)
+    M$res = with(M$m, {
+      data.frame(
+        k = k,
+        g = ifelse(
+          isTRUE(common) & !isTRUE(random), 
+          TE.common, TE.random) %>% plogis() %>% 
+          round(round.digits),
+        g.ci = paste0("[", 
+                      ifelse(isTRUE(common) & !isTRUE(random),
+                             lower.common, lower.random) %>% 
+                        plogis() %>% 
+                        round(round.digits), "; ",
+                      ifelse(isTRUE(common) & !isTRUE(random),
+                             upper.common, upper.random) %>% 
+                        plogis() %>% 
+                        round(round.digits), "]"),
+        p = "-",
+        i2 = round(I2*100, 2),
+        i2.ci = paste0("[", round(lower.I2*100, 2), "; ", 
+                       round(upper.I2*100, 2), "]"),
+        prediction.ci = paste0("[", 
+                               round(
+                                 plogis(lower.predict), 
+                                 round.digits), "; ",
+                               round(
+                                 plogis(upper.predict), 
+                                 round.digits), "]"),
+        nnt = "-",
+        excluded = "none"
+      )
+    })
+    M$res$excluded = excluded
+    rownames(M$res) = rownames
+    return(M)
+  } 
+  if (class(M$m)[1]=="rma.mv") {
+    if (use.rve) {
+      if (clubsandwich) {
+        crit = qt(0.025, M$m$ddf[[1]], lower.tail = FALSE)
+        tau2 = sum(M$m$sigma2)
+        SE = clubSandwich::conf_int(M$m, vcov = "CR2")[["SE"]]
+        pi.lb.rve = clubSandwich::conf_int(M$m, "CR2")[["beta"]] -
+          crit * sqrt(tau2 + (SE^2))
+        pi.ub.rve = clubSandwich::conf_int(M$m, "CR2")[["beta"]] +
+          crit * sqrt(tau2 + (SE^2))
+        M$res$g = as.numeric(clubSandwich::conf_int(M$m, "CR2")[["beta"]]) %>% plogis() %>% round(round.digits)
+        M$res$g.ci = paste0("[", clubSandwich::conf_int(M$m, "CR2")[["CI_L"]] %>% plogis() %>% round(round.digits), "; ",
+                            clubSandwich::conf_int(M$m, "CR2")[["CI_U"]] %>% plogis() %>% round(round.digits), "]")
+        M$res$nnt = "-"; M$res$p = "-"
+        M$res$prediction.ci = paste0("[", round(pi.lb.rve %>% plogis(), round.digits), "; ", 
+                                     round(pi.ub.rve %>% plogis(), round.digits), "]")
+      } else {
+        crit = qt(0.025, M$m$ddf[[1]], lower.tail = FALSE)
+        tau2 = sum(M$m$sigma2)
+        cluster.var = M$m$data[[study.var]]
+        SE = metafor::robust(M$m, cluster=cluster.var)[["se"]]
+        pi.lb.rve = M$m$b[,1][[1]] - crit * sqrt(tau2 + (SE^2))
+        pi.ub.rve = M$m$b[,1][[1]] + crit * sqrt(tau2 + (SE^2))
+        M$res$g = M$m[["b"]] %>% plogis() %>% round(round.digits)
+        M$res$g.ci = paste0("[", M$m$ci.lb %>% plogis() %>% round(round.digits), "; ",
+                            M$m$ci.ub %>% plogis() %>% round(round.digits), "]")
+        M$res$nnt = "-"; M$res$p = "-"
+        M$res$prediction.ci = paste0("[", round(pi.lb.rve %>% plogis(), round.digits), "; ", 
+                                     round(pi.ub.rve %>% plogis(), round.digits), "]")
+      }
+    } else {
+      crit = qt(0.025, M$m$ddf[[1]], lower.tail = FALSE)
+      tau2 = sum(M$m$sigma2)
+      cluster.var = M$m$data[[study.var]]
+      SE = metafor::robust(M$m, cluster=cluster.var)[["se"]]
+      pi.lb.rve = M$m$b[,1][[1]] - crit * sqrt(tau2 + (SE^2))
+      pi.ub.rve = M$m$b[,1][[1]] + crit * sqrt(tau2 + (SE^2))
+      M$res$g = M$m[["b"]] %>% plogis() %>% round(round.digits)
+      M$res$g.ci = paste0("[", M$m$ci.lb %>% plogis() %>% round(round.digits), "; ",
+                          M$m$ci.ub %>% plogis() %>% round(round.digits), "]")
+      M$res$nnt = "-"; M$res$p = "-"
+      M$res$prediction.ci = paste0("[", round(pi.lb.rve %>% plogis(), round.digits), "; ", 
+                                   round(pi.ub.rve %>% plogis(), round.digits), "]")
+    }
+    return(M)
+  }
+}
+
+
+
+
 #' Add `meta::rob()` element to model
 #' @keywords internal
 addRobData = function(mdl, rob.data) {
@@ -3586,7 +5070,8 @@ forestBlup = function(model, which = NULL, col.line = "#a7a9ac",
   # Switch to combined if three-level was used
   threeLevel = FALSE
   M.3l = NULL
-  if (which.run %in% c("threelevel", "threelevel.che")){
+  if (which.run %in% c("threelevel", "threelevel.che", 
+                       "ccrem", "ccrem.che")){
     threeLevel = TRUE
     whichThreeLevel = which.run
     which.run = "combined"
@@ -3606,7 +5091,9 @@ forestBlup = function(model, which = NULL, col.line = "#a7a9ac",
                 "combined" = "model.combined",
                 "threelevel" = "model.threelevel",
                 "che" = "model.threelevel.che",
-                "threelevel.che" = "model.threelevel.che")
+                "threelevel.che" = "model.threelevel.che",
+                "ccrem" = "model.ccrem",
+                "ccrem.che" = "model.ccrem.che")
   
   if (identical(which.run[1], "lowest.highest")){
     
@@ -3669,7 +5156,7 @@ forestBlup = function(model, which = NULL, col.line = "#a7a9ac",
 #' @importFrom stringr str_replace_all str_remove_all
 #' @importFrom stats dffits model.matrix rnorm rstudent coef weights
 #' @importFrom utils combn
-#' @importFrom metafor rma.uni blup.rma.uni addpoly
+#' @importFrom metafor rma.uni blup.rma.uni addpoly robust
 #' @importFrom clubSandwich conf_int
 #' @importFrom graphics arrows
 #' @keywords internal 
@@ -3764,11 +5251,21 @@ forestBlupPlotter = function(dat, res, sort, col.line, col.polygon,
   
   # Add color segments
   if (threeLevel){
-    metafor::addpoly(x = coef(M.3l),
-                     ci.lb = clubSandwich::conf_int(M.3l, "CR2")[,5],
-                     ci.ub = clubSandwich::conf_int(M.3l, "CR2")[,6],
-                     row = 0, efac = 2, col=col.polygon, border=col.polygon,
-                     mlab=summarylab)
+    # If CCREM, change to CR1
+    if (length(M.3l$sigma2)[1]>2) {
+      cluster.var = M.3l$data[[metafor::ranef(M.3l)[1] %>% names()]]
+      metafor::addpoly(x = coef(M.3l),
+                       ci.lb = metafor::robust(M.3l, cluster.var)[["ci.lb"]],
+                       ci.ub = metafor::robust(M.3l, cluster.var)[["ci.ub"]],
+                       row = 0, efac = 2, col=col.polygon, border=col.polygon,
+                       mlab=summarylab) 
+    } else {
+      metafor::addpoly(x = coef(M.3l),
+                       ci.lb = clubSandwich::conf_int(M.3l, "CR2")[,5],
+                       ci.ub = clubSandwich::conf_int(M.3l, "CR2")[,6],
+                       row = 0, efac = 2, col=col.polygon, border=col.polygon,
+                       mlab=summarylab) 
+    }
   } else {
     metafor::addpoly(res, row=0, mlab=summarylab, efac=2,
                      col=col.polygon, border=col.polygon)

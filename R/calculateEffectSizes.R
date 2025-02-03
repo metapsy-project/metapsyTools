@@ -12,6 +12,7 @@
 #'                                      rr.precalc = rr.precalc),
 #'                      include.switched.arms = FALSE,
 #'                      change.sign = NULL,
+#'                      impute.response = FALSE,
 #'                      vars.for.id = c("study", "outcome_type",
 #'                                      "instrument", "time",
 #'                                      "time_weeks",
@@ -19,7 +20,15 @@
 #'                      .condition = "condition",
 #'                      .condition.specification = "multi",
 #'                      .groups.column.indicator = c("_arm1", "_arm2"),
-#'                      .trt.indicator = "arm")
+#'                      .trt.indicator = "arm",
+#'                      .impute.response.vars = c(m.trt.pre = "baseline_m_arm1", 
+#'                                                m.trt.post = "mean_arm1", 
+#'                                                sd.trt.post = "sd_arm1", 
+#'                                                n.trt = "n_arm1",
+#'                                                m.ctr.pre = "baseline_m_arm2", 
+#'                                                m.ctr.post = "mean_arm2", 
+#'                                                sd.ctr.post = "sd_arm2", 
+#'                                                n.ctr = "n_arm2"))
 #'
 #'
 #' @param data Meta-analysis data set formatted using the 
@@ -33,6 +42,9 @@
 #' @param change.sign \code{character}. Name of a \code{logical} column in \code{data}, encoding if the
 #' sign of a calculated effect size should be reversed (\code{TRUE}) or not (\code{FALSE}). Set to \code{NULL} (default) if
 #' no changes should be made.
+#' @param impute.response `logical`. When calculating the (log)-risk ratios, should response rates be computed
+#' using the [imputeResponse()] function? `FALSE` by default. If defined, the column specified in `change.sign`
+#' will also be considered when calculating the response.
 #' @param vars.for.id \code{character} vector, containing column names of all variables 
 #' used to construct unique comparison IDs.
 #' @param .condition \code{character}. The prefix of the two variables in \code{data} in 
@@ -42,6 +54,8 @@
 #' @param .groups.column.indicator \code{character}. A character vector with two elements, 
 #' representing the suffix used to differentiate between the first and second arm in a comparison.
 #' @param .trt.indicator \code{character}. A character specifying the name used to indicate the treatment arm.
+#' @param .impute.response.vars `list`. Named list with the names of columns in `data` and the specific argument in
+#' [imputeResponse()] they should be used for.
 #' 
 #' @return \code{calculateEffectSizes} returns the meta-analysis data set as 
 #' class \code{data.frame} in wide format (if results are saved to a variable). 
@@ -70,7 +84,7 @@
 #' Paula Kuper \email{paula.r.kuper@@gmail.com}, 
 #' Pim Cuijpers \email{p.cuijpers@@vu.nl}
 #'
-#' @seealso \code{\link{checkDataFormat}}
+#' @seealso \code{\link{checkDataFormat}}, \code{\link{imputeResponse}}
 #' 
 #' @details By default, `calculateEffectSizes` calculates the 
 #' small-sample bias corrected standardized mean difference  (Hedges' _g_)
@@ -141,7 +155,7 @@
 #'
 #' @importFrom tidyr pivot_longer pivot_wider
 #' @importFrom dplyr all_of select filter mutate arrange
-#' @importFrom purrr pmap_dfr map
+#' @importFrom purrr pmap_dfr map map2
 #' @importFrom esc esc_mean_sd
 #' @importFrom stringr str_remove str_replace str_replace_all
 #' @import dplyr
@@ -159,6 +173,7 @@ calculateEffectSizes = function(data,
                                                 rr.precalc = rr.precalc),
                                 include.switched.arms = FALSE,
                                 change.sign = NULL,
+                                impute.response = FALSE,
                                 vars.for.id = c("study", "outcome_type",
                                                 "instrument", "time",
                                                 "time_weeks",
@@ -166,7 +181,15 @@ calculateEffectSizes = function(data,
                                 .condition = "condition",
                                 .condition.specification = "multi",
                                 .groups.column.indicator = c("_arm1", "_arm2"),
-                                .trt.indicator = "arm"){
+                                .trt.indicator = "arm",
+                                .impute.response.vars = c(m.trt.pre = "baseline_m_arm1", 
+                                                          m.trt.post = "mean_arm1", 
+                                                          sd.trt.post = "sd_arm1", 
+                                                          n.trt = "n_arm1",
+                                                          m.ctr.pre = "baseline_m_arm2", 
+                                                          m.ctr.post = "mean_arm2", 
+                                                          sd.ctr.post = "sd_arm2", 
+                                                          n.ctr = "n_arm2")){
 
   
   # Check for data conflicts flagged in checkConflicts
@@ -248,7 +271,7 @@ calculateEffectSizes = function(data,
   
   # Change sign
   if (!is.null(change.sign)){
-    change.mask = ifelse(dat.final[[change.sign]], -1, 1)
+    change.mask = ifelse(as.logical(dat.final[[change.sign]]), -1, 1)
     dat.final$.g = dat.final$.g * change.mask
   }
   
@@ -258,6 +281,36 @@ calculateEffectSizes = function(data,
   #   2. Risk Ratio                                                 #
   #                                                                 #
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+  
+  # Impute response
+  if (impute.response[1]) {
+    if (is.null(change.sign)) {data$change.sign = FALSE; change.sign = "change.sign"}
+    purrr::map2_dfr(split(data, seq(nrow(data))), 
+                    as.list(as.logical(data[[change.sign]])),
+                    function(x,y){
+                      imputeResponse(m.trt.pre = x[[.impute.response.vars["m.trt.pre"]]], 
+                                     m.trt.post = x[[.impute.response.vars["m.trt.post"]]],
+                                     sd.trt.post = x[[.impute.response.vars["sd.trt.post"]]], 
+                                     n.trt = x[[.impute.response.vars["n.trt"]]],
+                                     lower.is.better = ifelse(y,FALSE,TRUE)) %>% 
+                        suppressMessages()}) -> imp.response.trt
+    purrr::map2_dfr(split(data, seq(nrow(data))), 
+                    as.list(as.logical(data[[change.sign]])),
+                    function(x,y){
+                      imputeResponse(m.trt.pre = x[[.impute.response.vars["m.ctr.pre"]]], 
+                                     m.trt.post = x[[.impute.response.vars["m.ctr.post"]]],
+                                     sd.trt.post = x[[.impute.response.vars["sd.ctr.post"]]], 
+                                     n.trt = x[[.impute.response.vars["n.ctr"]]],
+                                     lower.is.better = ifelse(y,FALSE,TRUE)) %>% 
+                        suppressMessages()}) -> imp.response.ctr
+    within(data, {
+      is.na(event_arm1) -> mask_arm1; is.na(event_arm2) -> mask_arm2
+      event_arm1[mask_arm1] = imp.response.trt$trtResponder[mask_arm1]
+      totaln_arm1[mask_arm1] = imp.response.trt$nTrt[mask_arm1]
+      event_arm2[mask_arm2] = imp.response.ctr$trtResponder[mask_arm2]
+      totaln_arm2[mask_arm2] = imp.response.ctr$nTrt[mask_arm2]
+    }) -> data 
+  }
   
   # Loop through ES functions
   data.wide = data

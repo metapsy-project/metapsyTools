@@ -13,6 +13,7 @@ calculateEffectSizes(data,
                                      rr.precalc = rr.precalc),
                      include.switched.arms = FALSE,
                      change.sign = NULL,
+                     impute.response = FALSE,
                      vars.for.id = c("study", "outcome_type",
                                      "instrument", "time",
                                      "time_weeks",
@@ -20,7 +21,15 @@ calculateEffectSizes(data,
                      .condition = "condition",
                      .condition.specification = "multi",
                      .groups.column.indicator = c("_arm1", "_arm2"),
-                     .trt.indicator = "arm")
+                     .trt.indicator = "arm",
+                     .impute.response.vars = c(m.trt.pre = "baseline_m_arm1", 
+                                               m.trt.post = "mean_arm1", 
+                                               sd.trt.post = "sd_arm1", 
+                                               n.trt = "n_arm1",
+                                               m.ctr.pre = "baseline_m_arm2", 
+                                               m.ctr.post = "mean_arm2", 
+                                               sd.ctr.post = "sd_arm2", 
+                                               n.ctr = "n_arm2"))
 }
 \arguments{
 \item{data}{Meta-analysis data set formatted using the
@@ -39,6 +48,10 @@ calculated? Default is \code{FALSE}.}
 sign of a calculated effect size should be reversed (\code{TRUE}) or not (\code{FALSE}). Set to \code{NULL} (default) if
 no changes should be made.}
 
+\item{impute.response}{\code{logical}. When calculating the (log)-risk ratios, should response rates be computed
+using the \code{\link[=imputeResponse]{imputeResponse()}} function? \code{FALSE} by default. If defined, the column specified in \code{change.sign}
+will also be considered when calculating the response.}
+
 \item{vars.for.id}{\code{character} vector, containing column names of all variables
 used to construct unique comparison IDs.}
 
@@ -52,6 +65,9 @@ which provide a "specification" of the trial arm condition in multiarm trials.}
 representing the suffix used to differentiate between the first and second arm in a comparison.}
 
 \item{.trt.indicator}{\code{character}. A character specifying the name used to indicate the treatment arm.}
+
+\item{.impute.response.vars}{\code{list}. Named list with the names of columns in \code{data} and the specific argument in
+\code{\link[=imputeResponse]{imputeResponse()}} they should be used for.}
 }
 \value{
 \code{calculateEffectSizes} returns the meta-analysis data set as
@@ -166,7 +182,7 @@ depressionPsyCtr \%>\%
 
 }
 \seealso{
-\code{\link{checkDataFormat}}
+\code{\link{checkDataFormat}}, \code{\link{imputeResponse}}
 }
 \author{
 Mathias Harrer \email{mathias.h.harrer@gmail.com},

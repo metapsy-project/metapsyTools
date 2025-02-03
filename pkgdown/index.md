@@ -6,7 +6,7 @@
 
 The `metapsyTools` package facilitates the calculation of effect sizes and meta-analyses based on the [Metapsy](https://www.metapsy.org) database (or databases adhering to the same format).
 
-Databases that are loaded into R using the [`metapsyData`](https://data.metapsy.org) package can automatically be analyzed using the [analysis module](https://tools.metapsy.org/articles/metapsytools#the-analysis-module) of the package.
+Databases that are loaded into R using the [`metapsyData`](https://data.metapsy.org) package can automatically be analyzed using the [analysis module](https://tools.metapsy.org/articles/web/get-started#the-analysis-module) of the package.
 
 <br></br>
 

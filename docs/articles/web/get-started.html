@@ -37,7 +37,7 @@
     
     <a class="navbar-brand me-2" href="../../index.html">metapsyTools</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.11</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.12</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -938,10 +938,12 @@ important arguments one may want to specify are:</p>
 <ul>
 <li>
 <code>es.measure</code>. By default, the function conducts analyses
-using the Hedges <span class="math inline">\(g\)</span> values stored in
-the data set. To conduct analyses using dichotomous outcome data
+using the Hedges’ <span class="math inline">\(g\)</span> values stored
+in the data set. To conduct analyses using dichotomous outcome data
 (i.e. response, remission, etc.), one has to set this argument to
-<code>"RR"</code>.</li>
+<code>"RR"</code> (for risk ratios), <code>"EER"</code> (for
+intervention group response rates), or <code>"CER"</code> (for control
+group response rates).</li>
 <li>
 <code>es.type</code>. By default, analyses are conducted using the
 <code>"precalculated"</code> effect sizes stored in the prepared data
@@ -1079,8 +1081,7 @@ bias</a> section).</p>
 <p><br></p>
 </div>
 <div class="section level4">
-<h4 id="complex-variance-covariance-approximation">
-<strong>Complex Variance-Covariance Approximation</strong><a class="anchor" aria-label="anchor" href="#complex-variance-covariance-approximation"></a>
+<h4 id="complex-variance-covariance-approximation">Complex Variance-Covariance Approximation<a class="anchor" aria-label="anchor" href="#complex-variance-covariance-approximation"></a>
 </h4>
 <p>The <code>vcov</code> argument in
 <code>runMetaAnalysis</code>controls if the effect size dependencies

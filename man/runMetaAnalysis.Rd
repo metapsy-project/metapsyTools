@@ -13,12 +13,12 @@ runMetaAnalysis(data,
                               "threelevel.che"),
                               
                 # Effect size measure
-                es.measure = c("g", "RR"),
+                es.measure = c("g", "RR", "EER", "CER"),
                 es.type = c("precalculated", "raw"),
-                es.var = ifelse(identical(es.measure[1], "g"), 
-                                ".g", ".log_rr"),
-                se.var = ifelse(identical(es.measure[1], "g"), 
-                                ".g_se", ".log_rr_se"),
+                es.var = ifelse(identical(es.measure[1], "RR"), 
+                                          ".log_rr", ".g"),
+                se.var = ifelse(identical(es.measure[1], "RR"), 
+                                          ".log_rr_se", ".g_se"),
                 es.binary.raw.vars = 
                   c(".event_arm1", ".event_arm2",
                     ".totaln_arm1", ".totaln_arm2"),
@@ -71,16 +71,17 @@ created by \code{\link{calculateEffectSizes}}.}
 See 'Details'.}
 
 \item{es.measure}{\code{character}. Should meta-analyses be calculated using the
-bias-corrected standardized mean difference (\code{"g"}; default), or using
-risk ratios (\code{"RR"})? Meta-analyses will only be conducted using comparisons
-that contain non \code{NA} values in the \code{es.var} and \code{se.var} columns.}
+bias-corrected standardized mean difference (\code{"g"}; default),
+risk ratios (\code{"RR"}), or logit-transformed experimental/control group event rates (\code{"EER"} or \code{"CER"})?
+Meta-analyses will only be conducted using comparisons
+that contain non-missing values in the \code{es.var} and \code{se.var} columns.}
 
 \item{es.type}{\code{character}. Should pre-calculated or raw event data (i.e.
 the Mantel-Haenszel method) be used for meta-analyses of risk ratios?
 Can be set to \code{"precalculated"} (default) or \code{"raw"}.}
 
 \item{es.var}{\code{character}. Specifies the name of the variable containing the (pre-
-calculated) effect size data in \code{data}. When \code{es.measure = "g"}, this is set to
+calculated) effect size data in \code{data}. When \code{es.measure = "g"}, \code{"EER"}, or \code{"CER"}, this is set to
 \code{.g} by default; \code{".log_rr"} is used when \code{es.measure = "RR"}. The default settings
 correspond with the standard output of \code{\link[=calculateEffectSizes]{calculateEffectSizes()}}.}
 
@@ -90,7 +91,7 @@ in \code{es.var}. If \code{es.measure = "g"}, this is automatically set to \code
 \code{es.measure = "RR"}, \code{".log_rr_se"} is used. The default settings
 correspond with the standard output of \code{\link[=calculateEffectSizes]{calculateEffectSizes()}}.}
 
-\item{es.binary.raw.vars}{\code{character} vector, defining the column names in
+\item{es.binary.raw.vars}{\code{character}. A vector defining the column names in \code{data} in
 which the (1) raw event counts in the experimental group, (2) raw event counts in the
 control/reference group, (3) sample size in the experimental group, and (4) sample size
 of the control/reference group are stored.
@@ -216,7 +217,7 @@ The \code{runMetaAnalysis} function is a wrapper for several types of meta-analy
 that are typically used. It allows to run all of these models in one step in order to generate results
 that are somewhat closer to being "publication-ready".
 
-By default, the following models are calculated:
+By \emph{default}, the following models are calculated:
 
 \itemize{
 \item \code{"overall"}. Runs a generic inverse-variance (random-effects) model. All included
@@ -242,10 +243,24 @@ hierarchical effects" (CHE) model, which is typically a good approximation for d
 complex dependence structures.
 }
 
+The following \emph{non-default} models can also be specified:
+
+\itemize{
+\item \code{"ccrem"}. Runs a multilevel (three-level) cross-classified random effects model (CCREM), with
+\code{measure.var} modeled as a crossed random effect. Such models can be more appropriate when, across studies,
+effect sizes are nested in various instruments, subscales, or outcomes; and if we want to estimate (and generalize over) the
+variation due different instruments (or subscales, outcomes; Fernandez-Castilla et al.,
+\href{https://doi.org/10.3758/s13428-018-1063-2}{2018}).
+\item \code{"ccrem.che"}. Runs a multilevel (three-level) cross-classified random effects model (CCREM), with
+\code{measure.var} modeled as a crossed random effect. Additionally, variance-covariance matrices of each study with two or more effect sizes are approximated using
+\code{rho.within.study} as the assumed overall within-study correlation, similar to the "correlated and
+hierarchical effects" (CHE, \code{threelevel.che}) model.
+}
+
 Internally, the \code{overall}, \code{combined}, \code{lowest.highest}, \code{outlier}, \code{influence} and \code{rob}
 models are fitted by calling the \code{\link[meta:metagen]{meta::metagen()}} or \code{\link[meta:metabin]{meta::metabin()}} function,
 respectively, in \strong{\{meta\}} (Balduzzi, Rücker & Schwarzer, \href{https://pubmed.ncbi.nlm.nih.gov/31563865/}{2019}).
-The \code{threelevel} and \code{threelevel.che} models are implemented using \code{\link[metafor:rma.mv]{metafor::rma.mv()}}
+The \code{threelevel}, \code{threelevel.che}, \code{ccrem}, and \code{ccrem.che} models are implemented using \code{\link[metafor:rma.mv]{metafor::rma.mv()}}
 in \strong{\{metafor\}} (Viechtbauer, \href{https://www.jstatsoft.org/article/view/v036i03}{2005}).
 
 Outlier selection is implemented using the \code{\link[dmetar:find.outliers]{dmetar::find.outliers()}} function,
@@ -257,7 +272,7 @@ and influence analyses using the \code{\link[dmetar:InfluenceAnalysis]{dmetar::I
 
 The \code{vcov} argument controls if the effect size dependencies within the data
 should be approximated using a \code{"simple"} (default) or more \code{"complex"} (but potentially more accurate)
-method. This argument is only relevant for the \code{"combined"} and \code{"threelevel.che"} models. The default
+method. This argument is only relevant for the \code{"combined"}, \code{"threelevel.che"}, and \code{"ccrem.che"} models. The default
 "simple" method constructs variance-covariance matrices \mjeqn{\Sigma_k}{\Sigma_k} for each study using a
 constant sampling correlation \mjeqn{\rho}{\rho} (defined by \code{rho.within.study}), which is identical across all studies, outcomes, and time points.
 This simplifying assumption is part of the formulation of the CHE model originally provided by
@@ -342,14 +357,32 @@ depressionPsyCtr \%>\%
 # Run the meta-analyses
 runMetaAnalysis(data) -> res
 
+# Check if variance components of "threelevel.che" model
+# are identifiable
+profile(res, "threelevel.che")
+
+# Run non-default models
+# - Cross-classified random effects model
+runMetaAnalysis(data, 
+                which.run = c("ccrem", "ccrem.che"), 
+                vcov = "complex")
+                
+# - Meta-analysis using raw response rate data
+runMetaAnalysis(data, 
+                es.measure = "RR",
+                es.type = "raw")
+                
+# - Estimate intervention response rates, then pool 
+data \%>\% 
+  calculateEffectSizes(impute.response = TRUE) \%>\% 
+  runMetaAnalysis(which.run = "combined", 
+                  es.measure = "EER")
+
 # Use replacement function to show results for
 # differing settings
 method.tau(res) <- "PM"
 hakn(res) <- FALSE
 rerun(res)
-
-# Show summary
-res
 
 # Show forest plot (by default, "overall" is used)
 plot(res)
@@ -359,7 +392,9 @@ plot(res, "outliers")
 plot(res, "threelevel")
 plot(res, "baujat")
 plot(res, "influence")
-plot(res, "lowest.highest")
+
+# Show forest plot with empirical Bayes estimates
+plot(res, "combined", eb = TRUE)
 
 # Extract specific model and do further calculations
 # (e.g. meta-regression on 'year')
@@ -406,18 +441,15 @@ createRobSummary(res,
                  name.high = "0", 
                  name.unclear = "sr",
                  which.run = "combined")
-
-# Run meta-analysis using raw response rate data
-data \%>\% 
-  runMetaAnalysis(es.measure = "RR",
-                  es.type = "raw")
 }
 
 }
 \seealso{
-\code{\link{calculateEffectSizes}},
+\code{\link[=plot.runMetaAnalysis]{plot.runMetaAnalysis()}}, \code{\link[=summary.runMetaAnalysis]{summary.runMetaAnalysis()}},
+\code{\link[=eb.runMetaAnalysis]{eb.runMetaAnalysis()}}, \code{\link[=profile.runMetaAnalysis]{profile.runMetaAnalysis()}},
 \code{\link{subgroupAnalysis}}. \code{\link{correctPublicationBias}},
-\code{\link{metaRegression}}
+\code{\link{metaRegression}}, \code{\link{metaRegression}},
+\code{\link{calculateEffectSizes}},
 }
 \author{
 Mathias Harrer \email{mathias.h.harrer@gmail.com},

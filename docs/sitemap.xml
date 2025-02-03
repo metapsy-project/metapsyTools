@@ -61,6 +61,9 @@
     <loc>/reference/Replacement-functions.html</loc>
   </url>
   <url>
+    <loc>/reference/adaptPlogit.html</loc>
+  </url>
+  <url>
     <loc>/reference/addAllCombinations.html</loc>
   </url>
   <url>
@@ -167,6 +170,15 @@
   </url>
   <url>
     <loc>/reference/filterPriorityRule.html</loc>
+  </url>
+  <url>
+    <loc>/reference/fitCcremCHEModel.html</loc>
+  </url>
+  <url>
+    <loc>/reference/fitCcremHACEModel.html</loc>
+  </url>
+  <url>
+    <loc>/reference/fitCcremModel.html</loc>
   </url>
   <url>
     <loc>/reference/fitCombinedHACEModel.html</loc>

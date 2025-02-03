@@ -12,6 +12,7 @@
 \item{which}{Model to be plotted. Can be one of \code{"overall"},
 \code{"combined"}, \code{"lowest.highest"}, \code{"outliers"},
 \code{"influence"}, \code{"threelevel"}, \code{"threelevel.che"},
+\code{"ccrem"}, \code{"ccrem.che"},
 \code{"baujat"}, \code{"loo-es"}, \code{"loo-i2"},
 \code{"trimfill"}, \code{"limitmeta"} or \code{"selection"}.}
 
