@@ -1094,6 +1094,7 @@ print.runMetaAnalysis = function(x, ...){
       "------------------------------------------------ \n"))
     dat = x$summary[run.models, 1:8]
     tbl = dplyr::as_tibble(cbind(Model = rownames(dat), dat))
+    if (x$round.digits[1]>2) {as.character(tbl[,3][[1]]) -> tbl[,3]}
     old = options(pillar.bold=TRUE)
     tbl.format = format(tbl)[-c(1,3)]
     tbl.format[-1] = lapply(tbl.format[-1], 
@@ -1275,6 +1276,7 @@ print.runMetaAnalysis = function(x, ...){
       "------------------------------------------------ \n"))
     dat = x$summary[run.models, 1:8]
     tbl = dplyr::as_tibble(cbind(Model = rownames(dat), dat))
+    if (x$round.digits[1]>2) {as.character(tbl[,3][[1]]) -> tbl[,3]}
     old = options(pillar.bold=TRUE)
     tbl.format = format(tbl)[-c(1,3)]
     tbl.format[-1] = lapply(tbl.format[-1], 
@@ -1293,7 +1295,6 @@ print.runMetaAnalysis = function(x, ...){
         dat = x$model.threelevel.var.comp
         dat = within(dat,{tau2 = round(tau2, x$round.digits+1)})
         tbl = dplyr::as_tibble(cbind(Source = rownames(dat), dat))
-        old = options(pillar.bold=TRUE)
         tbl.format = format(tbl)[-c(1,3)]
         tbl.format[-1] = lapply(tbl.format[-1], 
                                 function(x) stringr::str_sub(x, 19))

@@ -256,9 +256,10 @@ createRobRatings = function(rob.data, database = NULL) {
       {.[is.na(d.merge$rating)]="NI";.} -> d.merge$d4_17
   
     # Adapt D3_12 (larger trial)
-    ifelse(ifelse(d.merge$rand_arm1>=40, "Yes/PY", "No/PN") == "Yes/PY" &
-             ifelse(d.merge$rand_arm1>=40, "Yes/PY", "No/PN") == "Yes/PY",
-           "Yes/PY", "No/PN") %>% {.[is.na(d.merge$rand_arm1)]="NI";.} -> d.merge$d3_12
+    ifelse(ifelse((d.merge$rand_arm1-d.merge$attr_arm1)>=40, "Yes/PY", "No/PN") == "Yes/PY" &
+             ifelse((d.merge$rand_arm2-d.merge$attr_arm2)>=40, "Yes/PY", "No/PN") == "Yes/PY",
+           "Yes/PY", "No/PN") %>% {.[is.na(d.merge$rand_arm1)|is.na(d.merge$attr_arm1)]="NI";
+           .} -> d.merge$d3_12
     
     message("- ", crayon::green("[OK] "), "Rated item 10 (Domain 3) from database.")
     message("- ", crayon::green("[OK] "), "Rated item 12 (Domain 3) from database.")
