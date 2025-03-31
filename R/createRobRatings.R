@@ -124,6 +124,17 @@ createRobRatings = function(rob.data, database = NULL) {
     if (!"rating" %in% colnames(data)) {
       stop("'rating' variable not found in data.", call. = FALSE)
     }
+    if (!all(unique(data[["rating"]]) %in% c("self-report", "clinician", NA, "NA"), 
+            na.rm = TRUE)) {
+      stop("Only allowed non-NA values for 'rating' are 'self-report' or 'clinician'.",
+           call. = TRUE)
+    }
+    if (sum(!is.na(data[["rating"]]))==0) {
+      warning("Variable 'rating' in database only contains NA.\n", 
+              "This will set domain 4 ratings to NA throughout. ",
+              "Allowed values are 'self-report' or 'clinician'.",
+              call. = FALSE)
+    }
     if (!"rand_ratio" %in% colnames(data)) {
       stop("'rand_ratio' variable not found in data.",
            " This variable should provide the allocation ratio ('1 to 1', ",

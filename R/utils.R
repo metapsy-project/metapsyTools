@@ -239,6 +239,41 @@ g.change.m.sd = function(x, ...){
 }
 
 
+#' Aggregate standard deviations of multiple trials
+#' 
+#' This function allows you to aggregate standard deviations of outcome scores
+#' across multiple trials. 
+#'
+#' @details Values are aggregated assuming homogeneous variances across studies 
+#' (i.e., all trials share the same population standard deviation). The following
+#' formula is used:
+#' 
+#' \mjtdeqn{s_{\text{pooled}} = \sqrt{ \frac{ \sum (n_i - 1) \cdot s_i^2 }{ \sum (n_i - 1) } }}{s_{\text{pooled}} = \sqrt{ \frac{ \sum (n_i - 1) \cdot s_i^2 }{ \sum (n_i - 1) } }}{s_{\text{pooled}} = \sqrt{ \frac{ \sum (n_i - 1) \cdot s_i^2 }{ \sum (n_i - 1) } }}
+#' 
+#' where \mjeqn{s_i}{s_i} and \mjeqn{n_i}{n_i} are the standard deviation and
+#' sample size in some study \mjeqn{i}{i}. Please note that aggregation is only
+#' possible when all SD values come from the same scale or instrument.
+#' 
+#' @usage aggregateSD(sd, n, ...)
+#' @param sd A numeric vector of standard deviations.
+#' @param n A numeric vector of sample sizes corresponding to each standard deviation.
+#' @param ... Additional arguments (not used).
+#' @return The pooled standard deviation across trials.
+#' @export aggregateSD
+#' @keywords internal
+#' @examples 
+#' \dontrun{
+#' sd <- c(8.77, 9.01, 10.11)
+#' n <- c(120, 15, 80)
+#' aggregateSD(sd, n)
+#' }
+aggregateSD = function(sd, n, ...) {
+  if (length(sd) != length(n)) 
+    stop("Vectors 'sd' and 'n' must be the same length.")
+  return(sqrt((sum((n - 1) * sd^2))/(sum(n - 1))))
+}
+
+
 #' Calculate NNTs
 #'
 #' Calculate NNTs (extracted from \code{dmetar})
