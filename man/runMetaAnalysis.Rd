@@ -45,9 +45,11 @@ runMetaAnalysis(data,
                 which.outliers = c("overall", "combined"),
                 which.influence = c("overall", "combined"),
                 which.rob = c("overall", "combined"),
+                which.waap.wls = c("overall", "combined"),
                 nnt.cer = 0.2,
                 rho.within.study = 0.6,
                 phi.within.study = 0.9,
+                power.within.study = 0.8,
                 w1.var = ifelse(identical(es.measure[1], "g"), 
                                 "n_arm1", "totaln_arm1"),
                 w2.var = ifelse(identical(es.measure[1], "g"), 
@@ -164,6 +166,9 @@ Defaults to \code{"multi_arm1"}, the variable which encodes multi-arm interventi
 \item{which.rob}{\code{character}. Which model should be used to conduct the "low risk of bias only" analyses? Must be
 \code{"overall"} or \code{"combined"}, with \code{"overall"} being the default.}
 
+\item{which.waap.wls}{\code{character}. Which model should be used to run the (non-default) WAAP-WLS model? Must be
+\code{"overall"} or \code{"combined"}, with \code{"overall"} being the default.}
+
 \item{nnt.cer}{\code{numeric}. Value between 0 and 1, indicating the assumed control group event rate to be used
 for calculating NNTs via the Furukawa-Leucht method.}
 
@@ -174,6 +179,9 @@ the variance-covariance matrices needed for the conditional and hierarchical eff
 \item{phi.within.study}{\code{numeric}. Value between 0 and 1, indicating the assumed one-week autocorrelation of effect sizes.
 This is only used when \code{vcov="complex"} to approximate the variance-covariance matrices needed for the \code{"combined"} and
 \code{"threelevel.che"} model. Default is 0.9. See "Details".}
+
+\item{power.within.study}{\code{numeric}. Value between 0 and 1, indicating the minimum power (\mjeqn{1-\beta}{1-\beta}) required for a study to be
+considered sufficiently powered. This value is used to identify adequately powered studies in the WAAP-WLS analysis. See "Details".}
 
 \item{w1.var}{\code{character}. Name of the variable in \code{data} in which the sample
 sizes of the first arm are stored. See "Details".}
@@ -255,6 +263,14 @@ variation due different instruments (or subscales, outcomes; Fernandez-Castilla 
 \code{measure.var} modeled as a crossed random effect. Additionally, variance-covariance matrices of each study with two or more effect sizes are approximated using
 \code{rho.within.study} as the assumed overall within-study correlation, similar to the "correlated and
 hierarchical effects" (CHE, \code{threelevel.che}) model.
+\item \code{"waap.wls"}. Runs a weighted average of adequately powered studies (WAAP) weighted least squares model (WLS).
+If at least 3 effect sizes are available, effects are only computed among adequately powered studies, which are determined
+using the pooled common-effect estimate as basis. If less than 3 studies show adequate power, a simple WLS model among
+all included effect sizes is returned. This type of analysis employing multiplicative error models has been proposed to
+obtain more robust effect estimates that guard against common biases introduced by selective publication and QRPs
+(Stanley, Doucouliagos & Ioannidis, \href{https://onlinelibrary.wiley.com/doi/10.1002/sim.7228}{2017};
+Stanley & Doucouliagos, \href{https://onlinelibrary.wiley.com/doi/10.1002/jrsm.1211}{2017};
+Carter et al., \href{https://journals.sagepub.com/doi/full/10.1177/2515245919847196}{2019})
 }
 
 Internally, the \code{overall}, \code{combined}, \code{lowest.highest}, \code{outlier}, \code{influence} and \code{rob}
@@ -344,6 +360,7 @@ For more details see the \href{https://tools.metapsy.org/articles/metapsytools}{
 }
 \examples{
 \dontrun{
+## Not run: 
 data("depressionPsyCtr")
 library(meta)
 
@@ -366,12 +383,16 @@ profile(res, "threelevel.che")
 runMetaAnalysis(data, 
                 which.run = c("ccrem", "ccrem.che"), 
                 vcov = "complex")
-                
+
+# - Weighted average of adequately powered studies (WAAP-WLS)
+runMetaAnalysis(data, which.run = "waap.wls")
+runMetaAnalysis(data, which.run = "waap.wls", power.within.study = .9)
+
 # - Meta-analysis using raw response rate data
 runMetaAnalysis(data, 
                 es.measure = "RR",
                 es.type = "raw")
-                
+
 # - Estimate intervention response rates, then pool 
 data \%>\% 
   calculateEffectSizes(impute.response = TRUE) \%>\% 
@@ -386,6 +407,9 @@ rerun(res)
 
 # Show forest plot (by default, "overall" is used)
 plot(res)
+
+# Comapare effects across models
+plot(res, "summary")
 
 # Show forest plot of specific analysis
 plot(res, "outliers")
@@ -404,7 +428,10 @@ metaRegression(res$model.overall, ~ scale(year))
 subgroupAnalysis(res, country)
 
 # Correct for publication bias/small-study effects
-correctPublicationBias(res)
+(correctPublicationBias(res) -> res.pb)
+plot(res.pb, "trimfill")
+plot(res.pb, "limitmeta")
+plot(res.pb, "selection")
 
 # For the combined analysis, set which.combine to
 # "studies" here, so that all effects in a study are aggregated
@@ -412,7 +439,7 @@ correctPublicationBias(res)
 data \%>\% 
   runMetaAnalysis(which.combine = "studies") \%>\% 
   plot("combined")
-  
+
 # Define ROB data to be added to the models
 robData <- list(
   # Names of ROB variables included in 'data'

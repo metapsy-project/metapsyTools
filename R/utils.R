@@ -751,12 +751,11 @@ fitOverallModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
       studlab = data[[study.var]],
       data = data,
       sm = .type.es,
-      hakn = hakn,
+      method.random.ci = ifelse(hakn, "HK", "classic"),
       method.tau = method.tau.meta,
       method.tau.ci = method.tau.ci,
       prediction = TRUE,
       common = ifelse(method.tau == "FE", TRUE, FALSE),
-      fixed = ifelse(method.tau == "FE", TRUE, FALSE),
       random = ifelse(method.tau == "FE", FALSE, TRUE)) %>% 
       append(selectArguments(meta::metagen, dots))
     
@@ -771,12 +770,11 @@ fitOverallModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
       studlab = data[[study.var]],
       data = data,
       sm = "RR",
-      hakn = hakn,
+      method.random.ci = ifelse(hakn, "HK", "classic"),
       method.tau = method.tau.meta,
       method.tau.ci = method.tau.ci,
       prediction = TRUE,
       common = ifelse(method.tau == "FE", TRUE, FALSE),
-      fixed = ifelse(method.tau == "FE", TRUE, FALSE),
       random = ifelse(method.tau == "FE", FALSE, TRUE)) %>% 
       append(selectArguments(meta::metabin, dots))
     
@@ -886,7 +884,7 @@ fitLowestModel = function(data, study.var, multi.study,
     }
     mLowest = {
       mLowest = tryCatch2(
-        updateMeta(mGeneral$m, exclude = !lowest, id = NULL))
+        updateMeta(mGeneral$m, exclude = !lowest, cluster = NULL))
       if (!mLowest$has.error){
         with(updateMeta(mLowest$value, sm="RD"), {
           ifelse(isTRUE(common) & !isTRUE(random),
@@ -1001,7 +999,7 @@ fitHighestModel = function(data, study.var, multi.study,
     mHighest = {
       
       mHighest = tryCatch2(
-        updateMeta(mGeneral$m, exclude = !highest, id = NULL))
+        updateMeta(mGeneral$m, exclude = !highest, cluster = NULL))
       
       if (!mHighest$has.error){
         with(updateMeta(mHighest$value, sm="RD"), {
@@ -1201,12 +1199,11 @@ fitCombinedModel = function(which.combine, which.combine.var,
                study.var.comb, study)}),
       data = data.comb,
       sm = .type.es,
-      hakn = hakn,
+      method.random.ci = ifelse(hakn, "HK", "classic"),
       method.tau = method.tau.meta,
       method.tau.ci = method.tau.ci,
       prediction = TRUE,
       common = ifelse(method.tau == "FE", TRUE, FALSE),
-      fixed = ifelse(method.tau == "FE", TRUE, FALSE),
       random = ifelse(method.tau == "FE", FALSE, TRUE)) %>% 
       append(selectArguments(meta::metagen, dots))
     
@@ -1222,12 +1219,11 @@ fitCombinedModel = function(which.combine, which.combine.var,
         studlab = data.comb[[study.var]],
         data = data.comb,
         sm = "RD",
-        hakn = hakn,
+        method.random.ci = ifelse(hakn, "HK", "classic"),
         method.tau = method.tau.meta,
         method.tau.ci = method.tau.ci,
         prediction = TRUE,
         common = ifelse(method.tau == "FE", TRUE, FALSE),
-        fixed = ifelse(method.tau == "FE", TRUE, FALSE),
         random = ifelse(method.tau == "FE", FALSE, TRUE))
       
       do.call(meta::metabin, 
@@ -1483,12 +1479,11 @@ fitCombinedHACEModel = function(which.combine, which.combine.var, measure.var,
                study.var.comb, study)}),
       data = data.comb,
       sm = .type.es,
-      hakn = hakn,
+      method.random.ci = ifelse(hakn, "HK", "classic"),
       method.tau = method.tau.meta,
       method.tau.ci = method.tau.ci,
       prediction = TRUE,
       common = ifelse(method.tau == "FE", TRUE, FALSE),
-      fixed = ifelse(method.tau == "FE", TRUE, FALSE),
       random = ifelse(method.tau == "FE", FALSE, TRUE)) %>% 
       append(selectArguments(meta::metagen, dots))
     
@@ -1504,12 +1499,11 @@ fitCombinedHACEModel = function(which.combine, which.combine.var, measure.var,
         studlab = data.comb[[study.var]],
         data = data.comb,
         sm = "RD",
-        hakn = hakn,
+        method.random.ci = ifelse(hakn, "HK", "classic"),
         method.tau = method.tau.meta,
         method.tau.ci = method.tau.ci,
         prediction = TRUE,
         common = ifelse(method.tau == "FE", TRUE, FALSE),
-        fixed = ifelse(method.tau == "FE", TRUE, FALSE),
         random = ifelse(method.tau == "FE", FALSE, TRUE))
       
       do.call(meta::metabin, 
@@ -1627,7 +1621,7 @@ fitOutliersModel = function(data, study.var, multi.study,
   if (isTRUE(.raw.bin.es) &&
       !mOutliers$has.error){
     with(updateMeta(mOutliers$value, 
-                           sm = "RD", id = NULL), {
+                           sm = "RD", cluster = NULL), {
                              ifelse(isTRUE(common) & !isTRUE(random),
                                     abs(TE.common)^-1, abs(TE.random)^-1)
                            }) -> nnt.raw.bin.es
@@ -1798,11 +1792,11 @@ fitInfluenceModel = function(which.influence, mComb,
       updateMeta(
         m.for.influence,
         exclude = influenceRes$Data$is.infl == "yes",
-        id = NULL))
+        cluster = NULL))
   
   if (isTRUE(.raw.bin.es) &&
       !mInfluence$has.error){
-    with(updateMeta(mInfluence$value, sm="RD", id = NULL), {
+    with(updateMeta(mInfluence$value, sm="RD", cluster = NULL), {
       ifelse(isTRUE(common) & !isTRUE(random),
              abs(TE.common)^-1, abs(TE.random)^-1)
     }) -> nnt.raw.bin.es
@@ -1953,25 +1947,25 @@ fitRobModel = function(which.run, which.rob, which.outliers,
       }
       mRob = tryCatch2(
         updateMeta(
-          mGeneral$m, exclude = !robMask,id = NULL))
+          mGeneral$m, exclude = !robMask, cluster = NULL))
       which.run[!which.run == "rob"] -> which.run
       warn.end = TRUE
     } else {
       mRob = tryCatch2(
         updateMeta(
-          m.for.rob, exclude = !robMask, id = NULL))
+          m.for.rob, exclude = !robMask, cluster = NULL))
     }
   } else {
     robMask = rep(TRUE, nrow(mGeneral$m$data))
     mRob = tryCatch2(
       updateMeta(
-        mGeneral$m, exclude = !robMask, id = NULL))
+        mGeneral$m, exclude = !robMask, cluster = NULL))
   }
   if (isTRUE(.raw.bin.es) &&
       !mRob$has.error) {
     with(updateMeta(
       mRob$value, sm="RD",
-      id = NULL), {
+      cluster = NULL), {
         ifelse(isTRUE(common) & !isTRUE(random),
                abs(TE.common)^-1, abs(TE.random)^-1)
       }) -> nnt.raw.bin.es
@@ -4774,6 +4768,229 @@ fitCcremHACEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
 }
 
 
+
+#' Fit 'waap-wls' model
+#' @keywords internal 
+fitWaapWlsModel = function(which.run, which.waap.wls, 
+                           mGeneral, mComb, beta.within.study,
+                           method.tau, .raw.bin.es, .type.es, round.digits,
+                           nnt.cer, rob.data){
+  
+  has.bs = FALSE
+  
+  message("- ", crayon::green("[OK] "), 
+          "Calculating effect size using WAAP-WLS model... ",
+          appendLF = FALSE)
+  
+  if (!("overall" %in% which.run) && 
+      ("combined" %in% which.run)){
+    which.waap.wls[1] = "combined"
+  }
+  
+  if (which.waap.wls[1] %in% c("general", "overall")){
+    if (is.null(mGeneral)) {
+      stop("If which.waap.wls = 'overall', the 'overall' model must be",
+           " included in which.run.", call. = FALSE)
+    }
+    m.for.waap.wls = mGeneral$m
+    data.for.waap.wls = mGeneral$m$data
+  }
+  
+  if (which.waap.wls[1] == "combined"){
+    if (is.null(mComb)) {
+      stop("If which.waap.wls = 'combined', the 'combined' model must be",
+           " included in which.run.", call. = FALSE)
+    }
+    m.for.waap.wls = mComb$m
+    data.for.waap.wls = mComb$m$data
+  }
+  
+  if (!(which.waap.wls[1] %in% c("general", "combined", "overall"))){
+    stop("'which.waap.wls' must either be 'general' or 'combined'.")
+  }
+  
+  if ("waap.wls" %in% which.run){
+    
+    tryCatch2({
+      se = with(data.for.waap.wls, .seTE)
+      prec = with(data.for.waap.wls, 1/.seTE)
+      z = with(data.for.waap.wls, .TE/.seTE)
+      m.wls = lm(z ~ 0 + prec)
+      powered = (abs(coef(m.wls))/minimumSNR(power = beta.within.study))[1] >= se
+      k.powered = sum(powered)
+      k.underpowered = sum(!powered)
+      perc.underpowered = k.underpowered/length(powered)
+      if (k.powered > 2) {
+        mWaapWls = lm(z[powered] ~ 0 + prec[powered])
+        mWaapWls$se = sqrt(stats::vcov(mWaapWls)[1,1])
+        mWaapWls$ci = confint.default(mWaapWls)
+        mWaapWls$type = "waap"
+        tryCatch2({
+          meta::metagen(data.for.waap.wls$.TE[powered], 
+                        data.for.waap.wls$.seTE[powered],
+                        method.tau = method.tau)
+        }) -> Mi2
+        if (!Mi2$has.error) {
+          mWaapWls$i2 = Mi2$value$I2
+          mWaapWls$lower.i2 = Mi2$value$lower.I2
+          mWaapWls$upper.i2 = Mi2$value$upper.I2
+          mWaapWls$lower.predict = Mi2$value$lower.predict
+          mWaapWls$upper.predict = Mi2$value$upper.predict
+          mWaapWls$powered = powered
+        } else {
+          mWaapWls$i2 = NA
+          mWaapWls$lower.i2 = NA
+          mWaapWls$upper.i2 = NA
+          mWaapWls$lower.predict = NA
+          mWaapWls$upper.predict = NA
+          mWaapWls$powered = NA
+        }
+      } else {
+        mWaapWls = m.wls
+        mWaapWls$se = sqrt(stats::vcov(mWaapWls)[1,1])
+        mWaapWls$ci = confint.default(mWaapWls)
+        mWaapWls$type = "wls"
+        tryCatch2({
+          meta::metagen(data.for.waap.wls$.TE, 
+                        data.for.waap.wls$.seTE,
+                        method.tau = method.tau)
+        }) -> Mi2
+        if (!Mi2$has.error) {
+          mWaapWls$i2 = Mi2$value$I2
+          mWaapWls$lower.i2 = Mi2$value$lower.I2
+          mWaapWls$upper.i2 = Mi2$value$upper.I2
+          mWaapWls$lower.predict = Mi2$value$lower.predict
+          mWaapWls$upper.predict = Mi2$value$upper.predict
+          mWaapWls$powered = powered
+        } else {
+          mWaapWls$i2 = NA
+          mWaapWls$lower.i2 = NA
+          mWaapWls$upper.i2 = NA
+          mWaapWls$lower.predict = NA
+          mWaapWls$upper.predict = NA
+          mWaapWls$powered = NA
+        }
+      }
+      mWaapWls
+    }) -> mWaapWls
+    
+  } 
+  if (isTRUE(.raw.bin.es) && !mWaapWls$has.error) {
+    with(updateMeta(
+      mGeneral$m, sm="RD",
+      cluster = NULL), {
+        ifelse(isTRUE(common) & !isTRUE(random),
+               abs(TE.common)^-1, abs(TE.random)^-1)
+      }) -> nnt.raw.bin.es
+  } else {
+    nnt.raw.bin.es = NA
+  }
+  if (mWaapWls$has.error){
+    mWaapWlsRes = 
+      data.frame(
+        k = NA, g = NA, g.ci = NA,
+        p = NA, i2 = NA, i2.ci = NA,
+        prediction.ci = NA, nnt = NA,
+        excluded = "none")
+  } else {
+    mWaapWlsRes = with(mWaapWls$value,{
+      data.frame(
+        k = nrow(model.matrix(model)),
+        g = as.numeric(coefficients[1]) %>% 
+          ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
+          round(round.digits),
+        g.ci = paste0("[", 
+                      as.numeric(ci[,1]) %>% 
+                        ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
+                        round(round.digits), "; ",
+                      as.numeric(ci[,2]) %>% 
+                        ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
+                        round(round.digits), "]"),
+        p = (pnorm(abs(coefficients[1]/se), lower.tail = FALSE)*2) %>% 
+          scales::pvalue(),
+        i2 = round(i2*100, 2),
+        i2.ci = paste0("[", 
+                       round(lower.i2*100, round.digits), "; ",
+                       round(upper.i2*100, round.digits), "]"),
+        prediction.ci = paste0("[", 
+                               round(
+                                 ifelse(identical(.type.es, "RR"), 
+                                        exp(lower.predict), lower.predict), 
+                                 round.digits), "; ",
+                               round(
+                                 ifelse(identical(.type.es, "RR"), 
+                                        exp(upper.predict), upper.predict), 
+                                 round.digits), "]"),
+        nnt = metapsyNNT(
+          abs(as.numeric(coefficients[1])), nnt.cer) %>%
+          ifelse(identical(.type.es, "RR"), NA, .) %>% 
+          ifelse(isTRUE(.raw.bin.es), 
+                 nnt.raw.bin.es, .) %>% 
+          round(round.digits) %>% abs(),
+        excluded = paste0("k=", k.underpowered, 
+                          " effect sizes (",  round(perc.underpowered*100,1), 
+                          "%) have low power (1-beta < ",
+                          beta.within.study, "); ",
+                          toupper(type), " model used."))
+    })
+  }
+  rownames(mWaapWlsRes) = "WAAP-WLS Model"
+  return(list(m = mWaapWls$value, 
+              res = mWaapWlsRes,
+              has.error = mWaapWls$has.error,
+              message = mWaapWls$error$message))
+}
+
+
+#' Obtain the minimum signal:noise ratio, given power 
+#' @keywords internal 
+minimumSNR = function(alpha = 0.05, power = 0.80, 
+                      alternative = "two.sided") {
+  z.alpha = if (alternative == "two.sided") {
+    qnorm(1 - alpha / 2)} else {qnorm(1 - alpha)}
+  z.power = qnorm(power)
+  return(z.alpha + z.power)
+}
+
+
+#' Robust confidence interval estimation (HC1)
+#' @keywords internal 
+#' @importFrom stats resid
+robustCI = function(model, level = .05) {
+  X = model.matrix(model)
+  residuals = resid(model)
+  n = nrow(X); k = ncol(X)
+  XtX_inv = solve(t(X) %*% X)
+  S = diag(residuals^2)  
+  S_HC1 = S * (n / (n - k))  # Degrees of freedom correction
+  V_HC1 = XtX_inv %*% t(X) %*% S_HC1 %*% X %*% XtX_inv
+  robust_se = sqrt(diag(V_HC1))
+  coef_est = coef(model)
+  z = qnorm(1-(level/2))
+  l = list()
+  l$ci.lower = coef_est - z * robust_se
+  l$ci.upper = coef_est + z * robust_se
+  return(l)
+}
+
+#' Robust p-value (HC1)
+#' @keywords internal 
+#' @importFrom stats resid
+robustPval = function(model, level = .05) {
+  X = model.matrix(model)
+  residuals = resid(model)
+  n = nrow(X); k = ncol(X)
+  XtX_inv = solve(t(X) %*% X)
+  S = diag(residuals^2)  
+  S_HC1 = S * (n / (n - k))  # Degrees of freedom correction
+  V_HC1 = XtX_inv %*% t(X) %*% S_HC1 %*% X %*% XtX_inv
+  robust_se = sqrt(diag(V_HC1))
+  coef_est = coef(model)
+  z = coef_est/robust_se
+  return(as.numeric(pnorm(abs(z), lower.tail = FALSE)*2))
+}
+
+
 #' Adapt "plogit" elements
 #' @keywords internal 
 adaptPlogit = function(M, use.rve, round.digits = round.digits,
@@ -4864,6 +5081,40 @@ adaptPlogit = function(M, use.rve, round.digits = round.digits,
     }
     return(M)
   }
+  if (class(M$m)[1]=="lm") {
+    M$m$sm = "PLOGIT"
+    excluded = M$res$excluded
+    rownames = rownames(M$res)
+    M$res = with(M$m,{
+      data.frame(
+        k = nrow(model.matrix(model)),
+        g = as.numeric(coefficients[1]) %>% 
+          ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
+          plogis() %>% 
+          round(round.digits),
+        g.ci = paste0("[", 
+                      as.numeric(ci[,1]) %>% plogis() %>% 
+                        round(round.digits), "; ",
+                      as.numeric(ci[,2]) %>% plogis() %>% 
+                        round(round.digits), "]"),
+        p = (pnorm(abs(coefficients[1]/se), lower.tail = FALSE)*2) %>% 
+          scales::pvalue(),
+        i2 = round(i2*100, 2),
+        i2.ci = paste0("[", 
+                       round(lower.i2*100, round.digits), "; ",
+                       round(upper.i2*100, round.digits), "]"),
+        prediction.ci = paste0("[", 
+                               round(lower.predict %>% plogis, 
+                                 round.digits), "; ",
+                               round(upper.predict %>% plogis, 
+                                     round.digits), "]"),
+        nnt = "-",
+        excluded = "none")
+    })
+    M$res$excluded = excluded
+    rownames(M$res) = rownames
+    return(M)
+  } 
 }
 
 

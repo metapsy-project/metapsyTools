@@ -45,9 +45,11 @@
 #'                 which.outliers = c("overall", "combined"),
 #'                 which.influence = c("overall", "combined"),
 #'                 which.rob = c("overall", "combined"),
+#'                 which.waap.wls = c("overall", "combined"),
 #'                 nnt.cer = 0.2,
 #'                 rho.within.study = 0.6,
 #'                 phi.within.study = 0.9,
+#'                 power.within.study = 0.8,
 #'                 w1.var = ifelse(identical(es.measure[1], "g"), 
 #'                                 "n_arm1", "totaln_arm1"),
 #'                 w2.var = ifelse(identical(es.measure[1], "g"), 
@@ -139,6 +141,8 @@
 #' \code{"overall"} or \code{"combined"}, with \code{"overall"} being the default.
 #' @param which.rob \code{character}. Which model should be used to conduct the "low risk of bias only" analyses? Must be
 #' \code{"overall"} or \code{"combined"}, with \code{"overall"} being the default.
+#' @param which.waap.wls \code{character}. Which model should be used to run the (non-default) WAAP-WLS model? Must be
+#' \code{"overall"} or \code{"combined"}, with \code{"overall"} being the default.
 #' @param nnt.cer \code{numeric}. Value between 0 and 1, indicating the assumed control group event rate to be used
 #' for calculating NNTs via the Furukawa-Leucht method.
 #' @param rho.within.study \code{numeric}. Value between 0 and 1, indicating the assumed correlation of effect sizes
@@ -147,6 +151,8 @@
 #' @param phi.within.study \code{numeric}. Value between 0 and 1, indicating the assumed one-week autocorrelation of effect sizes. 
 #' This is only used when `vcov="complex"` to approximate the variance-covariance matrices needed for the `"combined"` and 
 #' `"threelevel.che"` model. Default is 0.9. See "Details".
+#' @param power.within.study \code{numeric}. Value between 0 and 1, indicating the minimum power (\mjeqn{1-\beta}{1-\beta}) required for a study to be 
+#' considered sufficiently powered. This value is used to identify adequately powered studies in the WAAP-WLS analysis. See "Details".
 #' @param w1.var `character`. Name of the variable in `data` in which the sample 
 #' sizes of the first arm are stored. See "Details".
 #' @param w2.var `character`. Name of the variable in `data` in which 
@@ -175,6 +181,7 @@
 #'
 #' @examples
 #' \dontrun{
+#' ## Not run: 
 #' data("depressionPsyCtr")
 #' library(meta)
 #' 
@@ -197,12 +204,16 @@
 #' runMetaAnalysis(data, 
 #'                 which.run = c("ccrem", "ccrem.che"), 
 #'                 vcov = "complex")
-#'                 
+#' 
+#' # - Weighted average of adequately powered studies (WAAP-WLS)
+#' runMetaAnalysis(data, which.run = "waap.wls")
+#' runMetaAnalysis(data, which.run = "waap.wls", power.within.study = .9)
+#' 
 #' # - Meta-analysis using raw response rate data
 #' runMetaAnalysis(data, 
 #'                 es.measure = "RR",
 #'                 es.type = "raw")
-#'                 
+#' 
 #' # - Estimate intervention response rates, then pool 
 #' data %>% 
 #'   calculateEffectSizes(impute.response = TRUE) %>% 
@@ -217,6 +228,9 @@
 #' 
 #' # Show forest plot (by default, "overall" is used)
 #' plot(res)
+#' 
+#' # Comapare effects across models
+#' plot(res, "summary")
 #' 
 #' # Show forest plot of specific analysis
 #' plot(res, "outliers")
@@ -235,7 +249,10 @@
 #' subgroupAnalysis(res, country)
 #' 
 #' # Correct for publication bias/small-study effects
-#' correctPublicationBias(res)
+#' (correctPublicationBias(res) -> res.pb)
+#' plot(res.pb, "trimfill")
+#' plot(res.pb, "limitmeta")
+#' plot(res.pb, "selection")
 #' 
 #' # For the combined analysis, set which.combine to
 #' # "studies" here, so that all effects in a study are aggregated
@@ -243,7 +260,7 @@
 #' data %>% 
 #'   runMetaAnalysis(which.combine = "studies") %>% 
 #'   plot("combined")
-#'   
+#' 
 #' # Define ROB data to be added to the models
 #' robData <- list(
 #'   # Names of ROB variables included in 'data'
@@ -325,6 +342,14 @@
 #'   `measure.var` modeled as a crossed random effect. Additionally, variance-covariance matrices of each study with two or more effect sizes are approximated using
 #'   \code{rho.within.study} as the assumed overall within-study correlation, similar to the "correlated and
 #'   hierarchical effects" (CHE, `threelevel.che`) model.
+#'   \item \code{"waap.wls"}. Runs a weighted average of adequately powered studies (WAAP) weighted least squares model (WLS). 
+#'   If at least 3 effect sizes are available, effects are only computed among adequately powered studies, which are determined
+#'   using the pooled common-effect estimate as basis. If less than 3 studies show adequate power, a simple WLS model among
+#'   all included effect sizes is returned. This type of analysis employing multiplicative error models has been proposed to
+#'   obtain more robust effect estimates that guard against common biases introduced by selective publication and QRPs 
+#'   (Stanley, Doucouliagos & Ioannidis, [2017](https://onlinelibrary.wiley.com/doi/10.1002/sim.7228); 
+#'   Stanley & Doucouliagos, [2017](https://onlinelibrary.wiley.com/doi/10.1002/jrsm.1211); 
+#'   Carter et al., [2019](https://journals.sagepub.com/doi/full/10.1177/2515245919847196))
 #' }
 #' 
 #' Internally, the `overall`, `combined`, `lowest.highest`, `outlier`, `influence` and `rob`
@@ -416,7 +441,7 @@
 #' @importFrom meta metagen rob
 #' @importFrom metafor escalc aggregate.escalc rma.mv vcalc blsplit simulate.rma robust
 #' @importFrom clubSandwich coef_test conf_int
-#' @importFrom stats dffits model.matrix rnorm rstudent complete.cases median quantile plogis
+#' @importFrom stats dffits model.matrix rnorm rstudent complete.cases median quantile plogis vcov lm confint.default
 #' @importFrom utils combn
 #' @export runMetaAnalysis
 
@@ -451,9 +476,11 @@ runMetaAnalysis = function(data,
                            which.outliers = c("overall", "combined"),
                            which.influence = c("overall", "combined"),
                            which.rob = c("overall", "combined"),
+                           which.waap.wls = c("overall", "combined"),
                            nnt.cer = 0.2,
                            rho.within.study = 0.6,
                            phi.within.study = 0.9,
+                           power.within.study = 0.8,
                            w1.var = ifelse(identical(es.measure[1], "g"), 
                                            "n_arm1", "totaln_arm1"),
                            w2.var = ifelse(identical(es.measure[1], "g"), 
@@ -561,6 +588,11 @@ runMetaAnalysis = function(data,
   if ((!study.var %in% colnames(data))[1]) {
     stop(paste0("Study variable '", study.var,"' was not found in the dataset."))
   } else { data = data[order(data[[study.var]]),] }
+  
+  # check if power.within.study has a suitable value
+  if (power.within.study[1] > 0.99 | power.within.study[1] < 0.01) {
+    stop("'power.within.study' (1-beta) must be between 0.01 and 0.99.")
+  } else {beta.within.study = power.within.study}
   
   # Get three-dots arguments;
   # Initialize error model list
@@ -943,6 +975,29 @@ runMetaAnalysis = function(data,
   
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
   #                                                                           #
+  #  12. WAAP-WLS Model                                                       #
+  #                                                                           #
+  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+  
+  if ("waap.wls" %in% which.run){
+    
+    mWaapWls = fitWaapWlsModel(which.run, which.waap.wls, 
+                               mGeneral, mComb, beta.within.study,
+                               method.tau, .raw.bin.es, .type.es, round.digits,
+                               nnt.cer, rob.data)
+    
+    # If model failed, add to error model list
+    if (mWaapWls$has.error){
+      error.model.list = append(error.model.list, "waap.wls")
+    }
+    sendMessage(mWaapWls, "waap.wls", which.run)
+  } else {
+    mWaapWls = NULL
+  }
+  
+  
+  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+  #                                                                           #
   #  RETURN                                                                   #
   #                                                                           #
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -960,6 +1015,7 @@ runMetaAnalysis = function(data,
     mCHE = adaptPlogit(mCHE, use.rve, round.digits, clubsandwich = TRUE)
     mCcrem = adaptPlogit(mCcrem, use.rve, round.digits, FALSE, study.var)
     mCcremCHE = adaptPlogit(mCcremCHE, use.rve, round.digits, FALSE, study.var)
+    mWaapWls = adaptPlogit(mWaapWls, use.rve, round.digits)
   }
   
   # Combine everything
@@ -967,7 +1023,8 @@ runMetaAnalysis = function(data,
         mHighest$res, mOutliers$res,
         mInfluence$res, mRob$res, 
         mComb$res, mThreeLevel$res, mCHE$res,
-        mCcrem$res, mCcremCHE$res) -> summary
+        mCcrem$res, mCcremCHE$res,
+        mWaapWls$res) -> summary
   
   # Fill NAs 
   summary[summary == "[NA; NA]"] = "[-; -]"
@@ -993,6 +1050,7 @@ runMetaAnalysis = function(data,
   mCHE$m$.type.es = .type.es
   mCcrem$m$.type.es = .type.es
   mCcremCHE$m$.type.es = .type.es
+  mWaapWls$m$.type.es = .type.es
   
   # Return
   list(summary = summary,
@@ -1011,8 +1069,10 @@ runMetaAnalysis = function(data,
        model.ccrem.var.comp = mCcrem$m$variance.components,
        model.ccrem.che = mCcremCHE$m,
        model.ccrem.che.var.comp = mCcremCHE$m$variance.components,
+       model.waap.wls = mWaapWls$m,
        influence.analysis = influenceRes,
        which.run = which.run,
+       which.waap.wls = which.waap.wls[1],
        data = data.original,
        html = html,
        round.digits = round.digits,
@@ -1033,6 +1093,12 @@ runMetaAnalysis = function(data,
       warn.end){
     warning("There were some issues during the ",
             "calculations. Please check the report above.", 
+            call. = FALSE)
+  }
+  if (!"overall" %in% which.run && nrow(returnlist$summary)==1) {
+    returnlist$which.run = "overall"
+    warning("The specified model '", which.run, "' in 'which.run' does not exist. ", 
+            "Defaulting to 'overall'.", 
             call. = FALSE)
   }
   return(returnlist)
@@ -1081,7 +1147,8 @@ print.runMetaAnalysis = function(x, ...){
                   "threelevel" = "Three-Level Model",
                   "threelevel.che" = "Three-Level Model (CHE)",
                   "ccrem" = "Three-Level CCREM",
-                  "ccrem.che" = "Three-Level CCREM (CHE)")
+                  "ccrem.che" = "Three-Level CCREM (CHE)",
+                  "waap.wls" = "WAAP-WLS Model")
     
     run.models = unlist(models[x$which.run])
     if ("rob" %in% run.models){
@@ -1263,7 +1330,8 @@ print.runMetaAnalysis = function(x, ...){
                   "threelevel" = "Three-Level Model",
                   "threelevel.che" = "Three-Level Model (CHE)",
                   "ccrem" = "Three-Level CCREM",
-                  "ccrem.che" = "Three-Level CCREM (CHE)")
+                  "ccrem.che" = "Three-Level CCREM (CHE)",
+                  "waap.wls" = "WAAP-WLS Model")
     
     run.models = unlist(models[x$which.run])
     if ("rob" %in% run.models){
@@ -1397,9 +1465,7 @@ print.runMetaAnalysis = function(x, ...){
                              alphabet = footnotes) %>%
         print()
     }
-
   }
-
 }
 
 #' Plot method for objects of class 'runMetaAnalysis'
@@ -1429,7 +1495,7 @@ print.runMetaAnalysis = function(x, ...){
 #' @importFrom purrr map
 #' @importFrom dplyr mutate
 #' @importFrom metasens funnel.limitmeta
-#' @importFrom meta funnel
+#' @importFrom meta funnel metagen
 #' @importFrom metafor plot.rma.uni.selmodel robust ranef
 #' @importFrom crayon green yellow cyan bold
 #' @importFrom clubSandwich conf_int
@@ -1458,7 +1524,8 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
                   "threelevel" = "model.threelevel",
                   "che" = "model.threelevel.che",
                   "ccrem" = "model.ccrem",
-                  "ccrem.che" = "model.ccrem.che")
+                  "ccrem.che" = "model.ccrem.che",
+                  "waap.wls" = "model.waap.wls")
     
     models.which.run = list("overall" = "overall", 
                             "combined" = "combined",
@@ -1470,7 +1537,8 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
                             "che" = "threelevel.che",
                             "threelevel.che" = "threelevel.che",
                             "ccrem" = "ccrem",
-                            "ccrem.che" = "ccrem.che")
+                            "ccrem.che" = "ccrem.che",
+                            "waap.wls" = "waap.wls")
     
     if (!is.null(which)){
       if (!which %in% names(models.which.run[which])){
@@ -1492,7 +1560,8 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
       if (models[[x$which.run[1]]][1] != "model.threelevel" &&
           models[[x$which.run[1]]][1] != "model.threelevel.che" &&
           models[[x$which.run[1]]][1] != "model.ccrem" &&
-          models[[x$which.run[1]]][1] != "model.ccrem.che"){
+          models[[x$which.run[1]]][1] != "model.ccrem.che" &&
+          models[[x$which.run[1]]][1] != "waap.wls"){
         message("- ", crayon::green("[OK] "), 
                 "Generating forest plot ('", x$which.run[1], "' model).")
         if (identical(x$.type.es, "RR")){
@@ -1716,6 +1785,26 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
                            ifelse(x$use.rve, "CCREM-CHE Model (RVE)",
                                   "CCREM-CHE Model"),
                          ...)
+        }
+      }
+      if (models[[x$which.run[1]]][1] == "model.waap.wls") {
+        m.plot = if(x$which.waap.wls=="combined") {x$model.combined} else {x$model.overall}
+        m.plot$TE.random = x$model.waap.wls$coefficients[[1]]
+        m.plot$lower.random = x$model.waap.wls$ci[,1]
+        m.plot$upper.random = x$model.waap.wls$ci[,2]
+        m.plot$lower.predict = x$model.waap.wls$lower.predict
+        m.plot$upper.predict = x$model.waap.wls$upper.predict
+        m.plot$I2 = x$model.waap.wls$i2
+        m.plot$lower.I2 = x$model.waap.wls$lower.i2
+        m.plot$upper.I2 = x$model.waap.wls$upper.i2
+        m.plot$text.random = paste0("WAAP-WLS (", toupper(x$model.waap.wls$type), " used)")
+        if (x$model.waap.wls$type=="waap") {
+          meta::forest(m.plot, ..., print.tau2 = FALSE, 
+                       col.square = ifelse(x$model.waap.wls$powered, "lightblue", "gray"),
+                       rightcols = c("effect", "ci"))
+        } else {
+          meta::forest(m.plot, ..., print.tau2 = FALSE, 
+                       rightcols = c("effect", "ci"))
         }
       }
       
@@ -2052,6 +2141,27 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
         }
       }
       
+      if (which[1] == "waap.wls") {
+        m.plot = if(x$which.waap.wls=="combined") {x$model.combined} else {x$model.overall}
+        m.plot$TE.random = x$model.waap.wls$coefficients[[1]]
+        m.plot$lower.random = x$model.waap.wls$ci[,1]
+        m.plot$upper.random = x$model.waap.wls$ci[,2]
+        m.plot$lower.predict = x$model.waap.wls$lower.predict
+        m.plot$upper.predict = x$model.waap.wls$upper.predict
+        m.plot$I2 = x$model.waap.wls$i2
+        m.plot$lower.I2 = x$model.waap.wls$lower.i2
+        m.plot$upper.I2 = x$model.waap.wls$upper.i2
+        m.plot$text.random = paste0("WAAP-WLS (", toupper(x$model.waap.wls$type), " used)")
+        if (x$model.waap.wls$type=="waap") {
+          meta::forest(m.plot, ..., print.tau2 = FALSE, 
+                       col.square = ifelse(x$model.waap.wls$powered, "lightblue", "gray"),
+                       rightcols = c("effect", "ci"))
+        } else {
+          meta::forest(m.plot, ..., print.tau2 = FALSE, 
+                       rightcols = c("effect", "ci"))
+        }
+      }
+      
       if (which[1] == "baujat"){
         if (!"influence" %in% x$which.run){
           stop("Baujat plots are only available when influence analyses have",
@@ -2123,11 +2233,9 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
       
       if (which[1] == "summary"){
         
-        models = list("overall" = 1, "lowest.highest" = c(2,3), "outliers" = 4,
-                      "influence" = 5, "rob" = 6, "combined" = 7, "threelevel" = 8,
-                      "threelevel.che" = 9, "ccrem" = 10, "ccrem.che" = 11)
-        
-        x$summary = x$summary[unlist(models[x$which.run]),]
+        if (!"overall" %in% x$which.run) {
+          x$summary = x$summary[rownames(x$summary)!="Overall",]
+        }
         
         if (x$.type.es == "RR"){
           stringr::str_replace_all(x$summary$rr.ci, ";|\\]|\\[", "") %>%

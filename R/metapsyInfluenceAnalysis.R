@@ -125,79 +125,70 @@
 
 
 metapsyInfluenceAnalysis = function(x, random = FALSE, subplot.heights = c(30, 18),
-                             subplot.widths = c(30, 30),
-                             forest.lims = "default", return.separate.plots = FALSE,
-                             text.scale = 1) {
-
+                                    subplot.widths = c(30, 30),
+                                    forest.lims = "default", return.separate.plots = FALSE,
+                                    text.scale = 1) {
+  
+  update.meta = getFromNamespace("update.meta", "meta")
+  
   # Validate
   x = x
-  if (class(x)[1] %in% c("meta", "metabin", "metagen", "metacont", "metacor", "metainc", "metaprop", "metarate")) {
-
+  if (class(x)[1] %in% c("meta", "metabin", "metamean", "metagen", "metacont", "metacor", "metainc", "metaprop", "metarate")) {
+    x <- update.meta(x, subset = !(is.na(x$TE) | is.na(x$seTE)))
   } else {
-
-    stop("Object 'x' must be of class 'meta', 'metabin', 'metagen', 'metacont', 'metacor', 'metainc', or 'metaprop'")
+    stop("Object 'x' must be of class 'meta', 'metabin', 'metamean', 'metagen', 'metacont', 'metacor', 'metainc', or 'metaprop'")
   }
-
+  
   n.studies = x$k
   TE = x$TE
   seTE = x$seTE
   random = random
-
+  
   # Make unique studlabs
-  x$studlab = make.unique(x$studlab)
-
+  x$studlab = make.unique(as.character(x$studlab))
+  
   if (random %in% c(TRUE, FALSE)) {
-
-
   } else {
-
     stop("'random' must be set to either TRUE or FALSE.")
   }
-
+  
   forest.lims = forest.lims
-
+  
   if (forest.lims[1] == "default" | (class(forest.lims[1]) == "numeric" & class(forest.lims[2]) == "numeric")) {
-
+    
   } else {
     stop("'forest.lims' must either be 'default' or two concatenated numerics for ymin and ymax.")
   }
-
+  
   return.seperate.plots = return.separate.plots
-
   if (return.seperate.plots %in% c(TRUE, FALSE)) {
-
-
   } else {
-
     stop("'return.separate.plots' must be set to either TRUE or FALSE.")
   }
-
-
+  
+  
   heights = subplot.heights
   if (class(heights[1]) == "numeric" & class(heights[2]) == "numeric") {
-
   } else {
     stop("'subplot.heights' must be two concatenated numerics.")
   }
-
-
+  
   widths = subplot.widths
   if (class(widths[1]) == "numeric" & class(widths[2]) == "numeric") {
-
   } else {
     stop("'widths' must be two concatenated numerics.")
   }
-
+  
   text.scale = text.scale
   if (text.scale > 0) {
-
   } else {
     stop("'text.scale' must be a single number greater 0.")
   }
-
+  
   if (length(unique(x$studlab)) != length(x$studlab)) {
     stop("'Study labels in the 'meta' object must be unique.")
   }
+  
   if (random == FALSE) {
     method.rma = "FE"
     method.meta = "fixed"
@@ -210,7 +201,7 @@ metapsyInfluenceAnalysis = function(x, random = FALSE, subplot.heights = c(30, 1
     }
     method.meta = "random"
   }
-
+  
   # Perform Meta-Analysis using metafor, get influence results
   res = metafor::rma.uni(yi = TE, sei = seTE, measure = "GEN", data = x, method = method.rma, slab = studlab)
   metafor.inf = influence(res)
@@ -218,106 +209,91 @@ metapsyInfluenceAnalysis = function(x, random = FALSE, subplot.heights = c(30, 1
   metafor.inf$is.infl = ifelse(metafor.inf$is.infl == TRUE, "yes", "no")
   cheungviechtdata = cbind(study = substr(rownames(as.data.frame(metafor.inf$inf)), 1, 3), as.data.frame(metafor.inf$inf), is.infl = metafor.inf$is.infl)
   rownames(cheungviechtdata) = NULL
-
+  
   if (length(unique(cheungviechtdata$study)) < length(cheungviechtdata$study)) {
-
     i = 3
-
     while (length(unique(cheungviechtdata$study)) < length(cheungviechtdata$study)) {
-
       i = i + 1
       cheungviechtdata$study = substr(rownames(as.data.frame(metafor.inf$inf)), 1, i)
-
     }
-
-
   }
 
-  # If study labels are only numeric: reset level indexing
-  if (sum(grepl("[A-Za-z]", levels(as.factor(cheungviechtdata$study)), perl = T)) == 0){
-
-    cheungviechtdata$study = factor(cheungviechtdata$study, levels = sort(as.numeric(levels(cheungviechtdata$study))))
-
-  }
-
-
- scalefun = function(x) sprintf("%.1f", x)
-
+  
   cheungviechtdata = as.data.frame(cheungviechtdata)
-
+  within(cheungviechtdata,
+         {study = factor(study, levels = study)}) -> cheungviechtdata
+  
   # Generate plots
   rstudent.plot = ggplot2::ggplot(cheungviechtdata, aes(y = rstudent, x = study, color = is.infl, group = 1)) +
     geom_line(color = "black") + geom_point(size = 2) + scale_color_manual(values = c("blue", "red")) +
     theme_minimal() + theme(axis.title.x = element_blank(), legend.position = "none", axis.text.x = element_text(angle = 45,
-                                                                                                                 size = 5), axis.title.y = element_text(size = 7), axis.text.y = element_text(size = 5)) + ylab("Stand. Residual") 
-
+                                                                                                                 size = 5), axis.title.y = element_text(size = 7), axis.text.y = element_text(size = 5)) + ylab("Stand. Residual")
+  
   dffits.thresh = 3 * sqrt(metafor.inf$p/(metafor.inf$k - metafor.inf$p))
   dffits.plot = ggplot2::ggplot(cheungviechtdata, aes(y = dffits, x = study, color = is.infl, group = 1)) +
     geom_line(color = "black") + geom_point(size = 2) + scale_color_manual(values = c("blue", "red")) +
     theme_minimal() + theme(axis.title.x = element_blank(), legend.position = "none", axis.text.x = element_text(angle = 45,
-                                                                                                                 size = 5), axis.title.y = element_text(size = 7), axis.text.y = element_text(size = 5)) + ylab("DFFITS") 
-  # geom_hline(yintercept = dffits.thresh, linetype='dashed', color='black')
-
+                                                                                                                 size = 5), axis.title.y = element_text(size = 7), axis.text.y = element_text(size = 5)) + ylab("DFFITS")
+  
   cook.d.plot = ggplot2::ggplot(cheungviechtdata, aes(y = cook.d, x = study, color = is.infl, group = 1)) +
     geom_line(color = "black") + geom_point(size = 2) + scale_color_manual(values = c("blue", "red")) +
     theme_minimal() + theme(axis.title.x = element_blank(), legend.position = "none", axis.text.x = element_text(angle = 45,
-                                                                                                                 size = 5), axis.title.y = element_text(size = 7), axis.text.y = element_text(size = 5)) + ylab("Cook's Distance") 
-
+                                                                                                                 size = 5), axis.title.y = element_text(size = 7), axis.text.y = element_text(size = 5)) + ylab("Cook's Distance")
+  
   cov.r.plot = ggplot2::ggplot(cheungviechtdata, aes(y = cov.r, x = study, color = is.infl, group = 1)) +
     geom_line(color = "black") + geom_point(size = 2) + scale_color_manual(values = c("blue", "red")) +
     theme_minimal() + theme(axis.title.x = element_blank(), legend.position = "none", axis.text.x = element_text(angle = 45,
-                                                                                                                 size = 5), axis.title.y = element_text(size = 7), axis.text.y = element_text(size = 5)) + ylab("Covariance Ratio") 
-
+                                                                                                                 size = 5), axis.title.y = element_text(size = 7), axis.text.y = element_text(size = 5)) + ylab("Covariance Ratio")
+  
   tau2.del.plot = ggplot2::ggplot(cheungviechtdata, aes(y = tau2.del, x = study, color = is.infl, group = 1)) +
     geom_line(color = "black") + geom_point(size = 2) + scale_color_manual(values = c("blue", "red")) +
     theme_minimal() + theme(axis.title.x = element_blank(), legend.position = "none", axis.text.x = element_text(angle = 45,
-                                                                                                                 size = 5), axis.title.y = element_text(size = 7), axis.text.y = element_text(size = 5)) + ylab("tau-squared (L-0-0)") 
-
+                                                                                                                 size = 5), axis.title.y = element_text(size = 7), axis.text.y = element_text(size = 5)) + ylab("tau-squared (L-0-0)")
+  
   QE.del.plot = ggplot2::ggplot(cheungviechtdata, aes(y = QE.del, x = study, color = is.infl, group = 1)) +
     geom_line(color = "black") + geom_point(size = 2) + scale_color_manual(values = c("blue", "red")) +
     theme_minimal() + theme(axis.title.x = element_blank(), legend.position = "none", axis.text.x = element_text(angle = 45,
-                                                                                                                 size = 5), axis.title.y = element_text(size = 7), axis.text.y = element_text(size = 5)) + ylab("Q (L-0-0)") 
-
+                                                                                                                 size = 5), axis.title.y = element_text(size = 7), axis.text.y = element_text(size = 5)) + ylab("Q (L-0-0)")
+  
   hat.thresh = 3 * (metafor.inf$p/metafor.inf$k)
   hat.plot = ggplot2::ggplot(cheungviechtdata, aes(y = hat, x = study, color = is.infl, group = 1)) + geom_line(color = "black") +
     geom_point(size = 2) + scale_color_manual(values = c("blue", "red")) + theme_minimal() + theme(axis.title.x = element_blank(),
                                                                                                    legend.position = "none", axis.text.x = element_text(angle = 45, size = 5), axis.title.y = element_text(size = 7),
-                                                                                                   axis.text.y = element_text(size = 5)) + ylab("hat") 
-  # geom_hline(yintercept = hat.thresh, linetype='dashed', color='black')
-
+                                                                                                   axis.text.y = element_text(size = 5)) + ylab("hat")
+  
   weight.plot = ggplot2::ggplot(cheungviechtdata, aes(y = weight, x = study, color = is.infl, group = 1)) +
     geom_line(color = "black") + geom_point(size = 2) + scale_color_manual(values = c("blue", "red")) +
     theme_minimal() + theme(axis.title.x = element_blank(), legend.position = "none", axis.text.x = element_text(angle = 45,
-                                                                                                                 size = 5), axis.title.y = element_text(size = 7), axis.text.y = element_text(size = 5)) + ylab("weight") 
-
-  rma.influence.plot = gridExtra::arrangeGrob(rstudent.plot, dffits.plot, cook.d.plot, cov.r.plot, tau2.del.plot, QE.del.plot,
+                                                                                                                 size = 5), axis.title.y = element_text(size = 7), axis.text.y = element_text(size = 5)) + ylab("weight")
+  
+  rma.influence.plot = arrangeGrob(rstudent.plot, dffits.plot, cook.d.plot, cov.r.plot, tau2.del.plot, QE.del.plot,
                                    hat.plot, weight.plot, ncol = 2)
-
+  
   # Perform Influence Analysis on meta object, generate forests
   meta.inf = meta::metainf(x, pooled = method.meta)
-
+  
   if (x$sm %in% c("RR", "OR", "IRR")) {
-
+    
     effect = x$sm
     n.studies = n.studies
-
+    
     # Create Sortdat data set for sorting
     sortdat = data.frame(studlab = meta.inf$studlab, mean = exp(meta.inf$TE), lower = exp(meta.inf$lower),
                          upper = exp(meta.inf$upper), i2 = meta.inf$I2)
-    sortdat2 = sortdat[1:(nrow(sortdat) - 2), ]
+    sortdat2 = sortdat[1:(nrow(sortdat)), ]
     lastline = sortdat[nrow(sortdat), ]
-
+    
     # Change summary label
     if (random == TRUE) {
       lastline[1] = "Random-Effects Model"
     } else {
       lastline[1] = "Fixed-Effect Model"
     }
-
+    
     for (i in 2:4) {
       lastline[i] = format(round(lastline[i], 2), nsmall = 2)
     }
-
+    
     # Sort
     sortdat.es = sortdat2[order(sortdat2$mean), ]
     sortdat.es$studlab = factor(sortdat.es$studlab,
@@ -325,24 +301,24 @@ metapsyInfluenceAnalysis = function(x, random = FALSE, subplot.heights = c(30, 1
     sortdat.i2 = sortdat2[order(sortdat2$i2), ]
     sortdat.i2$studlab = factor(sortdat.i2$studlab,
                                 levels = sortdat.i2$studlab[order(-sortdat.i2$i2)])
-
+    
     # Generate Forest Plots
     if (forest.lims[1] == "default") {
-
+      
       if (min(sortdat.es$lower) > 0.5){
         min = 0.5
       } else {
         min = NA
       }
-
+      
       if (max(sortdat.es$upper) <= 1){
         max = 1.2
       } else {
         max = round(max(sortdat.es$upper) + 6, 0)
       }
-
+      
     } else {
-
+      
       if (forest.lims[1] <= 0){
         min = NA
       } else {
@@ -350,7 +326,7 @@ metapsyInfluenceAnalysis = function(x, random = FALSE, subplot.heights = c(30, 1
       }
       max = forest.lims[2] + 4
     }
-
+    
     if (method.meta == "fixed"){
       plot.sum.effect = exp(x$TE.fixed)
       plot.sum.lower =  exp(x$lower.fixed)
@@ -360,20 +336,20 @@ metapsyInfluenceAnalysis = function(x, random = FALSE, subplot.heights = c(30, 1
       plot.sum.lower =  exp(x$lower.random)
       plot.sum.upper =  exp(x$upper.random)
     }
-
+    
     title.es = with(sortdat.es, {
       paste0("hat(theta)['*']~'='~", paste0("'", format(round(mean, 2)), "'"),
              "~'['*", paste0("'", format(round(lower, 2), nsmall = 2), "'"), "*'-'*",
              paste0("'", format(round(upper, 2), nsmall = 2), "'"), "*']'*';'~italic(I)^2~'='~",
              paste0("'", format(round(i2, 2)*100,nsmall = 0), "'"), "*'%'")})
-
+    
     title.i2 = with(sortdat.i2,{
       paste0("italic(I)^2~'='~",
              paste0("'", format(round(i2, 2)*100,nsmall = 0), "'"), "*'%'", "*';'~",
              "hat(theta)['*']~'='~", paste0("'", format(round(mean, 2)), "'"),
              "~'['*", paste0("'", format(round(lower, 2), nsmall = 2), "'"), "*'-'*",
              paste0("'", format(round(upper, 2), nsmall = 2), "'"), "*']'")})
-
+    
     forest.es = ggplot(sortdat.es, aes(x = studlab, y = mean, ymin = lower, ymax = upper)) +
       geom_text(aes(label = title.es, y = Inf), parse = T, hjust = "inward", size = 3 * text.scale) + geom_hline(yintercept = 1,
                                                                                                                  color = "blue") + ylab(paste(effect, " (", as.character(lastline$studlab), ")", sep = "")) + ggtitle("Sorted by Effect Size") +
@@ -387,7 +363,7 @@ metapsyInfluenceAnalysis = function(x, random = FALSE, subplot.heights = c(30, 1
       geom_point(shape = 15, size = 4.5, color = "grey") +
       geom_linerange(size = 0.9) +
       geom_pointrange(shape = 3, size = 0.3)
-
+    
     forest.i2 = ggplot(sortdat.i2, aes(x = studlab, y = mean, ymin = lower, ymax = upper)) +
       geom_text(aes(label = title.i2, y = Inf), parse = T, hjust = "inward", size = 3 * text.scale) + geom_hline(yintercept = 1,
                                                                                                                  color = "blue") + ylab(paste(effect, " (", as.character(lastline$studlab), ")", sep = "")) + ggtitle(expression(Sorted~by~italic(I)^2)) +
@@ -401,30 +377,30 @@ metapsyInfluenceAnalysis = function(x, random = FALSE, subplot.heights = c(30, 1
       geom_point(shape = 15, size = 4.5, color = "grey") +
       geom_linerange(size = 0.9) +
       geom_pointrange(shape = 3, size = 0.3)
-
-
+    
+    
   } else if (class(x)[1] %in% c("metacor", "metaprop", "metarate")) {
-
+    
     effect = x$sm
     n.studies = n.studies
-
+    
     # Create Sortdat data set for sorting
     sortdat = data.frame(studlab = meta.inf$studlab, mean = meta.inf$TE, lower = meta.inf$lower,
                          upper = meta.inf$upper, i2 = meta.inf$I2)
-    sortdat2 = sortdat[1:(nrow(sortdat) - 2), ]
+    sortdat2 = sortdat[1:(nrow(sortdat)), ]
     lastline = sortdat[nrow(sortdat), ]
-
+    
     # Change summary label
     if (random == TRUE) {
       lastline[1] = "Random-Effects Model"
     } else {
       lastline[1] = "Fixed-Effect Model"
     }
-
+    
     for (i in 2:4) {
       lastline[i] = format(round(lastline[i], 2), nsmall = 2)
     }
-
+    
     # Sort
     sortdat.es = sortdat2[order(sortdat2$mean), ]
     sortdat.es$studlab = factor(sortdat.es$studlab,
@@ -432,23 +408,23 @@ metapsyInfluenceAnalysis = function(x, random = FALSE, subplot.heights = c(30, 1
     sortdat.i2 = sortdat2[order(sortdat2$i2), ]
     sortdat.i2$studlab = factor(sortdat.i2$studlab,
                                 levels = sortdat.i2$studlab[order(-sortdat.i2$i2)])
-
+    
     # Backtransform
     backtransformer = function(x, sm, n){
-
+      
       # Define functions
       z2cor = function(x)
       {
         res <- (exp(2 * x) - 1)/(exp(2 * x) + 1)
         res
       }
-
+      
       logit2p = function(x)
       {
         res <- 1/(1 + exp(-x))
         res
       }
-
+      
       asin2p = function (x, n = NULL, value = "mean", warn = TRUE)
       {
         if (all(is.na(x)))
@@ -531,7 +507,7 @@ metapsyInfluenceAnalysis = function(x, random = FALSE, subplot.heights = c(30, 1
         }
         res
       }
-
+      
       asin2ir = function (x, time = NULL, value = "mean", warn = TRUE)
       {
         if (all(is.na(x)))
@@ -558,55 +534,55 @@ metapsyInfluenceAnalysis = function(x, random = FALSE, subplot.heights = c(30, 1
         res[res < 0] <- 0
         res
       }
-
+      
       if(sm == "COR"){
         res = x
       }
-
+      
       if(sm == "IR"){
         res = x
       }
-
+      
       if(sm == "PRAW"){
         res = x
       }
-
+      
       if(sm == "ZCOR"){
         res = z2cor(x)
       }
-
+      
       if(sm == "PLOGIT"){
         res = logit2p(x)
       }
-
+      
       if (sm == "PAS"){
         res <- asin2p(x, value = value, warn = FALSE)
       }
-
+      
       if (sm == "PFT"){
         res = asin2p(x, n, value = value, warn = FALSE)
       }
-
+      
       if (sm == "IRS"){
         res = x^2
       }
-
+      
       if (sm == "IRFT"){
         res = asin2ir(x, time=n, value = value, warn = FALSE)
       }
-
+      
       if (sm == "IRLN"){
         res = exp(x)
       }
-
+      
       if (sm == "PLN"){
         res = exp(x)
       }
-
+      
       res
-
+      
     }
-
+    
     if (class(x)[1] %in% c("metaprop", "metacor")){
       n.h.m = meta.inf$n.harmonic.mean[1:(length(meta.inf$n.harmonic.mean)-2)]
       n.h.m.tot = meta.inf$n.harmonic.mean[length(meta.inf$n.harmonic.mean)]
@@ -618,7 +594,7 @@ metapsyInfluenceAnalysis = function(x, random = FALSE, subplot.heights = c(30, 1
       sortdat.i2$mean = backtransformer(sortdat.i2$mean, sm=effect, n=n.h.m.i2)
       sortdat.i2$lower = backtransformer(sortdat.i2$lower, sm=effect, n=n.h.m.i2)
       sortdat.i2$upper = backtransformer(sortdat.i2$upper, sm=effect, n=n.h.m.i2)
-
+      
       if (method.meta == "fixed"){
         plot.sum.effect = backtransformer(x$TE.fixed, sm=effect, n=n.h.m.tot)
         plot.sum.lower = backtransformer(x$lower.fixed, sm=effect, n=n.h.m.tot)
@@ -628,10 +604,10 @@ metapsyInfluenceAnalysis = function(x, random = FALSE, subplot.heights = c(30, 1
         plot.sum.lower = backtransformer(x$lower.random, sm=effect, n=n.h.m.tot)
         plot.sum.upper = backtransformer(x$upper.random, sm=effect, n=n.h.m.tot)
       }
-
-
+      
+      
     } else {
-
+      
       if(meta.inf$sm == "IRFT"){
         n.h.m = meta.inf$t.harmonic.mean[1:(length(meta.inf$t.harmonic.mean)-2)]
         n.h.m.es = n.h.m[order(sortdat.es$mean)]
@@ -643,7 +619,7 @@ metapsyInfluenceAnalysis = function(x, random = FALSE, subplot.heights = c(30, 1
         sortdat.i2$mean = backtransformer(sortdat.i2$mean, sm=effect, n=n.h.m.i2)
         sortdat.i2$lower = backtransformer(sortdat.i2$lower, sm=effect, n=n.h.m.i2)
         sortdat.i2$upper = backtransformer(sortdat.i2$upper, sm=effect, n=n.h.m.i2)
-
+        
         if (method.meta == "fixed"){
           plot.sum.effect = backtransformer(x$TE.fixed, sm=effect, n=n.h.m.tot)
           plot.sum.lower = backtransformer(x$lower.fixed, sm=effect, n=n.h.m.tot)
@@ -653,8 +629,8 @@ metapsyInfluenceAnalysis = function(x, random = FALSE, subplot.heights = c(30, 1
           plot.sum.lower = backtransformer(x$lower.random, sm=effect, n=n.h.m.tot)
           plot.sum.upper = backtransformer(x$upper.random, sm=effect, n=n.h.m.tot)
         }
-
-
+        
+        
       } else {
         n.h.m.tot = meta.inf$n.harmonic.mean[length(meta.inf$n.harmonic.mean)]
         sortdat.es$mean = backtransformer(sortdat.es$mean, sm=effect, n=NULL)
@@ -663,7 +639,7 @@ metapsyInfluenceAnalysis = function(x, random = FALSE, subplot.heights = c(30, 1
         sortdat.i2$mean = backtransformer(sortdat.i2$mean, sm=effect, n=NULL)
         sortdat.i2$lower = backtransformer(sortdat.i2$lower, sm=effect, n=NULL)
         sortdat.i2$upper = backtransformer(sortdat.i2$upper, sm=effect, n=NULL)
-
+        
         if (method.meta == "fixed"){
           plot.sum.effect = backtransformer(x$TE.fixed, sm=effect, n=n.h.m.tot)
           plot.sum.lower = backtransformer(x$lower.fixed, sm=effect, n=n.h.m.tot)
@@ -673,11 +649,11 @@ metapsyInfluenceAnalysis = function(x, random = FALSE, subplot.heights = c(30, 1
           plot.sum.lower = backtransformer(x$lower.random, sm=effect, n=n.h.m.tot)
           plot.sum.upper = backtransformer(x$upper.random, sm=effect, n=n.h.m.tot)
         }
-
+        
       }
     }
-
-
+    
+    
     # Generate Forest Plots
     if (forest.lims[1] == "default") {
       if (class(x)[1] == "metacor"){
@@ -685,14 +661,14 @@ metapsyInfluenceAnalysis = function(x, random = FALSE, subplot.heights = c(30, 1
       } else {
         min = -0.2
       }
-
+      
       max = max(sortdat.es$mean) + 0.5
-
+      
     } else {
       min = forest.lims[1]
       max = forest.lims[2]
     }
-
+    
     # Set ggtitles
     if (class(x)[1] == "metaprop"){
       ggtitl = as.character("Proportion")
@@ -701,21 +677,22 @@ metapsyInfluenceAnalysis = function(x, random = FALSE, subplot.heights = c(30, 1
     } else {
       ggtitl = as.character("Rate")
     }
-
-   title.es = with(sortdat.es, {
+    
+    
+    title.es = with(sortdat.es, {
       paste0("hat(theta)['*']~'='~", paste0("'", format(round(mean, 2)), "'"),
              "~'['*", paste0("'", format(round(lower, 2), nsmall = 2), "'"), "*'-'*",
              paste0("'", format(round(upper, 2), nsmall = 2), "'"), "*']'*';'~italic(I)^2~'='~",
              paste0("'", format(round(i2, 2)*100,nsmall = 0), "'"), "*'%'")})
-
+    
     title.i2 = with(sortdat.i2,{
       paste0("italic(I)^2~'='~",
              paste0("'", format(round(i2, 2)*100,nsmall = 0), "'"), "*'%'", "*';'~",
              "hat(theta)['*']~'='~", paste0("'", format(round(mean, 2)), "'"),
              "~'['*", paste0("'", format(round(lower, 2), nsmall = 2), "'"), "*'-'*",
              paste0("'", format(round(upper, 2), nsmall = 2), "'"), "*']'")})
-
-
+    
+    
     forest.es = ggplot(sortdat.es, aes(x = studlab, y = mean, ymin = lower, ymax = upper)) +
       geom_text(aes(label = title.es, y = Inf), parse = T, hjust = "inward", size = 3 * text.scale) +
       geom_hline(yintercept = 0, color = "blue") + ylab(paste(ggtitl, " (", as.character(lastline$studlab), ")", sep = "")) +
@@ -729,7 +706,7 @@ metapsyInfluenceAnalysis = function(x, random = FALSE, subplot.heights = c(30, 1
       geom_point(shape = 15, size = 4.5, color = "grey") +
       geom_linerange(size = 0.9) +
       geom_pointrange(shape = 3, size = 0.3)
-
+    
     forest.i2 = ggplot(sortdat.i2, aes(x = studlab, y = mean, ymin = lower, ymax = upper)) +
       geom_text(aes(label = title.i2, y = Inf), parse = T, hjust = "inward", size = 3 * text.scale) +
       geom_hline(yintercept = 0, color = "blue") + ylab(paste(ggtitl, " (", as.character(lastline$studlab), ")", sep = "")) +
@@ -743,28 +720,32 @@ metapsyInfluenceAnalysis = function(x, random = FALSE, subplot.heights = c(30, 1
       geom_point(shape = 15, size = 4.5, color = "grey") +
       geom_linerange(size = 0.9) +
       geom_pointrange(shape = 3, size = 0.3)
-
-
-
+    
+    
+    
   } else {
-
+    
     # Create Sortdat data set for sorting
     sortdat = data.frame(studlab = meta.inf$studlab, mean = meta.inf$TE, lower = meta.inf$lower, upper = meta.inf$upper,
                          i2 = meta.inf$I2)
-    sortdat2 = sortdat[1:(nrow(sortdat) - 2), ]
+    if (x$sm == "MLN") {
+      sortdat = data.frame(studlab = meta.inf$studlab, mean = exp(meta.inf$TE), lower = exp(meta.inf$lower),
+                           upper = exp(meta.inf$upper), i2 = meta.inf$I2)
+    }
+    sortdat2 = sortdat[1:(nrow(sortdat)), ]
     lastline = sortdat[nrow(sortdat), ]
-
+    
     # Change summary label
     if (random == TRUE) {
       lastline[1] = "Random-Effects Model"
     } else {
       lastline[1] = "Fixed-Effect Model"
     }
-
+    
     for (i in 2:4) {
       lastline[i] = format(round(lastline[i], 2), nsmall = 2)
     }
-
+    
     # Sort
     sortdat.es = sortdat2[order(sortdat2$mean), ]
     sortdat.es$studlab = factor(sortdat.es$studlab,
@@ -772,7 +753,7 @@ metapsyInfluenceAnalysis = function(x, random = FALSE, subplot.heights = c(30, 1
     sortdat.i2 = sortdat2[order(sortdat2$i2), ]
     sortdat.i2$studlab = factor(sortdat.i2$studlab,
                                 levels = sortdat.i2$studlab[order(-sortdat.i2$i2)])
-
+    
     # Generate Forest Plots
     if (forest.lims[1] == "default") {
       min = round(min(sortdat.es$lower) - 0.1, 2)
@@ -781,7 +762,7 @@ metapsyInfluenceAnalysis = function(x, random = FALSE, subplot.heights = c(30, 1
       min = forest.lims[1]
       max = forest.lims[2]
     }
-
+    
     if (method.meta == "fixed"){
       plot.sum.effect = x$TE.fixed
       plot.sum.lower = x$lower.fixed
@@ -791,21 +772,20 @@ metapsyInfluenceAnalysis = function(x, random = FALSE, subplot.heights = c(30, 1
       plot.sum.lower = x$lower.random
       plot.sum.upper = x$upper.random
     }
-
-
+    
     title.es = with(sortdat.es, {
       paste0("hat(theta)['*']~'='~", paste0("'", format(round(mean, 2)), "'"),
              "~'['*", paste0("'", format(round(lower, 2), nsmall = 2), "'"), "*'-'*",
              paste0("'", format(round(upper, 2), nsmall = 2), "'"), "*']'*';'~italic(I)^2~'='~",
              paste0("'", format(round(i2, 2)*100,nsmall = 0), "'"), "*'%'")})
-
+    
     title.i2 = with(sortdat.i2,{
       paste0("italic(I)^2~'='~",
              paste0("'", format(round(i2, 2)*100,nsmall = 0), "'"), "*'%'", "*';'~",
              "hat(theta)['*']~'='~", paste0("'", format(round(mean, 2)), "'"),
              "~'['*", paste0("'", format(round(lower, 2), nsmall = 2), "'"), "*'-'*",
              paste0("'", format(round(upper, 2), nsmall = 2), "'"), "*']'")})
-
+    
     forest.es = ggplot(sortdat.es, aes(x = studlab, y = mean, ymin = lower, ymax = upper)) +
       geom_text(aes(label = title.es, y = Inf), parse = T, hjust = "inward", size = 3 * text.scale) + geom_hline(yintercept = 0,
                                                                                                                  color = "blue") + ylim(min, max) + ylab(paste("Effect Size (", as.character(lastline$studlab),
@@ -819,7 +799,7 @@ metapsyInfluenceAnalysis = function(x, random = FALSE, subplot.heights = c(30, 1
       geom_point(shape = 15, size = 4.5, color = "grey") +
       geom_linerange(size = 0.9) +
       geom_pointrange(shape = 3, size = 0.3)
-
+    
     forest.i2 = ggplot(sortdat.i2, aes(x = studlab, y = mean, ymin = lower, ymax = upper)) +
       geom_text(aes(label = title.i2, y = Inf), parse = T, hjust = "inward", size = 3 * text.scale) + geom_hline(yintercept = 0,
                                                                                                                  color = "blue") + ylim(min, max) + ylab(paste("Effect Size (", as.character(lastline$studlab), ")", sep = "")) +
@@ -834,64 +814,66 @@ metapsyInfluenceAnalysis = function(x, random = FALSE, subplot.heights = c(30, 1
       geom_linerange(size = 0.9) +
       geom_pointrange(shape = 3, size = 0.3)
   }
-
-
+  
+  
   # Generate baujat plot Define baujat.silent
   baujat.silent = function(x, yscale = 1, xlim, ylim, ...) {
-
+    
     TE = x$TE
     seTE = x$seTE
     TE.fixed = metagen(TE, seTE, exclude = x$exclude)$TE.fixed
     k = x$k
     studlab = x$studlab
     SE = x$seTE
-
+    
     m.inf = metainf(x, pooled = "fixed")
     TE.inf = m.inf$TE[1:length(TE)]
     seTE.inf = m.inf$seTE[1:length(TE)]
-
+    
     ys = (TE.inf - TE.fixed)^2/seTE.inf^2
     ys = ys * yscale
-
+    
     xs = (TE - TE.fixed)^2/seTE^2
-
+    
     if (!is.null(x$exclude))
       xs[x$exclude] = 0
-
-
-
+    
+    
+    
     res = data.frame(studlab = studlab, x = xs, y = ys, se = SE)
-
-
+    
+    
     return(res)
   }
-
-
+  
   bjt = baujat.silent(x)
-
+  
   BaujatPlot = ggplot(bjt, aes(x = x, y = y)) + geom_point(aes(size = (1/se)), color = "blue", alpha = 0.75) +
     geom_rug(color = "lightgray", alpha = 0.5) + theme(legend.position = "none") + xlab("Overall heterogeneity contribution") +
     ylab("Influence on pooled result") + geom_label_repel(label = bjt$studlab, color = "black", size = 1.5 *
                                                             text.scale, alpha = 0.7)
-
-
+  
+  
   # Return
 
+  
   # Prepare data for return
   return.data = cbind(sortdat2, cheungviechtdata[, 2:ncol(cheungviechtdata)], HetContrib = bjt$x, InfluenceEffectSize = bjt$y)
-
+  
   if (x$sm %in% c("RR", "OR", "IRR")) {colnames(return.data)[1:2] = c("Author", effect)}
   else {colnames(return.data)[1:2] = c("Author", "effect")}
-
+  
   returnlist = suppressWarnings(suppressMessages(list(BaujatPlot = BaujatPlot,
                                                       InfluenceCharacteristics = rma.influence.plot,
                                                       ForestEffectSize = forest.es,
                                                       ForestI2 = forest.i2,
                                                       Data = return.data)))
-
+  
   if (return.separate.plots == T){class(returnlist) = c("InfluenceAnalysis", "rsp")}
   if (return.separate.plots == F){class(returnlist) = c("InfluenceAnalysis", "rsp.null")}
-
+  
   returnlist
-
+  
 }
+  
+ 

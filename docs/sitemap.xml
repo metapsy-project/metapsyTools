@@ -217,6 +217,9 @@
     <loc>/reference/fitThreeLevelModel.html</loc>
   </url>
   <url>
+    <loc>/reference/fitWaapWlsModel.html</loc>
+  </url>
+  <url>
     <loc>/reference/forestBlup.html</loc>
   </url>
   <url>
@@ -280,6 +283,9 @@
     <loc>/reference/metapsyTools.html</loc>
   </url>
   <url>
+    <loc>/reference/minimumSNR.html</loc>
+  </url>
+  <url>
     <loc>/reference/multiarmExpander.html</loc>
   </url>
   <url>
@@ -335,6 +341,12 @@
   </url>
   <url>
     <loc>/reference/robSummary.html</loc>
+  </url>
+  <url>
+    <loc>/reference/robustCI.html</loc>
+  </url>
+  <url>
+    <loc>/reference/robustPval.html</loc>
   </url>
   <url>
     <loc>/reference/rr.binary.html</loc>
