@@ -51,6 +51,7 @@ reference:
   - filterPoolingData
   - filterPriorityRule
   - calculateEffectSizes
+  - flagEffectSizes
 - title: "Analysis Module"
   desc: "Functions to run meta-analyses."
   contents:

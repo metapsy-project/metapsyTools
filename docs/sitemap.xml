@@ -220,6 +220,12 @@
     <loc>/reference/fitWaapWlsModel.html</loc>
   </url>
   <url>
+    <loc>/reference/flagEffectSizes.html</loc>
+  </url>
+  <url>
+    <loc>/reference/flagStudy.html</loc>
+  </url>
+  <url>
     <loc>/reference/forestBlup.html</loc>
   </url>
   <url>
@@ -295,6 +301,12 @@
     <loc>/reference/pipe.html</loc>
   </url>
   <url>
+    <loc>/reference/plot.flagEffectSizes.html</loc>
+  </url>
+  <url>
+    <loc>/reference/plot.flagStudy.html</loc>
+  </url>
+  <url>
     <loc>/reference/plot.proportionMID.html</loc>
   </url>
   <url>
@@ -314,6 +326,12 @@
   </url>
   <url>
     <loc>/reference/print.exploreStudies.html</loc>
+  </url>
+  <url>
+    <loc>/reference/print.flagEffectSizes.html</loc>
+  </url>
+  <url>
+    <loc>/reference/print.flagStudy.html</loc>
   </url>
   <url>
     <loc>/reference/print.proportionMID.html</loc>

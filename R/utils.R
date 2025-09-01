@@ -676,6 +676,57 @@ tryCatch2 = function(expr) {
 }
 
 
+# get.critical helper function for flagging studies
+#' @keywords internal 
+get.critical = function(x, p = 0.95, ...) {
+  qfun = match.fun(paste0("q", x$distname))
+  do.call(qfun, c(list(p = p, ...), as.list(x$estimate)))
+}
+
+# Helper function to plot density and histogram
+#' @keywords internal
+#' @importFrom graphics hist
+#' @importFrom grDevices rgb
+plotDensityHist = function(x, breaks = "FD", xlab = "Effect Size",
+                           main = NULL, col_hist = rgb(0.2, 0.4, 0.8, 0.35),
+                           border = "grey30", col_line = "firebrick", lwd = 2,
+                           rug = TRUE, xlim = NULL) {
+  
+  lookup = x$lookup
+  x = with(x, data.frame(smd = smd, se = se, flag.effect = flag.effect,
+                         flag.power = flag.power, flag.rob = flag.rob, flags = flags))
+  x = x[is.finite(x$smd), ]
+  if (!length(x$smd)) stop("'x' has no finite values.")
+  if (is.null(xlim)) xlim = range(x$smd, -.01, 3, na.rm = TRUE)
+  h = suppressWarnings(hist(x$smd, breaks = breaks, probability = TRUE, xlim = xlim, plot = FALSE))
+  xs = seq(xlim[1], xlim[2], length.out = 512)
+  
+  # Reference density values
+  dfun = match.fun(paste0("d", lookup$distname[1]))
+  args = c(as.list(lookup[1, , drop = TRUE]), list(x = xs))   # use first row of lookup
+  args = args[intersect(names(args), names(formals(dfun)))]   # keep only recognized args
+  ys = do.call(dfun, args)
+  
+  # Pick ylim from the larger of hist density vs. curve
+  y_max = max(h$density, ys, na.rm = TRUE)
+  ylim = c(0, y_max * 1.05)  # small headroom
+  
+  # Now plot histogram using the computed ylim
+  hist(x$smd, breaks = breaks, probability = TRUE, col = col_hist, border = border,
+       xlab = xlab, xlim = xlim, ylim = ylim,
+       main = if (is.null(main)) {
+         paste0("Reference distribution (", lookup$distname[1],
+                ") and\nempirical effect sizes")
+       } else main)
+  
+  # Overlay the density
+  lines(xs, ys, col = col_line, lwd = lwd)
+  if (rug) rug(x$smd, col = border)
+  invisible(list(hist = h, curve_x = xs, 
+                 curve_y = ys, ylim = ylim))
+}
+
+
 #' Send message after fitting model
 #' @keywords internal 
 sendMessage = function(obj, model.name = NULL, 
@@ -1931,8 +1982,6 @@ fitRobModel = function(which.run, which.rob, which.outliers,
            call. = FALSE)
     }
     
-    m.for.rob$data[[robVar]] = 
-      as.numeric(m.for.rob$data[[robVar]])
     robFilter = paste0("data.for.rob$", low.rob.filter, 
                        " & !is.na(data.for.rob$", robVar, ")")
     robMask = eval(parse(text = robFilter))

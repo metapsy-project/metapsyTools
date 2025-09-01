@@ -500,8 +500,18 @@ runMetaAnalysis = function(data,
   
   # Check class
   if (!inherits(data, "data.frame") & 
+      !inherits(data, "flagEffectSizes") &
       !inherits(data, "metapsyDatabase")){
-    stop("'data' must be a data.frame or 'metapsyDatabase' R6 object.")
+    stop("'data' must be a data.frame, 'flagEffectSizes', or 'metapsyDatabase' R6 object.")
+  }
+  
+  if (inherits(data, "flagEffectSizes")){
+    eff.out = sum(data[["flags"]]==3)
+    data = data[["data"]][!data[["flags"]]==3,]
+    message(crayon::bold(
+      crayon::cyan(paste0("- Extreme/implausible effect sizes removed",
+                   " before running models (k=", eff.out, 
+                   ") ... "))))
   }
   
   if (inherits(data, "metapsyDatabase")){
