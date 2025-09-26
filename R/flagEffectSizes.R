@@ -5,16 +5,21 @@
 #' \loadmathjax
 #'
 #' @usage flagEffectSizes(data, 
+#'                 reference = c("all", "dep", "psy", "ptsd"),
 #'                 es.var = ".g", 
 #'                 se.var = ".g_se",
 #'                 high.rob.filter = "rob <= 2", 
 #'                 power = "reference",
-#'                 alpha = 0.05, 
-#'                 reference = c("all", "dep", "psy", "ptsd"))
+#'                 alpha = 0.05)
 #'
 #' @param data A `data.frame`, including effect size data following the 
 #' [Metapsy data standard](https://docs.metapsy.org/data-preparation/format/), as 
 #' created by [calculateEffectSizes()].
+#' @param reference A `character` value, indicating the specific disorder for which reference values should be used.
+#' Defaults to `"all"`, meaning that the reference values across all included disorders are used. Other supported 
+#' values are `"dep"` (depression), `"psy"` (psychosis), and `"ptsd"` (PTSD). To improve calibration, 
+#' the `"psy"` reference values may also be used for fields in which low effect sizes are more common,
+#' or `"ptsd"` in high-effect size fields.
 #' @param es.var A `character`, specifying the name of the variable containing the (pre-calculated) 
 #' effect sizes in `data`. Defaults to `".g"`.
 #' @param se.var A `character`, specifying the name of the variable containing the 
@@ -28,11 +33,6 @@
 #' database of psychological treatments (see Details). Also accepts user-defined 
 #' power threshold in the (0,1) range (e.g., `power = 0.8` for 80% power).  
 #' @param alpha The \mjeqn{\alpha}{\alpha} level used to determine "incompatibility" of an effect size (0.05 by default). See Details.
-#' @param reference A `character` value, indicating the specific disorder for which reference values should be used.
-#' Defaults to `"all"`, meaning that the reference values across all included disorders are used. Other supported 
-#' values are `"dep"` (depression), `"psy"` (psychosis), and `"ptsd"` (PTSD). To improve calibration, 
-#' the `"psy"` reference values may also be used for fields in which low effect sizes are more common,
-#' or `"ptsd"` in high-effect size fields.
 #'
 #' @return 
 #' Returns an object of class `flagEffectSizes`, with the following elements:
@@ -134,9 +134,10 @@
 #' @details For more details on the metapsyTools package, see the [Get Started](https://tools.metapsy.org/articles/metapsytools) vignette.
 #'
 #' @export flagEffectSizes
-flagEffectSizes = function(data, es.var = ".g", se.var = ".g_se",
+flagEffectSizes = function(data, reference = c("all", "dep", "psy", "ptsd"),
+                           es.var = ".g", se.var = ".g_se",
                            high.rob.filter = "rob <= 2", power = "reference",
-                           alpha = 0.05, reference = c("all", "dep", "psy", "ptsd")) {
+                           alpha = 0.05) {
   
   if (inherits(data, "metapsyDatabase")) { 
     x = data[["data"]] } else { x = data }

@@ -59,7 +59,7 @@ The companion package of `metapsyTools` is [`metapsyData`](data.metapsy.org). Us
 The preparation module in `metapsyTools` allows to:
 
 -   check if the classes of variables in the imported data are set as required, using the [checkDataFormat](https://tools.metapsy.org/reference/checkdataformat) function.
--   check for formatting conflicts which have to be resolved prior to any further steps, using the [checkConflicts](https://tools.metapsy.org/reference/checkdataformat) function.
+-   check for formatting conflicts which have to be resolved prior to any further steps, using the [checkConflicts](https://tools.metapsy.org/reference/checkConflicts) function.
 -   calculate Hedges' $g$ and/or risk ratios ($RR$) for each comparison, provided suitable data is available, and generate a data set ready for meta-analyses, using the [calculateEffectSizes](https://tools.metapsy.org/reference/calculateeffectsizes) function.
 
 <br></br>
