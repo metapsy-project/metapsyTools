@@ -71,6 +71,10 @@ body {
 font-family: system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans","Liberation Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji" !important;
 }
 
+pre {
+  font-size: 14px !important;
+}
+
 code {
 text-decoration: none;
 }
@@ -84,6 +88,8 @@ main {
 box-shadow: 0 0px rgb(12 13 14), 0 1px 6px 3px rgb(59 64 69 / 12%);
 background: white;
 }
+
+
 
 body {
 background: #f9f9f9 !important;
