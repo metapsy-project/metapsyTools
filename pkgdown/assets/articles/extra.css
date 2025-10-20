@@ -81,7 +81,7 @@ text-decoration: underline;
 
 
 main {
-box-shadow: 0 0px rgb(12 13 14), 0 1px 6px 3px rgb(59 64 69 / 12%);
+border: 1px solid lightgray;
 background: white;
 }
 
@@ -150,11 +150,6 @@ font-family: system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,"N
 .dropdown-item {
 font-weight: 400
 }
-
-.navbar {
-box-shadow: 0 0 5px black;
-}
-
 
 .fu {
 font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
@@ -271,4 +266,6 @@ font-weight: normal;
 src: local('SF Mono Heavy Italic'), url('fonts/SFMonoHeavyItalic.woff') format('woff');
 }
 
-
+#ref-usage {
+  display: none !important;
+}
