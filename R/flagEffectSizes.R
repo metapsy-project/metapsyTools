@@ -2,6 +2,7 @@
 #'
 #' @description This function flags effect sizes that are too extreme and/or implausible to merit inclusion in
 #' meta-analytic models. Effect sizes are flagged based the size of the effect, achieved power, and study quality.
+#' See [Harrer et al. (2025)](https://www.medrxiv.org/content/10.1101/2025.11.12.25340062v1) for further details.
 #' \loadmathjax
 #'
 #' @usage flagEffectSizes(data, 
@@ -127,6 +128,14 @@
 #' metaRegression(M$model.overall, ~ flags)
 #' subgroupAnalysis(M, flags)
 #' }
+#' 
+#' @references 
+#' Harrer, M., Miguel, C., Hussey, I., Cristea, I. A., van Ballegooijen, W., 
+#' Basic, D., Wang, Y., Pfund, R. A., Quero, S., van Spreckelsen, P., Schnurr, P. P., 
+#' van Straten, A., Furukawa, T. A., Papola, D., & Cuijpers, P. (2025). 
+#' _Implausible effects of psychological interventions: Meta-epidemiological 
+#' study and development of a simple flagging tool_.
+#' medRxiv. https://doi.org/10.1101/2025.11.12.25340062
 #' 
 #' @author Mathias Harrer \email{mathias.h.harrer@@gmail.com},
 #' Pim Cuijpers \email{p.cuijpers@@vu.nl}

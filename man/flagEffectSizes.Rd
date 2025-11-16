@@ -5,17 +5,23 @@
 \title{Flag extreme and/or implausible effect sizes}
 \usage{
 flagEffectSizes(data, 
+                reference = c("all", "dep", "psy", "ptsd"),
                 es.var = ".g", 
                 se.var = ".g_se",
                 high.rob.filter = "rob <= 2", 
                 power = "reference",
-                alpha = 0.05, 
-                reference = c("all", "dep", "psy", "ptsd"))
+                alpha = 0.05)
 }
 \arguments{
 \item{data}{A \code{data.frame}, including effect size data following the
 \href{https://docs.metapsy.org/data-preparation/format/}{Metapsy data standard}, as
 created by \code{\link[=calculateEffectSizes]{calculateEffectSizes()}}.}
+
+\item{reference}{A \code{character} value, indicating the specific disorder for which reference values should be used.
+Defaults to \code{"all"}, meaning that the reference values across all included disorders are used. Other supported
+values are \code{"dep"} (depression), \code{"psy"} (psychosis), and \code{"ptsd"} (PTSD). To improve calibration,
+the \code{"psy"} reference values may also be used for fields in which low effect sizes are more common,
+or \code{"ptsd"} in high-effect size fields.}
 
 \item{es.var}{A \code{character}, specifying the name of the variable containing the (pre-calculated)
 effect sizes in \code{data}. Defaults to \code{".g"}.}
@@ -34,12 +40,6 @@ database of psychological treatments (see Details). Also accepts user-defined
 power threshold in the (0,1) range (e.g., \code{power = 0.8} for 80\% power).}
 
 \item{alpha}{The \mjeqn{\alpha}{\alpha} level used to determine "incompatibility" of an effect size (0.05 by default). See Details.}
-
-\item{reference}{A \code{character} value, indicating the specific disorder for which reference values should be used.
-Defaults to \code{"all"}, meaning that the reference values across all included disorders are used. Other supported
-values are \code{"dep"} (depression), \code{"psy"} (psychosis), and \code{"ptsd"} (PTSD). To improve calibration,
-the \code{"psy"} reference values may also be used for fields in which low effect sizes are more common,
-or \code{"ptsd"} in high-effect size fields.}
 }
 \value{
 Returns an object of class \code{flagEffectSizes}, with the following elements:
@@ -63,6 +63,7 @@ remove flagged studies (3 flags) during the computation.
 \description{
 This function flags effect sizes that are too extreme and/or implausible to merit inclusion in
 meta-analytic models. Effect sizes are flagged based the size of the effect, achieved power, and study quality.
+See \href{https://www.medrxiv.org/content/10.1101/2025.11.12.25340062v1}{Harrer et al. (2025)} for further details.
 \loadmathjax
 }
 \details{
@@ -142,6 +143,14 @@ metaRegression(M$model.overall, ~ flags)
 subgroupAnalysis(M, flags)
 }
 
+}
+\references{
+Harrer, M., Miguel, C., Hussey, I., Cristea, I. A., van Ballegooijen, W.,
+Basic, D., Wang, Y., Pfund, R. A., Quero, S., van Spreckelsen, P., Schnurr, P. P.,
+van Straten, A., Furukawa, T. A., Papola, D., & Cuijpers, P. (2025).
+\emph{Implausible effects of psychological interventions: Meta-epidemiological
+study and development of a simple flagging tool}.
+medRxiv. https://doi.org/10.1101/2025.11.12.25340062
 }
 \author{
 Mathias Harrer \email{mathias.h.harrer@gmail.com},
