@@ -38,6 +38,7 @@
 #' \method{nnt}{runMetaAnalysis}(x) <- value
 #' rho.within.study(x) <- value
 #' phi.within.study(x) <- value
+#' power.within.study(x) <- value
 #' w1.var(x) <- value
 #' w2.var(x) <- value
 #' time.var(x) <- value
@@ -56,11 +57,11 @@
 #' for \code{runMetaAnalysis} objects. The function \code{time.var} (and \code{time.var<-})
 #' is a regular replacement function, not an S3 method for \code{time}.
 #' 
-#' @export data<- which.run<- which.run near.pd near.pd<- es.measure es.measure<- es.type es.type<- es.var es.var<- se.var se.var<- es.binary.raw.vars es.binary.raw.vars<- method.tau method.tau<- hakn hakn<- study.var study.var<- arm.var.1 arm.var.1<- arm.var.2 arm.var.2<- measure.var measure.var<- low.rob.filter low.rob.filter<- method.tau.ci method.tau.ci<- round.digits round.digits<- which.combine which.combine<- which.combine.var which.combine.var<- which.outliers which.outliers<- which.influence which.influence<- which.rob which.rob<- nntCer nntCer<- rho.within.study rho.within.study<- phi.within.study phi.within.study<- w1.var w1.var<- w2.var w2.var<- vcov<- use.rve use.rve<- html html<- lower.is.better lower.is.better<- selmodelSteps selmodelSteps<- i2.ci.threelevel<- i2.ci.threelevel nsim.boot<- nsim.boot rerun
+#' @export data<- which.run<- which.run near.pd near.pd<- es.measure es.measure<- es.type es.type<- es.var es.var<- se.var se.var<- es.binary.raw.vars es.binary.raw.vars<- method.tau method.tau<- hakn hakn<- study.var study.var<- arm.var.1 arm.var.1<- arm.var.2 arm.var.2<- measure.var measure.var<- low.rob.filter low.rob.filter<- method.tau.ci method.tau.ci<- round.digits round.digits<- which.combine which.combine<- which.combine.var which.combine.var<- which.outliers which.outliers<- which.influence which.influence<- which.rob which.rob<- nntCer nntCer<- rho.within.study rho.within.study<- phi.within.study phi.within.study<- power.within.study power.within.study<- w1.var w1.var<- w2.var w2.var<- vcov<- use.rve use.rve<- html html<- lower.is.better lower.is.better<- selmodelSteps selmodelSteps<- i2.ci.threelevel<- i2.ci.threelevel nsim.boot<- nsim.boot rerun
 #' @aliases data which.run near.pd es.measure es.type es.var se.var es.binary.raw.vars 
 #' method.tau hakn study.var arm.var.1 arm.var.2 measure.var low.rob.filter 
 #' method.tau.ci round.digits which.combine which.combine.var which.outliers 
-#' which.influence which.rob nntCer rho.within.study phi.within.study 
+#' which.influence which.rob nntCer rho.within.study phi.within.study power.within.study
 #' w1.var w2.var time.var vcov use.rve html lower.is.better selmodelSteps
 #' nnt.runMetaAnalysis nnt<-.runMetaAnalysis selmodel.runMetaAnalysis selmodel<-.runMetaAnalysis
 #' rerun data<- which.run<-
@@ -69,7 +70,7 @@
 #' measure.var<- low.rob.filter<- method.tau.ci<- round.digits<- 
 #' which.combine<- which.combine.var<- which.outliers<- 
 #' which.influence<- which.rob<- nntCer<- rho.within.study<- 
-#' phi.within.study<- w1.var<- w2.var<- time.var<- vcov<- 
+#' phi.within.study<- power.within.study<- w1.var<- w2.var<- time.var<- vcov<- 
 #' use.rve<- html<- lower.is.better<- selmodelSteps<- near.pd near.pd<-
 #' i2.ci.threelevel<- i2.ci.threelevel nsim.boot<- nsim.boot
 #' @seealso \code{\link[metapsyTools]{runMetaAnalysis}}, \code{\link[metapsyTools]{correctPublicationBias}}
@@ -289,6 +290,7 @@ nntCer = function(x, ...) as.list(x$call)$nntCer
 #' @param x Object of class \code{runMetaAnalysis}.
 #' @param ... Optional arguments (ignored).
 #' @return For \code{nnt(x)}, the current \code{nntCer} value. For \code{nnt(x) <- value}, the updated object (invisibly).
+#' @keywords internal
 #' @export
 nnt = function(x, ...) UseMethod("nnt")
 #' @exportS3Method nnt runMetaAnalysis
@@ -315,6 +317,14 @@ rho.within.study = `rho.within.study<-`
   return(x)
 }
 phi.within.study = `phi.within.study<-`
+
+`power.within.study<-` = function(x, value){
+  origArgs = as.list(x$call)
+  origArgs$power.within.study = value[1]
+  x$call = as.call(as.call(origArgs))
+  return(x)
+}
+power.within.study = `power.within.study<-`
 
 `w1.var<-` = function(x, value){
   origArgs = as.list(x$call)
@@ -406,6 +416,7 @@ selmodelSteps = function(x, ...) as.list(x$correctPublicationBias$call)$selmodel
 #' @param x Object of class \code{runMetaAnalysis}.
 #' @param ... Optional arguments (ignored).
 #' @return For \code{selmodel(x)}, the current \code{selmodelSteps} value. For \code{selmodel(x) <- value}, the updated object (invisibly).
+#' @keywords internal
 #' @export
 selmodel = function(x, ...) UseMethod("selmodel")
 #' @exportS3Method selmodel runMetaAnalysis

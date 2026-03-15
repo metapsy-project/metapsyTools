@@ -12,7 +12,7 @@ once the rerun function is called."><meta property="og:image" content="/logo.png
 
     <a class="navbar-brand me-2" href="../index.html">metapsyTools</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.13</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.14</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -75,17 +75,23 @@ once the <code>rerun</code> function is called.</p>
 <span><span class="fu">which.outliers</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
 <span><span class="fu">which.influence</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
 <span><span class="fu">which.rob</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
-<span><span class="fu">nnt.cer</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
+<span><span class="fu">nntCer</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
+<span><span class="co"># S3 method for class 'runMetaAnalysis'</span></span>
+<span><span class="fu"><a href="nnt.html">nnt</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
 <span><span class="fu">rho.within.study</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
 <span><span class="fu">phi.within.study</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
+<span><span class="fu">power.within.study</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
 <span><span class="fu">w1.var</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
 <span><span class="fu">w2.var</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
+<span><span class="fu">time.var</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
 <span><span class="fu">vcov</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
 <span><span class="fu">near.pd</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
 <span><span class="fu">use.rve</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
 <span><span class="fu">html</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
 <span><span class="fu">lower.is.better</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
-<span><span class="fu">selmodel.steps</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
+<span><span class="fu">selmodelSteps</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
+<span><span class="co"># S3 method for class 'runMetaAnalysis'</span></span>
+<span><span class="fu"><a href="selmodel.html">selmodel</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
 <span><span class="fu">rerun</span><span class="op">(</span><span class="va">m</span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -106,6 +112,13 @@ once the <code>rerun</code> function is called.</p>
 <dd><p>(Adapted) object of class <code>runMetaAnalysis</code>.</p></dd>
 
 </dl></div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p><code>nntCer</code> / <code>nntCer&lt;-</code> and <code>selmodelSteps</code> / <code>selmodelSteps&lt;-</code>
+are also available as S3 methods <code>nnt</code>, <code>nnt&lt;-</code>, <code>selmodel</code>, <code>selmodel&lt;-</code>
+for <code>runMetaAnalysis</code> objects. The function <code>time.var</code> (and <code>time.var&lt;-</code>)
+is a regular replacement function, not an S3 method for <code>time</code>.</p>
+    </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p><code><a href="runMetaAnalysis.html">runMetaAnalysis</a></code>, <code><a href="correctPublicationBias.html">correctPublicationBias</a></code></p></div>

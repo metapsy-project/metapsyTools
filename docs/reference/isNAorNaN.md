@@ -10,6 +10,6 @@ isNAorNaN(x)
 
 ## Arguments
 
-- expr:
+- x:
 
-  R expression.
+  Value to test.

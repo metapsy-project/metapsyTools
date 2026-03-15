@@ -13,7 +13,7 @@
 #'                               "threelevel.che"),
 #'                               
 #'                 # Effect size measure
-#'                 es.measure = c("g", "RR", "EER", "CER"),
+#'                 es.measure = c("g", "RR", "EER", "CER", "ROM"),
 #'                 es.type = c("precalculated", "raw"),
 #'                 es.var = ifelse(identical(es.measure[1], "RR"), 
 #'                                           ".log_rr", ".g"),
@@ -71,21 +71,20 @@
 #' See 'Details'.
 #' @param es.measure `character`. Should meta-analyses be calculated using the
 #' bias-corrected standardized mean difference (`"g"`; default),  
-#' risk ratios (`"RR"`), or logit-transformed experimental/control group event rates (`"EER"` or `"CER"`)? 
-#' Meta-analyses will only be conducted using comparisons
-#' that contain non-missing values in the `es.var` and `se.var` columns.
+#' risk ratios (`"RR"`), logit-transformed experimental/control group event rates (`"EER"` or `"CER"`),
+#' or ratio of means (`"ROM"`)? Meta-analyses will only be conducted using comparisons that contain non-missing values in the `es.var` and `se.var` columns.
 #' @param es.type `character`. Should pre-calculated or raw event data (i.e.
 #' the Mantel-Haenszel method) be used for meta-analyses of risk ratios?
 #' Can be set to `"precalculated"` (default) or `"raw"`.
 #' @param es.var `character`. Specifies the name of the variable containing the (pre-
 #' calculated) effect size data in `data`. When `es.measure = "g"`, `"EER"`, or `"CER"`, this is set to
-#' `.g` by default; `".log_rr"` is used when `es.measure = "RR"`. The default settings
-#' correspond with the standard output of \code{\link[metapsyTools]{calculateEffectSizes}}.
+#' `.g` by default; `".log_rr"` is used when `es.measure = "RR"`. For `es.measure = "ROM"`, this defaults to
+#' `.log_rom` (log ratio of means) and can be set to any column name if the user stores the data elsewhere.
 #' @param se.var `character`. Specifies the name of the variable containing the (pre-calculated)
 #' standard errors (square root of the variance) of the effect size metric defined
-#' in `es.var`. If `es.measure = "g"`, this is automatically set to `.g_se`; if 
-#' `es.measure = "RR"`, `".log_rr_se"` is used. The default settings
-#' correspond with the standard output of \code{\link[metapsyTools]{calculateEffectSizes}}.
+#' in `es.var`. If `es.measure = "g"`, this is set to `.g_se`; if `es.measure = "RR"`, `".log_rr_se"` is used.
+#' For `es.measure = "ROM"`, this defaults to `.log_rom_se` and can be set to any column name.
+#' The default settings correspond with the standard output of \code{\link[metapsyTools]{calculateEffectSizes}}.
 #' @param es.binary.raw.vars `character`. A vector defining the column names in `data` in
 #' which the (1) raw event counts in the experimental group, (2) raw event counts in the
 #' control/reference group, (3) sample size in the experimental group, and (4) sample size
@@ -219,6 +218,12 @@
 #'   runMetaAnalysis(which.run = "combined", 
 #'                   es.measure = "EER")
 #' 
+#' # - Run a meta-analysis of ratio-of-means (RoMs)
+#' data %>% 
+#'   calculateEffectSizes(calculate.rom = TRUE) %>% 
+#'   runMetaAnalysis(which.run = c("combined", "threelevel"),
+#'                   es.measure = "ROM")
+#' 
 #' # Use replacement function to show results for
 #' # differing settings
 #' method.tau(res) <- "PM"
@@ -303,6 +308,7 @@
 #' that are typically used. It allows to run all of these models in one step in order to generate results
 #' that are somewhat closer to being "publication-ready". See \code{\link[metapsyTools]{plot.runMetaAnalysis}}
 #' and \code{\link[metapsyTools]{createRobSummary}} for additional functionality.
+#' 
 #'
 #' By _default_, the following models are calculated:
 #'
@@ -361,6 +367,12 @@
 #' Outlier selection is implemented using the [dmetar::find.outliers()] function,
 #' and influence analyses using the [dmetar::InfluenceAnalysis()] function. The latter function is a wrapper for 
 #' [metafor::influence.rma.uni()].
+#' 
+#' For ratio of means (\code{es.measure = "ROM"}), \code{data} must contain the columns specified by \code{es.var}
+#' and \code{se.var} (default \code{.log_rom} and \code{.log_rom_se}, as created by
+#' \code{\link[metapsyTools]{calculateEffectSizes}} when \code{calculate.rom = TRUE}). Custom \code{es.var} and
+#' \code{se.var} can be used if log-ROM and SE are stored in other columns. Values are used internally and
+#' results are back-transformed (exponentiated) for display.
 #' 
 #' \mjeqn{~}{~}
 #'  
@@ -450,7 +462,7 @@ runMetaAnalysis = function(data,
                                          "lowest.highest", "outliers",
                                          "influence", "rob", "threelevel",
                                          "threelevel.che"),
-                           es.measure = c("g", "RR", "EER", "CER"),
+                           es.measure = c("g", "RR", "EER", "CER", "ROM"),
                            es.type = c("precalculated", "raw"),
                            es.var = ifelse(identical(es.measure[1], "RR"), 
                                            ".log_rr", ".g"),
@@ -519,11 +531,30 @@ runMetaAnalysis = function(data,
   }
   
   # If es.measure is "g", es.type must be "precalculated"
-  if (!(es.measure[1] %in% c("g", "RR", "EER", "CER"))){
-    stop("'es.measure' must be 'g', 'RR', 'EER' or 'CER'.")
+  if (!(es.measure[1] %in% c("g", "RR", "EER", "CER", "ROM"))){
+    stop("'es.measure' must be 'g', 'RR', 'EER', 'CER' or 'ROM'.")
   }
   if (identical(es.measure[1], "g")){
     es.type = "precalculated"
+  }
+  
+  # If ROM, use es.var and se.var (default .log_rom / .log_rom_se) and run internally as .g / .g_se
+  if (identical(es.measure[1], "ROM")) {
+    if (identical(es.var, ".g")) es.var = ".log_rom"
+    if (identical(se.var, ".g_se")) se.var = ".log_rom_se"
+    if (!(es.var %in% colnames(data)) || !(se.var %in% colnames(data))) {
+      stop("For es.measure = \"ROM\", data must contain the columns specified by es.var and se.var ",
+           "(default: '.log_rom' and '.log_rom_se'). Run calculateEffectSizes(..., calculate.rom = TRUE) ",
+           "or provide custom es.var / se.var.", call. = FALSE)
+    }
+    data$.g = data[[es.var]]
+    data$.g_se = data[[se.var]]
+    es.var = ".g"
+    se.var = ".g_se"
+    has.rom = TRUE
+    es.measure = "g"  # fit as g; adaptRom + .type.es = "ROM" at end
+  } else {
+    has.rom = FALSE
   }
   
   # If CER or EER, calculate plogits and se, set to ".g"
@@ -614,7 +645,7 @@ runMetaAnalysis = function(data,
   
   # Send message (beginning of analyses)
   if (!has.plogits) {
-    sendMessage("start", .type.es = .type.es, 
+    sendMessage("start", .type.es = if (has.rom) "ROM" else .type.es,
                 es.type = es.type)
   } else {
     message(crayon::cyan(crayon::bold("- Running meta-analyses...")))
@@ -994,7 +1025,8 @@ runMetaAnalysis = function(data,
     mWaapWls = fitWaapWlsModel(which.run, which.waap.wls, 
                                mGeneral, mComb, beta.within.study,
                                method.tau, .raw.bin.es, .type.es, round.digits,
-                               nntCer, rob.data)
+                               nntCer, rob.data,
+                               plogits.type = if (has.plogits) which.plogits else NULL)
     
     # If model failed, add to error model list
     if (mWaapWls$has.error){
@@ -1025,7 +1057,25 @@ runMetaAnalysis = function(data,
     mCHE = adaptPlogit(mCHE, use.rve, round.digits, clubsandwich = TRUE)
     mCcrem = adaptPlogit(mCcrem, use.rve, round.digits, FALSE, study.var)
     mCcremCHE = adaptPlogit(mCcremCHE, use.rve, round.digits, FALSE, study.var)
+    if (!is.null(mWaapWls) && !is.null(mWaapWls$m)) mWaapWls$m$.type.es = .type.es
     mWaapWls = adaptPlogit(mWaapWls, use.rve, round.digits)
+  }
+  
+  # If ROM, adapt the res (exp and rename g -> rom)
+  if (has.rom) {
+    mGeneral = adaptRom(mGeneral, round.digits)
+    mLowest = adaptRom(mLowest, round.digits)
+    mHighest = adaptRom(mHighest, round.digits)
+    mOutliers = adaptRom(mOutliers, round.digits)
+    mInfluence = adaptRom(mInfluence, round.digits)
+    mRob = adaptRom(mRob, round.digits)
+    mComb = adaptRom(mComb, round.digits)
+    mThreeLevel = adaptRom(mThreeLevel, round.digits)
+    mCHE = adaptRom(mCHE, round.digits)
+    mCcrem = adaptRom(mCcrem, round.digits)
+    mCcremCHE = adaptRom(mCcremCHE, round.digits)
+    mWaapWls = adaptRom(mWaapWls, round.digits)
+    .type.es = "ROM"
   }
   
   # Combine everything
@@ -1041,6 +1091,14 @@ runMetaAnalysis = function(data,
   summary[is.na(summary)] = "-"
   if (identical(.type.es, "RR")){
     colnames(summary)[2:3] = c("rr", "rr.ci")
+  }
+  if (identical(.type.es, "ROM")) {
+    colnames(summary)[2:3] = c("rom", "rom.ci")
+    # Keep first 9 columns and force unique names (rbind can produce duplicate names)
+    if (ncol(summary) >= 9) {
+      summary = summary[, 1:9, drop = FALSE]
+      colnames(summary) = c("k", "rom", "rom.ci", "p", "i2", "i2.ci", "prediction.ci", "nnt", "excluded")
+    }
   }
   if (has.plogits) {
     colnames(summary)[2:3] = c(tolower(which.plogits), 
@@ -1162,8 +1220,9 @@ print.runMetaAnalysis = function(x, ...){
     
     run.models = unlist(models[x$which.run])
     if ("rob" %in% run.models){
-      run.models[["rob"]] = 
-        rownames(x$summary)[grepl("Only", rownames(x$summary))]
+      rob.rows = rownames(x$summary)[grepl("Only", rownames(x$summary))]
+      if (length(rob.rows) > 0) run.models[["rob"]] = rob.rows
+      else run.models = run.models[names(run.models) != "rob"]
     }
     
     cat(crayon::blue$bold("Model results "))
@@ -1304,7 +1363,7 @@ print.runMetaAnalysis = function(x, ...){
       }
       
       c("RR" = "<i>RR</i>", "g" = "<i>g</i>", 
-        "CER" = "<i>CER</i>", "EER" = "<i>EER</i>")[[x$.type.es]] -> col.es
+        "CER" = "<i>CER</i>", "EER" = "<i>EER</i>", "ROM" = "<i>ROM</i>")[[x$.type.es]] -> col.es
         
       x$summary %>%
         {.$p = ifelse(.$p == "<0.001", "&lt;0.001", .$p);.} %>% 
@@ -1345,8 +1404,9 @@ print.runMetaAnalysis = function(x, ...){
     
     run.models = unlist(models[x$which.run])
     if ("rob" %in% run.models){
-      run.models[["rob"]] = 
-        rownames(x$summary)[grepl("Only", rownames(x$summary))]
+      rob.rows = rownames(x$summary)[grepl("Only", rownames(x$summary))]
+      if (length(rob.rows) > 0) run.models[["rob"]] = rob.rows
+      else run.models = run.models[names(run.models) != "rob"]
     }
     
     cat(crayon::blue$bold("Model results "))
@@ -1458,7 +1518,7 @@ print.runMetaAnalysis = function(x, ...){
       }
       
       c("RR" = "<i>RR</i>", "g" = "<i>g</i>", 
-        "CER" = "<i>CER</i>", "EER" = "<i>EER</i>")[[x$.type.es]] -> col.es
+        "CER" = "<i>CER</i>", "EER" = "<i>EER</i>", "ROM" = "<i>ROM</i>")[[x$.type.es]] -> col.es
       
       x$summary %>%
         {.$p = ifelse(.$p == "<0.001", "&lt;0.001", .$p);.} %>% 
@@ -1485,9 +1545,9 @@ print.runMetaAnalysis = function(x, ...){
 #' @param x An object of class \code{runMetaAnalysis}.
 #' @param which Model to be plotted. Can be one of \code{"overall"},
 #' \code{"combined"}, \code{"lowest.highest"}, \code{"outliers"},
-#' \code{"influence"}, \code{"threelevel"}, \code{"threelevel.che"},
-#' \code{"ccrem"}, \code{"ccrem.che"},
-#' \code{"baujat"}, \code{"loo-es"}, \code{"loo-i2"},
+#' \code{"influence"}, \code{"rob"}, \code{"threelevel"}, \code{"threelevel.che"},
+#' \code{"ccrem"}, \code{"ccrem.che"}, \code{"waap.wls"},
+#' \code{"summary"}, \code{"baujat"}, \code{"loo"}, \code{"loo-es"}, \code{"loo-i2"},
 #' \code{"trimfill"}, \code{"limitmeta"} or \code{"selection"}.
 #' @param eb Prints a forest plot with empirical Bayes point estimates and study-specific
 #' prediction intervals as proposed by van Aert (2021). Defaults to `FALSE`.
@@ -1551,13 +1611,58 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
                             "waap.wls" = "waap.wls")
     
     if (!is.null(which)){
-      if (!which %in% names(models.which.run[which])){
+      if (!which %in% names(models.which.run)){
         if (!which %in% c("selection", "baujat",
                           "loo", "loo-es", "loo-i2", "trimfill",
                           "limitmeta", "summary")){
           stop("Model not available for plotting.")
         }
-      } 
+      }
+      # Require the requested model to have been run
+      which.required = list(
+        "overall" = "overall",
+        "lowest.highest" = "lowest.highest",
+        "outliers" = "outliers",
+        "influence" = "influence",
+        "rob" = "rob",
+        "combined" = "combined",
+        "threelevel" = c("threelevel", "threelevel.che"),
+        "che" = c("threelevel", "threelevel.che"),
+        "threelevel.che" = c("threelevel", "threelevel.che"),
+        "ccrem" = "ccrem",
+        "ccrem.che" = "ccrem.che",
+        "waap.wls" = "waap.wls",
+        "baujat" = "influence",
+        "loo" = "influence", "loo-es" = "influence", "loo-i2" = "influence",
+        "trimfill" = "correctPublicationBias",
+        "limitmeta" = "correctPublicationBias",
+        "selection" = "correctPublicationBias"
+      )
+      if (which %in% names(which.required)){
+        req = which.required[[which]]
+        if (which %in% c("trimfill", "limitmeta", "selection")){
+          if (is.null(x$correctPublicationBias)){
+            stop("Plot type '", which, "' requires publication bias correction. ",
+                 "Run correctPublicationBias() first.")
+          }
+        } else if (which %in% c("baujat", "loo", "loo-es", "loo-i2")){
+          if (!req %in% x$which.run){
+            stop("Plot type '", which, "' requires the 'influence' model. ",
+                 "Re-run runMetaAnalysis() with which.run including \"influence\".")
+          }
+        } else if (which == "summary"){
+          if (is.null(x$summary) || nrow(x$summary) < 1L){
+            stop("No summary table available for plotting. ",
+                 "Run at least one model (e.g. which.run = \"overall\").")
+          }
+        } else {
+          if (!any(req %in% x$which.run)){
+            stop("Plot type '", which, "' requires the '", 
+                 paste(req, collapse = "' or '"), "' model. ",
+                 "Re-run runMetaAnalysis() with which.run including that model.")
+          }
+        }
+      }
     }
     
     leftCols = c("studlab", "comparison.only", "instrument", "TE", "seTE")
@@ -1798,6 +1903,8 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
         }
       }
       if (models[[x$which.run[1]]][1] == "model.waap.wls") {
+        message("- ", crayon::green("[OK] "), 
+                "Generating forest plot ('waap.wls' model).")
         m.plot = if(x$which.waap.wls=="combined") {x$model.combined} else {x$model.overall}
         m.plot$TE.random = x$model.waap.wls$coefficients[[1]]
         m.plot$lower.random = x$model.waap.wls$ci[,1]
@@ -1808,12 +1915,12 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
         m.plot$lower.I2 = x$model.waap.wls$lower.i2
         m.plot$upper.I2 = x$model.waap.wls$upper.i2
         m.plot$text.random = paste0("WAAP-WLS (", toupper(x$model.waap.wls$type), " used)")
-        if (x$model.waap.wls$type=="waap") {
-          meta::forest(m.plot, ..., print.tau2 = FALSE, 
+        if (x$model.waap.wls$type == "waap") {
+          meta::forest(m.plot, ..., print.tau2 = FALSE, leftcols = "study",
                        col.square = ifelse(x$model.waap.wls$powered, "lightblue", "gray"),
                        rightcols = c("effect", "ci"))
         } else {
-          meta::forest(m.plot, ..., print.tau2 = FALSE, 
+          meta::forest(m.plot, ..., print.tau2 = FALSE, leftcols = "study",
                        rightcols = c("effect", "ci"))
         }
       }
@@ -2152,6 +2259,8 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
       }
       
       if (which[1] == "waap.wls") {
+        message("- ", crayon::green("[OK] "), 
+                "Generating forest plot ('waap.wls' model).")
         m.plot = if(x$which.waap.wls=="combined") {x$model.combined} else {x$model.overall}
         m.plot$TE.random = x$model.waap.wls$coefficients[[1]]
         m.plot$lower.random = x$model.waap.wls$ci[,1]
@@ -2162,12 +2271,12 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
         m.plot$lower.I2 = x$model.waap.wls$lower.i2
         m.plot$upper.I2 = x$model.waap.wls$upper.i2
         m.plot$text.random = paste0("WAAP-WLS (", toupper(x$model.waap.wls$type), " used)")
-        if (x$model.waap.wls$type=="waap") {
-          meta::forest(m.plot, ..., print.tau2 = FALSE, 
-                       col.square = ifelse(x$model.waap.wls$powered, "lightblue", "gray"),
-                       rightcols = c("effect", "ci"))
+        if (x$model.waap.wls$type == "waap") {
+          meta::forest(m.plot, ..., print.tau2 = FALSE, leftcols = "study",
+                      col.square = ifelse(x$model.waap.wls$powered, "lightblue", "gray"),
+                      rightcols = c("effect", "ci"))
         } else {
-          meta::forest(m.plot, ..., print.tau2 = FALSE, 
+          meta::forest(m.plot, ..., print.tau2 = FALSE, leftcols = "study",
                        rightcols = c("effect", "ci"))
         }
       }
@@ -2209,7 +2318,9 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
         }
         message("- ", crayon::green("[OK] "), 
                 "Generating funnel plot for the trim-and-fill analysis.")
-        suppressWarnings({meta::funnel(x$correctPublicationBias$model.trimfill)})
+        funnel.args = list(x$correctPublicationBias$model.trimfill)
+        if (identical(x$.type.es, "ROM")) funnel.args$xlab = "logROM"
+        suppressWarnings(do.call(meta::funnel, funnel.args))
       }
       
       if (which[1] == "limitmeta"){
@@ -2219,9 +2330,9 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
         }
         message("- ", crayon::green("[OK] "), 
                 "Generating funnel plot for the limit meta-analysis.")
-        suppressWarnings({
-          metasens::funnel.limitmeta(
-            x$correctPublicationBias$model.limitmeta)})
+        funnel.args = list(x$correctPublicationBias$model.limitmeta)
+        if (identical(x$.type.es, "ROM")) funnel.args$xlab = "logROM"
+        suppressWarnings(do.call(metasens::funnel.limitmeta, funnel.args))
       }
       
       if (which[1] == "selection"){
@@ -2243,15 +2354,20 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
       
       if (which[1] == "summary"){
         
-        if (!"overall" %in% x$which.run) {
-          x$summary = x$summary[rownames(x$summary)!="Overall",]
+        if (!"overall" %in% x$which.run && nrow(x$summary) > 1L) {
+          x$summary = x$summary[rownames(x$summary) != "Overall", , drop = FALSE]
+        }
+        if (nrow(x$summary) < 1L){
+          stop("No models available for summary plot. Run at least one model (e.g. which.run = \"overall\").")
         }
         
         if (x$.type.es == "RR"){
-          stringr::str_replace_all(x$summary$rr.ci, ";|\\]|\\[", "") %>%
+          ci.mat = stringr::str_replace_all(x$summary$rr.ci, ";|\\]|\\[", "") %>%
             strsplit(" ") %>% 
-            purrr::map(~as.numeric(.)) %>% do.call(rbind,.) %>%
-            {colnames(.) = c("lower", "upper");.} %>%
+            purrr::map(~as.numeric(.)) %>% do.call(rbind,.)
+          if (length(dim(ci.mat)) < 2L) ci.mat = as.matrix(t(ci.mat))
+          colnames(ci.mat) = c("lower", "upper")
+          ci.mat %>%
             cbind(model = rownames(x$summary), rr = x$summary$rr,
                   i2 = round(x$summary$i2,1) %>% format(1), .) %>%
             data.frame() %>%
@@ -2275,25 +2391,69 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
                            expression(bold(CI)),
                            expression(bold(italic(I)^2)))) %>%
             suppressWarnings()
-        } else {
-          stringr::str_replace_all(x$summary$g.ci, ";|\\]|\\[", "") %>%
-            strsplit(" ") %>% purrr::map(~as.numeric(.)) %>% do.call(rbind,.) %>%
-            {colnames(.) = c("lower", "upper");.} %>%
-            cbind(model = rownames(x$summary), g = x$summary$g,
-                  i2 = round(x$summary$i2,1) %>% format(1), .) %>%
+        } else if (x$.type.es == "ROM") {
+          ci.vec = x$summary$rom.ci
+          ci.mat = stringr::str_replace_all(ci.vec, ";|\\]|\\[", " ") %>%
+            stringr::str_replace_all("\\s+", " ") %>% stringr::str_trim() %>%
+            strsplit("\\s+") %>%
+            purrr::map(function(x) { x = as.numeric(x); x = x[!is.na(x) & is.finite(x)]; if (length(x) >= 2) x[1:2] else c(NA_real_, NA_real_) }) %>%
+            do.call(rbind,.)
+          if (length(dim(ci.mat)) < 2L) ci.mat = as.matrix(t(ci.mat))
+          colnames(ci.mat) = c("lower", "upper")
+          rom = as.numeric(x$summary$rom)
+          i2fmt = suppressWarnings(as.numeric(x$summary$i2))
+          i2fmt = ifelse(is.na(i2fmt), "-", format(round(i2fmt, 1)))
+          ci.mat %>%
+            cbind(model = rownames(x$summary), rom = rom, i2 = i2fmt, .) %>%
             data.frame() %>%
-            dplyr::mutate(g = as.numeric(g),
-                          lower = as.numeric(lower) - 1e-50,
-                          upper = as.numeric(upper) + 1e-50) %>%
-            meta::metagen(TE = g, lower = lower, upper = upper, studlab = model,
-                          data = .) %>%
+            dplyr::mutate(rom = as.numeric(rom), lower = as.numeric(lower), upper = as.numeric(upper),
+                          rom = log(rom), lower = log(lower), upper = log(upper)) %>%
+            meta::metagen(TE = rom,
+                         lower = lower - 1e-50,
+                         upper = upper + 1e-50,
+                         studlab = model, sm = "ROM",
+                         data = .) %>%
+            meta::forest(
+              col.square = "lightblue",
+              rightcols = FALSE,
+              overall.hetstat = FALSE,
+              weight.study = "same",
+              test.overall = FALSE, overall = FALSE,
+              leftcols = c("studlab", "effect", "ci", "i2"),
+              leftlabs = c(expression(bold(Model)),
+                           expression(bold(ROM)),
+                           expression(bold(CI)),
+                           expression(bold(italic(I)^2)))) %>%
+            suppressWarnings()
+        } else {
+          es.col = colnames(x$summary)[2]
+          ci.col = colnames(x$summary)[3]
+          ci.vec = x$summary[[ci.col]]
+          ci.mat.g = stringr::str_replace_all(ci.vec, ";|\\]|\\[", "") %>%
+            strsplit(" ") %>% purrr::map(~as.numeric(.)) %>% do.call(rbind,.)
+          if (length(dim(ci.mat.g)) < 2L) ci.mat.g = as.matrix(t(ci.mat.g))
+          colnames(ci.mat.g) = c("lower", "upper")
+          plotdat = data.frame(
+            model = rownames(x$summary),
+            TE = as.numeric(x$summary[[es.col]]),
+            i2 = round(x$summary$i2, 1) %>% format(1),
+            lower = as.numeric(ci.mat.g[,1]) - 1e-50,
+            upper = as.numeric(ci.mat.g[,2]) + 1e-50,
+            stringsAsFactors = FALSE
+          )
+          eff.lab = if (identical(x$.type.es, "g")) expression(bold(g)) else
+            if (identical(x$.type.es, "EER")) expression(bold(EER)) else
+            if (identical(x$.type.es, "CER")) expression(bold(CER)) else
+            if (identical(x$.type.es, "ROM")) expression(bold(ROM)) else expression(bold(Effect))
+          meta::metagen(TE = TE, lower = lower, upper = upper, studlab = model,
+                        data = plotdat) %>%
             meta::forest(col.square = "lightblue",
                          rightcols = FALSE,
                          overall.hetstat = FALSE,
                          weight.study = "same",
                          test.overall = FALSE, overall = FALSE,
                          leftcols = c("studlab", "TE", "ci", "i2"),
-                         leftlabs = c(expression(bold(Model)), expression(bold(g)),
+                         leftlabs = c(expression(bold(Model)), eff.lab,
                                       expression(bold(CI)),
                                       expression(bold(italic(I)^2)))) %>%
             suppressWarnings()
@@ -2301,6 +2461,11 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
       }
     }
   } else {
+    plotWhich = if (!is.null(which)) which[1] else x$which.run[1]
+    if (identical(plotWhich, "waap.wls")) {
+      stop("Forest plots with BLUPs (eb = TRUE) are not available for the 'waap.wls' model.",
+           call. = FALSE)
+    }
     dots = list(...)
     argsList = append(list(model = x, which = which, 
                            eb.labels = eb.labels), dots)
@@ -2639,8 +2804,9 @@ summary.runMetaAnalysis = function(object, forest = TRUE, ...){
     
     run.models = unlist(models[x$which.run])
     if ("rob" %in% run.models){
-      run.models[["rob"]] = 
-        rownames(x$summary)[grepl("Only", rownames(x$summary))]
+      rob.rows = rownames(x$summary)[grepl("Only", rownames(x$summary))]
+      if (length(rob.rows) > 0) run.models[["rob"]] = rob.rows
+      else run.models = run.models[names(run.models) != "rob"]
     }
     x$summary = x$summary[run.models,]
     if (!is.null(x$correctPublicationBias)) {
@@ -2682,6 +2848,37 @@ summary.runMetaAnalysis = function(object, forest = TRUE, ...){
                      expression(bold(CI)),
                      expression(bold(italic(I)^2)))) -> forest.args
       append(forest.args[!names(forest.args) %in% names(dots)], dots) %>% 
+        {.[unique(names(.))]} -> forest.args
+      do.call(meta::forest, forest.args) %>% suppressWarnings()
+    } else if (x$.type.es == "ROM") {
+      stringr::str_replace_all(x$summary$rom.ci, ";|\\]|\\[", "") %>%
+        strsplit(" ") %>% purrr::map(~as.numeric(.)) %>% do.call(rbind,.) %>%
+        {colnames(.) = c("lower", "upper");.} %>%
+        cbind(model = rownames(x$summary), rom = x$summary$rom,
+              i2 = round(x$summary$i2, 1) %>% format(1), .) %>%
+        data.frame() %>%
+        dplyr::mutate(rom = as.numeric(rom),
+                      TE = log(rom),
+                      lower = log(as.numeric(lower)) - 1e-50,
+                      upper = log(as.numeric(upper)) + 1e-50) %>%
+        meta::metagen(TE = TE, lower = lower, upper = upper, studlab = model, sm = "ROM",
+                      data = .) %>%
+        suppressWarnings() -> M
+      dots = list(...)
+      if (!is.null(dots$sortvar[1])) {
+        if (dots$sortvar[1] %in% colnames(M$data)) {
+          dots$sortvar = M$data[[dots$sortvar[1]]]
+        } else {
+          dots$sortvar = NULL
+        }
+      }
+      list(x = M, col.square = "lightblue", rightcols = FALSE,
+           overall.hetstat = FALSE, weight.study = "same",
+           test.overall = FALSE, overall = FALSE,
+           leftcols = c("studlab", "effect", "ci", "i2"),
+           leftlabs = c(expression(bold(Model)), expression(bold(ROM)),
+                        expression(bold(CI)), expression(bold(italic(I)^2)))) -> forest.args
+      append(forest.args[!names(forest.args) %in% names(dots)], dots) %>%
         {.[unique(names(.))]} -> forest.args
       do.call(meta::forest, forest.args) %>% suppressWarnings()
     } else {

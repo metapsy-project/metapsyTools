@@ -8,7 +8,7 @@ prepared in the Metapsy data format."><meta property="og:image" content="/logo.p
 
     <a class="navbar-brand me-2" href="../index.html">metapsyTools</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.13</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.14</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -54,6 +54,9 @@ prepared in the <a href="https://docs.metapsy.org/data-preparation/format/" clas
 <span>                                    g.precalc <span class="op">=</span> <span class="va">g.precalc</span><span class="op">)</span>,</span>
 <span>                     funcs.rr <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>rr.binary <span class="op">=</span> <span class="va">rr.binary</span>,</span>
 <span>                                     rr.precalc <span class="op">=</span> <span class="va">rr.precalc</span><span class="op">)</span>,</span>
+<span>                     funcs.rom <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>rom.m.sd <span class="op">=</span> <span class="va">rom.m.sd</span>,</span>
+<span>                                     rom.change.m.sd <span class="op">=</span> <span class="va">rom.change.m.sd</span><span class="op">)</span>,</span>
+<span>                     calculate.rom <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>                     include.switched.arms <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>                     change.sign <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>                     impute.response <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -92,6 +95,15 @@ effect sizes (Hedges' <em>g</em>) based on the raw data (see Details).</p></dd>
 <dt id="arg-funcs-rr">funcs.rr<a class="anchor" aria-label="anchor" href="#arg-funcs-rr"></a></dt>
 <dd><p><code>list</code> of functions. These functions will be used to calculate risk ratios
 based on the raw event data (see Details).</p></dd>
+
+
+<dt id="arg-funcs-rom">funcs.rom<a class="anchor" aria-label="anchor" href="#arg-funcs-rom"></a></dt>
+<dd><p><code>list</code> of functions used to calculate log ratio of means and their standard errors when <code>calculate.rom = TRUE</code>.</p></dd>
+
+
+<dt id="arg-calculate-rom">calculate.rom<a class="anchor" aria-label="anchor" href="#arg-calculate-rom"></a></dt>
+<dd><p><code>logical</code>. If <code>TRUE</code>, ratio-of-means (log scale) and their standard errors are
+calculated via the functions in <code>funcs.rom</code> and appended as <code>.log_rom</code> and <code>.log_rom_se</code>. Default is <code>FALSE</code>.</p></dd>
 
 
 <dt id="arg-include-switched-arms">include.switched.arms<a class="anchor" aria-label="anchor" href="#arg-include-switched-arms"></a></dt>
@@ -149,6 +161,8 @@ It also generates the following columns, wich are added to the data:</p><ul><li>
 <li><p><code>.g_se</code>: Standard error of Hedges' <em>g</em>.</p></li>
 <li><p><code>.log_rr</code>: Calculated effect size (<em>logRR</em>).</p></li>
 <li><p><code>.log_rr_se</code>: Standard error of <em>logRR</em>.</p></li>
+<li><p><code>.log_rom</code>: Log ratio of means (when <code>calculate.rom = TRUE</code>).</p></li>
+<li><p><code>.log_rom_se</code>: Standard error of log ratio of means (when <code>calculate.rom = TRUE</code>).</p></li>
 <li><p><code>.event_arm1</code>: Number of events (responders, remission, deterioration cases) in the first trial arm.</p></li>
 <li><p><code>.event_arm2</code>: Number of events (responders, remission, deterioration cases) in the second trial arm.</p></li>
 <li><p><code>.totaln_arm1</code>: Total sample size in the first trial arm.</p></li>
@@ -187,13 +201,30 @@ column types:</p><ul><li><p>(1) Continuous Outcome Data</p><ul><li><p><strong><c
 <li><p>(4) Pre-calculated Hedges' <em>g</em></p><ul><li><p><strong><code>precalc_g</code></strong>: The pre-calculated value of Hedges' <em>g</em> (small-sample bias corrected standardized mean difference; <a href="https://journals.sagepub.com/doi/10.3102/10769986006002107" class="external-link">Hedges, 1981</a>).</p></li>
 <li><p><strong><code>precalc_g_se</code></strong>: Standard error of <em>g</em>.</p></li>
 </ul></li>
-</ul><p>The <strong>log-risk ratio</strong> and its standard error can be calculated from the followin column types:</p><ul><li><p>(1) Dichotomous Outcome Data</p><ul><li><p><strong><code>event_arm1</code></strong>: Number of events (responders, remission, deterioration cases) in the first trial arm.</p></li>
+</ul><p>The <strong>log-risk ratio</strong> and its standard error can be calculated from the following column types:</p><ul><li><p>(1) Dichotomous Outcome Data</p><ul><li><p><strong><code>event_arm1</code></strong>: Number of events (responders, remission, deterioration cases) in the first trial arm.</p></li>
 <li><p><strong><code>event_arm2</code></strong>: Number of events (responders, remission, deterioration cases) in the second trial arm.</p></li>
 <li><p><strong><code>totaln_arm1</code></strong>: Sample size in the first trial arm.</p></li>
 <li><p><strong><code>totaln_arm2</code></strong>: Sample size in the second trial arm.</p></li>
 </ul></li>
 <li><p>(2) Pre-calculated log-risk ratio</p><ul><li><p><strong><code>precalc_log_rr</code></strong>: The pre-calculated value of the log-risk ratio logRR, comparing events in the first arm to events in the second arm.</p></li>
 <li><p><strong><code>precalc_log_rr_se</code></strong>: The standard error of the log-risk ratio logRR, comparing events in the first arm to events in the second arm.</p></li>
+</ul></li>
+</ul><p>When <code>calculate.rom = TRUE</code>, the columns <code>.log_rom</code> (log ratio-of-means) and
+<code>.log_rom_se</code> (its standard error) are added. These are the inputs required by
+<code><a href="runMetaAnalysis.html">runMetaAnalysis</a></code> when <code>es.measure = "ROM"</code>.
+Log ratio-of-means can be calculated from the following column types:</p><ul><li><p>(1) Continuous Outcome Data</p><ul><li><p><strong><code>mean_arm1</code></strong>: Mean of the outcome in the first arm at the measured time point.</p></li>
+<li><p><strong><code>mean_arm2</code></strong>: Mean of the outcome in the second arm at the measured time point.</p></li>
+<li><p><strong><code>sd_arm1</code></strong>: Standard deviation of the outcome in the first arm at the measured time point.</p></li>
+<li><p><strong><code>sd_arm2</code></strong>: Standard deviation of the outcome in the second arm at the measured time point.</p></li>
+<li><p><strong><code>n_arm1</code></strong>: Sample size in the first trial arm.</p></li>
+<li><p><strong><code>n_arm2</code></strong>: Sample size in the second trial arm.</p></li>
+</ul></li>
+<li><p>(2) Change Score Data</p><ul><li><p><strong><code>mean_change_arm1</code></strong>: Mean score change between baseline and the measured time point in the first arm.</p></li>
+<li><p><strong><code>mean_change_arm2</code></strong>: Mean score change between baseline and the measured time point in the second arm.</p></li>
+<li><p><strong><code>sd_change_arm1</code></strong>: Standard deviation of the mean change in the first arm.</p></li>
+<li><p><strong><code>sd_change_arm2</code></strong>: Standard deviation of the mean change in the second arm.</p></li>
+<li><p><strong><code>n_change_arm1</code></strong>: Sample size in the first trial arm.</p></li>
+<li><p><strong><code>n_change_arm2</code></strong>: Sample size in the second trial arm.</p></li>
 </ul></li>
 </ul><p>Other functions can be added to the list provided to <code>funcs.g</code> and <code>funcs.rr</code>.
 However, results of the function must result in a <code>data.frame</code> that contains

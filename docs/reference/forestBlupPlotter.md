@@ -17,7 +17,9 @@ forestBlupPlotter(
   summarylab,
   M.3l,
   threeLevel,
-  eb.labels
+  eb.labels,
+  type.es = "g",
+  base.cex = 0.88
 )
 ```
 

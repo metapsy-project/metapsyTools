@@ -15,7 +15,8 @@ fitWaapWlsModel(
   .type.es,
   round.digits,
   nntCer,
-  rob.data
+  rob.data,
+  plogits.type = NULL
 )
 }
 \description{

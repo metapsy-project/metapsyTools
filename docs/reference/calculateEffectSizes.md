@@ -14,6 +14,9 @@ calculateEffectSizes(data,
                                     g.precalc = g.precalc),
                      funcs.rr = list(rr.binary = rr.binary,
                                      rr.precalc = rr.precalc),
+                     funcs.rom = list(rom.m.sd = rom.m.sd,
+                                     rom.change.m.sd = rom.change.m.sd),
+                     calculate.rom = FALSE,
                      include.switched.arms = FALSE,
                      change.sign = NULL,
                      impute.response = FALSE,
@@ -51,6 +54,17 @@ calculateEffectSizes(data,
 
   `list` of functions. These functions will be used to calculate risk
   ratios based on the raw event data (see Details).
+
+- funcs.rom:
+
+  `list` of functions used to calculate log ratio of means and their
+  standard errors when `calculate.rom = TRUE`.
+
+- calculate.rom:
+
+  `logical`. If `TRUE`, ratio-of-means (log scale) and their standard
+  errors are calculated via the functions in `funcs.rom` and appended as
+  `.log_rom` and `.log_rom_se`. Default is `FALSE`.
 
 - include.switched.arms:
 
@@ -119,6 +133,11 @@ also generates the following columns, wich are added to the data:
 - `.log_rr`: Calculated effect size (*logRR*).
 
 - `.log_rr_se`: Standard error of *logRR*.
+
+- `.log_rom`: Log ratio of means (when `calculate.rom = TRUE`).
+
+- `.log_rom_se`: Standard error of log ratio of means (when
+  `calculate.rom = TRUE`).
 
 - `.event_arm1`: Number of events (responders, remission, deterioration
   cases) in the first trial arm.
@@ -203,7 +222,7 @@ the following column types:
   - **`precalc_g_se`**: Standard error of *g*.
 
 The **log-risk ratio** and its standard error can be calculated from the
-followin column types:
+following column types:
 
 - \(1\) Dichotomous Outcome Data
 
@@ -226,6 +245,48 @@ followin column types:
   - **`precalc_log_rr_se`**: The standard error of the log-risk ratio
     logRR, comparing events in the first arm to events in the second
     arm.
+
+When `calculate.rom = TRUE`, the columns `.log_rom` (log ratio-of-means)
+and `.log_rom_se` (its standard error) are added. These are the inputs
+required by [`runMetaAnalysis`](runMetaAnalysis.md) when
+`es.measure = "ROM"`. Log ratio-of-means can be calculated from the
+following column types:
+
+- \(1\) Continuous Outcome Data
+
+  - **`mean_arm1`**: Mean of the outcome in the first arm at the
+    measured time point.
+
+  - **`mean_arm2`**: Mean of the outcome in the second arm at the
+    measured time point.
+
+  - **`sd_arm1`**: Standard deviation of the outcome in the first arm at
+    the measured time point.
+
+  - **`sd_arm2`**: Standard deviation of the outcome in the second arm
+    at the measured time point.
+
+  - **`n_arm1`**: Sample size in the first trial arm.
+
+  - **`n_arm2`**: Sample size in the second trial arm.
+
+- \(2\) Change Score Data
+
+  - **`mean_change_arm1`**: Mean score change between baseline and the
+    measured time point in the first arm.
+
+  - **`mean_change_arm2`**: Mean score change between baseline and the
+    measured time point in the second arm.
+
+  - **`sd_change_arm1`**: Standard deviation of the mean change in the
+    first arm.
+
+  - **`sd_change_arm2`**: Standard deviation of the mean change in the
+    second arm.
+
+  - **`n_change_arm1`**: Sample size in the first trial arm.
+
+  - **`n_change_arm2`**: Sample size in the second trial arm.
 
 Other functions can be added to the list provided to `funcs.g` and
 `funcs.rr`. However, results of the function must result in a

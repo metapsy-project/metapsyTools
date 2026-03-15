@@ -30,17 +30,23 @@ which.combine.var(x) <- value
 which.outliers(x) <- value
 which.influence(x) <- value
 which.rob(x) <- value
-nnt.cer(x) <- value
+nntCer(x) <- value
+# S3 method for class 'runMetaAnalysis'
+nnt(x) <- value
 rho.within.study(x) <- value
 phi.within.study(x) <- value
+power.within.study(x) <- value
 w1.var(x) <- value
 w2.var(x) <- value
+time.var(x) <- value
 vcov(x) <- value
 near.pd(x) <- value
 use.rve(x) <- value
 html(x) <- value
 lower.is.better(x) <- value
-selmodel.steps(x) <- value
+selmodelSteps(x) <- value
+# S3 method for class 'runMetaAnalysis'
+selmodel(x) <- value
 rerun(m)
 ```
 
@@ -58,6 +64,13 @@ rerun(m)
 - m:
 
   (Adapted) object of class `runMetaAnalysis`.
+
+## Details
+
+`nntCer` / `nntCer<-` and `selmodelSteps` / `selmodelSteps<-` are also
+available as S3 methods `nnt`, `nnt<-`, `selmodel`, `selmodel<-` for
+`runMetaAnalysis` objects. The function `time.var` (and `time.var<-`) is
+a regular replacement function, not an S3 method for `time`.
 
 ## See also
 

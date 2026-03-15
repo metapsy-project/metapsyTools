@@ -22,7 +22,7 @@ fitThreeLevelHACEModel(
   dots,
   es.binary.raw.vars,
   round.digits,
-  nnt.cer,
+  nntCer,
   which.run,
   mGeneral,
   mCombined,

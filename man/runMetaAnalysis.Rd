@@ -13,7 +13,7 @@ runMetaAnalysis(data,
                               "threelevel.che"),
                               
                 # Effect size measure
-                es.measure = c("g", "RR", "EER", "CER"),
+                es.measure = c("g", "RR", "EER", "CER", "ROM"),
                 es.type = c("precalculated", "raw"),
                 es.var = ifelse(identical(es.measure[1], "RR"), 
                                           ".log_rr", ".g"),
@@ -74,9 +74,8 @@ See 'Details'.}
 
 \item{es.measure}{\code{character}. Should meta-analyses be calculated using the
 bias-corrected standardized mean difference (\code{"g"}; default),
-risk ratios (\code{"RR"}), or logit-transformed experimental/control group event rates (\code{"EER"} or \code{"CER"})?
-Meta-analyses will only be conducted using comparisons
-that contain non-missing values in the \code{es.var} and \code{se.var} columns.}
+risk ratios (\code{"RR"}), logit-transformed experimental/control group event rates (\code{"EER"} or \code{"CER"}),
+or ratio of means (\code{"ROM"})? Meta-analyses will only be conducted using comparisons that contain non-missing values in the \code{es.var} and \code{se.var} columns.}
 
 \item{es.type}{\code{character}. Should pre-calculated or raw event data (i.e.
 the Mantel-Haenszel method) be used for meta-analyses of risk ratios?
@@ -84,14 +83,14 @@ Can be set to \code{"precalculated"} (default) or \code{"raw"}.}
 
 \item{es.var}{\code{character}. Specifies the name of the variable containing the (pre-
 calculated) effect size data in \code{data}. When \code{es.measure = "g"}, \code{"EER"}, or \code{"CER"}, this is set to
-\code{.g} by default; \code{".log_rr"} is used when \code{es.measure = "RR"}. The default settings
-correspond with the standard output of \code{\link[metapsyTools]{calculateEffectSizes}}.}
+\code{.g} by default; \code{".log_rr"} is used when \code{es.measure = "RR"}. For \code{es.measure = "ROM"}, this defaults to
+\code{.log_rom} (log ratio of means) and can be set to any column name if the user stores the data elsewhere.}
 
 \item{se.var}{\code{character}. Specifies the name of the variable containing the (pre-calculated)
 standard errors (square root of the variance) of the effect size metric defined
-in \code{es.var}. If \code{es.measure = "g"}, this is automatically set to \code{.g_se}; if
-\code{es.measure = "RR"}, \code{".log_rr_se"} is used. The default settings
-correspond with the standard output of \code{\link[metapsyTools]{calculateEffectSizes}}.}
+in \code{es.var}. If \code{es.measure = "g"}, this is set to \code{.g_se}; if \code{es.measure = "RR"}, \code{".log_rr_se"} is used.
+For \code{es.measure = "ROM"}, this defaults to \code{.log_rom_se} and can be set to any column name.
+The default settings correspond with the standard output of \code{\link[metapsyTools]{calculateEffectSizes}}.}
 
 \item{es.binary.raw.vars}{\code{character}. A vector defining the column names in \code{data} in
 which the (1) raw event counts in the experimental group, (2) raw event counts in the
@@ -284,6 +283,12 @@ Outlier selection is implemented using the \code{\link[dmetar:find.outliers]{dme
 and influence analyses using the \code{\link[dmetar:InfluenceAnalysis]{dmetar::InfluenceAnalysis()}} function. The latter function is a wrapper for
 \code{\link[metafor:influence.rma.uni]{metafor::influence.rma.uni()}}.
 
+For ratio of means (\code{es.measure = "ROM"}), \code{data} must contain the columns specified by \code{es.var}
+and \code{se.var} (default \code{.log_rom} and \code{.log_rom_se}, as created by
+\code{\link[metapsyTools]{calculateEffectSizes}} when \code{calculate.rom = TRUE}). Custom \code{es.var} and
+\code{se.var} can be used if log-ROM and SE are stored in other columns. Values are used internally and
+results are back-transformed (exponentiated) for display.
+
 \mjeqn{~}{~}
 \subsection{Simple or complex variance-covariance approximation}{
 
@@ -398,6 +403,12 @@ data \%>\%
   calculateEffectSizes(impute.response = TRUE) \%>\% 
   runMetaAnalysis(which.run = "combined", 
                   es.measure = "EER")
+
+# - Run a meta-analysis of ratio-of-means (RoMs)
+data \%>\% 
+  calculateEffectSizes(calculate.rom = TRUE) \%>\% 
+  runMetaAnalysis(which.run = c("combined", "threelevel"),
+                  es.measure = "ROM")
 
 # Use replacement function to show results for
 # differing settings

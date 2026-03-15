@@ -10,7 +10,7 @@ MathJax = {output: {font: "mathjax-newcm", fontPath: "../../mathjaxr/doc/mathjax
 
     <a class="navbar-brand me-2" href="../index.html">metapsyTools</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.13</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.14</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -59,7 +59,7 @@ different meta-analytic approaches.
 <span>                              <span class="st">"threelevel.che"</span><span class="op">)</span>,</span>
 <span>                              </span>
 <span>                <span class="co"># Effect size measure</span></span>
-<span>                es.measure <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"g"</span>, <span class="st">"RR"</span>, <span class="st">"EER"</span>, <span class="st">"CER"</span><span class="op">)</span>,</span>
+<span>                es.measure <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"g"</span>, <span class="st">"RR"</span>, <span class="st">"EER"</span>, <span class="st">"CER"</span>, <span class="st">"ROM"</span><span class="op">)</span>,</span>
 <span>                es.type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"precalculated"</span>, <span class="st">"raw"</span><span class="op">)</span>,</span>
 <span>                es.var <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical</a></span><span class="op">(</span><span class="va">es.measure</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="st">"RR"</span><span class="op">)</span>, </span>
 <span>                                          <span class="st">".log_rr"</span>, <span class="st">".g"</span><span class="op">)</span>,</span>
@@ -92,7 +92,7 @@ different meta-analytic approaches.
 <span>                which.influence <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"overall"</span>, <span class="st">"combined"</span><span class="op">)</span>,</span>
 <span>                which.rob <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"overall"</span>, <span class="st">"combined"</span><span class="op">)</span>,</span>
 <span>                which.waap.wls <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"overall"</span>, <span class="st">"combined"</span><span class="op">)</span>,</span>
-<span>                nnt.cer <span class="op">=</span> <span class="fl">0.2</span>,</span>
+<span>                nntCer <span class="op">=</span> <span class="fl">0.2</span>,</span>
 <span>                rho.within.study <span class="op">=</span> <span class="fl">0.6</span>,</span>
 <span>                phi.within.study <span class="op">=</span> <span class="fl">0.9</span>,</span>
 <span>                power.within.study <span class="op">=</span> <span class="fl">0.8</span>,</span>
@@ -129,9 +129,8 @@ See 'Details'.</p></dd>
 <dt id="arg-es-measure">es.measure<a class="anchor" aria-label="anchor" href="#arg-es-measure"></a></dt>
 <dd><p><code>character</code>. Should meta-analyses be calculated using the
 bias-corrected standardized mean difference (<code>"g"</code>; default),
-risk ratios (<code>"RR"</code>), or logit-transformed experimental/control group event rates (<code>"EER"</code> or <code>"CER"</code>)?
-Meta-analyses will only be conducted using comparisons
-that contain non-missing values in the <code>es.var</code> and <code>se.var</code> columns.</p></dd>
+risk ratios (<code>"RR"</code>), logit-transformed experimental/control group event rates (<code>"EER"</code> or <code>"CER"</code>),
+or ratio of means (<code>"ROM"</code>)? Meta-analyses will only be conducted using comparisons that contain non-missing values in the <code>es.var</code> and <code>se.var</code> columns.</p></dd>
 
 
 <dt id="arg-es-type">es.type<a class="anchor" aria-label="anchor" href="#arg-es-type"></a></dt>
@@ -143,16 +142,16 @@ Can be set to <code>"precalculated"</code> (default) or <code>"raw"</code>.</p><
 <dt id="arg-es-var">es.var<a class="anchor" aria-label="anchor" href="#arg-es-var"></a></dt>
 <dd><p><code>character</code>. Specifies the name of the variable containing the (pre-
 calculated) effect size data in <code>data</code>. When <code>es.measure = "g"</code>, <code>"EER"</code>, or <code>"CER"</code>, this is set to
-<code>.g</code> by default; <code>".log_rr"</code> is used when <code>es.measure = "RR"</code>. The default settings
-correspond with the standard output of <code><a href="calculateEffectSizes.html">calculateEffectSizes</a></code>.</p></dd>
+<code>.g</code> by default; <code>".log_rr"</code> is used when <code>es.measure = "RR"</code>. For <code>es.measure = "ROM"</code>, this defaults to
+<code>.log_rom</code> (log ratio of means) and can be set to any column name if the user stores the data elsewhere.</p></dd>
 
 
 <dt id="arg-se-var">se.var<a class="anchor" aria-label="anchor" href="#arg-se-var"></a></dt>
 <dd><p><code>character</code>. Specifies the name of the variable containing the (pre-calculated)
 standard errors (square root of the variance) of the effect size metric defined
-in <code>es.var</code>. If <code>es.measure = "g"</code>, this is automatically set to <code>.g_se</code>; if
-<code>es.measure = "RR"</code>, <code>".log_rr_se"</code> is used. The default settings
-correspond with the standard output of <code><a href="calculateEffectSizes.html">calculateEffectSizes</a></code>.</p></dd>
+in <code>es.var</code>. If <code>es.measure = "g"</code>, this is set to <code>.g_se</code>; if <code>es.measure = "RR"</code>, <code>".log_rr_se"</code> is used.
+For <code>es.measure = "ROM"</code>, this defaults to <code>.log_rom_se</code> and can be set to any column name.
+The default settings correspond with the standard output of <code><a href="calculateEffectSizes.html">calculateEffectSizes</a></code>.</p></dd>
 
 
 <dt id="arg-es-binary-raw-vars">es.binary.raw.vars<a class="anchor" aria-label="anchor" href="#arg-es-binary-raw-vars"></a></dt>
@@ -269,7 +268,7 @@ Defaults to <code>"multi_arm1"</code>, the variable which encodes multi-arm inte
 <code>"overall"</code> or <code>"combined"</code>, with <code>"overall"</code> being the default.</p></dd>
 
 
-<dt id="arg-nnt-cer">nnt.cer<a class="anchor" aria-label="anchor" href="#arg-nnt-cer"></a></dt>
+<dt id="arg-nntcer">nntCer<a class="anchor" aria-label="anchor" href="#arg-nntcer"></a></dt>
 <dd><p><code>numeric</code>. Value between 0 and 1, indicating the assumed control group event rate to be used
 for calculating NNTs via the Furukawa-Leucht method.</p></dd>
 
@@ -394,6 +393,11 @@ in <strong>{metafor}</strong> (Viechtbauer, <a href="https://www.jstatsoft.org/a
 <p>Outlier selection is implemented using the <code><a href="http://dmetar.protectlab.org/reference/find.outliers.html" class="external-link">dmetar::find.outliers()</a></code> function,
 and influence analyses using the <code><a href="http://dmetar.protectlab.org/reference/InfluenceAnalysis.html" class="external-link">dmetar::InfluenceAnalysis()</a></code> function. The latter function is a wrapper for
 <code><a href="https://wviechtb.github.io/metafor/reference/influence.rma.uni.html" class="external-link">metafor::influence.rma.uni()</a></code>.</p>
+<p>For ratio of means (<code>es.measure = "ROM"</code>), <code>data</code> must contain the columns specified by <code>es.var</code>
+and <code>se.var</code> (default <code>.log_rom</code> and <code>.log_rom_se</code>, as created by
+<code><a href="calculateEffectSizes.html">calculateEffectSizes</a></code> when <code>calculate.rom = TRUE</code>). Custom <code>es.var</code> and
+<code>se.var</code> can be used if log-ROM and SE are stored in other columns. Values are used internally and
+results are back-transformed (exponentiated) for display.</p>
 <p><em></em>\(~\)</p><div class="section">
 <h3 id="simple-or-complex-variance-covariance-approximation">Simple or complex variance-covariance approximation<a class="anchor" aria-label="anchor" href="#simple-or-complex-variance-covariance-approximation"></a></h3>
 
@@ -517,6 +521,12 @@ Paula Kuper <a href="mailto:paula.r.kuper@gmail.com">paula.r.kuper@gmail.com</a>
 <span class="r-in"><span>  <span class="fu"><a href="calculateEffectSizes.html">calculateEffectSizes</a></span><span class="op">(</span>impute.response <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span> </span></span>
 <span class="r-in"><span>  <span class="fu">runMetaAnalysis</span><span class="op">(</span>which.run <span class="op">=</span> <span class="st">"combined"</span>, </span></span>
 <span class="r-in"><span>                  es.measure <span class="op">=</span> <span class="st">"EER"</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># - Run a meta-analysis of ratio-of-means (RoMs)</span></span></span>
+<span class="r-in"><span><span class="va">data</span> <span class="op"><a href="pipe.html">%&gt;%</a></span> </span></span>
+<span class="r-in"><span>  <span class="fu"><a href="calculateEffectSizes.html">calculateEffectSizes</a></span><span class="op">(</span>calculate.rom <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span> </span></span>
+<span class="r-in"><span>  <span class="fu">runMetaAnalysis</span><span class="op">(</span>which.run <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"combined"</span>, <span class="st">"threelevel"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>                  es.measure <span class="op">=</span> <span class="st">"ROM"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Use replacement function to show results for</span></span></span>
 <span class="r-in"><span><span class="co"># differing settings</span></span></span>

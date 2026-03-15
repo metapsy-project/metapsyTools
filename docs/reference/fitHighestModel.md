@@ -13,7 +13,7 @@ fitHighestModel(
   .type.es,
   round.digits,
   .raw.bin.es,
-  nnt.cer,
+  nntCer,
   rob.data
 )
 ```

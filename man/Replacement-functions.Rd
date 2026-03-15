@@ -28,6 +28,7 @@
 \alias{nntCer}
 \alias{rho.within.study}
 \alias{phi.within.study}
+\alias{power.within.study}
 \alias{w1.var}
 \alias{w2.var}
 \alias{time.var}
@@ -64,6 +65,7 @@
 \alias{nntCer<-}
 \alias{rho.within.study<-}
 \alias{phi.within.study<-}
+\alias{power.within.study<-}
 \alias{w1.var<-}
 \alias{w2.var<-}
 \alias{time.var<-}
@@ -105,6 +107,7 @@ nntCer(x) <- value
 \method{nnt}{runMetaAnalysis}(x) <- value
 rho.within.study(x) <- value
 phi.within.study(x) <- value
+power.within.study(x) <- value
 w1.var(x) <- value
 w2.var(x) <- value
 time.var(x) <- value

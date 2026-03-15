@@ -15,7 +15,7 @@ runMetaAnalysis(data,
                               "threelevel.che"),
                               
                 # Effect size measure
-                es.measure = c("g", "RR", "EER", "CER"),
+                es.measure = c("g", "RR", "EER", "CER", "ROM"),
                 es.type = c("precalculated", "raw"),
                 es.var = ifelse(identical(es.measure[1], "RR"), 
                                           ".log_rr", ".g"),
@@ -48,7 +48,7 @@ runMetaAnalysis(data,
                 which.influence = c("overall", "combined"),
                 which.rob = c("overall", "combined"),
                 which.waap.wls = c("overall", "combined"),
-                nnt.cer = 0.2,
+                nntCer = 0.2,
                 rho.within.study = 0.6,
                 phi.within.study = 0.9,
                 power.within.study = 0.8,
@@ -83,10 +83,10 @@ runMetaAnalysis(data,
 
   `character`. Should meta-analyses be calculated using the
   bias-corrected standardized mean difference (`"g"`; default), risk
-  ratios (`"RR"`), or logit-transformed experimental/control group event
-  rates (`"EER"` or `"CER"`)? Meta-analyses will only be conducted using
-  comparisons that contain non-missing values in the `es.var` and
-  `se.var` columns.
+  ratios (`"RR"`), logit-transformed experimental/control group event
+  rates (`"EER"` or `"CER"`), or ratio of means (`"ROM"`)? Meta-analyses
+  will only be conducted using comparisons that contain non-missing
+  values in the `es.var` and `se.var` columns.
 
 - es.type:
 
@@ -99,18 +99,19 @@ runMetaAnalysis(data,
   `character`. Specifies the name of the variable containing the (pre-
   calculated) effect size data in `data`. When `es.measure = "g"`,
   `"EER"`, or `"CER"`, this is set to `.g` by default; `".log_rr"` is
-  used when `es.measure = "RR"`. The default settings correspond with
-  the standard output of
-  [`calculateEffectSizes`](calculateEffectSizes.md).
+  used when `es.measure = "RR"`. For `es.measure = "ROM"`, this defaults
+  to `.log_rom` (log ratio of means) and can be set to any column name
+  if the user stores the data elsewhere.
 
 - se.var:
 
   `character`. Specifies the name of the variable containing the
   (pre-calculated) standard errors (square root of the variance) of the
   effect size metric defined in `es.var`. If `es.measure = "g"`, this is
-  automatically set to `.g_se`; if `es.measure = "RR"`, `".log_rr_se"`
-  is used. The default settings correspond with the standard output of
-  [`calculateEffectSizes`](calculateEffectSizes.md).
+  set to `.g_se`; if `es.measure = "RR"`, `".log_rr_se"` is used. For
+  `es.measure = "ROM"`, this defaults to `.log_rom_se` and can be set to
+  any column name. The default settings correspond with the standard
+  output of [`calculateEffectSizes`](calculateEffectSizes.md).
 
 - es.binary.raw.vars:
 
@@ -254,7 +255,7 @@ runMetaAnalysis(data,
   WAAP-WLS model? Must be `"overall"` or `"combined"`, with `"overall"`
   being the default.
 
-- nnt.cer:
+- nntCer:
 
   `numeric`. Value between 0 and 1, indicating the assumed control group
   event rate to be used for calculating NNTs via the Furukawa-Leucht
@@ -441,6 +442,14 @@ function, and influence analyses using the
 function. The latter function is a wrapper for
 [`metafor::influence.rma.uni()`](https://wviechtb.github.io/metafor/reference/influence.rma.uni.html).
 
+For ratio of means (`es.measure = "ROM"`), `data` must contain the
+columns specified by `es.var` and `se.var` (default `.log_rom` and
+`.log_rom_se`, as created by
+[`calculateEffectSizes`](calculateEffectSizes.md) when
+`calculate.rom = TRUE`). Custom `es.var` and `se.var` can be used if
+log-ROM and SE are stored in other columns. Values are used internally
+and results are back-transformed (exponentiated) for display.
+
 \\~\\
 
 ### Simple or complex variance-covariance approximation
@@ -614,6 +623,12 @@ data %>%
   calculateEffectSizes(impute.response = TRUE) %>% 
   runMetaAnalysis(which.run = "combined", 
                   es.measure = "EER")
+
+# - Run a meta-analysis of ratio-of-means (RoMs)
+data %>% 
+  calculateEffectSizes(calculate.rom = TRUE) %>% 
+  runMetaAnalysis(which.run = c("combined", "threelevel"),
+                  es.measure = "ROM")
 
 # Use replacement function to show results for
 # differing settings

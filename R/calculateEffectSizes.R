@@ -10,6 +10,9 @@
 #'                                     g.precalc = g.precalc),
 #'                      funcs.rr = list(rr.binary = rr.binary,
 #'                                      rr.precalc = rr.precalc),
+#'                      funcs.rom = list(rom.m.sd = rom.m.sd,
+#'                                      rom.change.m.sd = rom.change.m.sd),
+#'                      calculate.rom = FALSE,
 #'                      include.switched.arms = FALSE,
 #'                      change.sign = NULL,
 #'                      impute.response = FALSE,
@@ -37,6 +40,9 @@
 #' effect sizes (Hedges' _g_) based on the raw data (see Details).
 #' @param funcs.rr \code{list} of functions. These functions will be used to calculate risk ratios 
 #' based on the raw event data (see Details).
+#' @param funcs.rom \code{list} of functions used to calculate log ratio of means and their standard errors when \code{calculate.rom = TRUE}.
+#' @param calculate.rom \code{logical}. If \code{TRUE}, ratio-of-means (log scale) and their standard errors are
+#' calculated via the functions in \code{funcs.rom} and appended as \code{.log_rom} and \code{.log_rom_se}. Default is \code{FALSE}.
 #' @param include.switched.arms \code{logical}. Should all unique arm \emph{comparisons} (in lieu of unique arm \emph{combinations}) be
 #' calculated? Default is \code{FALSE}. 
 #' @param change.sign \code{character}. Name of a \code{logical} column in \code{data}, encoding if the
@@ -66,6 +72,8 @@
 #' - `.g_se`: Standard error of Hedges' _g_.
 #' - `.log_rr`: Calculated effect size (_logRR_).
 #' - `.log_rr_se`: Standard error of _logRR_.
+#' - `.log_rom`: Log ratio of means (when \code{calculate.rom = TRUE}).
+#' - `.log_rom_se`: Standard error of log ratio of means (when \code{calculate.rom = TRUE}).
 #' - `.event_arm1`: Number of events (responders, remission, deterioration cases) in the first trial arm.
 #' - `.event_arm2`: Number of events (responders, remission, deterioration cases) in the second trial arm.
 #' - `.totaln_arm1`: Total sample size in the first trial arm.
@@ -122,7 +130,7 @@
 #'   - **`precalc_g`**: The pre-calculated value of Hedges' _g_ (small-sample bias corrected standardized mean difference; [Hedges, 1981](https://journals.sagepub.com/doi/10.3102/10769986006002107)).
 #'   - **`precalc_g_se`**: Standard error of _g_.
 #' 
-#' The **log-risk ratio** and its standard error can be calculated from the followin column types:
+#' The **log-risk ratio** and its standard error can be calculated from the following column types:
 #' 
 #' - (1) Dichotomous Outcome Data
 #'   - **`event_arm1`**: Number of events (responders, remission, deterioration cases) in the first trial arm.
@@ -133,6 +141,25 @@
 #'   - **`precalc_log_rr`**: The pre-calculated value of the log-risk ratio logRR, comparing events in the first arm to events in the second arm.
 #'   - **`precalc_log_rr_se`**: The standard error of the log-risk ratio logRR, comparing events in the first arm to events in the second arm.
 #' 
+#' When \code{calculate.rom = TRUE}, the columns \code{.log_rom} (log ratio-of-means) and
+#' \code{.log_rom_se} (its standard error) are added. These are the inputs required by
+#' \code{\link[metapsyTools]{runMetaAnalysis}} when \code{es.measure = "ROM"}. 
+#' Log ratio-of-means can be calculated from the following column types:
+#' 
+#' - (1) Continuous Outcome Data
+#'   - **`mean_arm1`**: Mean of the outcome in the first arm at the measured time point.
+#'   - **`mean_arm2`**: Mean of the outcome in the second arm at the measured time point.
+#'   - **`sd_arm1`**: Standard deviation of the outcome in the first arm at the measured time point.
+#'   - **`sd_arm2`**: Standard deviation of the outcome in the second arm at the measured time point.
+#'   - **`n_arm1`**: Sample size in the first trial arm.
+#'   - **`n_arm2`**: Sample size in the second trial arm.
+#' - (2) Change Score Data
+#'   - **`mean_change_arm1`**: Mean score change between baseline and the measured time point in the first arm.
+#'   - **`mean_change_arm2`**: Mean score change between baseline and the measured time point in the second arm.
+#'   - **`sd_change_arm1`**: Standard deviation of the mean change in the first arm.
+#'   - **`sd_change_arm2`**: Standard deviation of the mean change in the second arm.
+#'   - **`n_change_arm1`**: Sample size in the first trial arm.
+#'   - **`n_change_arm2`**: Sample size in the second trial arm.
 #' 
 #' Other functions can be added to the list provided to `funcs.g` and `funcs.rr`. 
 #' However, results of the function must result in a \code{data.frame} that contains
@@ -171,6 +198,9 @@ calculateEffectSizes = function(data,
                                                g.precalc = g.precalc),
                                 funcs.rr = list(rr.binary = rr.binary,
                                                 rr.precalc = rr.precalc),
+                                funcs.rom = list(rom.m.sd = rom.m.sd,
+                                                rom.change.m.sd = rom.change.m.sd),
+                                calculate.rom = FALSE,
                                 include.switched.arms = FALSE,
                                 change.sign = NULL,
                                 impute.response = FALSE,
@@ -203,6 +233,8 @@ calculateEffectSizes = function(data,
     .g_se = NULL
     .log_rr = NULL
     .log_rr_se = NULL
+    .log_rom = NULL
+    .log_rom_se = NULL
     .event_arm1 = NULL
     .event_arm2 = NULL
     .totaln_arm1 = NULL
@@ -358,12 +390,49 @@ calculateEffectSizes = function(data,
   }
   
   
+  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+  #                                                                 #
+  #   3. Ratio of means (log ROM)                                   #
+  #                                                                 #
+  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+  
+  if (calculate.rom[1]) {
+    data.wide = data
+    es.res = list()
+    for (i in seq_along(funcs.rom)) {
+      es.res[[i]] = try({ funcs.rom[[i]](data.wide) }, silent = TRUE)
+    }
+    error.mask = vapply(es.res, function(e) inherits(e, "try-error"), logical(1))
+    es.res = do.call(cbind, es.res[!error.mask])
+    if (sum(error.mask) > 0) {
+      message("- ", crayon::yellow("[!] "),
+              "Function(s) ", paste(names(funcs.rom)[error.mask], collapse = ", "),
+              " not applied.")
+    }
+    if (length(es.res) > 0 && ncol(es.res) >= 2) {
+      rom.pick = apply(es.res, 1, function(x) {
+        ok = !isNAorNaN(x)
+        if (sum(ok) < 2) return(c(NA_real_, NA_real_))
+        x[which(ok)[1:2]]
+      })
+      rom.pick = if (is.matrix(rom.pick)) t(rom.pick) else matrix(rom.pick, nrow = nrow(dat.final), ncol = 2, byrow = TRUE)
+      dat.final$.log_rom = rom.pick[, 1]
+      dat.final$.log_rom_se = rom.pick[, 2]
+    } else {
+      dat.final$.log_rom = NA_real_
+      dat.final$.log_rom_se = NA_real_
+    }
+    if (!any(error.mask)) message("- ", crayon::green("[OK] "), "Ratio-of-means (log-RoMs) calculated successfully.")
+  }
+  
+  
   # Check if required Metapsy variables are missing;
   # Add as NA if necessary
   mp.standard.vars = c(".id", ".g", ".g_se", 
-                       ".log_rr", ".log_rr_se", ".event_arm1", 
-                       ".event_arm2", ".totaln_arm1", 
-                       ".totaln_arm2") 
+                       ".log_rr", ".log_rr_se",
+                       ".event_arm1", ".event_arm2", ".totaln_arm1", 
+                       ".totaln_arm2")
+  if (calculate.rom[1]) mp.standard.vars = c(mp.standard.vars, ".log_rom", ".log_rom_se") 
 
   mp.standard.vars[!mp.standard.vars %in% 
                      colnames(dat.final)] %>% 
@@ -392,12 +461,20 @@ calculateEffectSizes = function(data,
               !is.na(dat.final[[".log_rr_se"]]), ".log_rr"] = NA
   dat.final[dat.final[[".log_rr_se"]] == 0 &
               !is.na(dat.final[[".log_rr_se"]]), ".log_rr_se"] = NA
-  
+  if (calculate.rom[1] && ".log_rom_se" %in% colnames(dat.final)) {
+    dat.final[dat.final[[".log_rom_se"]] == 0 & !is.na(dat.final[[".log_rom_se"]]), ".log_rom"] = NA
+    dat.final[dat.final[[".log_rom_se"]] == 0 & !is.na(dat.final[[".log_rom_se"]]), ".log_rom_se"] = NA
+  }
+
   # When one variables (es, se is NA, set all to NA)
   dat.final[is.na(dat.final[[".g_se"]]), ".g"] = NA
   dat.final[is.na(dat.final[[".g"]]), ".g_se"] = NA
   dat.final[is.na(dat.final[[".log_rr_se"]]), ".log_rr"] = NA
-  dat.final[is.na(dat.final[[".rr_se"]]), ".log_rr_se"] = NA
+  dat.final[is.na(dat.final[[".log_rr_se"]]), ".log_rr_se"] = NA
+  if (calculate.rom[1] && ".log_rom_se" %in% colnames(dat.final)) {
+    dat.final[is.na(dat.final[[".log_rom_se"]]), ".log_rom"] = NA
+    dat.final[is.na(dat.final[[".log_rom"]]), ".log_rom_se"] = NA
+  }
   
   
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #

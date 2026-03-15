@@ -23,3 +23,4 @@ For \code{nnt(x)}, the current \code{nntCer} value. For \code{nnt(x) <- value}, 
 Generic getter and setter for the NNT control event rate (\code{nntCer})
 component of a \code{runMetaAnalysis} object. See \code{\link[metapsyTools]{Replacement functions}}.
 }
+\keyword{internal}

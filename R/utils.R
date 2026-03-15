@@ -239,6 +239,57 @@ g.change.m.sd = function(x, ...){
 }
 
 
+#' Calculate ratio of means (log scale) using means and standard deviations
+#'
+#' Only meant to be used as part of \code{\link{calculateEffectSizes}}.
+#' Returns log(mean_arm1/mean_arm2) and its SE (delta method).
+#' @param x data
+#' @param ... columns \code{mean_arm1}, \code{mean_arm2}, \code{sd_arm1}, \code{sd_arm2}, \code{n_arm1}, \code{n_arm2}.
+#' @return data.frame with \code{es} (log ROM) and \code{se}.
+#' @export
+#' @keywords internal
+rom.m.sd = function(x, ...){
+  x %>%
+    purrr::pmap_dfr(function(mean_arm1, mean_arm2, sd_arm1, sd_arm2, n_arm1, n_arm2, ...){
+      m1 = mean_arm1; m2 = mean_arm2
+      s1 = sd_arm1; s2 = sd_arm2
+      n1 = n_arm1; n2 = n_arm2
+      if (is.na(m1) || is.na(m2) || m1 == 0 || m2 == 0 ||
+          is.na(s1) || is.na(s2) || is.na(n1) || is.na(n2) || n1 <= 0 || n2 <= 0)
+        return(data.frame(es = NA_real_, se = NA_real_))
+      log_rom = log(m1 / m2)
+      vi = (s1^2) / (n1 * m1^2) + (s2^2) / (n2 * m2^2)
+      if (!is.finite(vi) || vi <= 0) return(data.frame(es = NA_real_, se = NA_real_))
+      data.frame(es = log_rom, se = sqrt(vi))
+    })
+}
+
+#' Calculate ratio of means (log scale) from change-score means and SDs
+#'
+#' Only meant to be used as part of \code{\link{calculateEffectSizes}}.
+#' @param x data
+#' @param ... columns \code{mean_change_arm1}, \code{mean_change_arm2}, \code{sd_change_arm1}, \code{sd_change_arm2}, \code{n_change_arm1}, \code{n_change_arm2}.
+#' @return data.frame with \code{es} (log ROM) and \code{se}.
+#' @export
+#' @keywords internal
+rom.change.m.sd = function(x, ...){
+  x %>%
+    purrr::pmap_dfr(function(mean_change_arm1, mean_change_arm2, sd_change_arm1,
+                             sd_change_arm2, n_change_arm1, n_change_arm2, ...){
+      m1 = mean_change_arm1; m2 = mean_change_arm2
+      s1 = sd_change_arm1; s2 = sd_change_arm2
+      n1 = n_change_arm1; n2 = n_change_arm2
+      if (is.na(m1) || is.na(m2) || m1 == 0 || m2 == 0 ||
+          is.na(s1) || is.na(s2) || is.na(n1) || is.na(n2) || n1 <= 0 || n2 <= 0)
+        return(data.frame(es = NA_real_, se = NA_real_))
+      log_rom = log(m1 / m2)
+      vi = (s1^2) / (n1 * m1^2) + (s2^2) / (n2 * m2^2)
+      if (!is.finite(vi) || vi <= 0) return(data.frame(es = NA_real_, se = NA_real_))
+      data.frame(es = log_rom, se = sqrt(vi))
+    })
+}
+
+
 #' Aggregate standard deviations of multiple trials
 #' 
 #' This function allows you to aggregate standard deviations of outcome scores
@@ -734,15 +785,16 @@ sendMessage = function(obj, model.name = NULL,
                        es.type = NULL){
   if (identical(obj, "start")){
     message(crayon::cyan(crayon::bold("- Running meta-analyses...")))
-    message("- ", crayon::green("[OK] "), 
-            "Using ", ifelse(identical(.type.es, "RR"), 
-                             ifelse(identical(es.type[1], "precalculated"), 
-                                    crayon::bold(crayon::magenta(
-                                      "risk ratio (pre-calculated)")), 
-                                    crayon::bold(crayon::magenta(
-                                      "risk ratio (raw event data)"))), 
-                             crayon::bold(crayon::magenta("Hedges' g"))),
-            " as effect size metric... ")
+    msg.es = if (identical(.type.es, "RR")) {
+      ifelse(identical(es.type[1], "precalculated"), 
+             crayon::bold(crayon::magenta("risk ratio (pre-calculated)")), 
+             crayon::bold(crayon::magenta("risk ratio (raw event data)")))
+    } else if (identical(.type.es, "ROM")) {
+      crayon::bold(crayon::magenta("Ratio-of-Means"))
+    } else {
+      crayon::bold(crayon::magenta("Hedges' g"))
+    }
+    message("- ", crayon::green("[OK] "), "Using ", msg.es, " as effect size metric... ")
   } else {
     if (model.name %in% which.run){
       if (!obj$has.error) {
@@ -4823,7 +4875,7 @@ fitCcremHACEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
 fitWaapWlsModel = function(which.run, which.waap.wls, 
                            mGeneral, mComb, beta.within.study,
                            method.tau, .raw.bin.es, .type.es, round.digits,
-                           nntCer, rob.data){
+                           nntCer, rob.data, plogits.type = NULL){
   
   has.bs = FALSE
   
@@ -4859,11 +4911,17 @@ fitWaapWlsModel = function(which.run, which.waap.wls,
   }
   
   if ("waap.wls" %in% which.run){
-    
+    # For RR + raw (metabin), .TE/.seTE may be absent in $data; use model TE/seTE
+    if (".TE" %in% names(data.for.waap.wls) && ".seTE" %in% names(data.for.waap.wls)) {
+      te = data.for.waap.wls$.TE
+      se = data.for.waap.wls$.seTE
+    } else {
+      te = m.for.waap.wls$TE
+      se = m.for.waap.wls$seTE
+    }
     tryCatch2({
-      se = with(data.for.waap.wls, .seTE)
-      prec = with(data.for.waap.wls, 1/.seTE)
-      z = with(data.for.waap.wls, .TE/.seTE)
+      prec = 1 / se
+      z = te / se
       m.wls = lm(z ~ 0 + prec)
       powered = (abs(coef(m.wls))/minimumSNR(power = beta.within.study))[1] >= se
       k.powered = sum(powered)
@@ -4875,8 +4933,8 @@ fitWaapWlsModel = function(which.run, which.waap.wls,
         mWaapWls$ci = confint.default(mWaapWls)
         mWaapWls$type = "waap"
         tryCatch2({
-          meta::metagen(data.for.waap.wls$.TE[powered], 
-                        data.for.waap.wls$.seTE[powered],
+          meta::metagen(te[powered], 
+                        se[powered],
                         method.tau = method.tau)
         }) -> Mi2
         if (!Mi2$has.error) {
@@ -4900,8 +4958,8 @@ fitWaapWlsModel = function(which.run, which.waap.wls,
         mWaapWls$ci = confint.default(mWaapWls)
         mWaapWls$type = "wls"
         tryCatch2({
-          meta::metagen(data.for.waap.wls$.TE, 
-                        data.for.waap.wls$.seTE,
+          meta::metagen(te, 
+                        se,
                         method.tau = method.tau)
         }) -> Mi2
         if (!Mi2$has.error) {
@@ -4955,8 +5013,8 @@ fitWaapWlsModel = function(which.run, which.waap.wls,
                       as.numeric(ci[,2]) %>% 
                         ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
                         round(round.digits), "]"),
-        p = (pnorm(abs(coefficients[1]/se), lower.tail = FALSE)*2) %>% 
-          scales::pvalue(),
+        p = if (length(plogits.type) && plogits.type %in% c("EER", "CER")) "-" else
+          (pnorm(abs(coefficients[1]/se), lower.tail = FALSE)*2) %>% scales::pvalue(),
         i2 = round(i2*100, 2),
         i2.ci = paste0("[", 
                        round(lower.i2*100, round.digits), "; ",
@@ -5146,8 +5204,7 @@ adaptPlogit = function(M, use.rve, round.digits = round.digits,
                         round(round.digits), "; ",
                       as.numeric(ci[,2]) %>% plogis() %>% 
                         round(round.digits), "]"),
-        p = (pnorm(abs(coefficients[1]/se), lower.tail = FALSE)*2) %>% 
-          scales::pvalue(),
+        p = "-",
         i2 = round(i2*100, 2),
         i2.ci = paste0("[", 
                        round(lower.i2*100, round.digits), "; ",
@@ -5167,6 +5224,50 @@ adaptPlogit = function(M, use.rve, round.digits = round.digits,
 }
 
 
+#' Adapt model results from log ROM to ROM (exp and rename g -> rom)
+#' @param M List with \code{m} and \code{res}; \code{res} has \code{g}, \code{g.ci}, \code{prediction.ci}.
+#' @param round.digits Rounding digits for displayed values.
+#' @keywords internal
+adaptRom = function(M, round.digits = 2) {
+  if (is.null(M) || is.null(M$res)) return(M)
+  r = M$res
+  if (!("g" %in% colnames(r))) return(M)
+  # Exponentiate point estimate
+  rom = round(exp(as.numeric(r$g)), round.digits)
+  # Parse and exponentiate g.ci "[lb; ub]"
+  rom.ci = if ("g.ci" %in% colnames(r)) {
+    vapply(seq_len(nrow(r)), function(i) {
+      s = r$g.ci[i]
+      x = as.numeric(strsplit(stringr::str_replace_all(s, "\\[|\\]|;", " "), "\\s+")[[1]])
+      x = x[!is.na(x) & is.finite(x)]
+      if (length(x) >= 2) paste0("[", round(exp(x[1]), round.digits), "; ", round(exp(x[2]), round.digits), "]") else s
+    }, character(1))
+  } else rep(NA_character_, nrow(r))
+  # Parse and exponentiate prediction.ci
+  prediction.ci = if ("prediction.ci" %in% colnames(r)) {
+    vapply(seq_len(nrow(r)), function(i) {
+      s = r$prediction.ci[i]
+      x = as.numeric(strsplit(stringr::str_replace_all(s, "\\[|\\]|;", " "), "\\s+")[[1]])
+      x = x[!is.na(x) & is.finite(x)]
+      if (length(x) >= 2) paste0("[", round(exp(x[1]), round.digits), "; ", round(exp(x[2]), round.digits), "]") else s
+    }, character(1))
+  } else r$prediction.ci
+  # Build result in standard order so rbind/summary columns align
+  M$res = data.frame(
+    k = r$k,
+    rom = rom,
+    rom.ci = rom.ci,
+    p = r$p,
+    i2 = r$i2,
+    i2.ci = r$i2.ci,
+    prediction.ci = prediction.ci,
+    nnt = "-",
+    excluded = r$excluded,
+    stringsAsFactors = FALSE
+  )
+  rownames(M$res) = rownames(r)
+  M
+}
 
 
 #' Add `meta::rob()` element to model
@@ -5383,6 +5484,16 @@ forestBlup = function(model, which = NULL, col.line = "#a7a9ac",
                       rightlab = "g [95% CI]", summarylab = "Total (95% CI)",
                       sort = TRUE, hetstat = TRUE, eb.labels = TRUE){
   
+  type.es = model$.type.es
+  if (is.null(type.es)) type.es = "g"
+  if (identical(type.es, "RR")) {
+    rightlab = "RR [95% CI]"
+  } else if (identical(type.es, "ROM")) {
+    rightlab = "ROM [95% CI]"
+  } else if (type.es %in% c("EER", "CER")) {
+    rightlab = paste0(type.es, " [95% CI]")
+  }
+  
   # Check overall compatibility
   if (is.null(which[1])){
     which.run = model$which.run[1]
@@ -5442,7 +5553,7 @@ forestBlup = function(model, which = NULL, col.line = "#a7a9ac",
                        method = M$method.tau, test = ifelse(M$hakn, "knha", "z"))
     forestBlupPlotter(dat, res, sort, col.line, col.polygon,
                       hetstat, leftlab, rightlab, summarylab, M.3l,
-                      threeLevel, eb.labels)
+                      threeLevel, eb.labels, type.es)
     title("Lowest")
     
     # Generate "highest" plot
@@ -5455,7 +5566,7 @@ forestBlup = function(model, which = NULL, col.line = "#a7a9ac",
                        method = M$method.tau, test = ifelse(M$hakn, "knha", "z"))
     forestBlupPlotter(dat, res, sort, col.line, col.polygon,
                       hetstat, leftlab, rightlab, summarylab, M.3l,
-                      threeLevel, eb.labels)
+                      threeLevel, eb.labels, type.es)
     title("Highest")
     
   } else {
@@ -5480,7 +5591,7 @@ forestBlup = function(model, which = NULL, col.line = "#a7a9ac",
     }
     forestBlupPlotter(dat, res, sort, col.line, col.polygon,
                       hetstat, leftlab, rightlab, summarylab, M.3l,
-                      threeLevel, eb.labels)
+                      threeLevel, eb.labels, type.es)
   }
 }
 
@@ -5502,110 +5613,171 @@ forestBlup = function(model, which = NULL, col.line = "#a7a9ac",
 #' Prediction intervals in meta-analysis. _Research Synthesis Methods, 12_(4), 429-447.
 forestBlupPlotter = function(dat, res, sort, col.line, col.polygon,
                              hetstat, leftlab, rightlab, summarylab, M.3l,
-                             threeLevel, eb.labels){
+                             threeLevel, eb.labels, type.es = "g", base.cex = 0.88)
+                             {
   
+  k     <- nrow(dat)
+  psize <- weights(res)
+  psize <- 1.2 + (psize - min(psize)) / (max(psize) - min(psize))
   
-  k = nrow(dat)
-  psize = weights(res)
-  psize = 1.2 + (psize - min(psize)) / (max(psize) - min(psize))
+  # Extra bottom space: room for summary poly (row 0), het-stat (-1),
+  # prediction-interval arrow and its label
+  ylim_bot <- if (hetstat[1]) -2.5 else -2.0
   
-  # Create forest plot
-  if (sort[1]) { order = "yi" } else { order = NULL }
-  sav = metafor::forest(
-    dat$yi, sei = dat$.seTE, ylim=c(-0.5,k), cex=0.88,
-    pch=18, psize=psize, efac=0, refline=NA, lty=c(1,0), xlab="",
-    rowadj=-.07, slab = dat$study, order = order)
+  if (sort[1]) { order_arg <- "yi" } else { order_arg <- NULL }
   
-  # Create summary data escalc
-  sumdat = summary(dat)
-  order.te = 1:nrow(dat)
-  if (sort[1]){
-    sumdat = summary(dat)[order(summary(dat)$.TE),]
-    order.te = order(summary(dat)$.TE)
+  isRR <- identical(type.es, "RR")
+  isROM <- identical(type.es, "ROM")
+  isPlogit <- type.es %in% c("EER", "CER")
+  atransf_arg <- if (isRR || isROM) exp else if (isPlogit) plogis else identity
+  
+  # --- Core forest plot -------------------------------------------------
+  # header = FALSE  →  suppress metafor's own "Estimate [95% CI]" header
+  # atransf = exp when RR, plogis (expit) when EER/CER
+  sav <- metafor::forest(
+    dat$yi, sei = dat$.seTE,
+    ylim    = c(ylim_bot, k + 1.5),
+    cex     = base.cex,
+    pch = 18, psize = psize, efac = 0,
+    refline = NA, lty = c(1, 0), xlab = "",
+    rowadj  = -.07,
+    slab    = dat$study,
+    order   = order_arg,
+    header  = FALSE,
+    atransf = atransf_arg)
+  
+  # sorted order for BLUPs / CI segments
+  sumdat   <- summary(dat)
+  order.te <- seq_len(nrow(dat))
+  if (sort[1]) {
+    sumdat   <- sumdat[order(sumdat$.TE), ]
+    order.te <- order(summary(dat)$.TE)
   }
   
-  # Add annotations
-  segments(0, -1, 0, k+1.6, col=col.line)
-  if (threeLevel){
-    segments(coef(M.3l), 0, coef(M.3l), k, col=col.polygon, lty="33", lwd=0.8)
-  } else {
-    segments(coef(res), 0, coef(res), k, col=col.polygon, lty="33", lwd=0.8)
-  }
-  segments(sumdat$ci.lb, k:1, sumdat$ci.ub, k:1, col=col.polygon, lwd=1.5)
-  points(sumdat$yi, k:1, pch=18, cex=psize*1.15, col="white")
-  points(sumdat$yi, k:1, pch=18, cex=psize, col=col.polygon)
-  axis(side=1, at=seq(-1,1,by=0.5), col=col.line, labels=FALSE)
-  par(xpd=NA)
-  par(cex=sav$cex, font=2)
-  text(sav$xlim[1], k+.75, pos=4, leftlab)
-  text(sav$xlim[2], k+.75, pos=2, rightlab)
-  par(cex=sav$cex, font=1)
-  if (hetstat[1]){
-    text(sav$xlim[1], -1, pos=4,
+  # --- Reference lines --------------------------------------------------
+  if (!isPlogit) segments(0, ylim_bot, 0, k + 1.6, col = col.line)
+  
+  pool_est <- if (threeLevel) coef(M.3l) else coef(res)
+  # Draw from just above the diamond upward so line does not go through the diamond
+  pi_row_early <- if (hetstat[1]) ylim_bot + 1.2 else ylim_bot + 0.6
+  segments(pool_est, pi_row_early + 0.35, pool_est, k + 2, col = col.polygon, lty = "33", lwd = 0.8)
+  
+  # --- Per-study CIs (coloured) -----------------------------------------
+  segments(sumdat$ci.lb, k:1, sumdat$ci.ub, k:1, col = col.polygon, lwd = 1.5)
+  points(sumdat$yi, k:1, pch = 18, cex = psize * 1.15, col = "white")
+  points(sumdat$yi, k:1, pch = 18, cex = psize,        col = col.polygon)
+  
+  axis(side = 1, at = seq(-1, 1, by = 0.5), col = col.line, labels = FALSE)
+  
+  # --- Column headers (single, consistent size) -------------------------
+  par(xpd = NA, cex = base.cex, font = 2)
+  text(sav$xlim[1], k + 1.0, pos = 4, leftlab)
+  text(sav$xlim[2], k + 1.0, pos = 2, rightlab)
+  par(font = 1)
+  
+  # --- Heterogeneity stats ----------------------------------------------
+  if (hetstat[1]) {
+    text(sav$xlim[1], ylim_bot + 0.1, pos = 4, cex = base.cex,
          bquote(paste("Test for heterogeneity: ", tau^2, "=",
-                      .(formatC(res$tau2, digits=2, format="f")), "; ", italic(I)^2, "=",
-                      .(formatC(res$I2, digits=0, format="f")), "%")))
+                      .(formatC(res$tau2, digits = 2, format = "f")), "; ",
+                      italic(I)^2, "=",
+                      .(formatC(res$I2, digits = 0, format = "f")), "%")))
   }
   
-  efac = 1
-  rows = sav$rows
-  blups = metafor::blup.rma.uni(res)[order.te,]
+  # --- BLUPs ------------------------------------------------------------
+  rows  <- sav$rows
+  blups <- metafor::blup.rma.uni(res)[order.te, ]
   
-  # Calculate BLUPs
-  arrows(x0 = blups$pi.lb, x1 = blups$pi.ub, y0 = rev(rows-0.3), code = 3,
-         angle = 90, length = 0.02*efac[1], lty = 1, col="darkgray")
-  points(x = blups$pred, y = rev(rows-0.3),
-         cex = psize*0.5, bg="lightgray", col="darkgray", pch=21)
+  arrows(x0 = blups$pi.lb, x1 = blups$pi.ub,
+         y0 = rev(rows - 0.3),
+         code = 3, angle = 90, length = 0.02, lty = 1, col = "darkgray")
+  points(x = blups$pred, y = rev(rows - 0.3),
+         cex = psize * 0.5, bg = "lightgray", col = "darkgray", pch = 21)
   
-  ### Add prediction interval for predicted true effect size
-  if (threeLevel){
-    re_lb = M.3l$b[1] - qt(1-.025, df = M.3l$k-2) * sqrt(M.3l$se^2 + M.3l$sigma2[1])
-    re_ub = M.3l$b[1] + qt(1-.025, df = M.3l$k-2) * sqrt(M.3l$se^2 + M.3l$sigma2[1])
+  # --- Overall prediction interval (PI) --------------------------------
+  if (threeLevel) {
+    re_lb <- M.3l$b[1] - qt(0.975, df = M.3l$k - 2) * sqrt(M.3l$se^2 + M.3l$sigma2[1])
+    re_ub <- M.3l$b[1] + qt(0.975, df = M.3l$k - 2) * sqrt(M.3l$se^2 + M.3l$sigma2[1])
   } else {
-    re_lb = res$b[1] - qt(1-.025, df = res$k-2) * sqrt(res$se^2 + res$tau2)
-    re_ub = res$b[1] + qt(1-.025, df = res$k-2) * sqrt(res$se^2 + res$tau2)
+    re_lb <- res$b[1] - qt(0.975, df = res$k - 2) * sqrt(res$se^2 + res$tau2)
+    re_ub <- res$b[1] + qt(0.975, df = res$k - 2) * sqrt(res$se^2 + res$tau2)
   }
-  arrows(x0 = re_lb, x1 = re_ub, y0 = sav$ylim[1]+0.5, code = 3,
-         angle = 90, length = 0.02*efac[1], lty = 1, col = "darkgray")
   
-  if (eb.labels[1]){
-    labels <- paste0(sprintf("%.2f", blups$pred), " [",
-                     sprintf("%.2f", blups$pi.lb), ", ",
-                     sprintf("%.2f", blups$pi.ub), "]")
-    text(x = sav$xlim[2], y = rev(rows-0.35), labels = labels,
-         pos = 2, col = "darkgray", cex=0.88)
+  pi_row <- if (hetstat[1]) ylim_bot + 1.2 else ylim_bot + 0.6
+  arrows(x0 = re_lb, x1 = re_ub, y0 = pi_row,
+         code = 3, angle = 90, length = 0.02, lty = 1, col = "darkgray")
+  
+  # --- BLUP / PI numeric labels ----------------------------------------
+  if (eb.labels[1]) {
+    pred_ <- if (isRR || isROM) exp(blups$pred) else if (isPlogit) plogis(blups$pred) else blups$pred
+    pi.lb_ <- if (isRR || isROM) exp(blups$pi.lb) else if (isPlogit) plogis(blups$pi.lb) else blups$pi.lb
+    pi.ub_ <- if (isRR || isROM) exp(blups$pi.ub) else if (isPlogit) plogis(blups$pi.ub) else blups$pi.ub
+    labels <- paste0(sprintf("%.2f", pred_), " [",
+                     sprintf("%.2f", pi.lb_), ", ",
+                     sprintf("%.2f", pi.ub_), "]")
+    text(x = sav$xlim[2], y = rev(rows - 0.35),
+         labels = labels, pos = 2, col = "darkgray", cex = base.cex)
     
-    # Add prediction interval for predicted true effect size in numbers
-    label_theta = paste0(sprintf("%.2f", ifelse(threeLevel, 
-                                                M.3l$b[1], res$b[1])), " [",
-                         sprintf("%.2f", re_lb), ", ",
-                         sprintf("%.2f", re_ub), "]")
-    text(x = sav$xlim[2], y = sav$ylim[1]+0.2, labels = label_theta,
-         pos = 2, col = "gray", cex=0.88)
+    theta_est <- if (threeLevel) M.3l$b[1] else res$b[1]
+    theta_ <- if (isRR || isROM) exp(theta_est) else if (isPlogit) plogis(theta_est) else theta_est
+    re_lb_ <- if (isRR || isROM) exp(re_lb) else if (isPlogit) plogis(re_lb) else re_lb
+    re_ub_ <- if (isRR || isROM) exp(re_ub) else if (isPlogit) plogis(re_ub) else re_ub
+    label_theta <- paste0(sprintf("%.2f", theta_), " [",
+                          sprintf("%.2f", re_lb_), ", ",
+                          sprintf("%.2f", re_ub_), "]")
+    text(x = sav$xlim[2], y = pi_row - 0.35,
+         labels = label_theta, pos = 2, col = "gray", cex = base.cex)
   }
   
-  # Add color segments
-  if (threeLevel){
-    # If CCREM, change to CR1
-    if (length(M.3l$sigma2)[1]>2) {
-      cluster.var = M.3l$data[[metafor::ranef(M.3l)[1] %>% names()]]
-      metafor::addpoly(x = coef(M.3l),
-                       ci.lb = metafor::robust(M.3l, cluster.var)[["ci.lb"]],
-                       ci.ub = metafor::robust(M.3l, cluster.var)[["ci.ub"]],
-                       row = 0, efac = 2, col=col.polygon, border=col.polygon,
-                       mlab=summarylab) 
+  # --- helper: format summary label + CI text (exp when RR/ROM, expit when EER/CER) ---
+  .fmt_ci <- function(est, lb, ub) {
+    if (isRR || isROM) { est <- exp(est); lb <- exp(lb); ub <- exp(ub) }
+    else if (isPlogit) { est <- plogis(est); lb <- plogis(lb); ub <- plogis(ub) }
+    paste0(sprintf("%.2f", est), " [",
+           sprintf("%.2f", lb),  ", ",
+           sprintf("%.2f", ub),  "]")
+  }
+  
+  # --- Summary polygon (same row as PI so diamond aligns with its CI) ---
+  par(cex = base.cex, font = 1)   # lock size BEFORE addpoly
+  
+  if (threeLevel) {
+    if (length(M.3l$sigma2) > 2) {
+      cluster.var <- M.3l$data[[metafor::ranef(M.3l)[1] %>% names()]]
+      rob <- metafor::robust(M.3l, cluster.var)
+      metafor::addpoly(x     = coef(M.3l),
+                       ci.lb = rob[["ci.lb"]],
+                       ci.ub = rob[["ci.ub"]],
+                       row = pi_row, efac = 2, mlab = "",
+                       col = col.polygon, border = col.polygon,
+                       annotate = FALSE)
+      par(cex = base.cex, font = 2)  # same font size as study labels; bold
+      text(sav$xlim[1], pi_row, pos = 4, summarylab,                          cex = 1)
+      text(sav$xlim[2], pi_row, pos = 2, .fmt_ci(coef(M.3l), rob[["ci.lb"]], rob[["ci.ub"]]), cex = 1)
     } else {
-      metafor::addpoly(x = coef(M.3l),
-                       ci.lb = clubSandwich::conf_int(M.3l, "CR2")[,5],
-                       ci.ub = clubSandwich::conf_int(M.3l, "CR2")[,6],
-                       row = 0, efac = 2, col=col.polygon, border=col.polygon,
-                       mlab=summarylab) 
+      cr2 <- clubSandwich::conf_int(M.3l, "CR2")
+      metafor::addpoly(x     = coef(M.3l),
+                       ci.lb = cr2[, 5],
+                       ci.ub = cr2[, 6],
+                       row = pi_row, efac = 2,
+                       mlab = "",
+                       col = col.polygon, border = col.polygon,
+                       annotate = FALSE)
+      par(cex = base.cex, font = 2)  # same font size as study labels; bold
+      text(sav$xlim[1], pi_row, pos = 4, summarylab,                cex = 1)
+      text(sav$xlim[2], pi_row, pos = 2, .fmt_ci(coef(M.3l), cr2[, 5], cr2[, 6]), cex = 1)
     }
   } else {
-    metafor::addpoly(res, row=0, mlab=summarylab, efac=2,
-                     col=col.polygon, border=col.polygon)
+    metafor::addpoly(res, row = pi_row, efac = 2, mlab = "",
+                     col = col.polygon, border = col.polygon,
+                     annotate = FALSE)
+    par(cex = base.cex, font = 2)  # same font size as study labels; bold
+    text(sav$xlim[1], pi_row, pos = 4, summarylab,                    cex = 1)
+    text(sav$xlim[2], pi_row, pos = 2, .fmt_ci(res$b[1], res$ci.lb, res$ci.ub), cex = 1)
   }
+  par(font = 1)
   
+  par(xpd = FALSE)
 }
 
 

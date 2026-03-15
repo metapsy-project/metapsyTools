@@ -232,16 +232,16 @@ correctPublicationBias = function(model,
         g = ifelse(
           isTRUE(common) & !isTRUE(random), 
           TE.common, TE.random) %>% 
-          ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
+          ifelse(identical(.type.es, "RR") || identical(.type.es, "ROM"), exp(.), .) %>% 
           round(round.digits),
         g.ci = paste0("[", 
                       ifelse(isTRUE(common) & !isTRUE(random),
                              lower.common, lower.random) %>% 
-                        ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
+                        ifelse(identical(.type.es, "RR") || identical(.type.es, "ROM"), exp(.), .) %>% 
                         round(round.digits), "; ",
                       ifelse(isTRUE(common) & !isTRUE(random),
                              upper.common, upper.random) %>% 
-                        ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
+                        ifelse(identical(.type.es, "RR") || identical(.type.es, "ROM"), exp(.), .) %>% 
                         round(round.digits), "]"),
         p = ifelse(isTRUE(common) & !isTRUE(random), 
                    pval.common, pval.random) %>% 
@@ -251,17 +251,17 @@ correctPublicationBias = function(model,
                        round(upper.I2*100, 2), "]"),
         prediction.ci = paste0("[", 
                                round(
-                                 ifelse(identical(.type.es, "RR"), 
+                                 ifelse(identical(.type.es, "RR") || identical(.type.es, "ROM"), 
                                         exp(lower.predict), lower.predict), 
                                  round.digits), "; ",
                                round(
-                                 ifelse(identical(.type.es, "RR"), 
+                                 ifelse(identical(.type.es, "RR") || identical(.type.es, "ROM"), 
                                         exp(upper.predict), upper.predict), 
                                  round.digits), "]"),
         nnt = metapsyNNT(
           ifelse(isTRUE(common) & !isTRUE(random), 
                  abs(TE.common), abs(TE.random)), nntCer) %>%
-          ifelse(identical(.type.es, "RR"), NA, .) %>% 
+          ifelse(identical(.type.es, "RR") || identical(.type.es, "ROM"), NA, .) %>% 
           ifelse(isTRUE(.raw.bin.es), 
                  nnt.raw.bin.es, .) %>% 
           round(round.digits) %>% abs(),
@@ -418,16 +418,16 @@ correctPublicationBias = function(model,
       data.frame(
         k = k,
         g = TE.adjust %>% 
-          ifelse(identical(.type.es, "RR"), 
+          ifelse(identical(.type.es, "RR") || identical(.type.es, "ROM"), 
                  exp(.), .) %>% 
           round(round.digits),
         g.ci = paste0("[", 
                       lower.adjust %>% 
-                        ifelse(identical(.type.es, "RR"), 
+                        ifelse(identical(.type.es, "RR") || identical(.type.es, "ROM"), 
                                exp(.), .) %>% 
                         round(round.digits),"; ",
                       upper.adjust %>% 
-                        ifelse(identical(.type.es, "RR"), 
+                        ifelse(identical(.type.es, "RR") || identical(.type.es, "ROM"), 
                                exp(.), .) %>% 
                         round(round.digits), "]"),
         p = pval.adjust %>% scales::pvalue(),
@@ -440,16 +440,16 @@ correctPublicationBias = function(model,
         prediction.ci = paste0(
           "[", 
           round(lower.predict %>% 
-                  ifelse(identical(.type.es, "RR"), 
+                  ifelse(identical(.type.es, "RR") || identical(.type.es, "ROM"), 
                          exp(.), .), 
                 round.digits), "; ",
           round(upper.predict %>% 
-                  ifelse(identical(.type.es, "RR"), 
+                  ifelse(identical(.type.es, "RR") || identical(.type.es, "ROM"), 
                          exp(.), .), 
                 round.digits), "]"),
         nnt = metapsyNNT(
           abs(TE.adjust), nntCer) %>%
-          ifelse(identical(.type.es, "RR"), NA, .) %>% 
+          ifelse(identical(.type.es, "RR") || identical(.type.es, "ROM"), NA, .) %>% 
           ifelse(isTRUE(.raw.bin.es), 
                  nnt.raw.bin.es, .) %>% 
           round(round.digits) %>% abs(),
@@ -623,15 +623,15 @@ correctPublicationBias = function(model,
       data.frame(
         k = k,
         g = b %>% 
-          ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
+          ifelse(identical(.type.es, "RR") || identical(.type.es, "ROM"), exp(.), .) %>% 
           round(r.digits),
         g.ci = paste0(
           "[", 
           ci.lb %>% 
-            ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
+            ifelse(identical(.type.es, "RR") || identical(.type.es, "ROM"), exp(.), .) %>% 
             round(r.digits),"; ",
           ci.ub %>% 
-            ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
+            ifelse(identical(.type.es, "RR") || identical(.type.es, "ROM"), exp(.), .) %>% 
             round(r.digits), "]"),
         p = pval %>% scales::pvalue(),
         i2 = round(i2, 2),
@@ -642,12 +642,12 @@ correctPublicationBias = function(model,
         prediction.ci = paste0(
           "[", 
           round(predict.rma(mSelmodel)[["pi.lb"]] %>% 
-                  ifelse(identical(.type.es, "RR"), exp(.), .), 
+                  ifelse(identical(.type.es, "RR") || identical(.type.es, "ROM"), exp(.), .), 
                 r.digits), "; ",
           round(predict.rma(mSelmodel)[["pi.ub"]] %>% 
-                  ifelse(identical(.type.es, "RR"), exp(.), .), 
+                  ifelse(identical(.type.es, "RR") || identical(.type.es, "ROM"), exp(.), .), 
                 r.digits), "]"),
-        nnt = ifelse(identical(.type.es, "RR"), 
+        nnt = ifelse(identical(.type.es, "RR") || identical(.type.es, "ROM"), 
                      NA, metapsyNNT(abs(as.numeric(b[,1])), m.nntCer)) %>% 
                      ifelse(isTRUE(.raw.bin.es), nnt.g, .) %>% 
                      round(round.digits) %>% abs(),
@@ -707,6 +707,10 @@ correctPublicationBias = function(model,
   summary[is.na(summary)] = "-"
   if (identical(.type.es, "RR")){
     colnames(summary)[2:3] = c("rr", "rr.ci")
+  }
+  if (identical(.type.es, "ROM")){
+    colnames(summary)[2:3] = c("rom", "rom.ci")
+    summary$nnt = "-"
   }
   if (identical(.type.es, "EER")){
     colnames(summary)[2:3] = c("eer", "eer.ci")

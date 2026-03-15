@@ -10,7 +10,7 @@ publication bias/ small-study effects to results of the
 correctPublicationBias(model, 
                        which.run = model$which.run[1],
                        lower.is.better = TRUE,
-                       selmodel.steps = 0.05,
+                       selmodelSteps = 0.05,
                        ...)
 ```
 
@@ -33,14 +33,14 @@ correctPublicationBias(model,
   Do lower values indicate better outcomes (i.e. higher effects)?
   Default is `TRUE`.
 
-- selmodel.steps:
+- selmodelSteps:
 
   Thresholds to be assumed for the step function in the selection model.
   Must be a vector of numbers referring to the cut-points in the
   selection models. If two-sided testing is assumed for the included
   studies, the cut-point must be doubled to obtain the assumed *p*-value
-  (e.g. `selmodel.steps = c(0.03, 0.05)` means that *p*=0.06 and
-  *p*=0.10 are assumed as selection thresholds). The default is `0.05`.
+  (e.g. `selmodelSteps = c(0.03, 0.05)` means that *p*=0.06 and *p*=0.10
+  are assumed as selection thresholds). The default is `0.05`.
 
 - ...:
 

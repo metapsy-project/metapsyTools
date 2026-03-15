@@ -26,7 +26,7 @@
 
     <a class="navbar-brand me-2" href="../../index.html">metapsyTools</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.13</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.14</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -980,11 +980,11 @@ function documentation for more details). Note that three-level
 meta-analysis models can only be fitted using (restricted) maximum
 likelihood.</li>
 <li>
-<code>nnt.cer</code>. The <code>runMetaAnalysis</code> function uses
+<code>nntCer</code>. The <code>runMetaAnalysis</code> function uses
 the method by Furukawa and Leucht (<a href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0019070" class="external-link">2011</a>)
 to calculate the Number Needed to Treat (NNT) for each pooled effect
 size. This method needs an estimate of the control group event rate
-(CER). By default, <code>nnt.cer = 0.2</code> is used, but you can set
+(CER). By default, <code>nntCer = 0.2</code> is used, but you can set
 this to another value if desired.</li>
 <li>
 <code>rho.within.study</code>. To combine effect sizes on a study
@@ -1009,7 +1009,7 @@ non-default settings:</p>
 <span>                es.measure <span class="op">=</span> <span class="st">"RR"</span>,</span>
 <span>                es.type <span class="op">=</span> <span class="st">"raw"</span>,</span>
 <span>                method.tau <span class="op">=</span> <span class="st">"DL"</span>,</span>
-<span>                nnt.cer <span class="op">=</span> <span class="fl">0.4</span>,</span>
+<span>                nntCer <span class="op">=</span> <span class="fl">0.4</span>,</span>
 <span>                rho.within.study <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span></span></code></pre></div>
 <p>Also note that for the <code>"combined"</code> model, by default,
 effect sizes of multi-arm trials will be aggregated on an
@@ -1354,7 +1354,7 @@ and a different CER to calculate the number needed to treat, leaving all
 other settings the same, we can run:</p>
 <div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../../reference/Replacement-functions.html">method.tau</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">"PM"</span></span>
-<span><span class="fu"><a href="../../reference/Replacement-functions.html">nnt.cer</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fl">0.7</span></span></code></pre></div>
+<span><span class="fu"><a href="../../reference/Replacement-functions.html">nntCer</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fl">0.7</span></span></code></pre></div>
 <p>Then, we have to call the <code>rerun</code> function:</p>
 <div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../../reference/Replacement-functions.html">rerun</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span></code></pre></div>
@@ -1417,12 +1417,12 @@ can be associated with publication bias, but does not have to.</p></li>
 calculated, which allows to account for the possibility that results are
 more or less likely to get published depending on their
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>P</mi><annotation encoding="application/x-tex">P</annotation></semantics></math>
-value. By default, the <code>selmodel.steps</code> argument is set to
+value. By default, the <code>selmodelSteps</code> argument is set to
 0.05, which means that we assume that results with
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>p</mi><annotation encoding="application/x-tex">p</annotation></semantics></math>&lt;0.1
 are more likely to get published. It is also possible to define more
-than one selection threshold, e.g. by setting
-<code>selmodel.steps</code> to <code>c(0.025, 0.05)</code>.</p></li>
+than one selection threshold, e.g. by setting <code>selmodelSteps</code>
+to <code>c(0.025, 0.05)</code>.</p></li>
 </ul>
 <p>For further details, see Harrer, Cuijpers, Furukawa &amp; Ebert
 (2022, chap. <a href="https://bookdown.org/MathiasHarrer/Doing_Meta_Analysis_in_R/pub-bias.html#pub-bias-which-method" class="external-link">9.3</a>).</p>

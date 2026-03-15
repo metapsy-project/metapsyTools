@@ -24,3 +24,4 @@ Generic getter and setter for the selection model steps (\code{selmodelSteps})
 component of a \code{runMetaAnalysis} object (after \code{correctPublicationBias}).
 See \code{\link[metapsyTools]{Replacement functions}}.
 }
+\keyword{internal}

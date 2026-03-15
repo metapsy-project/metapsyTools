@@ -179,17 +179,21 @@ Additional functionality for core functions.
   [`` `which.outliers<-`() ``](Replacement-functions.md)
   [`` `which.influence<-`() ``](Replacement-functions.md)
   [`` `which.rob<-`() ``](Replacement-functions.md)
-  [`` `nnt.cer<-`() ``](Replacement-functions.md)
+  [`` `nntCer<-`() ``](Replacement-functions.md)
+  [`` `nnt<-`( ``*`<runMetaAnalysis>`*`)`](Replacement-functions.md)
   [`` `rho.within.study<-`() ``](Replacement-functions.md)
   [`` `phi.within.study<-`() ``](Replacement-functions.md)
+  [`` `power.within.study<-`() ``](Replacement-functions.md)
   [`` `w1.var<-`() ``](Replacement-functions.md)
   [`` `w2.var<-`() ``](Replacement-functions.md)
+  [`` `time.var<-`() ``](Replacement-functions.md)
   [`` `vcov<-`() ``](Replacement-functions.md)
   [`` `near.pd<-`() ``](Replacement-functions.md)
   [`` `use.rve<-`() ``](Replacement-functions.md)
   [`` `html<-`() ``](Replacement-functions.md)
   [`` `lower.is.better<-`() ``](Replacement-functions.md)
-  [`` `selmodel.steps<-`() ``](Replacement-functions.md)
+  [`` `selmodelSteps<-`() ``](Replacement-functions.md)
+  [`` `selmodel<-`( ``*`<runMetaAnalysis>`*`)`](Replacement-functions.md)
   [`rerun()`](Replacement-functions.md) : Replacement functions for
   "runMetaAnalysis" results objects
 

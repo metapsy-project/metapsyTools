@@ -10,7 +10,7 @@ subgroupAnalysis(.model,
                  ...,
                  .which.run = .model$which.run[1],
                  .round.digits = 2,
-                 .nnt.cer = NULL,
+                 .nntCer = NULL,
                  .tau.common = FALSE,
                  .html = TRUE)
 ```
@@ -40,7 +40,7 @@ subgroupAnalysis(.model,
   `numeric`. Number of digits to round the (presented) results by.
   Default is `2`.
 
-- .nnt.cer:
+- .nntCer:
 
   `numeric`. Value between 0 and 1, indicating the assumed control group
   event rate to be used for calculating NNTs via the Furukawa-Leucht

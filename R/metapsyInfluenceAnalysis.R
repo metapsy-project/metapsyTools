@@ -851,7 +851,7 @@ metapsyInfluenceAnalysis = function(x, random = FALSE, subplot.heights = c(30, 1
   BaujatPlot = ggplot(bjt, aes(x = x, y = y)) + geom_point(aes(size = (1/se)), color = "blue", alpha = 0.75) +
     geom_rug(color = "lightgray", alpha = 0.5) + theme(legend.position = "none") + xlab("Overall heterogeneity contribution") +
     ylab("Influence on pooled result") + geom_label_repel(label = bjt$studlab, color = "black", size = 1.5 *
-                                                            text.scale, alpha = 0.7)
+                                                            text.scale, alpha = 0.7, max.overlaps = Inf)
   
   
   # Return

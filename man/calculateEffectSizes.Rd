@@ -11,6 +11,9 @@ calculateEffectSizes(data,
                                     g.precalc = g.precalc),
                      funcs.rr = list(rr.binary = rr.binary,
                                      rr.precalc = rr.precalc),
+                     funcs.rom = list(rom.m.sd = rom.m.sd,
+                                     rom.change.m.sd = rom.change.m.sd),
+                     calculate.rom = FALSE,
                      include.switched.arms = FALSE,
                      change.sign = NULL,
                      impute.response = FALSE,
@@ -40,6 +43,11 @@ effect sizes (Hedges' \emph{g}) based on the raw data (see Details).}
 
 \item{funcs.rr}{\code{list} of functions. These functions will be used to calculate risk ratios
 based on the raw event data (see Details).}
+
+\item{funcs.rom}{\code{list} of functions used to calculate log ratio of means and their standard errors when \code{calculate.rom = TRUE}.}
+
+\item{calculate.rom}{\code{logical}. If \code{TRUE}, ratio-of-means (log scale) and their standard errors are
+calculated via the functions in \code{funcs.rom} and appended as \code{.log_rom} and \code{.log_rom_se}. Default is \code{FALSE}.}
 
 \item{include.switched.arms}{\code{logical}. Should all unique arm \emph{comparisons} (in lieu of unique arm \emph{combinations}) be
 calculated? Default is \code{FALSE}.}
@@ -79,6 +87,8 @@ It also generates the following columns, wich are added to the data:
 \item \code{.g_se}: Standard error of Hedges' \emph{g}.
 \item \code{.log_rr}: Calculated effect size (\emph{logRR}).
 \item \code{.log_rr_se}: Standard error of \emph{logRR}.
+\item \code{.log_rom}: Log ratio of means (when \code{calculate.rom = TRUE}).
+\item \code{.log_rom_se}: Standard error of log ratio of means (when \code{calculate.rom = TRUE}).
 \item \code{.event_arm1}: Number of events (responders, remission, deterioration cases) in the first trial arm.
 \item \code{.event_arm2}: Number of events (responders, remission, deterioration cases) in the second trial arm.
 \item \code{.totaln_arm1}: Total sample size in the first trial arm.
@@ -135,7 +145,7 @@ column types:
 }
 }
 
-The \strong{log-risk ratio} and its standard error can be calculated from the followin column types:
+The \strong{log-risk ratio} and its standard error can be calculated from the following column types:
 \itemize{
 \item (1) Dichotomous Outcome Data
 \itemize{
@@ -148,6 +158,31 @@ The \strong{log-risk ratio} and its standard error can be calculated from the fo
 \itemize{
 \item \strong{\code{precalc_log_rr}}: The pre-calculated value of the log-risk ratio logRR, comparing events in the first arm to events in the second arm.
 \item \strong{\code{precalc_log_rr_se}}: The standard error of the log-risk ratio logRR, comparing events in the first arm to events in the second arm.
+}
+}
+
+When \code{calculate.rom = TRUE}, the columns \code{.log_rom} (log ratio-of-means) and
+\code{.log_rom_se} (its standard error) are added. These are the inputs required by
+\code{\link[metapsyTools]{runMetaAnalysis}} when \code{es.measure = "ROM"}.
+Log ratio-of-means can be calculated from the following column types:
+\itemize{
+\item (1) Continuous Outcome Data
+\itemize{
+\item \strong{\code{mean_arm1}}: Mean of the outcome in the first arm at the measured time point.
+\item \strong{\code{mean_arm2}}: Mean of the outcome in the second arm at the measured time point.
+\item \strong{\code{sd_arm1}}: Standard deviation of the outcome in the first arm at the measured time point.
+\item \strong{\code{sd_arm2}}: Standard deviation of the outcome in the second arm at the measured time point.
+\item \strong{\code{n_arm1}}: Sample size in the first trial arm.
+\item \strong{\code{n_arm2}}: Sample size in the second trial arm.
+}
+\item (2) Change Score Data
+\itemize{
+\item \strong{\code{mean_change_arm1}}: Mean score change between baseline and the measured time point in the first arm.
+\item \strong{\code{mean_change_arm2}}: Mean score change between baseline and the measured time point in the second arm.
+\item \strong{\code{sd_change_arm1}}: Standard deviation of the mean change in the first arm.
+\item \strong{\code{sd_change_arm2}}: Standard deviation of the mean change in the second arm.
+\item \strong{\code{n_change_arm1}}: Sample size in the first trial arm.
+\item \strong{\code{n_change_arm2}}: Sample size in the second trial arm.
 }
 }
 

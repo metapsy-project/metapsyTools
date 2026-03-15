@@ -18,8 +18,9 @@ plot(x, which = NULL, eb = FALSE, eb.labels = FALSE, ...)
 - which:
 
   Model to be plotted. Can be one of `"overall"`, `"combined"`,
-  `"lowest.highest"`, `"outliers"`, `"influence"`, `"threelevel"`,
-  `"threelevel.che"`, `"ccrem"`, `"ccrem.che"`, `"baujat"`, `"loo-es"`,
+  `"lowest.highest"`, `"outliers"`, `"influence"`, `"rob"`,
+  `"threelevel"`, `"threelevel.che"`, `"ccrem"`, `"ccrem.che"`,
+  `"waap.wls"`, `"summary"`, `"baujat"`, `"loo"`, `"loo-es"`,
   `"loo-i2"`, `"trimfill"`, `"limitmeta"` or `"selection"`.
 
 - eb:

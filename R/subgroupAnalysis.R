@@ -141,7 +141,9 @@ subgroupAnalysis = function(.model, ...,
                     random = M$random,
                     sm = switch(.model$.type.es, 
                                 "CER" = "PLOGIT", 
-                                "EER" = "PLOGIT", NULL),
+                                "EER" = "PLOGIT",
+                                "ROM" = "ROM",
+                                NULL),
                     tau.common = .tau.common)
 
     }) -> subgroup.analysis.list
@@ -159,26 +161,26 @@ subgroupAnalysis = function(.model, ...,
         # Effect size in each group
         if (x$common == TRUE){
           g = round(
-                if (identical(.model$.type.es, "RR")){
+                if (identical(.model$.type.es, "RR") || identical(.model$.type.es, "ROM")){
                    exp(x$TE.common.w)
                 } else {
                   if (.has.event.rate) {plogis(x$TE.common.w)} else { x$TE.common.w }
                 }, .round.digits)
           g.full = 
-            if (identical(.model$.type.es, "RR")){
+            if (identical(.model$.type.es, "RR") || identical(.model$.type.es, "ROM")){
               exp(x$TE.common.w)
             } else {
               if (.has.event.rate) {plogis(x$TE.common.w)} else {x$TE.common.w}
             }
         } else {
           g = round(
-                if (identical(.model$.type.es, "RR")){
+                if (identical(.model$.type.es, "RR") || identical(.model$.type.es, "ROM")){
                   exp(x$TE.random.w)
                 } else {
                   if (.has.event.rate) {plogis(x$TE.random.w)} else {x$TE.random.w}
                 }, .round.digits)
           g.full = 
-            if (identical(.model$.type.es, "RR")){
+            if (identical(.model$.type.es, "RR") || identical(.model$.type.es, "ROM")){
               exp(x$TE.random.w)
             } else {
               if (.has.event.rate) {plogis(x$TE.random.w)} else {x$TE.random.w}
@@ -189,13 +191,13 @@ subgroupAnalysis = function(.model, ...,
         if (x$common == TRUE){
           g.ci = paste0("[", 
                         round(
-                          if (identical(.model$.type.es, "RR")){
+                          if (identical(.model$.type.es, "RR") || identical(.model$.type.es, "ROM")){
                             exp(x$lower.common.w)
                           } else {
                             if (.has.event.rate) {plogis(x$lower.common.w)} else {x$lower.common.w}
                           }, .round.digits), "; ",
                         round(
-                          if (identical(.model$.type.es, "RR")){
+                          if (identical(.model$.type.es, "RR") || identical(.model$.type.es, "ROM")){
                             exp(x$upper.common.w)
                           } else {
                             if (.has.event.rate) {plogis(x$upper.common.w)} else {x$upper.common.w}
@@ -203,13 +205,13 @@ subgroupAnalysis = function(.model, ...,
         } else {
           g.ci = paste0("[", 
                         round(
-                          if (identical(.model$.type.es, "RR")){
+                          if (identical(.model$.type.es, "RR") || identical(.model$.type.es, "ROM")){
                             exp(x$lower.random.w)
                           } else {
                             if (.has.event.rate) {plogis(x$lower.random.w)} else {x$lower.random.w}
                           }, .round.digits), "; ",
                         round(
-                          if (identical(.model$.type.es, "RR")){
+                          if (identical(.model$.type.es, "RR") || identical(.model$.type.es, "ROM")){
                             exp(x$upper.random.w)
                           } else {
                             if (.has.event.rate) {plogis(x$upper.random.w)} else {x$upper.random.w}
@@ -256,6 +258,10 @@ subgroupAnalysis = function(.model, ...,
       summary["nnt"] = "-"
       colnames(summary)[4:5] = c("rr", "rr.ci")
     }
+    if (identical(.model$.type.es, "ROM")){
+      summary["nnt"] = "-"
+      colnames(summary)[4:5] = c("rom", "rom.ci")
+    }
     if (.has.event.rate){
       summary["nnt"] = "-"
       colnames(summary)[4:5] = c(tolower(.model$.type.es), 
@@ -295,7 +301,7 @@ subgroupAnalysis = function(.model, ...,
     purrr::map2(subgroup.analysis.list, variables, 
                 function(x, y){
       
-      if (identical(.model$.type.es, "RR")){
+      if (identical(.model$.type.es, "RR") || identical(.model$.type.es, "ROM")){
         g = c(exp(as.numeric(x$b))) %>% round(.round.digits)
         g.full = c(exp(as.numeric(x$b)))
         g.lower = {exp(x$ci.lb)} %>% round(.round.digits)
@@ -317,7 +323,9 @@ subgroupAnalysis = function(.model, ...,
         }
       }
 
-      if (is.null(.nntCer)){
+      if (identical(.model$.type.es, "ROM")) {
+        nnt = "-"
+      } else if (is.null(.nntCer)){
         metapsyNNT(abs(g.full), .model$nntCer) %>%
           round(.round.digits) %>% abs() -> nnt
       } else {
@@ -335,6 +343,10 @@ subgroupAnalysis = function(.model, ...,
     if (identical(.model$.type.es, "RR")){
       colnames(summary)[4:5] = c("rr", "rr.ci")
     }
+    if (identical(.model$.type.es, "ROM")){
+      summary$nnt = "-"
+      colnames(summary)[4:5] = c("rom", "rom.ci")
+    }
     if (.has.event.rate) {
       colnames(summary)[4:5] = c(tolower(.model$.type.es), paste0(tolower(.model$.type.es), ".ci"))
     }
@@ -349,7 +361,7 @@ subgroupAnalysis = function(.model, ...,
   summary[summary == "" &
             !is.na(summary)] = "-"
   
-  if (identical(.model$.type.es, "RR")){
+  if (identical(.model$.type.es, "RR") || identical(.model$.type.es, "ROM")){
     summary$nnt = "-"
   }
   if (.has.event.rate) {
@@ -417,6 +429,10 @@ print.subgroupAnalysis = function(x, ...){
       colNames = c("Variable", "Level", "<i>n</i><sub>comp</sub>",
                    "<i>RR</i>", "CI", "<i>I</i><sup>2</sup>",
                    "CI", "NNT", "<i>p</i>")
+    } else if (identical(x$.type.es, "ROM")){
+      colNames = c("Variable", "Level", "<i>n</i><sub>comp</sub>",
+                   "<i>ROM</i>", "CI", "<i>I</i><sup>2</sup>",
+                   "CI", "NNT", "<i>p</i>")
     } else {
       if (identical(x$.type.es, "EER")||identical(x$.type.es, "CER")) {
         colNames = c("Variable", "Level", "<i>n</i><sub>comp</sub>",
@@ -466,15 +482,15 @@ plot.subgroupAnalysis = function(x, which = NULL, ...){
   if (is.null(which)){
     message("- ", crayon::green("[OK] "), "'", 
             names(x$subgroup.analysis.list)[1], "' used for forest plot.")
-    if (identical(x$.type.es, "RR")){
+    if (identical(x$.type.es, "RR") || identical(x$.type.es, "ROM")){
       x$subgroup.analysis.list[[1]] = updateMeta(
-        x$subgroup.analysis.list[[1]], sm = "RR")
+        x$subgroup.analysis.list[[1]], sm = x$.type.es)
     }
     meta::forest(x$subgroup.analysis.list[[1]], layout = "JAMA")
   } else {
-    if (identical(x$.type.es, "RR")){
+    if (identical(x$.type.es, "RR") || identical(x$.type.es, "ROM")){
       x$subgroup.analysis.list[[which[1]]] = updateMeta(
-        x$subgroup.analysis.list[[which[1]]], sm = "RR")
+        x$subgroup.analysis.list[[which[1]]], sm = x$.type.es)
     }
     meta::forest(x$subgroup.analysis.list[[which[1]]], layout = "JAMA")
   }

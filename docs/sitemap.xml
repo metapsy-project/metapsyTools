@@ -21,6 +21,7 @@
 <url><loc>/reference/Detect.html</loc></url>
 <url><loc>/reference/Replacement-functions.html</loc></url>
 <url><loc>/reference/adaptPlogit.html</loc></url>
+<url><loc>/reference/adaptRom.html</loc></url>
 <url><loc>/reference/addAllCombinations.html</loc></url>
 <url><loc>/reference/addRobData.html</loc></url>
 <url><loc>/reference/addTrialArmInfo.html</loc></url>
@@ -98,6 +99,7 @@
 <url><loc>/reference/metapsyTools.html</loc></url>
 <url><loc>/reference/minimumSNR.html</loc></url>
 <url><loc>/reference/multiarmExpander.html</loc></url>
+<url><loc>/reference/nnt.html</loc></url>
 <url><loc>/reference/overallAlgorithm.html</loc></url>
 <url><loc>/reference/pipe.html</loc></url>
 <url><loc>/reference/plot.flagEffectSizes.html</loc></url>
@@ -122,11 +124,14 @@
 <url><loc>/reference/robSummary.html</loc></url>
 <url><loc>/reference/robustCI.html</loc></url>
 <url><loc>/reference/robustPval.html</loc></url>
+<url><loc>/reference/rom.change.m.sd.html</loc></url>
+<url><loc>/reference/rom.m.sd.html</loc></url>
 <url><loc>/reference/rr.binary.html</loc></url>
 <url><loc>/reference/rr.precalc.html</loc></url>
 <url><loc>/reference/runMetaAnalysis.html</loc></url>
 <url><loc>/reference/selectArguments.html</loc></url>
 <url><loc>/reference/selectOutlierModel.html</loc></url>
+<url><loc>/reference/selmodel.html</loc></url>
 <url><loc>/reference/sendMessage.html</loc></url>
 <url><loc>/reference/setColnames.html</loc></url>
 <url><loc>/reference/simulateTreatmentCycles.html</loc></url>

@@ -8,7 +8,7 @@ small-study effects to results of the runMetaAnalysis function."><meta property=
 
     <a class="navbar-brand me-2" href="../index.html">metapsyTools</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.13</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.14</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -50,7 +50,7 @@ small-study effects to results of the <code>runMetaAnalysis</code> function.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">correctPublicationBias</span><span class="op">(</span><span class="va">model</span>, </span>
 <span>                       which.run <span class="op">=</span> <span class="va">model</span><span class="op">$</span><span class="va">which.run</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>,</span>
 <span>                       lower.is.better <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>                       selmodel.steps <span class="op">=</span> <span class="fl">0.05</span>,</span>
+<span>                       selmodelSteps <span class="op">=</span> <span class="fl">0.05</span>,</span>
 <span>                       <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -73,11 +73,11 @@ Uses the default analysis in <code>model</code> if no value is specified by the 
 <dd><p>Do lower values indicate better outcomes (i.e. higher effects)? Default is <code>TRUE</code>.</p></dd>
 
 
-<dt id="arg-selmodel-steps">selmodel.steps<a class="anchor" aria-label="anchor" href="#arg-selmodel-steps"></a></dt>
+<dt id="arg-selmodelsteps">selmodelSteps<a class="anchor" aria-label="anchor" href="#arg-selmodelsteps"></a></dt>
 <dd><p>Thresholds to be assumed for the step function in the selection model. Must be a vector
 of numbers referring to the cut-points in the selection models. If two-sided testing is assumed for the
 included studies, the cut-point must be doubled to obtain the assumed <em>p</em>-value
-(e.g. <code>selmodel.steps = c(0.03, 0.05)</code> means that <em>p</em>=0.06 and <em>p</em>=0.10 are assumed as selection thresholds).
+(e.g. <code>selmodelSteps = c(0.03, 0.05)</code> means that <em>p</em>=0.06 and <em>p</em>=0.10 are assumed as selection thresholds).
 The default is <code>0.05</code>.</p></dd>
 
 

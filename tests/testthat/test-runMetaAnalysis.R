@@ -32,7 +32,7 @@ test_that("runMetaAnalysis validates es.measure parameter", {
   
   # Invalid es.measure
   expect_error(runMetaAnalysis(test_data, es.measure = "invalid"),
-               "must be 'g', 'RR', 'EER' or 'CER'")
+               "'es.measure' must be 'g', 'RR', 'EER', 'CER' or 'ROM'.")
   
   # Valid es.measure should work (or fail gracefully with other issues)
   result <- try(runMetaAnalysis(test_data, es.measure = "g", 

@@ -877,12 +877,12 @@ specify are:
   function documentation for more details). Note that three-level
   meta-analysis models can only be fitted using (restricted) maximum
   likelihood.
-- `nnt.cer`. The `runMetaAnalysis` function uses the method by Furukawa
+- `nntCer`. The `runMetaAnalysis` function uses the method by Furukawa
   and Leucht
   ([2011](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0019070))
   to calculate the Number Needed to Treat (NNT) for each pooled effect
   size. This method needs an estimate of the control group event rate
-  (CER). By default, `nnt.cer = 0.2` is used, but you can set this to
+  (CER). By default, `nntCer = 0.2` is used, but you can set this to
   another value if desired.
 - `rho.within.study`. To combine effect sizes on a study level before
   pooling (`"combined"` model), one has to assume a within-study
@@ -904,7 +904,7 @@ runMetaAnalysis(ma.data,
                 es.measure = "RR",
                 es.type = "raw",
                 method.tau = "DL",
-                nnt.cer = 0.4,
+                nntCer = 0.4,
                 rho.within.study = 0.8)
 ```
 
@@ -1239,7 +1239,7 @@ needed to treat, leaving all other settings the same, we can run:
 
 ``` r
 method.tau(res) <- "PM"
-nnt.cer(res) <- 0.7
+nntCer(res) <- 0.7
 ```
 
 Then, we have to call the `rerun` function:
@@ -1303,10 +1303,10 @@ between methods:
 - Lastly, a **step function selection model** is calculated, which
   allows to account for the possibility that results are more or less
   likely to get published depending on their $`P`$ value. By default,
-  the `selmodel.steps` argument is set to 0.05, which means that we
+  the `selmodelSteps` argument is set to 0.05, which means that we
   assume that results with $`p`$\<0.1 are more likely to get published.
   It is also possible to define more than one selection threshold,
-  e.g. by setting `selmodel.steps` to `c(0.025, 0.05)`.
+  e.g. by setting `selmodelSteps` to `c(0.025, 0.05)`.
 
 For further details, see Harrer, Cuijpers, Furukawa & Ebert (2022,
 chap. [9.3](https://bookdown.org/MathiasHarrer/Doing_Meta_Analysis_in_R/pub-bias.html#pub-bias-which-method)).

@@ -16,7 +16,7 @@ fitRobModel(
   .raw.bin.es,
   .type.es,
   round.digits,
-  nnt.cer,
+  nntCer,
   rob.data
 )
 ```

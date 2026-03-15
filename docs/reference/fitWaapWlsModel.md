@@ -15,7 +15,8 @@ fitWaapWlsModel(
   .raw.bin.es,
   .type.es,
   round.digits,
-  nnt.cer,
-  rob.data
+  nntCer,
+  rob.data,
+  plogits.type = NULL
 )
 ```
