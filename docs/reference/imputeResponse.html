@@ -7,7 +7,7 @@ change index (Jacobson &amp;amp; Truax, 1991)."><meta property="og:description" 
 means, standard deviations and sample size using the normal-approximation
 method by Furukawa et al. (2005). Response rates can be imputed using the 50%
 symptom decrease threshold, user-defined cut-off values, or the reliable
-change index (Jacobson &amp;amp; Truax, 1991)."><meta property="og:image" content="/logo.png"><script src="extra_script_header.js"></script></head><body>,<link rel="stylesheet" href="extra.css">,<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script><a href="#main" class="visually-hidden-focusable">Skip to contents</a>
+change index (Jacobson &amp;amp; Truax, 1991)."><meta property="og:image" content="/logo.png"><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin></head><body>,<link rel="stylesheet" href="extra.css">,<script src="extra_script_header.js"></script>,<script id="MathJax-script" defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script><a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
     <nav class="navbar navbar-expand-lg fixed-top bg-primary" data-bs-theme="dark" aria-label="Site navigation"><div class="container">
@@ -142,7 +142,16 @@ returned:</p><ul><li><p><code>ctrResponder</code>: Number of responders in the c
 <li><p><code>seLogRR</code>: Standard error of the log-risk ratio</p></li>
 <li><p><code>logOR</code>: Log-odds ratio of the difference in response rates in both arms</p></li>
 <li><p><code>seLogOR</code>: Standard error of the log-odds ratio</p></li>
-</ul></div>
+</ul><p>When both arms are present, a treatment-arm continuity correction (TACC) is applied
+when any cell in the 2x2 table has zero count. Following
+Sweeting et al. (<a href="https://doi.org/10.1002/sim.1761" class="external-link">2004</a>), a correction of
+<code>k = n_opposite / (n_trt + n_ctr)</code> is added to both cells of each arm
+(i.e., <code>n_ctr / (n_trt + n_ctr)</code> to the treatment cells and
+<code>n_trt / (n_trt + n_ctr)</code> to the control cells) before calculating
+<code>logRR</code>, <code>seLogRR</code>, <code>logOR</code>, and <code>seLogOR</code>. When arms are balanced this
+reduces to adding 0.5 to all cells, but unlike a fixed 0.5 correction it
+remains unbiased under unequal arm sizes.</p>
+    </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>For more details see the <a href="https://tools.metapsy.org/articles/metapsytools" class="external-link">Get Started</a> vignette.</p>

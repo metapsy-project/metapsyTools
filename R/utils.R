@@ -147,11 +147,21 @@ rr.precalc = function(x, ...){
 #' part of \code{\link{calculateEffectSizes}}.
 #'
 #' @param x data
-#' @param cc Should a continuity correction for zero cells be applied? 
-#' Either `FALSE` or the increment to be added. Default is 0.5.
+#' @param cc `logical`. Should a continuity correction for zero cells be applied? 
+#'   `TRUE` (default, applies the TACC correction) or `FALSE` (no correction).
 #' @param ... Binary effect size data. Data frame must include columns `event_arm1`, `event_arm2`, 
 #' `totaln_arm1`, `totaln_arm2`. See the [Metapsy data standard](https://docs.metapsy.org/data-preparation/format/).
-#' @usage rr.binary(x, cc = 0.5, ...)
+#' @usage rr.binary(x, cc = TRUE, ...)
+#' @details When `cc = TRUE`, a treatment-arm continuity correction (TACC) is applied
+#' when any cell in the 2x2 table has zero count. Following
+#' [Sweeting et al. (2004)](https://doi.org/10.1002/sim.1761), a correction of
+#' `k = n_opposite / (n_arm1 + n_arm2)` is added to both cells of each arm
+#' (i.e., `totaln_arm2 / (totaln_arm1 + totaln_arm2)` to the arm1 cells and
+#' `totaln_arm1 / (totaln_arm1 + totaln_arm2)` to the arm2 cells) before
+#' calculating `es` and `se`. The correction is not applied to the stored
+#' cell counts. When arms are balanced this reduces to adding 0.5 to all
+#' cells, but unlike a fixed 0.5 correction it remains unbiased under
+#' unequal arm sizes.
 #' @importFrom dplyr select mutate
 #' @importFrom purrr pmap_dfr
 #' @importFrom esc esc_2x2
@@ -160,9 +170,9 @@ rr.precalc = function(x, ...){
 #' @export rr.binary
 #' @keywords internal
 
-rr.binary = function(x, cc = 0.5, ...){
+rr.binary = function(x, cc = TRUE, ...){
   
-  if (identical(cc, FALSE)){
+  if (!isTRUE(cc)){
     x %>%
       purrr::pmap_dfr(function(event_arm1, event_arm2, 
                                totaln_arm1, totaln_arm2, ...)
@@ -182,17 +192,30 @@ rr.binary = function(x, cc = 0.5, ...){
       {
         if (identical(event_arm1, 0) ||
             identical(event_arm2, 0)) {
-          data.frame(es = log(((event_arm1 + cc)/(totaln_arm1 + cc))/
-                                ((event_arm2 + cc)/(totaln_arm2 + cc))),
-                     se = sqrt((1/(event_arm1 + cc)) + 
-                                 (1/(event_arm2 + cc)) - 
-                                 (1/(totaln_arm1 + cc)) - 
-                                 (1/(totaln_arm2 + cc))),
-                     .event_arm1 = event_arm1,
-                     .event_arm2 = event_arm2,
-                     .totaln_arm1 = totaln_arm1,
-                     .totaln_arm2 = totaln_arm2) %>% 
-            suppressWarnings()
+          
+        nonevent_arm1 = totaln_arm1 - event_arm1
+        nonevent_arm2 = totaln_arm2 - event_arm2
+        e1 = event_arm1; e2 = event_arm2
+        n1 = totaln_arm1; n2 = totaln_arm2
+
+        if (e1 == 0 || nonevent_arm1 == 0 ||
+            e2 == 0 || nonevent_arm2 == 0) {
+          k1 = n2 / (n1 + n2)
+          k2 = n1 / (n1 + n2)
+          e1 = e1 + k1
+          e2 = e2 + k2
+          n1 = n1 + 2*k1
+          n2 = n2 + 2*k2
+        }
+
+        data.frame(es = log((e1/n1) / (e2/n2)),
+                   se = sqrt((1/e1) + (1/e2) - (1/n1) - (1/n2)),
+                   .event_arm1 = event_arm1,
+                   .event_arm2 = event_arm2,
+                   .totaln_arm1 = totaln_arm1,
+                   .totaln_arm2 = totaln_arm2) %>%
+          suppressWarnings()
+          
         } else {
           data.frame(es = log((event_arm1/totaln_arm1)/
                                 (event_arm2/totaln_arm2)),

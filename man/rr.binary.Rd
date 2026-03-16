@@ -4,13 +4,13 @@
 \alias{rr.binary}
 \title{Calculate the log-risk ratio using binary outcome data}
 \usage{
-rr.binary(x, cc = 0.5, ...)
+rr.binary(x, cc = TRUE, ...)
 }
 \arguments{
 \item{x}{data}
 
-\item{cc}{Should a continuity correction for zero cells be applied?
-Either \code{FALSE} or the increment to be added. Default is 0.5.}
+\item{cc}{\code{logical}. Should a continuity correction for zero cells be applied?
+\code{TRUE} (default, applies the TACC correction) or \code{FALSE} (no correction).}
 
 \item{...}{Binary effect size data. Data frame must include columns \code{event_arm1}, \code{event_arm2},
 \code{totaln_arm1}, \code{totaln_arm2}. See the \href{https://docs.metapsy.org/data-preparation/format/}{Metapsy data standard}.}
@@ -18,5 +18,17 @@ Either \code{FALSE} or the increment to be added. Default is 0.5.}
 \description{
 Calculate the log risk ratio using binary outcome data. Only meant to be used as
 part of \code{\link{calculateEffectSizes}}.
+}
+\details{
+When \code{cc = TRUE}, a treatment-arm continuity correction (TACC) is applied
+when any cell in the 2x2 table has zero count. Following
+\href{https://doi.org/10.1002/sim.1761}{Sweeting et al. (2004)}, a correction of
+\code{k = n_opposite / (n_arm1 + n_arm2)} is added to both cells of each arm
+(i.e., \code{totaln_arm2 / (totaln_arm1 + totaln_arm2)} to the arm1 cells and
+\code{totaln_arm1 / (totaln_arm1 + totaln_arm2)} to the arm2 cells) before
+calculating \code{es} and \code{se}. The correction is not applied to the stored
+cell counts. When arms are balanced this reduces to adding 0.5 to all
+cells, but unlike a fixed 0.5 correction it remains unbiased under
+unequal arm sizes.
 }
 \keyword{internal}

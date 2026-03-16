@@ -1,9 +1,10 @@
 template:
   includes:
-    in_header: 
-      - <script src="extra_script_header.js"></script>
+    in_header:
+      - <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
       - <link rel="stylesheet" href="extra.css">
-      - <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+      - <script src="extra_script_header.js"></script>
+      - <script id="MathJax-script" defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
     after_body: <script src="extra_script.js"></script>
   bootstrap: 5
   bootswatch: flatly

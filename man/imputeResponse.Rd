@@ -64,6 +64,16 @@ returned:
 \item \code{logOR}: Log-odds ratio of the difference in response rates in both arms
 \item \code{seLogOR}: Standard error of the log-odds ratio
 }
+
+When both arms are present, a treatment-arm continuity correction (TACC) is applied
+when any cell in the 2x2 table has zero count. Following
+Sweeting et al. (\href{https://doi.org/10.1002/sim.1761}{2004}), a correction of
+\code{k = n_opposite / (n_trt + n_ctr)} is added to both cells of each arm
+(i.e., \code{n_ctr / (n_trt + n_ctr)} to the treatment cells and
+\code{n_trt / (n_trt + n_ctr)} to the control cells) before calculating
+\code{logRR}, \code{seLogRR}, \code{logOR}, and \code{seLogOR}. When arms are balanced this
+reduces to adding 0.5 to all cells, but unlike a fixed 0.5 correction it
+remains unbiased under unequal arm sizes.
 }
 \description{
 This function allows to impute response rates based on the post-test

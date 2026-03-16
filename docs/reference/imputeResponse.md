@@ -108,6 +108,16 @@ columns are returned:
 
 - `seLogOR`: Standard error of the log-odds ratio
 
+When both arms are present, a treatment-arm continuity correction (TACC)
+is applied when any cell in the 2x2 table has zero count. Following
+Sweeting et al. ([2004](https://doi.org/10.1002/sim.1761)), a correction
+of `k = n_opposite / (n_trt + n_ctr)` is added to both cells of each arm
+(i.e., `n_ctr / (n_trt + n_ctr)` to the treatment cells and
+`n_trt / (n_trt + n_ctr)` to the control cells) before calculating
+`logRR`, `seLogRR`, `logOR`, and `seLogOR`. When arms are balanced this
+reduces to adding 0.5 to all cells, but unlike a fixed 0.5 correction it
+remains unbiased under unequal arm sizes.
+
 ## Details
 
 For more details see the [Get

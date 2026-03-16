@@ -49,6 +49,16 @@
 #' - \code{seLogRR}: Standard error of the log-risk ratio
 #' - \code{logOR}: Log-odds ratio of the difference in response rates in both arms
 #' - \code{seLogOR}: Standard error of the log-odds ratio
+#'
+#' When both arms are present, a treatment-arm continuity correction (TACC) is applied
+#' when any cell in the 2x2 table has zero count. Following
+#' Sweeting et al. ([2004](https://doi.org/10.1002/sim.1761)), a correction of
+#' `k = n_opposite / (n_trt + n_ctr)` is added to both cells of each arm
+#' (i.e., `n_ctr / (n_trt + n_ctr)` to the treatment cells and
+#' `n_trt / (n_trt + n_ctr)` to the control cells) before calculating
+#' `logRR`, `seLogRR`, `logOR`, and `seLogOR`. When arms are balanced this
+#' reduces to adding 0.5 to all cells, but unlike a fixed 0.5 correction it
+#' remains unbiased under unequal arm sizes.
 #' 
 #'
 #' @examples
@@ -302,12 +312,35 @@ imputeResponse = function(m.trt.pre, m.trt.post, sd.trt.post,
     esCalc = TRUE}
 
   if (esCalc){
-    log((n.resp/n.trt)/(n.resp.ctr/n.ctr)) -> logRR
-    sqrt((1/n.resp) + (1/n.resp.ctr) - (1/n.trt) - (1/n.ctr)) -> seLogRR
 
-    log((n.resp/(n.trt-n.resp))/(n.resp.ctr/(n.ctr-n.resp.ctr))) -> logOR
-    sqrt(n.resp^-1 + (n.trt-n.resp)^-1 +
-           n.resp.ctr^-1 + (n.ctr-n.resp.ctr)^-1) -> seLogOR
+    # 2x2 table cells
+    a_trt = n.resp
+    b_trt = n.trt - n.resp
+    c_ctr = n.resp.ctr
+    d_ctr = n.ctr - n.resp.ctr
+
+    # Treatment Arm Continuity Correction (Sweeting et al., 2004)
+    # Weights are proportional to the opposite arm's share of total N,
+    # so unbalanced arms get appropriately sized corrections
+    if (!is.na(a_trt) && !is.na(b_trt) && !is.na(c_ctr) && !is.na(d_ctr) &&
+        (a_trt == 0 || b_trt == 0 || c_ctr == 0 || d_ctr == 0)) {
+      k_trt = n.ctr / (n.trt + n.ctr)
+      k_ctr = n.trt / (n.trt + n.ctr)
+      a_trt = a_trt + k_trt
+      b_trt = b_trt + k_trt
+      c_ctr = c_ctr + k_ctr
+      d_ctr = d_ctr + k_ctr
+    }
+
+    n_trt_cc = a_trt + b_trt
+    n_ctr_cc = c_ctr + d_ctr
+
+    log((a_trt/n_trt_cc)/(c_ctr/n_ctr_cc)) -> logRR
+    sqrt((1/a_trt) + (1/c_ctr) - (1/n_trt_cc) - (1/n_ctr_cc)) -> seLogRR
+
+    log((a_trt/b_trt)/(c_ctr/d_ctr)) -> logOR
+    sqrt(a_trt^-1 + b_trt^-1 +
+           c_ctr^-1 + d_ctr^-1) -> seLogOR
 
     return(data.frame(trtResponder = n.resp, nTrt = n.trt,
                       ctrResponder = n.resp.ctr, nCtr = n.ctr,
