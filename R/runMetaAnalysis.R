@@ -2288,7 +2288,7 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
         }
         if (is.null(x$influence.analysis$BaujatPlot)) {
           stop("Baujat plot is not available because the suggested package 'ggrepel' is not installed.",
-               " Install it via install.packages('ggrepel') to enable this plot.", call. = FALSE)
+               " Install it via install.packages('ggrepel') and rerun 'runMetaAnalysis' to enable this plot.", call. = FALSE)
         }
         message("- ", crayon::green("[OK] "), 
                 "Generating baujat plot.")
