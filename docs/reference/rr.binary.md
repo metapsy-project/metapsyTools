@@ -17,8 +17,9 @@ rr.binary(x, cc = TRUE, ...)
 
 - cc:
 
-  Should a continuity correction for zero cells be applied? Either
-  `TRUE` (default, applies TACC) or `FALSE`.
+  `logical`. Should a continuity correction for zero cells be applied?
+  `TRUE` (default, applies the TACC correction) or `FALSE` (no
+  correction).
 
 - ...:
 

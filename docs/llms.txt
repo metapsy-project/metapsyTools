@@ -105,6 +105,10 @@ Default plug-in functions used by `calculateEffectSizes`.
   ratios
 - [`rr.binary()`](rr.binary.md) : Calculate the log-risk ratio using
   binary outcome data
+- [`rom.m.sd()`](rom.m.sd.md) : Calculate the log ratio of means (ROM)
+  using means and standard deviations
+- [`rom.change.m.sd()`](rom.change.m.sd.md) : Calculate the log ratio of
+  means (ROM) using within-group change data
 
 ## S3 Methods & Helper Functions
 

@@ -262,13 +262,59 @@ g.change.m.sd = function(x, ...){
 }
 
 
-#' Calculate ratio of means (log scale) using means and standard deviations
+#' Calculate the log ratio of means (ROM) using means and standard deviations
 #'
-#' Only meant to be used as part of \code{\link{calculateEffectSizes}}.
-#' Returns log(mean_arm1/mean_arm2) and its SE (delta method).
-#' @param x data
-#' @param ... columns \code{mean_arm1}, \code{mean_arm2}, \code{sd_arm1}, \code{sd_arm2}, \code{n_arm1}, \code{n_arm2}.
-#' @return data.frame with \code{es} (log ROM) and \code{se}.
+#' Computes the natural log-transformed ratio of means (log ROM, also called the
+#' log response ratio) and its standard error using the delta method. This is an
+#' internal helper called row-wise by \code{\link{calculateEffectSizes}} and is
+#' not intended to be used directly.
+#'
+#' The log ROM effect size is defined as:
+#' \deqn{\ln(\text{ROM}) = \ln\!\left(\frac{\bar{x}_1}{\bar{x}_2}\right)}
+#'
+#' Its sampling variance is approximated via the delta method (Hedges et al., 1999):
+#' \deqn{v = \frac{s_1^2}{n_1 \bar{x}_1^2} + \frac{s_2^2}{n_2 \bar{x}_2^2}}
+#'
+#' The standard error returned in \code{se} is \eqn{\sqrt{v}}.
+#'
+#' A positive log ROM indicates that arm 1 has a higher mean than arm 2.
+#' The measure is undefined when either group mean equals zero, which is why
+#' such rows are returned as \code{NA}.
+#'
+#' @param x A \code{data.frame} in which each row represents one trial arm
+#'   comparison. Must contain the columns listed under \code{...}.
+#' @param ... The following columns are required and consumed from \code{x}:
+#'   \describe{
+#'     \item{\code{mean_arm1}}{Mean of the outcome in arm 1 (treatment).}
+#'     \item{\code{mean_arm2}}{Mean of the outcome in arm 2 (control/comparator).}
+#'     \item{\code{sd_arm1}}{Standard deviation of the outcome in arm 1.}
+#'     \item{\code{sd_arm2}}{Standard deviation of the outcome in arm 2.}
+#'     \item{\code{n_arm1}}{Sample size of arm 1. Must be > 0.}
+#'     \item{\code{n_arm2}}{Sample size of arm 2. Must be > 0.}
+#'   }
+#'   Additional columns in \code{x} are silently ignored.
+#'
+#' @return A \code{data.frame} with the same number of rows as \code{x} and
+#'   two numeric columns:
+#'   \describe{
+#'     \item{\code{es}}{Log ratio of means, \eqn{\ln(\bar{x}_1 / \bar{x}_2)}.}
+#'     \item{\code{se}}{Standard error of \code{es}, derived via the delta method.}
+#'   }
+#'   Rows are set to \code{NA} for both columns when any required input is
+#'   \code{NA}, when either mean equals zero (log ROM is undefined), when
+#'   either sample size is non-positive, or when the computed variance is
+#'   non-finite or not strictly positive.
+#'
+#' @references
+#' Hedges, L. V., Gurevitch, J., & Curtis, P. S. (1999). The meta-analysis
+#' of response ratios in experimental ecology. *Ecology, 80*(4), 1150–1156.
+#' \doi{10.1890/0012-9658(1999)080[1150:TMAORR]2.0.CO;2}
+#'
+#' Lajeunesse, M. J. (2011). On the meta-analysis of response ratios for
+#' studies with correlated and multi-group designs. *Ecology, 92*(11),
+#' 2049–2055. \doi{10.1890/11-0423.1}
+#'
+#' @seealso \code{\link{calculateEffectSizes}}
 #' @export
 #' @keywords internal
 rom.m.sd = function(x, ...){
@@ -287,12 +333,66 @@ rom.m.sd = function(x, ...){
     })
 }
 
-#' Calculate ratio of means (log scale) from change-score means and SDs
+#' Calculate the log ratio of means (ROM) using within-group change data
 #'
-#' Only meant to be used as part of \code{\link{calculateEffectSizes}}.
-#' @param x data
-#' @param ... columns \code{mean_change_arm1}, \code{mean_change_arm2}, \code{sd_change_arm1}, \code{sd_change_arm2}, \code{n_change_arm1}, \code{n_change_arm2}.
-#' @return data.frame with \code{es} (log ROM) and \code{se}.
+#' Computes the natural log-transformed ratio of means (log ROM) and its
+#' standard error using the delta method, based on pre-post change scores
+#' rather than post-treatment means. This is an internal helper called
+#' row-wise by \code{\link{calculateEffectSizes}} and is not intended to be
+#' used directly.
+#'
+#' The estimator is identical in form to that used in \code{\link{rom.m.sd}},
+#' but the inputs are mean change scores and their standard deviations:
+#' \deqn{\ln(\text{ROM}) = \ln\!\left(\frac{\bar{x}_{\Delta,1}}{\bar{x}_{\Delta,2}}\right)}
+#'
+#' Its sampling variance is approximated via the delta method (Hedges et al., 1999):
+#' \deqn{v = \frac{s_{\Delta,1}^2}{n_1 \,\bar{x}_{\Delta,1}^2} + \frac{s_{\Delta,2}^2}{n_2\, \bar{x}_{\Delta,2}^2}}
+#'
+#' The standard error returned in \code{se} is \eqn{\sqrt{v}}.
+#'
+#' A positive log ROM indicates a larger mean change in arm 1 than in arm 2.
+#' The measure is undefined when either change-score mean equals zero, so
+#' such rows are returned as \code{NA}. Note that a zero mean change score is
+#' substantively meaningful (no average change from baseline) and relatively
+#' common, so this limitation should be considered when choosing between
+#' effect size metrics.
+#'
+#' @param x A \code{data.frame} in which each row represents one trial arm
+#'   comparison. Must contain the columns listed under \code{...}.
+#' @param ... The following columns are required and consumed from \code{x}:
+#'   \describe{
+#'     \item{\code{mean_change_arm1}}{Mean change from baseline in arm 1 (treatment).}
+#'     \item{\code{mean_change_arm2}}{Mean change from baseline in arm 2 (control/comparator).}
+#'     \item{\code{sd_change_arm1}}{Standard deviation of the change score in arm 1.}
+#'     \item{\code{sd_change_arm2}}{Standard deviation of the change score in arm 2.}
+#'     \item{\code{n_arm1}}{Sample size of arm 1. Must be > 0.}
+#'     \item{\code{n_arm2}}{Sample size of arm 2. Must be > 0.}
+#'   }
+#'   Additional columns in \code{x} are silently ignored.
+#'
+#' @return A \code{data.frame} with the same number of rows as \code{x} and
+#'   two numeric columns:
+#'   \describe{
+#'     \item{\code{es}}{Log ratio of change-score means,
+#'       \eqn{\ln(\bar{x}_{\Delta,1} / \bar{x}_{\Delta,2})}.}
+#'     \item{\code{se}}{Standard error of \code{es}, derived via the delta method.}
+#'   }
+#'   Rows are set to \code{NA} for both columns when any required input is
+#'   \code{NA}, when either change-score mean equals zero (log ROM is
+#'   undefined), when either sample size is non-positive, or when the
+#'   computed variance is non-finite or not strictly positive.
+#'
+#' @references
+#' Hedges, L. V., Gurevitch, J., & Curtis, P. S. (1999). The meta-analysis
+#' of response ratios in experimental ecology. *Ecology, 80*(4), 1150–1156.
+#' \doi{10.1890/0012-9658(1999)080[1150:TMAORR]2.0.CO;2}
+#'
+#' Lajeunesse, M. J. (2011). On the meta-analysis of response ratios for
+#' studies with correlated and multi-group designs. *Ecology, 92*(11),
+#' 2049–2055. \doi{10.1890/11-0423.1}
+#'
+#' @seealso \code{\link{rom.m.sd}} for the post-treatment mean variant;
+#'   \code{\link{calculateEffectSizes}} for the calling function.
 #' @export
 #' @keywords internal
 rom.change.m.sd = function(x, ...){

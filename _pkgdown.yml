@@ -71,6 +71,8 @@ reference:
   - g.precalc
   - rr.precalc
   - rr.binary
+  - rom.m.sd
+  - rom.change.m.sd
 - title: "S3 Methods & Helper Functions"
   desc: "Additional functionality for core functions."
   contents:
