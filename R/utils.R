@@ -5253,6 +5253,7 @@ adaptPlogit = function(M, use.rve, round.digits = round.digits,
 #' @keywords internal
 adaptRom = function(M, round.digits = 2) {
   if (is.null(M) || is.null(M$res)) return(M)
+  M$m$sm = "RR"
   r = M$res
   if (!("g" %in% colnames(r))) return(M)
   # Exponentiate point estimate
@@ -5700,11 +5701,12 @@ forestBlupPlotter = function(dat, res, sort, col.line, col.polygon,
   
   # --- Heterogeneity stats ----------------------------------------------
   if (hetstat[1]) {
+
     text(sav$xlim[1], ylim_bot + 0.1, pos = 4, cex = base.cex,
          bquote(paste("Test for heterogeneity: ", tau^2, "=",
-                      .(formatC(res$tau2, digits = 2, format = "f")), "; ",
+                      .(formatC(ifelse(threeLevel, M.3l$sigma2[[1]], res$tau2), digits = 2, format = "f")), "; ",
                       italic(I)^2, "=",
-                      .(formatC(res$I2, digits = 0, format = "f")), "%")))
+                      .(formatC(ifelse(threeLevel, M.3l$I2.between.studies, res$I2), digits = 0, format = "f")), "%")))
   }
   
   # --- BLUPs ------------------------------------------------------------

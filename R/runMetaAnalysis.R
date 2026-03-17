@@ -1669,6 +1669,19 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
     leftColsRR = c("studlab", "comparison.only", "instrument")
     leftLabs = c("Study", "Comparison", "Instrument", "g", "S.E.")
     leftLabsRR = c("Study", "Comparison", "Instrument")
+
+    forest.dots = list(...)
+    if (identical(x$.type.es, "ROM")) {
+      if (!("rightlabs" %in% names(forest.dots))) {
+        forest.dots$rightlabs = c("RoM", "95%-CI", "Weight")
+      }
+      if (!("smlab" %in% names(forest.dots))) {
+        forest.dots$smlab = ""
+      }
+    }
+    forest_call = function(m, ...) {
+      do.call(meta::forest, c(list(x = m), list(...), forest.dots))
+    }
     
     # print forest plot by default
     if (is.null(which)){
@@ -1679,20 +1692,12 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
           models[[x$which.run[1]]][1] != "waap.wls"){
         message("- ", crayon::green("[OK] "), 
                 "Generating forest plot ('", x$which.run[1], "' model).")
-        if (identical(x$.type.es, "RR")){
-          meta::forest(x[[models[[x$which.run[1]]][1]]], leftcols = "study", ...)
-        } else {
-          meta::forest(x[[models[[x$which.run[1]]][1]]], leftcols = "study", ...)
-        }
+        forest_call(x[[models[[x$which.run[1]]][1]]], leftcols = "study")
       }
       if (models[[x$which.run[1]]][1] == "lowest.highest"){
         message("- ", crayon::green("[OK] "), "Generating forest plot ('", 
                 "highest", "' model).")
-        if (identical(x$.type.es, "RR")){
-          meta::forest(x$model.highest, leftcols = "study", ...)
-        } else {
-          meta::forest(x$model.highest, leftcols = "study", ...)
-        }
+        forest_call(x$model.highest, leftcols = "study")
       }
       if (models[[x$which.run[1]]][1] == "model.threelevel"){
         message("- ", crayon::green("[OK] "), 
@@ -1712,14 +1717,14 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
             .$tau2 = x$model.threelevel$sigma2[1];
             .$I2 = x$model.threelevel.var.comp[1,"i2"]/100;
             .$common = FALSE; .$random = TRUE; .} %>% 
-            meta::forest(rightcols = c("effect", "ci"),
+            forest_call(rightcols = if (identical(x$.type.es, "ROM")) c("effect", "ci", "w.random") else c("effect", "ci"),
                          print.I2 = FALSE, print.pval.Q = FALSE,
                          hetlab = "Heterogeneity (Between): ",
                          digits.tau2 = 3, 
                          text.random = 
                            ifelse(x$use.rve, "3-Level Model (RVE)",
-                                  "3-Level Hierarchical Model"),
-                         ...)
+                                 "3-Level Hierarchical Model")
+                        )
         } else {
           x$model.overall %>% 
             {.$TE.random = x$model.threelevel$b[,1]
@@ -1735,14 +1740,14 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
              .$tau2 = x$model.threelevel$sigma2[1];
              .$I2 = x$model.threelevel.var.comp[1,"i2"]/100;
              .$common = FALSE; .$random = TRUE; .} %>% 
-            meta::forest(rightcols = c("effect", "ci"),
+           forest_call(rightcols = if (identical(x$.type.es, "ROM")) c("effect", "ci", "w.random") else c("effect", "ci"),
                          print.I2 = FALSE, print.pval.Q = FALSE,
                          hetlab = "Heterogeneity (Between): ",
                          digits.tau2 = 3, 
                          text.random = 
                            ifelse(x$use.rve, "3-Level Hierarchical Model (RVE)",
-                                  "3-Level Hierarchical Model"),
-                         ...)
+                                 "3-Level Hierarchical Model")
+                        )
         }
       }
       if (models[[x$which.run[1]]][1] == "model.threelevel.che"){
@@ -1763,14 +1768,14 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
             .$tau2 = x$model.threelevel.che$sigma2[1];
             .$I2 = x$model.threelevel.che.var.comp[1,"i2"]/100;
             .$common = FALSE; .$random = TRUE; .} %>% 
-            meta::forest(rightcols = c("effect", "ci"),
+            forest_call(rightcols = if (identical(x$.type.es, "ROM")) c("effect", "ci", "w.random") else c("effect", "ci"),
                          print.I2 = FALSE, print.pval.Q = FALSE,
                          hetlab = "Heterogeneity (Between): ",
                          digits.tau2 = 3, 
                          text.random = 
                            ifelse(x$use.rve, "3-Level CHE Model (RVE)",
-                                  "3-Level CHE Model"),
-                         ...)
+                                 "3-Level CHE Model")
+                        )
         } else {
           x$model.overall %>% 
             {.$TE.random = x$model.threelevel.che$b[,1]
@@ -1786,14 +1791,14 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
             .$tau2 = x$model.threelevel.che$sigma2[1];
             .$I2 = x$model.threelevel.che.var.comp[1,"i2"]/100;
             .$common = FALSE; .$random = TRUE; .} %>% 
-            meta::forest(rightcols = c("effect", "ci"),
+            forest_call(rightcols = if (identical(x$.type.es, "ROM")) c("effect", "ci", "w.random") else c("effect", "ci"),
                          print.I2 = FALSE, print.pval.Q = FALSE,
                          hetlab = "Heterogeneity (Between): ",
                          digits.tau2 = 3, 
                          text.random = 
                            ifelse(x$use.rve, "3-Level CHE Model (RVE)",
-                                  "3-Level CHE Model"),
-                         ...)
+                                 "3-Level CHE Model")
+                        )
         }
       }
       if (models[[x$which.run[1]]][1] == "model.ccrem"){
@@ -1815,14 +1820,14 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
             .$tau2 = x$model.ccrem$sigma2[1];
             .$I2 = x$model.ccrem.var.comp[1,"i2"]/100;
             .$common = FALSE; .$random = TRUE; .} %>% 
-            meta::forest(rightcols = c("effect", "ci"),
+            forest_call(rightcols = if (identical(x$.type.es, "ROM")) c("effect", "ci", "w.random") else c("effect", "ci"),
                          print.I2 = FALSE, print.pval.Q = FALSE,
                          hetlab = "Heterogeneity (Between): ",
                          digits.tau2 = 3, 
                          text.random = 
                            ifelse(x$use.rve, "3-Level CCREM Model (RVE)",
-                                  "3-Level CCREM Model"),
-                         ...)
+                                 "3-Level CCREM Model")
+                         )
         } else {
           cluster.var = x$model.ccrem$data[[metafor::ranef(x$model.ccrem)[1] %>% names()]]
           x$model.overall %>% 
@@ -1839,14 +1844,14 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
             .$tau2 = x$model.ccrem$sigma2[1];
             .$I2 = x$model.ccrem.var.comp[1,"i2"]/100;
             .$common = FALSE; .$random = TRUE; .} %>% 
-            meta::forest(rightcols = c("effect", "ci"),
+            forest_call(rightcols = if (identical(x$.type.es, "ROM")) c("effect", "ci", "w.random") else c("effect", "ci"),
                          print.I2 = FALSE, print.pval.Q = FALSE,
                          hetlab = "Heterogeneity (Between): ",
                          digits.tau2 = 3, 
                          text.random = 
                            ifelse(x$use.rve, "3-Level CCREM Model (RVE)",
-                                  "3-Level CCREM Model"),
-                         ...)
+                                 "3-Level CCREM Model")
+                         )
         }
       }
       if (models[[x$which.run[1]]][1] == "model.ccrem.che"){
@@ -1868,14 +1873,14 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
             .$tau2 = x$model.ccrem.che$sigma2[1];
             .$I2 = x$model.ccrem.che.var.comp[1,"i2"]/100;
             .$common = FALSE; .$random = TRUE; .} %>% 
-            meta::forest(rightcols = c("effect", "ci"),
+            forest_call(rightcols = if (identical(x$.type.es, "ROM")) c("effect", "ci", "w.random") else c("effect", "ci"),
                          print.I2 = FALSE, print.pval.Q = FALSE,
                          hetlab = "Heterogeneity (Between): ",
                          digits.tau2 = 3, 
                          text.random = 
                            ifelse(x$use.rve, "CCREM-CHE Model (RVE)",
-                                  "CCREM-CHE Model"),
-                         ...)
+                                 "CCREM-CHE Model")
+                         )
         } else {
           cluster.var = x$model.ccrem.che$data[[metafor::ranef(x$model.ccrem.che)[1] %>% names()]]
           x$model.overall %>% 
@@ -1892,14 +1897,14 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
             .$tau2 = x$model.ccrem.che$sigma2[1];
             .$I2 = x$model.ccrem.che.var.comp[1,"i2"]/100;
             .$common = FALSE; .$random = TRUE; .} %>% 
-            meta::forest(rightcols = c("effect", "ci"),
+            forest_call(rightcols = if (identical(x$.type.es, "ROM")) c("effect", "ci", "w.random") else c("effect", "ci"),
                          print.I2 = FALSE, print.pval.Q = FALSE,
                          hetlab = "Heterogeneity (Between): ",
                          digits.tau2 = 3, 
                          text.random = 
                            ifelse(x$use.rve, "CCREM-CHE Model (RVE)",
-                                  "CCREM-CHE Model"),
-                         ...)
+                                 "CCREM-CHE Model")
+                         )
         }
       }
       if (models[[x$which.run[1]]][1] == "model.waap.wls") {
@@ -1916,12 +1921,12 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
         m.plot$upper.I2 = x$model.waap.wls$upper.i2
         m.plot$text.random = paste0("WAAP-WLS (", toupper(x$model.waap.wls$type), " used)")
         if (x$model.waap.wls$type == "waap") {
-          meta::forest(m.plot, ..., print.tau2 = FALSE, leftcols = "study",
-                       col.square = ifelse(x$model.waap.wls$powered, "lightblue", "gray"),
-                       rightcols = c("effect", "ci"))
+          forest_call(m.plot, print.tau2 = FALSE, leftcols = "study",
+                      col.square = ifelse(x$model.waap.wls$powered, "lightblue", "gray"),
+                      rightcols = c("effect", "ci"))
         } else {
-          meta::forest(m.plot, ..., print.tau2 = FALSE, leftcols = "study",
-                       rightcols = c("effect", "ci"))
+          forest_call(m.plot, print.tau2 = FALSE, leftcols = "study",
+                      rightcols = c("effect", "ci"))
         }
       }
       
@@ -1930,68 +1935,40 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
       if (which[1] == "overall"){
         message("- ", crayon::green("[OK] "), 
                 "Generating forest plot ('overall' model).")
-        if (identical(x$.type.es, "RR")){
-          meta::forest(x$model.overall, leftcols = "study", ...)
-        } else {
-          meta::forest(x$model.overall, leftcols = "study", ...)
-        }
+        forest_call(x$model.overall, leftcols = "study")
       }
       
       if (which[1] == "lowest.highest"){
         message("- ", crayon::green("[OK] "), 
                 "Generating forest plot ('lowest' model).")
-        if (identical(x$.type.es, "RR")){
-          meta::forest(x$model.lowest, leftcols = "study", ...)
-        } else {
-          meta::forest(x$model.lowest, leftcols = "study", ...)
-        }
+        forest_call(x$model.lowest, leftcols = "study")
         message("- ", crayon::green("[OK] "), 
                 "Generating forest plot ('highest' model).")
-        if (identical(x$.type.es, "RR")){
-          meta::forest(x$model.highest, leftcols = "study", ...)
-        } else {
-          meta::forest(x$model.highest, leftcols = "study", ...)
-        }
+        forest_call(x$model.highest, leftcols = "study")
       }
       
       if (which[1] == "outliers"){
         message("- ", crayon::green("[OK] "), 
                 "Generating forest plot ('outliers' model).")
-        if (identical(x$.type.es, "RR")){
-          meta::forest(x$model.outliers, leftcols = "study", ...)
-        } else {
-          meta::forest(x$model.outliers, leftcols = "study", ...)
-        }
+        forest_call(x$model.outliers, leftcols = "study")
       }
       
       if (which[1] == "influence"){
         message("- ", crayon::green("[OK] "), 
                 "Generating forest plot ('influence' model).")
-        if (identical(x$.type.es, "RR")){
-          meta::forest(x$model.influence, leftcols = "study", ...)
-        } else {
-          meta::forest(x$model.influence, leftcols = "study", ...)
-        }
+        forest_call(x$model.influence, leftcols = "study")
       }
       
       if (which[1] == "rob"){
         message("- ", crayon::green("[OK] "), 
                 "Generating forest plot ('rob' model).")
-        if (identical(x$.type.es, "RR")){
-          meta::forest(x$model.rob, leftcols = "study", ...)
-        } else {
-          meta::forest(x$model.rob, leftcols = "study", ...)
-        }
+        forest_call(x$model.rob, leftcols = "study")
       }
       
       if (which[1] == "combined"){
         message("- ", crayon::green("[OK] "), 
                 "Generating forest plot ('combined' model).")
-        if (identical(x$.type.es, "RR")){
-          meta::forest(x$model.combined, leftcols = "study", ...)
-        } else {
-          meta::forest(x$model.combined, leftcols = "study", ...)
-        }
+        forest_call(x$model.combined, leftcols = "study")
       }
       
       if (which[1] == "threelevel"){
@@ -2012,14 +1989,14 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
             .$tau2 = x$model.threelevel$sigma2[1];
             .$I2 = x$model.threelevel.var.comp[1,"i2"]/100;
             .$common = FALSE; .$random = TRUE; .} %>% 
-            meta::forest(rightcols = c("effect", "ci"),
+            forest_call(rightcols = if (identical(x$.type.es, "ROM")) c("effect", "ci", "w.random") else c("effect", "ci"),
                          print.I2 = FALSE, print.pval.Q = FALSE,
                          hetlab = "Heterogeneity (Between): ",
                          digits.tau2 = 3, 
                          text.random = 
                            ifelse(x$use.rve, "3-Level Hierarchical Model (RVE)",
-                                  "3-Level Hierarchical Model"),
-                         ...)
+                                  "3-Level Hierarchical Model")
+                         )
         } else {
           x$model.overall %>% 
             {.$TE.random = x$model.threelevel$b[,1]
@@ -2035,14 +2012,14 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
             .$tau2 = x$model.threelevel$sigma2[1];
             .$I2 = x$model.threelevel.var.comp[1,"i2"]/100;
             .$common = FALSE; .$random = TRUE; .} %>% 
-            meta::forest(rightcols = c("effect", "ci"),
+            forest_call(rightcols = if (identical(x$.type.es, "ROM")) c("effect", "ci", "w.random") else c("effect", "ci"),
                          print.I2 = FALSE, print.pval.Q = FALSE,
                          hetlab = "Heterogeneity (Between): ",
                          digits.tau2 = 3, 
                          text.random = 
                            ifelse(x$use.rve, "3-Level Hierarchical Model (RVE)",
-                                  "3-Level Hierarchical Model"),
-                         ...)
+                                  "3-Level Hierarchical Model")
+                         )
         }
       }
       
@@ -2064,14 +2041,14 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
             .$tau2 = x$model.threelevel.che$sigma2[1];
             .$I2 = x$model.threelevel.che.var.comp[1,"i2"]/100;
             .$common = FALSE; .$random = TRUE; .} %>% 
-            meta::forest(rightcols = c("effect", "ci"),
+            forest_call(rightcols = if (identical(x$.type.es, "ROM")) c("effect", "ci", "w.random") else c("effect", "ci"),
                          print.I2 = FALSE, print.pval.Q = FALSE,
                          hetlab = "Heterogeneity (Between): ",
                          digits.tau2 = 3, 
                          text.random = 
                            ifelse(x$use.rve, "3-Level CHE Model (RVE)",
-                                  "3-Level CHE Model"),
-                         ...)
+                                  "3-Level CHE Model")
+                         )
         } else {
           x$model.overall %>% 
             {.$TE.random = x$model.threelevel.che$b[,1]
@@ -2087,14 +2064,14 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
             .$tau2 = x$model.threelevel.che$sigma2[1];
             .$I2 = x$model.threelevel.che.var.comp[1,"i2"]/100;
             .$common = FALSE; .$random = TRUE; .} %>% 
-            meta::forest(rightcols = c("effect", "ci"),
+            forest_call(rightcols = if (identical(x$.type.es, "ROM")) c("effect", "ci", "w.random") else c("effect", "ci"),
                          print.I2 = FALSE, print.pval.Q = FALSE,
                          hetlab = "Heterogeneity (Between): ",
                          digits.tau2 = 3, 
                          text.random = 
                            ifelse(x$use.rve, "3-Level CHE Model (RVE)",
-                                  "3-Level CHE Model"),
-                         ...)
+                                  "3-Level CHE Model")
+                         )
         }
       }
       
@@ -2817,11 +2794,30 @@ summary.runMetaAnalysis = function(object, forest = TRUE, ...){
       x$summary = rbind(x$summary, x$correctPublicationBias$summary)
     }
 
+    .parse_ci_mat <- function(ci_vec) {
+      # Returns an n x 2 numeric matrix (lower, upper) even for n == 1 or malformed entries
+      ci_list <- stringr::str_replace_all(ci_vec, ";|\\]|\\[", " ") %>%
+        stringr::str_replace_all("\\s+", " ") %>%
+        stringr::str_trim() %>%
+        strsplit("\\s+") %>%
+        purrr::map(function(x) {
+          x <- suppressWarnings(as.numeric(x))
+          x <- x[!is.na(x) & is.finite(x)]
+          if (length(x) >= 2) x[1:2] else c(NA_real_, NA_real_)
+        })
+      m <- tryCatch(do.call(rbind, ci_list), error = function(e) NULL)
+      if (is.null(m)) {
+        m <- matrix(NA_real_, nrow = length(ci_vec), ncol = 2)
+      }
+      if (length(dim(m)) < 2L) m <- as.matrix(t(m))
+      if (ncol(m) != 2L) m <- matrix(NA_real_, nrow = length(ci_vec), ncol = 2)
+      colnames(m) <- c("lower", "upper")
+      m
+    }
+
     if (x$.type.es == "RR"){
-      stringr::str_replace_all(x$summary$rr.ci, ";|\\]|\\[", "") %>%
-        strsplit(" ") %>% 
-        purrr::map(~as.numeric(.)) %>% do.call(rbind,.) %>%
-        {colnames(.) = c("lower", "upper");.} %>%
+      ci.mat <- .parse_ci_mat(x$summary$rr.ci)
+      ci.mat %>%
         cbind(model = rownames(x$summary), rr = x$summary$rr,
               i2 = round(x$summary$i2,1) %>% format(1), .) %>%
         data.frame() %>%
@@ -2855,9 +2851,8 @@ summary.runMetaAnalysis = function(object, forest = TRUE, ...){
         {.[unique(names(.))]} -> forest.args
       do.call(meta::forest, forest.args) %>% suppressWarnings()
     } else if (x$.type.es == "ROM") {
-      stringr::str_replace_all(x$summary$rom.ci, ";|\\]|\\[", "") %>%
-        strsplit(" ") %>% purrr::map(~as.numeric(.)) %>% do.call(rbind,.) %>%
-        {colnames(.) = c("lower", "upper");.} %>%
+      ci.mat <- .parse_ci_mat(x$summary$rom.ci)
+      ci.mat %>%
         cbind(model = rownames(x$summary), rom = x$summary$rom,
               i2 = round(x$summary$i2, 1) %>% format(1), .) %>%
         data.frame() %>%
@@ -2886,9 +2881,8 @@ summary.runMetaAnalysis = function(object, forest = TRUE, ...){
         {.[unique(names(.))]} -> forest.args
       do.call(meta::forest, forest.args) %>% suppressWarnings()
     } else {
-      stringr::str_replace_all(x$summary$g.ci, ";|\\]|\\[", "") %>%
-        strsplit(" ") %>% purrr::map(~as.numeric(.)) %>% do.call(rbind,.) %>%
-        {colnames(.) = c("lower", "upper");.} %>%
+      ci.mat <- .parse_ci_mat(x$summary$g.ci)
+      ci.mat %>%
         cbind(model = rownames(x$summary), g = x$summary$g,
               i2 = round(x$summary$i2,1) %>% format(1), .) %>%
         data.frame() %>%
