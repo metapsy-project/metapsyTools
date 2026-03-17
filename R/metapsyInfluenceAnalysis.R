@@ -81,7 +81,7 @@
 #' the function into the \code{plot} function. It is also possible to only produce one specific plot by
 #' specifying the name of the plot as a \code{character} in the second argument of the \code{plot} call (see Examples).
 #'
-#' @import ggplot2 ggrepel grid
+#' @import ggplot2 grid
 #' @importFrom gridExtra grid.arrange arrangeGrob
 #' @importFrom metafor rma.uni influence.rma.uni
 #' @importFrom meta metainf
@@ -847,11 +847,19 @@ metapsyInfluenceAnalysis = function(x, random = FALSE, subplot.heights = c(30, 1
   }
   
   bjt = baujat.silent(x)
-  
-  BaujatPlot = ggplot(bjt, aes(x = x, y = y)) + geom_point(aes(size = (1/se)), color = "blue", alpha = 0.75) +
-    geom_rug(color = "lightgray", alpha = 0.5) + theme(legend.position = "none") + xlab("Overall heterogeneity contribution") +
-    ylab("Influence on pooled result") + geom_label_repel(label = bjt$studlab, color = "black", size = 1.5 *
-                                                            text.scale, alpha = 0.7, max.overlaps = Inf)
+
+  BaujatPlot = NULL
+  if (requireNamespace("ggrepel", quietly = TRUE)) {
+    BaujatPlot = ggplot(bjt, aes(x = x, y = y)) +
+      geom_point(aes(size = (1/se)), color = "blue", alpha = 0.75) +
+      geom_rug(color = "lightgray", alpha = 0.5) +
+      theme(legend.position = "none") +
+      xlab("Overall heterogeneity contribution") +
+      ylab("Influence on pooled result") +
+      ggrepel::geom_label_repel(label = bjt$studlab, color = "black",
+                                size = 1.5 * text.scale, alpha = 0.7,
+                                max.overlaps = Inf)
+  }
   
   
   # Return
