@@ -244,6 +244,52 @@ calculateEffectSizes = function(data,
   # Convert to data.frame (conventional)
   data = data.frame(data)
 
+  # Check that each row only provides one effect size data group
+  es.groups = list(
+    continuous    = c("mean_arm1", "mean_arm2", "sd_arm1", "sd_arm2", 
+                      "n_arm1", "n_arm2"),
+    change        = c("mean_change_arm1", "mean_change_arm2", 
+                      "sd_change_arm1", "sd_change_arm2",
+                      "n_change_arm1", "n_change_arm2"),
+    dichotomous   = c("event_arm1", "event_arm2", 
+                      "totaln_arm1", "totaln_arm2"),
+    precalc_g     = c("precalc_g", "precalc_g_se"),
+    precalc_rr    = c("precalc_log_rr", "precalc_log_rr_se")
+  )
+  
+  # For each group, check which columns exist in the data
+  es.groups.present = lapply(es.groups, function(cols) {
+    intersect(cols, colnames(data))
+  })
+  # Keep only groups that have at least one column present
+  es.groups.present = es.groups.present[lengths(es.groups.present) > 0]
+  
+  if (length(es.groups.present) > 1) {
+    # For each row, determine which groups have at least one non-NA value
+    group.active = sapply(es.groups.present, function(cols) {
+      apply(data[, cols, drop = FALSE], 1, function(x) any(!is.na(x)))
+    })
+    # group.active is a matrix: rows = data rows, cols = groups
+    n.active = rowSums(group.active)
+    
+    if (any(n.active > 1)) {
+      conflict.rows = which(n.active > 1)
+      conflict.details = apply(group.active[conflict.rows, , drop = FALSE], 1, 
+                               function(x) paste(names(which(x)), collapse = ", "))
+      message("- ", crayon::yellow("[!] "), 
+              "Effect size data groups should be unique per row, but ",
+              length(conflict.rows), " row(s) have data in multiple groups.")
+      message("Affected row(s): ", 
+              paste(head(conflict.rows, 10), collapse = ", "),
+              if (length(conflict.rows) > 10) paste0(", ... (", 
+                length(conflict.rows) - 10, " more)") else "")
+      message("Group(s) with non-NA data in first affected row: ",
+              conflict.details[1])
+      message("Each row should contain data for only one of: ",
+              paste(names(es.groups), collapse = ", "), ".")
+    }
+  }
+
   # Get id variables
   data %>% 
     dplyr::select(
@@ -369,15 +415,21 @@ calculateEffectSizes = function(data,
   }
   
   # Now, bind all calculated ES together,
-  # then bind together with wide dataset
-  es.res[colnames(es.res) %in% c("es", "se")] %>%
-    apply(., 1, function(x){
-      if (length(x[!isNAorNaN(x)]) <= 1){return(c(NA, NA))} else {
-        return(x[!isNAorNaN(x)])}}) %>% t() %>%
-    cbind(dat.final, .) -> dat.final
+  # then bind together with wide dataset.
   
-  colnames(dat.final)[c(ncol(dat.final)-1, 
-                        ncol(dat.final))] = c(".log_rr", ".log_rr_se")
+  es.cols <- es.res[, colnames(es.res) == "es", drop = FALSE]
+  se.cols <- es.res[, colnames(es.res) == "se", drop = FALSE]
+  
+  picked.es <- apply(es.cols, 1, function(x) {
+    ok <- which(!isNAorNaN(x))
+    if (length(ok) == 0) NA_real_ else x[ok[1]]
+  })
+  picked.se <- apply(se.cols, 1, function(x) {
+    ok <- which(!isNAorNaN(x))
+    if (length(ok) == 0) NA_real_ else x[ok[1]]
+  })
+  
+  dat.final <- cbind(dat.final, .log_rr = picked.es, .log_rr_se = picked.se)
   
   # Add cell counts for Mantel-Haenszel Method (if possible)
   if (".event_arm1" %in% colnames(es.res)){
@@ -439,29 +491,65 @@ calculateEffectSizes = function(data,
     {matrix(NA, nrow(dat.final), length(.),
       dimnames = list(NULL, .))} %>% 
     cbind(dat.final, .) -> dat.final
+
+  # Robust coercion: ensure standard numeric variables are plain numeric vectors.
+  # This prevents crashes when list-columns accidentally appear in derived columns.
+  for (v in setdiff(mp.standard.vars, ".id")) {
+    if (!v %in% names(dat.final)) next
+    if (is.list(dat.final[[v]])) {
+      # Convert list-column to exactly nrow(dat.final) numeric values.
+      # If list elements contain multiple entries, we take the first one.
+      dat.final[[v]] <- sapply(dat.final[[v]], function(z) {
+        if (length(z) == 0) return(NA_real_)
+        z1 <- z[[1]]
+        suppressWarnings(as.numeric(z1))
+      })
+    }
+    if (!is.numeric(dat.final[[v]]) && !is.integer(dat.final[[v]])) {
+      dat.final[[v]] <- suppressWarnings(as.numeric(dat.final[[v]]))
+    }
+  }
   
-  # Set Inf values to NA
-  dat.final[mp.standard.vars][dat.final[mp.standard.vars] == Inf] = NA
-  dat.final[mp.standard.vars][dat.final[mp.standard.vars] == -Inf] = NA
+  # Set Inf values to NA (numeric/integer columns only)
+  .is_num <- function(v) is.numeric(v) || is.integer(v)
+  .num.vars <- mp.standard.vars[sapply(dat.final[mp.standard.vars], .is_num)]
+  if (length(.num.vars) > 0) {
+    for (v in .num.vars) {
+      if (v %in% names(dat.final)) {
+        vv <- dat.final[[v]]
+        # Only touch numeric/integer vectors; never compare list-columns
+        vv[is.infinite(vv)] <- NA
+        dat.final[[v]] <- vv
+      }
+    }
+  }
 
   with(dat.final, {
     .event_arm1 > .totaln_arm1 |
       .event_arm2 > .totaln_arm2
   }) -> totaln.mask
   
-  dat.final[!is.na(totaln.mask) & totaln.mask, 
-            mp.standard.vars[-1]] = NA
+  .num.assign.vars <- mp.standard.vars[-1]
+  .num.assign.vars <- .num.assign.vars[.num.assign.vars %in% .num.vars]
+  if (length(.num.assign.vars) > 0) {
+    dat.final[!is.na(totaln.mask) & totaln.mask, .num.assign.vars] <- NA
+  }
   
   # Set effect sizes with variance 0 to NA
-  dat.final[dat.final[[".g_se"]] == 0 & 
-              !is.na(dat.final[[".g_se"]]), ".g"] = NA
-  dat.final[dat.final[[".g_se"]] == 0 & 
-              !is.na(dat.final[[".g_se"]]), ".g_se"] = NA
-  dat.final[dat.final[[".log_rr_se"]] == 0 & 
-              !is.na(dat.final[[".log_rr_se"]]), ".log_rr"] = NA
-  dat.final[dat.final[[".log_rr_se"]] == 0 &
-              !is.na(dat.final[[".log_rr_se"]]), ".log_rr_se"] = NA
-  if (calculate.rom[1] && ".log_rom_se" %in% colnames(dat.final)) {
+  if (".g_se" %in% names(dat.final) && .is_num(dat.final[[".g_se"]])) {
+    dat.final[dat.final[[".g_se"]] == 0 &
+                !is.na(dat.final[[".g_se"]]), ".g"] = NA
+    dat.final[dat.final[[".g_se"]] == 0 &
+                !is.na(dat.final[[".g_se"]]), ".g_se"] = NA
+  }
+  if (".log_rr_se" %in% names(dat.final) && .is_num(dat.final[[".log_rr_se"]])) {
+    dat.final[dat.final[[".log_rr_se"]] == 0 &
+                !is.na(dat.final[[".log_rr_se"]]), ".log_rr"] = NA
+    dat.final[dat.final[[".log_rr_se"]] == 0 &
+                !is.na(dat.final[[".log_rr_se"]]), ".log_rr_se"] = NA
+  }
+  if (calculate.rom[1] && ".log_rom_se" %in% colnames(dat.final) &&
+      .is_num(dat.final[[".log_rom_se"]])) {
     dat.final[dat.final[[".log_rom_se"]] == 0 & !is.na(dat.final[[".log_rom_se"]]), ".log_rom"] = NA
     dat.final[dat.final[[".log_rom_se"]] == 0 & !is.na(dat.final[[".log_rom_se"]]), ".log_rom_se"] = NA
   }
@@ -510,12 +598,3 @@ calculateEffectSizes = function(data,
   return(dat.final)
 
 }
-
-
-
-
-
-
-
-
-

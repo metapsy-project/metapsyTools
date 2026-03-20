@@ -29,6 +29,26 @@ safe_convert_class <- function(x, target_class, var_name) {
   if (current_class == target_class) {
     return(x)
   }
+
+  # If a data.frame/tibble has a list-column, try to unlist it first.
+  # This prevents "list cannot be coerced to double" later on.
+  if (is.list(x)) {
+    x_unlisted <- suppressWarnings(unlist(x, recursive = FALSE, use.names = FALSE))
+    # Only replace if unlisting produced something sensible
+    if (!is.null(x_unlisted)) x <- x_unlisted
+  }
+
+  # Handle common conversions explicitly to be robust across integer/numeric types.
+  if (identical(target_class, "numeric")) {
+    # Keep native warning behavior (e.g. "NAs introduced by coercion")
+    # so downstream tests expecting warnings keep passing.
+    res <- as.numeric(x)
+    return(res)
+  }
+  if (identical(target_class, "character")) {
+    res <- as.character(x)
+    return(res)
+  }
   
   # Try conversion
   result <- tryCatch({

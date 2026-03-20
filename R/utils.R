@@ -187,46 +187,50 @@ rr.binary = function(x, cc = TRUE, ...){
           suppressWarnings()})
   } else {
     x %>%
-      purrr::pmap_dfr(function(event_arm1, event_arm2, 
+      purrr::pmap_dfr(function(event_arm1, event_arm2,
                                totaln_arm1, totaln_arm2, ...)
       {
-        if (identical(event_arm1, 0) ||
-            identical(event_arm2, 0)) {
-          
+        # Basic guards: totals must be positive; events must be within [0, total]
+        if (any(is.na(c(event_arm1, event_arm2, totaln_arm1, totaln_arm2))) ||
+            !all(c(totaln_arm1, totaln_arm2) > 0) ||
+            event_arm1 < 0 || event_arm2 < 0 ||
+            event_arm1 > totaln_arm1 || event_arm2 > totaln_arm2) {
+          return(data.frame(es = NA_real_, se = NA_real_,
+                            .event_arm1 = event_arm1,
+                            .event_arm2 = event_arm2,
+                            .totaln_arm1 = totaln_arm1,
+                            .totaln_arm2 = totaln_arm2))
+        }
+
         nonevent_arm1 = totaln_arm1 - event_arm1
         nonevent_arm2 = totaln_arm2 - event_arm2
-        e1 = event_arm1; e2 = event_arm2
-        n1 = totaln_arm1; n2 = totaln_arm2
 
-        if (e1 == 0 || nonevent_arm1 == 0 ||
-            e2 == 0 || nonevent_arm2 == 0) {
+        e1 = event_arm1
+        e2 = event_arm2
+        n1 = totaln_arm1
+        n2 = totaln_arm2
+
+        # Apply TACC whenever any cell is zero
+        use_tacc <- (e1 == 0 || e2 == 0 || nonevent_arm1 == 0 || nonevent_arm2 == 0)
+        if (use_tacc) {
+          # Treatment-arm continuity correction (Sweeting et al., 2004)
           k1 = n2 / (n1 + n2)
           k2 = n1 / (n1 + n2)
           e1 = e1 + k1
           e2 = e2 + k2
-          n1 = n1 + 2*k1
-          n2 = n2 + 2*k2
+          n1 = n1 + 2 * k1
+          n2 = n2 + 2 * k2
         }
 
-        data.frame(es = log((e1/n1) / (e2/n2)),
-                   se = sqrt((1/e1) + (1/e2) - (1/n1) - (1/n2)),
-                   .event_arm1 = event_arm1,
-                   .event_arm2 = event_arm2,
-                   .totaln_arm1 = totaln_arm1,
-                   .totaln_arm2 = totaln_arm2) %>%
+        data.frame(
+          es = log((e1 / n1) / (e2 / n2)),
+          se = sqrt((1 / e1) + (1 / e2) - (1 / n1) - (1 / n2)),
+          .event_arm1 = event_arm1,
+          .event_arm2 = event_arm2,
+          .totaln_arm1 = totaln_arm1,
+          .totaln_arm2 = totaln_arm2
+        ) %>%
           suppressWarnings()
-          
-        } else {
-          data.frame(es = log((event_arm1/totaln_arm1)/
-                                (event_arm2/totaln_arm2)),
-                     se = sqrt((1/event_arm1) + (1/event_arm2) - 
-                                 (1/totaln_arm1) - (1/totaln_arm2)),
-                     .event_arm1 = event_arm1,
-                     .event_arm2 = event_arm2,
-                     .totaln_arm1 = totaln_arm1,
-                     .totaln_arm2 = totaln_arm2) %>% 
-            suppressWarnings()
-        }
       })
   }
 }

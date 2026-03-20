@@ -190,6 +190,49 @@ checkDataFormat = function(data,
     message(paste0("- ", crayon::green("[OK] "), 
                    "Reserved variable name(s) have been renamed."))
   }
+
+  # Check that each row only provides one effect size data group
+  # This prevents downstream ambiguity when multiple outcome types are present
+  # within a single trial-arm row.
+  es.groups = list(
+    continuous    = c("mean_arm1", "mean_arm2", "sd_arm1", "sd_arm2",
+                      "n_arm1", "n_arm2"),
+    change        = c("mean_change_arm1", "mean_change_arm2",
+                      "sd_change_arm1", "sd_change_arm2",
+                      "n_change_arm1", "n_change_arm2"),
+    dichotomous   = c("event_arm1", "event_arm2",
+                      "totaln_arm1", "totaln_arm2"),
+    precalc_g     = c("precalc_g", "precalc_g_se"),
+    precalc_rr    = c("precalc_log_rr", "precalc_log_rr_se")
+  )
+
+  es.groups.present = lapply(es.groups, function(cols) {
+    intersect(cols, colnames(data))
+  })
+  es.groups.present = es.groups.present[lengths(es.groups.present) > 0]
+
+  if (length(es.groups.present) > 1) {
+    group.active = sapply(es.groups.present, function(cols) {
+      apply(data[, cols, drop = FALSE], 1, function(x) any(!is.na(x)))
+    })
+    n.active = rowSums(group.active)
+    if (any(n.active > 1)) {
+      conflict.rows = which(n.active > 1)
+      conflict.details = apply(group.active[conflict.rows, , drop = FALSE], 1,
+                               function(x) paste(names(which(x)), collapse = ", "))
+      message("- ", crayon::yellow("[!] "),
+              "Effect size data groups should be unique per row, but ",
+              length(conflict.rows), " row(s) have data in multiple groups.")
+      message("Affected row(s): ",
+              paste(head(conflict.rows, 10), collapse = ", "),
+              if (length(conflict.rows) > 10) paste0(", ... (",
+                length(conflict.rows) - 10, " more)") else "")
+      message("Group(s) with non-NA data in first affected row: ",
+              conflict.details[1])
+      message("Each row should contain data for only one of: ",
+              paste(names(es.groups), collapse = ", "), ".")
+    }
+  }
   
   return(data)
 }

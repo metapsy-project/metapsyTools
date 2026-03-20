@@ -161,5 +161,3 @@ print.checkConflicts = function(x, ...){
   }
   
 }
-
-
