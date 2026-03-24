@@ -4,7 +4,7 @@
 \alias{metapsyNNT}
 \title{Calculate NNTs}
 \usage{
-metapsyNNT(d, CER, event.e, n.e, event.c, n.c, names, method)
+metapsyNNT(d, CER, event.e, n.e, event.c, n.c, RR, names, method)
 }
 \arguments{
 \item{d}{A single numeric or concatenated vector of numerics representing the effect size expressed as
@@ -23,6 +23,10 @@ used automatically. Argument \code{method} has to be set to \code{"KraemerKupfer
 \item{event.c}{Single number or numeric vector. The number of (favourable) events in the control group.}
 
 \item{n.c}{Single number or numeric vector. The number of participants in the control group.}
+
+\item{RR}{Optional. A single numeric or vector of numeric risk ratios. When supplied,
+NNT is calculated from \code{RR} and \code{CER} via \eqn{NNT = 1 / |CER * (RR - 1)|}.
+This requires \code{CER} to be provided as a numeric value between 0 and 1.}
 
 \item{names}{Optional. Character vector of equal length as the vector supplied to \code{d} or \code{event.e} containing
 study/effect size labels.}
