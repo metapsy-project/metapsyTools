@@ -5,7 +5,7 @@ Calculate NNTs (extracted from `dmetar`)
 ## Usage
 
 ``` r
-metapsyNNT(d, CER, event.e, n.e, event.c, n.c, names, method)
+metapsyNNT(d, CER, event.e, n.e, event.c, n.c, RR, names, method)
 ```
 
 ## Arguments
@@ -46,6 +46,13 @@ metapsyNNT(d, CER, event.e, n.e, event.c, n.c, names, method)
 
   Single number or numeric vector. The number of participants in the
   control group.
+
+- RR:
+
+  Optional. A single numeric or vector of numeric risk ratios. When
+  supplied, NNT is calculated from `RR` and `CER` via \\NNT = 1 / \|CER
+  \* (RR - 1)\|\\. This requires `CER` to be provided as a numeric value
+  between 0 and 1.
 
 - names:
 

@@ -44,7 +44,7 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">metapsyNNT</span><span class="op">(</span><span class="va">d</span>, <span class="va">CER</span>, <span class="va">event.e</span>, <span class="va">n.e</span>, <span class="va">event.c</span>, <span class="va">n.c</span>, <span class="va">names</span>, <span class="va">method</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">metapsyNNT</span><span class="op">(</span><span class="va">d</span>, <span class="va">CER</span>, <span class="va">event.e</span>, <span class="va">n.e</span>, <span class="va">event.c</span>, <span class="va">n.c</span>, <span class="va">RR</span>, <span class="va">names</span>, <span class="va">method</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -78,6 +78,12 @@ used automatically. Argument <code>method</code> has to be set to <code>"Kraemer
 
 <dt id="arg-n-c">n.c<a class="anchor" aria-label="anchor" href="#arg-n-c"></a></dt>
 <dd><p>Single number or numeric vector. The number of participants in the control group.</p></dd>
+
+
+<dt id="arg-rr">RR<a class="anchor" aria-label="anchor" href="#arg-rr"></a></dt>
+<dd><p>Optional. A single numeric or vector of numeric risk ratios. When supplied,
+NNT is calculated from <code>RR</code> and <code>CER</code> via \(NNT = 1 / |CER * (RR - 1)|\).
+This requires <code>CER</code> to be provided as a numeric value between 0 and 1.</p></dd>
 
 
 <dt id="arg-names">names<a class="anchor" aria-label="anchor" href="#arg-names"></a></dt>
