@@ -320,16 +320,17 @@ imputeResponse = function(m.trt.pre, m.trt.post, sd.trt.post,
     d_ctr = n.ctr - n.resp.ctr
 
     # Treatment Arm Continuity Correction (Sweeting et al., 2004)
-    # Weights are proportional to the opposite arm's share of total N,
-    # so unbalanced arms get appropriately sized corrections
-    if (!is.na(a_trt) && !is.na(b_trt) && !is.na(c_ctr) && !is.na(d_ctr) &&
-        (a_trt == 0 || b_trt == 0 || c_ctr == 0 || d_ctr == 0)) {
+    # Vector-safe: apply per row when any cell is zero.
+    ok_cells = !is.na(a_trt) & !is.na(b_trt) & !is.na(c_ctr) & !is.na(d_ctr)
+    any_zero = (a_trt == 0) | (b_trt == 0) | (c_ctr == 0) | (d_ctr == 0)
+    do_cc = ok_cells & any_zero
+    if (any(do_cc)) {
       k_trt = n.ctr / (n.trt + n.ctr)
       k_ctr = n.trt / (n.trt + n.ctr)
-      a_trt = a_trt + k_trt
-      b_trt = b_trt + k_trt
-      c_ctr = c_ctr + k_ctr
-      d_ctr = d_ctr + k_ctr
+      a_trt[do_cc] = a_trt[do_cc] + k_trt[do_cc]
+      b_trt[do_cc] = b_trt[do_cc] + k_trt[do_cc]
+      c_ctr[do_cc] = c_ctr[do_cc] + k_ctr[do_cc]
+      d_ctr[do_cc] = d_ctr[do_cc] + k_ctr[do_cc]
     }
 
     n_trt_cc = a_trt + b_trt
