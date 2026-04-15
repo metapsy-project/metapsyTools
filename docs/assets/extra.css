@@ -289,3 +289,7 @@ color: #474747;
 #ref-usage {
   display: none !important;
 }
+
+html[data-theme="dark"] .patients-tile {
+  background-color: transparent;
+}

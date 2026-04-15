@@ -38,11 +38,10 @@ The `metapsyTools` package lives in a **GitHub repository**. It can be
 downloaded using the code below:
 
 ``` r
-if (!require("remotes"))
-  install.packages("remotes")
+if (!require("pak"))
+  install.packages("pak")
 
-remotes::install_github(
-    "metapsy-project/metapsyTools")
+pak::pkg_install("metapsy-project/metapsyTools")
 ```
 
 More details on how to install and update the package can be found in

@@ -17,17 +17,15 @@ function will not work.
 To install the package, you have to download the latest version of the
 package from the `metapsyTools` [Github
 repository](https://github.com/MathiasHarrer/metapsyTools). This is
-fairly easy to achieve using the `install_github` function in the
-[`devtools`](https://devtools.r-lib.org/index.html) package. If you run
-the following code in R:
+fairly easy to achieve using the `pkg_install` function in the
+[`pak`](https://pak.r-lib.org/index.html) package. If you run the
+following code in R:
 
 ``` r
 if (!require("devtools"))
   install.packages("devtools")
 
-devtools::install_github(
-    "metapsy-project/metapsyTools",
-    build_vignettes = TRUE)
+pak::pkg_install("metapsy-project/metapsyTools")
 ```
 
 R will automatically check if `devtools` is installed on your computer,

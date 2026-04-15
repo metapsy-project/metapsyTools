@@ -15,12 +15,10 @@ The `metapsyTools` package facilitates the calculation of effect sizes and meta-
 The `metapsyTools` package lives in a **GitHub repository**. It can only be downloaded using the code below:
 
 ```r
-if (!require("remotes"))
-  install.packages("remotes")
+if (!require("pak"))
+  install.packages("pak")
 
-remotes::install_github(
-    "metapsy-project/metapsyTools",
-    build_vignettes = TRUE)
+pak::pkg_install("metapsy-project/metapsyTools")
 ```
 
 ## Repository Rules
