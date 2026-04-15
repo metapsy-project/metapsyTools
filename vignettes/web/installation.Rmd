@@ -25,9 +25,7 @@ easy to achieve using the `pkg_install` function in the
 [`pak`](https://pak.r-lib.org/index.html) package. If you run the following code in R:
 
 ```{r, eval=F}
-if (!require("devtools"))
-  install.packages("devtools")
-
+if (!require("pak")) install.packages("pak")
 pak::pkg_install("metapsy-project/metapsyTools")
 ```
 

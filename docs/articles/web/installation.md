@@ -22,9 +22,7 @@ fairly easy to achieve using the `pkg_install` function in the
 following code in R:
 
 ``` r
-if (!require("devtools"))
-  install.packages("devtools")
-
+if (!require("pak")) install.packages("pak")
 pak::pkg_install("metapsy-project/metapsyTools")
 ```
 
