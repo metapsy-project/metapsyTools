@@ -4,13 +4,15 @@
 \alias{g.binary}
 \title{Calculate Hedges' g using binary outcome data}
 \usage{
-g.binary(x, cc = 0.5, ...)
+g.binary(x, cc = TRUE, ...)
 }
 \arguments{
 \item{x}{data}
 
 \item{cc}{Should a continuity correction for zero cells be applied?
-Either \code{FALSE} or the increment to be added. Default is 0.5.}
+Either \code{TRUE} (default; applies the Sweeting et al. (2004) treatment-arm
+continuity correction, TACC), \code{FALSE} (no correction), or a single numeric
+increment to be added to all four cells (e.g., \code{0.5}).}
 
 \item{...}{Binary effect size data. Data frame must include columns \code{event_arm1}, \code{event_arm2},
 \code{totaln_arm1}, \code{totaln_arm2}. See the \href{https://docs.metapsy.org/data-preparation/format/}{Metapsy data standard}.}

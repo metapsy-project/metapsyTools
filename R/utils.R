@@ -31,11 +31,13 @@ g.m.sd = function(x, ...){
 #' part of \code{\link{calculateEffectSizes}}. 
 #'
 #' @param x data
-#' @param cc Should a continuity correction for zero cells be applied? 
-#' Either `FALSE` or the increment to be added. Default is 0.5.
+#' @param cc Should a continuity correction for zero cells be applied?
+#' Either `TRUE` (default; applies the Sweeting et al. (2004) treatment-arm
+#' continuity correction, TACC), `FALSE` (no correction), or a single numeric
+#' increment to be added to all four cells (e.g., `0.5`).
 #' @param ... Binary effect size data. Data frame must include columns `event_arm1`, `event_arm2`, 
 #' `totaln_arm1`, `totaln_arm2`. See the [Metapsy data standard](https://docs.metapsy.org/data-preparation/format/).
-#' @usage g.binary(x, cc = 0.5, ...)
+#' @usage g.binary(x, cc = TRUE, ...)
 #' @importFrom dplyr select mutate
 #' @importFrom purrr pmap_dfr
 #' @importFrom esc esc_2x2
@@ -44,7 +46,7 @@ g.m.sd = function(x, ...){
 #' @export g.binary
 #' @keywords internal
 
-g.binary = function(x, cc = 0.5, ...){
+g.binary = function(x, cc = TRUE, ...){
   
   if (identical(cc, FALSE)){
     x %>%
@@ -59,36 +61,45 @@ g.binary = function(x, cc = 0.5, ...){
           suppressWarnings() %>%
           dplyr::mutate(es = es*-1)})
   } else {
-    cc_val <- if (isTRUE(cc)) 0.5 else cc
     x %>%
       purrr::pmap_dfr(function(event_arm1, event_arm2, 
                                totaln_arm1, totaln_arm2, ...)
       {
+        # Basic guards
+        if (any(is.na(c(event_arm1, event_arm2, totaln_arm1, totaln_arm2))) ||
+            !all(c(totaln_arm1, totaln_arm2) > 0) ||
+            event_arm1 < 0 || event_arm2 < 0 ||
+            event_arm1 > totaln_arm1 || event_arm2 > totaln_arm2) {
+          return(data.frame(es = NA_real_, se = NA_real_))
+        }
+
         nonevent_arm1 <- totaln_arm1 - event_arm1
         nonevent_arm2 <- totaln_arm2 - event_arm2
+        use_cc <- (event_arm1 == 0 || event_arm2 == 0 || nonevent_arm1 == 0 || nonevent_arm2 == 0)
         
-        if (identical(event_arm1, 0) ||
-            identical(event_arm2, 0) ||
-            identical(nonevent_arm1, 0) ||
-            identical(nonevent_arm2, 0)) {
-          esc::esc_2x2(event_arm1 + cc_val,
-                       nonevent_arm1 + cc_val,
-                       event_arm2 + cc_val,
-                       nonevent_arm2 + cc_val,
-                       es.type = "g") %>%
-            as.data.frame() %>% dplyr::select(es, se) %>%
-            suppressWarnings() %>%
-            dplyr::mutate(es = es*-1)
-        } else {
-          esc::esc_2x2(event_arm1,
-                       nonevent_arm1,
-                       event_arm2,
-                       nonevent_arm2,
-                       es.type = "g") %>%
-            as.data.frame() %>% dplyr::select(es, se) %>%
-            suppressWarnings() %>%
-            dplyr::mutate(es = es*-1)
+        a <- event_arm1; b <- nonevent_arm1
+        c <- event_arm2; d <- nonevent_arm2
+
+        if (isTRUE(cc) && use_cc) {
+          # Sweeting et al. (2004) treatment-arm continuity correction (TACC)
+          n1 <- totaln_arm1
+          n2 <- totaln_arm2
+          k1 <- n2 / (n1 + n2)
+          k2 <- n1 / (n1 + n2)
+          a <- a + k1; b <- b + k1
+          c <- c + k2; d <- d + k2
+        } else if (use_cc) {
+          cc_val <- cc
+          if (!is.numeric(cc_val) || length(cc_val) != 1 || is.na(cc_val)) cc_val <- 0.5
+          a <- a + cc_val; b <- b + cc_val
+          c <- c + cc_val; d <- d + cc_val
         }
+
+        esc::esc_2x2(a, b, c, d, es.type = "g") %>%
+          as.data.frame() %>%
+          dplyr::select(es, se) %>%
+          suppressWarnings() %>%
+          dplyr::mutate(es = es * -1)
       })
   }
 }
