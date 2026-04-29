@@ -59,25 +59,31 @@ g.binary = function(x, cc = 0.5, ...){
           suppressWarnings() %>%
           dplyr::mutate(es = es*-1)})
   } else {
+    cc_val <- if (isTRUE(cc)) 0.5 else cc
     x %>%
       purrr::pmap_dfr(function(event_arm1, event_arm2, 
                                totaln_arm1, totaln_arm2, ...)
       {
+        nonevent_arm1 <- totaln_arm1 - event_arm1
+        nonevent_arm2 <- totaln_arm2 - event_arm2
+        
         if (identical(event_arm1, 0) ||
-            identical(event_arm2, 0)) {
-          esc::esc_2x2(event_arm1 + cc,
-                       totaln_arm1 - event_arm1 + cc,
-                       event_arm2 + cc,
-                       totaln_arm2 - event_arm2 + cc,
+            identical(event_arm2, 0) ||
+            identical(nonevent_arm1, 0) ||
+            identical(nonevent_arm2, 0)) {
+          esc::esc_2x2(event_arm1 + cc_val,
+                       nonevent_arm1 + cc_val,
+                       event_arm2 + cc_val,
+                       nonevent_arm2 + cc_val,
                        es.type = "g") %>%
             as.data.frame() %>% dplyr::select(es, se) %>%
             suppressWarnings() %>%
             dplyr::mutate(es = es*-1)
         } else {
           esc::esc_2x2(event_arm1,
-                       totaln_arm1 - event_arm1,
+                       nonevent_arm1,
                        event_arm2,
-                       totaln_arm2 - event_arm2,
+                       nonevent_arm2,
                        es.type = "g") %>%
             as.data.frame() %>% dplyr::select(es, se) %>%
             suppressWarnings() %>%
