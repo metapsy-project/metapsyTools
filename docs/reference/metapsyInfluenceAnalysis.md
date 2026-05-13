@@ -159,6 +159,7 @@ Mathias Harrer & David Daniel Ebert
 ## Examples
 
 ``` r
+
 if (FALSE) { # \dontrun{
 # Load 'ThirdWave' data
 data(ThirdWave)

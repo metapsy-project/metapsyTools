@@ -47,7 +47,7 @@ part of <code><a href="calculateEffectSizes.html">calculateEffectSizes</a></code
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">g.binary</span><span class="op">(</span><span class="va">x</span>, cc <span class="op">=</span> <span class="fl">0.5</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">g.binary</span><span class="op">(</span><span class="va">x</span>, cc <span class="op">=</span> <span class="cn">TRUE</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -60,7 +60,9 @@ part of <code><a href="calculateEffectSizes.html">calculateEffectSizes</a></code
 
 <dt id="arg-cc">cc<a class="anchor" aria-label="anchor" href="#arg-cc"></a></dt>
 <dd><p>Should a continuity correction for zero cells be applied?
-Either <code>FALSE</code> or the increment to be added. Default is 0.5.</p></dd>
+Either <code>TRUE</code> (default; applies the Sweeting et al. (2004) treatment-arm
+continuity correction, TACC), <code>FALSE</code> (no correction), or a single numeric
+increment to be added to all four cells (e.g., <code>0.5</code>).</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>

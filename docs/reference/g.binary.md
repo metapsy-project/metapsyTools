@@ -6,7 +6,7 @@ part of [`calculateEffectSizes`](calculateEffectSizes.md).
 ## Usage
 
 ``` r
-g.binary(x, cc = 0.5, ...)
+g.binary(x, cc = TRUE, ...)
 ```
 
 ## Arguments
@@ -18,7 +18,9 @@ g.binary(x, cc = 0.5, ...)
 - cc:
 
   Should a continuity correction for zero cells be applied? Either
-  `FALSE` or the increment to be added. Default is 0.5.
+  `TRUE` (default; applies the Sweeting et al. (2004) treatment-arm
+  continuity correction, TACC), `FALSE` (no correction), or a single
+  numeric increment to be added to all four cells (e.g., `0.5`).
 
 - ...:
 

@@ -1,10 +1,12 @@
 # Check for inconsistencies between two RoB extraction sheets
 
 Based on prepared extraction sheets by two independent raters, this
-function allows you to automatically check for differing studies and/or
-inconsistencies in the ratings. Cohen's kappa is calculated
-automatically, differentiating between "Yes" vs. "No"/"No Information"
-ratings to obtain the base rate of agreement.
+function automatically checks for differing studies and/or
+inconsistencies in the ratings. Discrepancies are reported at the
+original 3-category level (`"Yes/PY"`, `"No/PN"`, `"NI"`). Inter-rater
+agreement is quantified using Cohen's \\\kappa\\, computed on a
+binarised version of the ratings (`"Yes/PY"` vs. not-`"Yes/PY"`) over
+pairwise complete cells.
 
 ## Usage
 
@@ -19,7 +21,7 @@ checkRobDiscrepancies(data.1, data.2)
   An RoB extraction sheet. Columns of this file must have the same name
   as in the [RoB extraction sheet
   template](https://www.metapsy.org/assets/files/rob-template.xlsx)
-  provided by the Metapsy initative. If the Metapsy template has been
+  provided by the Metapsy initiative. If the Metapsy template has been
   used, make sure to delete the top rows before importing, so that only
   the metapsyTools variables remain as the column names. Required
   columns are: `study`, `d1_1`, `d1_2`, `d1_3`, `d1_4`, `d1_notes`,
@@ -34,14 +36,41 @@ checkRobDiscrepancies(data.1, data.2)
 
 ## Value
 
-If discrepancies are found, the function will return a data frame with
-the respective study/studies, along with the diverging ratings
-(`discrepancies` element). If different studies are included in both
-sheets, they will be saved under `diff.studies`.
+A list containing (depending on what is found):
+
+- `discrepancies`: a data frame with studies that differ between raters
+  and the diverging ratings (returned only if discrepancies exist);
+
+- `diff.studies`: studies included in only one of the two sheets
+  (returned only if such studies exist);
+
+- `kappa`: Cohen's \\\kappa\\ on the binarised ratings (`"Yes/PY"` vs.
+  not) over pairwise complete cells.
+
+## Details
+
+**Discrepancy detection.** Ratings are compared cell-by-cell at the
+original 3-category level. A discrepancy is flagged whenever the two
+raters assigned different categories, or one rater provided a valid
+rating and the other did not.
+
+**Inter-rater agreement.** Cohen's \\\kappa\\ is computed after
+binarising the ratings into `"Yes/PY"` vs. not-`"Yes/PY"` (the latter
+combining `"No/PN"` and `"NI"`). Only cells in which both raters
+provided a valid rating in {`"Yes/PY"`, `"No/PN"`, `"NI"`} are included
+(pairwise complete cases). Let \\n\\ denote the number of such cells and
+\\y_k^{(r)} = 1\\ if rater \\r\\ rated cell \\k\\ as `"Yes/PY"`, 0
+otherwise. The observed agreement is \$\$p_0 = \frac{1}{n}
+\sum\_{k=1}^{n} \mathbb{I}\\\left\[y_k^{(1)} = y_k^{(2)}\right\],\$\$
+the marginal proportions of `"Yes/PY"` ratings are \$\$\pi_r =
+\frac{1}{n} \sum\_{k=1}^{n} y_k^{(r)}, \quad r \in \\1, 2\\,\$\$ and the
+chance-expected agreement is \$\$p_e = \pi_1 \pi_2 + (1 - \pi_1)(1 -
+\pi_2).\$\$ Cohen's \\\kappa\\ is then \$\$\kappa = \frac{p_0 - p_e}{1 -
+p_e}.\$\$
 
 ## See also
 
-[`createRobRatings`](createRobRatings.md)
+`createRobRatings`
 
 ## Author
 

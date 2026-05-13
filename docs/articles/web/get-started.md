@@ -268,6 +268,7 @@ data frame, a pre-installed “toy” data set which is directly available
 after installing `metapsyTools`.
 
 ``` r
+
 # Load metapsyTools & dplyr
 library(metapsyTools)
 library(dplyr)
@@ -305,10 +306,12 @@ We can also check the data for potential formatting issues, using the
 `checkConflicts` function.
 
 ``` r
+
 depressionPsyCtr <- checkConflicts(depressionPsyCtr) 
 ```
 
 ``` r
+
 # - [OK] No data format conflicts detected.
 ```
 
@@ -339,6 +342,7 @@ for our IDs in
 [`checkConflicts`](https://tools.metapsy.org/reference/checkconflicts):
 
 ``` r
+
 # Define extended ID list 
 # "target_group" is now also included
 id.list <- c("study", "outcome_type",
@@ -385,6 +389,7 @@ box”.
 - **`.totaln_arm2`**: Total sample size in the second trial arm.
 
 ``` r
+
 data <- calculateEffectSizes(depressionPsyCtr)
 ```
 
@@ -392,6 +397,7 @@ Now, let us have a look at the calculated effect sizes ($`g`$ and
 $`\log_eRR`$) in a random slice of the data:
 
 ``` r
+
 # Show rows 10 to 15, and variables "study", ".g", and ".log_rr"
 data %>% 
   slice(10:15) %>% 
@@ -427,6 +433,7 @@ the calculated effect size from $`g`$=0.30 to $`g`$=-0.30, or vice
 versa). This is illustrated below:
 
 ``` r
+
 # Take a slice of the data for illustration
 depressionPsyCtrSubset <- depressionPsyCtr %>% slice(10:15)
 
@@ -488,6 +495,7 @@ To truly calculate all unique *comparisons*, we have to set the
 `calculateEffectSizes`.
 
 ``` r
+
 data.switched.arms <- calculateEffectSizes(
                         depressionPsyCtr,
                         include.switched.arms = TRUE)
@@ -573,6 +581,7 @@ compared to wait-lists, with the BDI-I at post-test being the analyzed
 outcome. We can filter out the relevant comparisons like this:
 
 ``` r
+
 # Load the pre-installed "depressionPsyCtr" dataset
 load("depressionPsyCtr")
 data <- depressionPsyCtr
@@ -600,6 +609,7 @@ function within
 [`filterPoolingData`](https://tools.metapsy.org/reference/filterpoolingdata):
 
 ``` r
+
 data %>% 
   filterPoolingData(
     Detect(condition_arm1, "other")) %>%
@@ -621,6 +631,7 @@ filter types. Again, we use the `Detect` function to allow for fuzzy
 matching:
 
 ``` r
+
 data %>% 
   filterPoolingData(
     Detect(condition_arm1, "cbt|pst|bat"),
@@ -650,6 +661,7 @@ Assume that our priority rule for the employed instrument is `"hdrs"`
 `"bdi-1"` (priority 4). We can implement the rule like this:
 
 ``` r
+
 data %>% 
   
   # First, filter all other relevant characteristics
@@ -731,6 +743,7 @@ To illustrate how the function works, we first select a subset of our
 “toy” `depressionPsyCtr` data.
 
 ``` r
+
 # Only select data comparing CBT to waitlists and CAU
 depressionPsyCtr %>% 
   filterPoolingData(
@@ -743,6 +756,7 @@ Then, we plug the resulting `ma.data` data set into the
 `runMetaAnalysis` function:
 
 ``` r
+
 res <- runMetaAnalysis(ma.data)
 ```
 
@@ -767,6 +781,7 @@ successfully. When there are problems during the calculation, the
 `runMetaAnalysis` function will print a warning.
 
 ``` r
+
 # This tells the function to only consider studies with a rob score 
 # above 4 in the "low risk of bias" sensitivity analysis
 runMetaAnalysis(ma.data, low.rob.filter = "rob > 4")
@@ -780,6 +795,7 @@ We can inspect the results by calling the created `res` object in the
 console.
 
 ``` r
+
 res
 ```
 
@@ -812,6 +828,28 @@ output. These pre-formatted HTML results tables can easily be
 transferred to, for example, MS Word using copy and paste. To disable
 this feature, we have to specify `html=FALSE` inside the function call.
 
+| . | *k* | *g* | CI | *p* | *I*² | CI | PI | NNT |
+|:---|---:|---:|:---|:---|---:|:---|:---|---:|
+| Overall | 26 | -0.57 | \[-0.85; -0.28\] | \<0.001 | 76.39 | \[65.65; 83.76\] | \[-1.57; 0.43\] | 5.22 |
+| Combined^(a) | 17 | -0.54 | \[-0.89; -0.18\] | 0.005 | 77.09 | \[63.64; 85.57\] | \[-1.64; 0.57\] | 5.56 |
+| One ES/study (lowest)^(b) | 14 | -0.57 | \[-1; -0.13\] | 0.015 | 79.76 | \[66.82; 87.65\] | \[-1.78; 0.64\] | 5.22 |
+| One ES/study (highest)^(c) | 14 | -0.47 | \[-0.84; -0.11\] | 0.015 | 73.91 | \[55.75; 84.62\] | \[-1.45; 0.5\] | 6.41 |
+| Outliers removed^(d) | 23 | -0.46 | \[-0.63; -0.29\] | \<0.001 | 61.55 | \[39.55; 75.55\] | \[-1.11; 0.19\] | 6.64 |
+| Influence Analysis^(e) | 24 | -0.43 | \[-0.6; -0.27\] | \<0.001 | 63.91 | \[44.18; 76.66\] | \[-1.08; 0.22\] | 7.08 |
+| Only rob \> 2^(f) | 13 | -0.34 | \[-0.58; -0.11\] | 0.008 | 73.45 | \[53.91; 84.71\] | \[-1.1; 0.41\] | 9.12 |
+| Three-Level Model^(g) | 26 | -0.61 | \[-1.05; -0.17\] | 0.011 | 92.10 | \- | \[-2.17; 0.96\] | 4.81 |
+| Three-Level Model (CHE)^(h) | 26 | -0.55 | \[-0.92; -0.18\] | 0.007 | 88.00 | \- | \[-1.8; 0.7\] | 5.42 |
+| Note: |  |  |  |  |  |  |  |  |
+|  Excluded effect sizes/studies: |  |  |  |  |  |  |  |  |
+| ^(a) combined (arm-level): Ammerman, 2013 ; Ayen, 2004 cbt; Bowman, 1995 cognitive bibliotherapy; Brown, 1984 cbt group; Brown, 1984 cbt individual; Brown, 1984 cbt phone; Burford, 2021 ; Bzdok, 2001 |  |  |  |  |  |  |  |  |
+| ^(b) Ammerman, 2013 (cbt vs. cau; epds); Ammerman, 2013 (cbt vs. cau; hdrs); Ayen, 2004 (cbt vs. wl; bdi-1); Beach, 1992 (cbt vs. wl; bdi-1); Bowman, 1995 (cbt vs. wl; bdi-1); Brown, 1984 (cbt vs. wl; bdi-1); Brown, 1984 (cbt vs. wl; bdi-1); Brown, 1984 (cbt vs. wl; ces-d); Brown, 1984 (cbt vs. wl; bdi-1); Brown, 1984 (cbt vs. wl; ces-d); Buchanan, 2010 (cbt vs. cau; hdrs); Bruckner, 2009 (cbt vs. cau; hdrs) |  |  |  |  |  |  |  |  |
+| ^(c) Ammerman, 2013 (cbt vs. cau; bdi-2); Ammerman, 2013 (cbt vs. cau; epds); Ayen, 2004 (cbt vs. wl; ids); Beach, 1992 (cbt vs. wl; bdi-1); Bowman, 1995 (cbt vs. wl; hdrs); Brown, 1984 (cbt vs. wl; ces-d); Brown, 1984 (cbt vs. wl; bdi-1); Brown, 1984 (cbt vs. wl; ces-d); Brown, 1984 (cbt vs. wl; bdi-1); Brown, 1984 (cbt vs. wl; ces-d); Burroughs, 1999 (cbt vs. cau; hdrs); Bzdok, 2001 (cbt vs. cau; hdrs) |  |  |  |  |  |  |  |  |
+| ^(d) Ayen, 2004 (cbt vs. wl; bdi-1); Ayen, 2004 (cbt vs. wl; ids); Bzdok, 2001 (cbt vs. cau; hdrs) |  |  |  |  |  |  |  |  |
+| ^(e) removed as influential cases: Ayen, 2004 (cbt vs. wl; bdi-1); Ayen, 2004 (cbt vs. wl; ids) |  |  |  |  |  |  |  |  |
+| ^(f) Allart van Dam, 2003 (cbt vs. cau; bdi-1); Ayen, 2004 (cbt vs. wl; bdi-1); Ayen, 2004 (cbt vs. wl; ids); Beach, 1992 (cbt vs. wl; bdi-1); Beach, 1992 (cbt vs. wl; bdi-1); Bowman, 1995 (cbt vs. wl; bdi-1); Bowman, 1995 (cbt vs. wl; hdrs); Brown, 1984 (cbt vs. wl; bdi-1); Brown, 1984 (cbt vs. wl; ces-d); Brown, 1984 (cbt vs. wl; bdi-1); Brown, 1984 (cbt vs. wl; ces-d); Brown, 1984 (cbt vs. wl; bdi-1); Brown, 1984 (cbt vs. wl; ces-d) |  |  |  |  |  |  |  |  |
+| ^(g) Number of clusters/studies: 14; robust variance estimation (RVE) used. |  |  |  |  |  |  |  |  |
+| ^(h) Number of clusters/studies: 14; robust variance estimation (RVE) used. |  |  |  |  |  |  |  |  |
+
   
 
 Using the `summary` method, details of the analysis settings can be
@@ -820,6 +858,7 @@ applied methods and/or packages. Furthermore, it creates a **summary
 forest plot** in which all pooled effects are displayed.
 
 ``` r
+
 summary(res)
 ```
 
@@ -900,6 +939,7 @@ Here is an example of a `runMetaAnalysis` call with non-default
 settings:
 
 ``` r
+
 runMetaAnalysis(ma.data,
                 es.measure = "RR",
                 es.type = "raw",
@@ -925,6 +965,7 @@ To combine effect sizes on a study level instead, we can set the
 `which.combine` argument to `"studies"`.
 
 ``` r
+
 runMetaAnalysis(ma.data, which.combine = "studies")
 ```
 
@@ -964,6 +1005,7 @@ prints a progress update so that users get an indication of how long the
 function (still) has to run.
 
 ``` r
+
 res.boot <- runMetaAnalysis(ma.data,
                             i2.ci.boot = TRUE,
                             nsim.boot = 500)
@@ -1058,6 +1100,7 @@ variance-covariance approximation was not possible, meaning that the
 function automatically reverted to the standard `"simple"` approach.
 
 ``` r
+
 runMetaAnalysis(ma.data,
                 vcov = "complex")
 ```
@@ -1106,6 +1149,7 @@ or
 directly.
 
 ``` r
+
 res$model.overall         # "overall" model (metagen/metabin)
 res$model.combined        # "combined" model (metagen/metabin)
 res$model.lowest          # lowest effect size/study only model (metagen/metabin)
@@ -1123,6 +1167,7 @@ This means that **any kind of operation** available for `metagen` or
 “overall” model like this:
 
 ``` r
+
 library(meta)
 
 # model.overall is a "meta" model, so we can directly
@@ -1141,6 +1186,7 @@ This feature can also be used to run, for example, **Egger’s regression
 test**, using functions already included in `meta` and `dmetar`:
 
 ``` r
+
 # Egger's regression test applied to the "overall" model:
 library(dmetar)
 eggers.test(res$model.overall)
@@ -1181,6 +1227,7 @@ models. We only have to plug the results object into `plot`, and specify
 the name of the model for which the forest plot should be retrieved:
 
 ``` r
+
 plot(res, "overall")        # Overall model (ES assumed independent)
 plot(res, "combined")       # ES combined within studies before pooling
 plot(res, "lowest.highest") # Lowest and highest ES removed (creates 2 plots)
@@ -1193,6 +1240,7 @@ plot(res, "threelevel.che") # Three-level CHE model
 This is what the `"overall"` model forest plot looks like, for example:
 
 ``` r
+
 plot(res, "overall")
 ```
 
@@ -1204,6 +1252,7 @@ options](https://bookdown.org/MathiasHarrer/Doing_Meta_Analysis_in_R/forest.html
 are also available using extra arguments.
 
 ``` r
+
 plot(res, "overall", 
      col.predict = "lightgreen", 
      col.square = "gray",
@@ -1219,6 +1268,7 @@ Plots](https://bookdown.org/MathiasHarrer/Doing_Meta_Analysis_in_R/heterogeneity
 (not displayed here).
 
 ``` r
+
 plot(res, "baujat")
 plot(res, "loo-es")
 plot(res, "loo-i2")
@@ -1238,6 +1288,7 @@ estimator of $`\tau^2`$, and a different CER to calculate the number
 needed to treat, leaving all other settings the same, we can run:
 
 ``` r
+
 method.tau(res) <- "PM"
 nntCer(res) <- 0.7
 ```
@@ -1245,6 +1296,7 @@ nntCer(res) <- 0.7
 Then, we have to call the `rerun` function:
 
 ``` r
+
 rerun(res)
 ```
 
@@ -1266,6 +1318,7 @@ the `which.run` argument, we can apply these methods to a specific model
 we fitted previously.[^5] Here, we select the `"combined"` analysis.
 
 ``` r
+
 correctPublicationBias(res, which.run = "combined")
 ```
 
@@ -1320,6 +1373,7 @@ functions in `meta` and `metasens` (Schwarzer, Carpenter & Rücker,
 can find an example below:
 
 ``` r
+
 correctPublicationBias(
   
               res, which.run = "combined",
@@ -1344,6 +1398,7 @@ For example, we might want to check if effects differ by country
 (`country`) or intervention type (`condition_arm1`):
 
 ``` r
+
 sg <- subgroupAnalysis(res, country, condition_arm2)
 sg
 ```
@@ -1363,6 +1418,7 @@ It is also possible to conduct subgroup analyses using another model,
 say, the three-level model. We only have to specify `.which.run`:
 
 ``` r
+
 sg <- subgroupAnalysis(res, 
                        country, condition_arm2,
                        .which.run = "threelevel")
@@ -1374,6 +1430,7 @@ $`\tau^2`$ (in lieu of subgroup-specific estimates). This can be done by
 setting the `.tau.common` argument to `TRUE` in the function:
 
 ``` r
+
 sg <- subgroupAnalysis(res, 
                        country, condition_arm2,
                        .which.run = "combined",
@@ -1393,6 +1450,7 @@ achieved by extracting the model to be analyzed using the `$` operator,
 and then using `metaRegression` to fit the model.
 
 ``` r
+
 metaRegression(res$model.threelevel, 
                ~ scale(as.numeric(rob)) + scale(year))
 ```
@@ -1443,6 +1501,7 @@ provided
 [here](https://tools.metapsy.org/reference/runmetaanalysis#risk-of-bias-data).
 
 ``` r
+
 # Define ROB data to be added to the models
 robData = list(
   domains = c("sg", "ac", "ba", "itt"),
@@ -1462,6 +1521,7 @@ Once this is set up, we can use the `runMetaAnalysis` object to easily
 produce forest plots that include risk of bias information.
 
 ``` r
+
 plot(res, "threelevel.che", 
      leftcols = c("study", "instrument"),
      leftlabs = c("Study", "Instrument"),
@@ -1475,6 +1535,7 @@ It is also possible to create a summary risk of bias plot, using the
 `createRobSummary` function.
 
 ``` r
+
 createRobSummary(res, 
                  name.low = "1", 
                  name.high = "0", 
@@ -1499,6 +1560,7 @@ factor labels directly in the function, determine how far values should
 be rounded, and if variable names should be changed:
 
 ``` r
+
 createStudyTable(
   
   # Dataset. Alternatively, a runMetaAnalysis
@@ -1540,6 +1602,26 @@ createStudyTable(
 
 By default, `createStudyTable` also returns an HTML table that one can
 copy and paste into MS Word.
+
+| study | age group | mean age | % female | Intervention | Specification | Control | N (IG) | N (CG) | country | sg | ac | itt |
+|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|
+| Aagaard, 2017 | 4 | 48 | 0.71 | CBT | nr | Care-As-Usual | 40 | 35 | Europe | 1 | 1 | 0 |
+| Allart van Dam, 2003 | 4 | 46 | 0.62 | CBT | nr | Care-As-Usual | 61 | 41 | Europe | 0 | 0 | 0 |
+| Ammerman, 2013 | 3 | 22 | 1.00 | CBT | nr | Care-As-Usual | 47 | 46 | USA | 0 | 1 | 1 |
+| Ayen, 2004 | 4 | 51 | 1.00 | CBT | cbt | Wait-List | 11 | 10 | Europe | 0 | 0 | 0 |
+| Beach, 1992 | 4 | 39 | 1.00 | CBT | bmt | Wait-List | 15 | 15 | USA | 0 | 0 | 0 |
+| . | 4 | 39 | 1.00 | CBT | cbt | Wait-List | 15 | 15 | USA | 0 | 0 | 0 |
+| Berger, 2011 | 4 | 39 | 0.70 | CBT | guided i-cbt | Wait-List | 25 | 26 | Europe | 1 | 1 | 1 |
+| Bowman, 1995 | 4 | 36 | 0.63 | CBT | cognitive bibliotherapy | Wait-List | 10 | 10 | USA | 0 | 0 | 0 |
+| Brown, 1984 | 4 | 36 | 0.70 | CBT | cbt group | Wait-List | 25 | 11 | USA | 0 | 0 | 0 |
+| . | 4 | 36 | 0.70 | CBT | cbt individual | Wait-List | 13 | 11 | USA | 0 | 0 | 0 |
+| . | 4 | 36 | 0.70 | CBT | cbt phone | Wait-List | 14 | 11 | USA | 0 | 0 | 0 |
+| Buhrman, 2015 | 4 | 51 | 0.85 | CBT | nr | Wait-List | 28 | 24 | Europe | 1 | 1 | 1 |
+| Burford, 2021 | 4 | 42 | 0.80 | CBT | nr | Care-As-Usual | nr | nr | Europe | 1 | 1 | 1 |
+| Burroughs, 1999 | 4 | 36 | 0.79 | CBT | nr | Care-As-Usual | nr | nr | Europe | 1 | 1 | 1 |
+| Buchanan, 2010 | 4 | 36 | 0.91 | CBT | nr | Care-As-Usual | nr | nr | Europe | 1 | 1 | 1 |
+| Bzdok, 2001 | 4 | 42 | 0.77 | CBT | nr | Care-As-Usual | nr | nr | Europe | 1 | 1 | 1 |
+| Bruckner, 2009 | 4 | 24 | 0.81 | CBT | nr | Care-As-Usual | nr | nr | Europe | 1 | 1 | 1 |
 
   
 

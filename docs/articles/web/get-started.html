@@ -342,12 +342,12 @@ viz. <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semanti
 <li>
 <strong><code>precalc_log_rr</code></strong>: The pre-calculated
 value of the log-risk ratio
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mo>log</mo><mi>e</mi></msub><mtext mathvariant="normal">RR</mtext></mrow><annotation encoding="application/x-tex">\log_{e}\text{RR}</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mrow><mi mathvariant="normal">log</mi><mo>⁡</mo></mrow><mi>e</mi></msub><mtext mathvariant="normal">RR</mtext></mrow><annotation encoding="application/x-tex">\log_{e}\text{RR}</annotation></semantics></math>,
 comparing events in the first arm to events in the second arm.</li>
 <li>
 <strong><code>precalc_log_rr_se</code></strong>: The standard error
 of the log-risk ratio
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mo>log</mo><mi>e</mi></msub><mtext mathvariant="normal">RR</mtext></mrow><annotation encoding="application/x-tex">\log_{e}\text{RR}</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mrow><mi mathvariant="normal">log</mi><mo>⁡</mo></mrow><mi>e</mi></msub><mtext mathvariant="normal">RR</mtext></mrow><annotation encoding="application/x-tex">\log_{e}\text{RR}</annotation></semantics></math>,
 comparing events in the first arm to events in the second arm.</li>
 </ul>
 <p><br></p>
@@ -491,10 +491,10 @@ comparison/row.</li>
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>g</mi><annotation encoding="application/x-tex">g</annotation></semantics></math>.</li>
 <li>
 <strong><code>.log_rr</code></strong>: Calculated effect size
-(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mo>log</mo><mi>e</mi></msub><mtext mathvariant="normal">RR</mtext></mrow><annotation encoding="application/x-tex">\log_{e}\text{RR}</annotation></semantics></math>).</li>
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mrow><mi mathvariant="normal">log</mi><mo>⁡</mo></mrow><mi>e</mi></msub><mtext mathvariant="normal">RR</mtext></mrow><annotation encoding="application/x-tex">\log_{e}\text{RR}</annotation></semantics></math>).</li>
 <li>
 <strong><code>.log_rr_se</code></strong>: Standard error of
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mo>log</mo><mi>e</mi></msub><mtext mathvariant="normal">RR</mtext></mrow><annotation encoding="application/x-tex">\log_{e}\text{RR}</annotation></semantics></math>.</li>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mrow><mi mathvariant="normal">log</mi><mo>⁡</mo></mrow><mi>e</mi></msub><mtext mathvariant="normal">RR</mtext></mrow><annotation encoding="application/x-tex">\log_{e}\text{RR}</annotation></semantics></math>.</li>
 <li>
 <strong><code>.event_arm1</code></strong>: Number of events
 (e.g. responders) in the first trial arm.</li>
@@ -513,7 +513,7 @@ second trial arm.</li>
 <p>Now, let us have a look at the calculated effect sizes
 (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>g</mi><annotation encoding="application/x-tex">g</annotation></semantics></math>
 and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mo>log</mo><mi>e</mi></msub><mi>R</mi><mi>R</mi></mrow><annotation encoding="application/x-tex">\log_eRR</annotation></semantics></math>)
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mrow><mi mathvariant="normal">log</mi><mo>⁡</mo></mrow><mi>e</mi></msub><mi>R</mi><mi>R</mi></mrow><annotation encoding="application/x-tex">\log_eRR</annotation></semantics></math>)
 in a random slice of the data:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Show rows 10 to 15, and variables "study", ".g", and ".log_rr"</span></span>
@@ -578,7 +578,7 @@ or vice versa). This is illustrated below:</p>
 <p>We see that <code>.g</code> has now changed where ever
 <code>sign_change</code> has been set to <code>TRUE</code>. We also see
 that this <strong>does not affect</strong> the estimates of
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mo>log</mo><mi>e</mi></msub><mi>R</mi><mi>R</mi></mrow><annotation encoding="application/x-tex">\log_eRR</annotation></semantics></math>.</p>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mrow><mi mathvariant="normal">log</mi><mo>⁡</mo></mrow><mi>e</mi></msub><mi>R</mi><mi>R</mi></mrow><annotation encoding="application/x-tex">\log_eRR</annotation></semantics></math>.</p>
 <p><br></p>
 </div>
 <div class="section level4">
@@ -597,7 +597,7 @@ note that not all possible combinations will be included in all Metapsy
 data set (e.g., the CAU-Waitlist combination in our example may
 typically not be included).&lt;/p&gt;'><sup>1</sup></a>, the number of unique
 <em>comparisons</em> is higher:
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mfrac><mrow><mi>n</mi><mi>!</mi></mrow><mrow><mrow><mo stretchy="true" form="prefix">(</mo><mi>n</mi><mo>−</mo><mi>k</mi><mo stretchy="true" form="postfix">)</mo></mrow><mi>!</mi></mrow></mfrac><mo>=</mo><mfrac><mrow><mn>4</mn><mi>!</mi></mrow><mrow><mn>2</mn><mi>!</mi></mrow></mfrac><mo>=</mo><mn>12</mn></mrow><annotation encoding="application/x-tex">\frac{n!}{(n-k)!} = \frac{4!}{2!} = 12</annotation></semantics></math>.</p>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mfrac><mrow><mi>n</mi><mi>!</mi></mrow><mrow><mo stretchy="false" form="prefix">(</mo><mi>n</mi><mo>−</mo><mi>k</mi><mo stretchy="false" form="postfix">)</mo><mi>!</mi></mrow></mfrac><mo>=</mo><mfrac><mrow><mn>4</mn><mi>!</mi></mrow><mrow><mn>2</mn><mi>!</mi></mrow></mfrac><mo>=</mo><mn>12</mn></mrow><annotation encoding="application/x-tex">\frac{n!}{(n-k)!} = \frac{4!}{2!} = 12</annotation></semantics></math>.</p>
 <p>This is because the sign of the calculated effect size depends on
 which treatment serves as the <em>reference</em>. The effect of CBT
 vs. PST, for example, depends on which arm serves as the reference group
@@ -1060,9 +1060,9 @@ is printed as
 ).&lt;/p&gt;'><sup>4</sup></a>. This is because there are two
 heterogeneity variances in three-level models: the “conventional”
 between-study heterogeneity variance
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mi>τ</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow><mn>2</mn></msubsup><annotation encoding="application/x-tex">\tau^2_{(1)}</annotation></semantics></math>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mi>τ</mi><mrow><mo stretchy="false" form="prefix">(</mo><mn>1</mn><mo stretchy="false" form="postfix">)</mo></mrow><mn>2</mn></msubsup><annotation encoding="application/x-tex">\tau^2_{(1)}</annotation></semantics></math>
 and the heterogeneity variance within studies,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mi>τ</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>2</mn><mo stretchy="true" form="postfix">)</mo></mrow><mn>2</mn></msubsup><annotation encoding="application/x-tex">\tau^2_{(2)}</annotation></semantics></math>.
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mi>τ</mi><mrow><mo stretchy="false" form="prefix">(</mo><mn>2</mn><mo stretchy="false" form="postfix">)</mo></mrow><mn>2</mn></msubsup><annotation encoding="application/x-tex">\tau^2_{(2)}</annotation></semantics></math>.
 This means that there are also two
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>I</mi><mn>2</mn></msup><annotation encoding="application/x-tex">I^2</annotation></semantics></math>
 values, one within studies, and one for the between-study heterogeneity.
@@ -1133,7 +1133,7 @@ within the data should be approximated using a <code>"simple"</code>
 method. This argument is only relevant for the <code>"combined"</code>
 and <code>"threelevel.che"</code> models. The default “simple” method
 constructs variance-covariance matrices
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Σ</mi><mi>k</mi></msub><annotation encoding="application/x-tex">\Sigma_k</annotation></semantics></math>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi mathvariant="normal">Σ</mi><mi>k</mi></msub><annotation encoding="application/x-tex">\Sigma_k</annotation></semantics></math>
 for each study using a constant sampling correlation
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>ρ</mi><annotation encoding="application/x-tex">\rho</annotation></semantics></math>
 (defined by <code>rho.within.study</code>), which is identical across
@@ -1148,7 +1148,7 @@ dependencies in the collected data. Setting <code>vcov</code> to
 <code>"complex"</code> allows to assume that correlations between effect
 sizes may differ conditional on the type of dependency. This means that
 the variance-covariance matrix
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Σ</mi><mi>k</mi></msub><annotation encoding="application/x-tex">\Sigma_k</annotation></semantics></math>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi mathvariant="normal">Σ</mi><mi>k</mi></msub><annotation encoding="application/x-tex">\Sigma_k</annotation></semantics></math>
 of some study
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>k</mi><annotation encoding="application/x-tex">k</annotation></semantics></math>
 is approximated by an unstructured matrix with varying
@@ -1186,7 +1186,7 @@ variables, containing the sample size of each study arm, are
 available.</p>
 <p>Using the complex approximation method increases the risk that at
 least one studies’
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Σ</mi><mi>k</mi></msub><annotation encoding="application/x-tex">\Sigma_k</annotation></semantics></math>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi mathvariant="normal">Σ</mi><mi>k</mi></msub><annotation encoding="application/x-tex">\Sigma_k</annotation></semantics></math>
 matrix is not <strong>positive definite</strong>. In this case, the
 function automatically switches back to the constant sampling
 correlation approximation.</p>

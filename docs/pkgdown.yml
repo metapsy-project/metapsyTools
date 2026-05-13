@@ -1,4 +1,4 @@
-pandoc: 3.6.3
+pandoc: 3.8.3
 pkgdown: 2.2.0
 pkgdown_sha: ~
 articles:
@@ -7,4 +7,4 @@ articles:
   web/installation: web/installation.html
   web/look_inside: web/look_inside.html
   metapsyTools: metapsyTools.html
-last_built: 2026-04-15T10:32Z
+last_built: 2026-05-13T19:39Z

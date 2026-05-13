@@ -22,6 +22,7 @@ fairly easy to achieve using the `pkg_install` function in the
 following code in R:
 
 ``` r
+
 if (!require("pak")) install.packages("pak")
 pak::pkg_install("metapsy-project/metapsyTools")
 ```
@@ -33,6 +34,7 @@ installation, the package can be loaded from your library and is then
 ready to be used.
 
 ``` r
+
 library(metapsyTools)
 ```
 
@@ -77,6 +79,7 @@ time, a new version may be available. You can check the current version
 of of `metapsyTools` installed on your computer using this code:
 
 ``` r
+
 packageVersion("metapsyTools")
 ```
 
@@ -89,6 +92,7 @@ To update the package, you first have to **de-install** the current
 version on your computer. You can do this using the following code:
 
 ``` r
+
 # Note: this code assumes you are working with RStudio
 remove.packages("metapsyTools")
 .rs.restartR()

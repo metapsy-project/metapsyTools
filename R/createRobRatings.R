@@ -440,30 +440,58 @@ print.createRobRatings = function(x, ...){
 
 #' Check for inconsistencies between two RoB extraction sheets
 #'
-#' Based on prepared extraction sheets by two independent raters, this function allows you 
-#' to automatically check for differing studies and/or inconsistencies in the
-#' ratings. Cohen's kappa is calculated automatically, differentiating between
-#' "Yes" vs. "No"/"No Information" ratings to obtain the base rate of agreement.
+#' Based on prepared extraction sheets by two independent raters, this function 
+#' automatically checks for differing studies and/or inconsistencies in the
+#' ratings. Discrepancies are reported at the original 3-category level 
+#' (\code{"Yes/PY"}, \code{"No/PN"}, \code{"NI"}). Inter-rater agreement is 
+#' quantified using Cohen's \eqn{\kappa}, computed on a binarised version of 
+#' the ratings (\code{"Yes/PY"} vs. not-\code{"Yes/PY"}) over pairwise 
+#' complete cells.
 #'
 #' @usage checkRobDiscrepancies(data.1, data.2)
 #'
-#' @param data.1 An RoB extraction sheet. Columns of this file must have the same name as in the
-#' [RoB extraction sheet template](https://www.metapsy.org/assets/files/rob-template.xlsx) 
-#' provided by the Metapsy initative. If the Metapsy template has been
-#' used, make sure to delete the top rows before importing, so that only the metapsyTools variables
-#' remain as the column names. Required columns are: `study`, `d1_1`, `d1_2`, `d1_3`, `d1_4`, `d1_notes`, 
-#' `d2_5`, `d2_6`, `d2_7`, `d2_8`, `d2_9`, `d2_notes`, `d3_10`, `d3_11`, `d3_12`, `d3_13`, 
-#' `d3_14`, `d3_notes`, `d4_15`, `d4_16`, `d4_17`, `d4_18`, `d4_notes`, `d5_19`, 
-#' `d5_20`, `d5_21`, `d5_22`, `d5_23`, `d5_24`, `d5_notes`. 
+#' @param data.1 An RoB extraction sheet. Columns of this file must have the 
+#' same name as in the [RoB extraction sheet template](https://www.metapsy.org/assets/files/rob-template.xlsx) 
+#' provided by the Metapsy initiative. If the Metapsy template has been used, 
+#' make sure to delete the top rows before importing, so that only the 
+#' metapsyTools variables remain as the column names. Required columns are: 
+#' `study`, `d1_1`, `d1_2`, `d1_3`, `d1_4`, `d1_notes`, `d2_5`, `d2_6`, 
+#' `d2_7`, `d2_8`, `d2_9`, `d2_notes`, `d3_10`, `d3_11`, `d3_12`, `d3_13`, 
+#' `d3_14`, `d3_notes`, `d4_15`, `d4_16`, `d4_17`, `d4_18`, `d4_notes`, 
+#' `d5_19`, `d5_20`, `d5_21`, `d5_22`, `d5_23`, `d5_24`, `d5_notes`. 
 #' @param data.2 The same extraction sheet from another (i.e., second) rater.
 #'
-#' @return If discrepancies are found, the function will return a data frame with
-#' the respective study/studies, along with the diverging ratings (`discrepancies` element). 
-#' If different studies are included in both sheets, they will be saved under `diff.studies`.
+#' @return A list containing (depending on what is found):
+#' \itemize{
+#'   \item \code{discrepancies}: a data frame with studies that differ between 
+#'   raters and the diverging ratings (returned only if discrepancies exist);
+#'   \item \code{diff.studies}: studies included in only one of the two sheets 
+#'   (returned only if such studies exist);
+#'   \item \code{kappa}: Cohen's \eqn{\kappa} on the binarised ratings 
+#'   (\code{"Yes/PY"} vs. not) over pairwise complete cells.
+#' }
 #'
-#' @examples
-#' # Examples removed to avoid rJava dependency issues during pkgdown builds.
-#' # See package vignettes for usage examples.
+#' @details
+#' \strong{Discrepancy detection.} Ratings are compared cell-by-cell at the 
+#' original 3-category level. A discrepancy is flagged whenever the two raters 
+#' assigned different categories, or one rater provided a valid rating and the 
+#' other did not.
+#'
+#' \strong{Inter-rater agreement.} Cohen's \eqn{\kappa} is computed after 
+#' binarising the ratings into \code{"Yes/PY"} vs. not-\code{"Yes/PY"} (the 
+#' latter combining \code{"No/PN"} and \code{"NI"}). Only cells in which both 
+#' raters provided a valid rating in \{\code{"Yes/PY"}, \code{"No/PN"}, 
+#' \code{"NI"}\} are included (pairwise complete cases). Let \eqn{n} denote 
+#' the number of such cells and \eqn{y_k^{(r)} = 1} if rater \eqn{r} rated 
+#' cell \eqn{k} as \code{"Yes/PY"}, 0 otherwise. The observed agreement is
+#' \deqn{p_0 = \frac{1}{n} \sum_{k=1}^{n} \mathbb{I}\!\left[y_k^{(1)} = y_k^{(2)}\right],}
+#' the marginal proportions of \code{"Yes/PY"} ratings are
+#' \deqn{\pi_r = \frac{1}{n} \sum_{k=1}^{n} y_k^{(r)}, \quad r \in \{1, 2\},}
+#' and the chance-expected agreement is
+#' \deqn{p_e = \pi_1 \pi_2 + (1 - \pi_1)(1 - \pi_2).}
+#' Cohen's \eqn{\kappa} is then
+#' \deqn{\kappa = \frac{p_0 - p_e}{1 - p_e}.}
+#'
 #'
 #' @author Mathias Harrer \email{mathias.h.harrer@@gmail.com},
 #' Clara Miguel Sanz \email{clara.miguelsanz@@vu.nl}, 
@@ -500,17 +528,20 @@ checkRobDiscrepancies = function(data.1, data.2) {
          call. = FALSE)
   }
   
-  # Select required variables
+  # Select required variables and coerce invalid entries to NA.
+  # Note: cbind(study = ., .) explicitly names the rebound column so the
+  # logic works for plain data.frames (where `data.1[, 1]` drops to a
+  # vector) as well as for tibbles.
   data.1[req.variables] -> data.1
-  data.1[,-1] %>% as.list() %>% 
+  data.1[, -1] %>% as.list() %>% 
     lapply(function(x){x[!x %in% c("Yes/PY", "No/PN", "NI")] = NA; x}) %>% 
-    as.data.frame() %>% cbind(data.1[,1],.) -> data.1
+    as.data.frame() %>% cbind(study = data.1[, 1], .) -> data.1
   data.2[req.variables] -> data.2
-  data.2[,-1] %>% as.list() %>% 
+  data.2[, -1] %>% as.list() %>% 
     lapply(function(x){x[!x %in% c("Yes/PY", "No/PN", "NI")] = NA; x}) %>% 
-    as.data.frame() %>% cbind(data.2[,1],.) -> data.2
+    as.data.frame() %>% cbind(study = data.2[, 1], .) -> data.2
   
-  # Check if required variables are in data
+  # Check if 'study' variable is in data
   if (!"study" %in% colnames(data.1)) {
     stop("'study' variable not found in data.1.", call. = FALSE)
   }
@@ -519,54 +550,75 @@ checkRobDiscrepancies = function(data.1, data.2) {
   }
   
   # Find inconsistent studies
-  setdiff(union(data.1$study,data.2$study), 
-          intersect(data.1$study,data.2$study)) -> diff.studies
-  if (length(diff.studies)>0) {
+  setdiff(union(data.1$study, data.2$study), 
+          intersect(data.1$study, data.2$study)) -> diff.studies
+  if (length(diff.studies) > 0) {
     message("- ", crayon::yellow("[!] "), 
             "Studies differ between datasets (",
             length(diff.studies), ").") } else {
               message("- ", crayon::green("[OK] "), 
                       "Studies match between datasets.")}
   
-  # Get common studies
-  data.1[data.1$study %in% intersect(data.1$study,data.2$study),] -> data.1
-  data.2[data.2$study %in% intersect(data.1$study,data.2$study),] -> data.2
-  if (nrow(data.1)==0|nrow(data.2)==0) {
+  # Restrict to overlapping studies
+  data.1[data.1$study %in% intersect(data.1$study, data.2$study),] -> data.1
+  data.2[data.2$study %in% intersect(data.1$study, data.2$study),] -> data.2
+  if (nrow(data.1) == 0 | nrow(data.2) == 0) {
     stop("No overlapping studies found in both datasets. Check the 'study' variables.", 
          call. = FALSE)
   }
   data.1[order(data.1$study),] -> data.1
   data.2[order(data.2$study),] -> data.2
+  
+  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+  # Discrepancy matrix (3-category): used for the discrepancy report. #
+  # TRUE = ratings differ (incl. one-sided NA); FALSE = ratings agree #
+  # (incl. both-NA).                                                  #
+  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
   list(list(data.1, data.2) %>% Reduce(`==`,.) %>% {!.} %>% {.[is.na(.)] = FALSE;.},
        list(is.na(data.1), is.na(data.2)) %>% Reduce(`==`,.) %>% {!.}) %>% 
-    Reduce(`+`,.) %>% {.!=0} -> mat
+    Reduce(`+`,.) %>% {. != 0} -> mat
   
+  # Build discrepancy table at the 3-category level
   l = list()
   for (i in 1:nrow(mat)) {
     data.frame(
-      data.1 = (data.1[i,mat[i,] & !is.na(mat[i,])]) %>% 
+      data.1 = (data.1[i, mat[i,] & !is.na(mat[i,])]) %>% 
         paste(colnames(data.1)[mat[i,]] %>% {.[!is.na(.)]}, ., collapse = "; "),
-      data.2 = (data.2[i,mat[i,] & !is.na(mat[i,])]) %>% 
+      data.2 = (data.2[i, mat[i,] & !is.na(mat[i,])]) %>% 
         paste(colnames(data.2)[mat[i,]] %>% {.[!is.na(.)]}, ., collapse = "; ")
       ) -> l[[i]]
   }
-  cbind(study = data.1$study[rowSums(mat, na.rm=T)>0],
-        do.call(rbind, l)[rowSums(mat, na.rm=T)>0,]) -> discrepancies
+  cbind(study = data.1$study[rowSums(mat, na.rm = T) > 0],
+        do.call(rbind, l)[rowSums(mat, na.rm = T) > 0,]) -> discrepancies
   
-  # Calculate Cohen's kappa
-  sum(!is.na(mat[,colnames(mat)!="study"]), na.rm = TRUE) -> n
-  (n-sum(mat[,colnames(mat)!="study"], na.rm = TRUE))/n -> p0
-  c((sum(data.1[,colnames(data.1)!="study"] == "Yes/PY", na.rm = T)/n),
-    (sum(data.2[,colnames(data.2)!="study"] == "Yes/PY", na.rm = T)/n)) %>% 
-    {prod(.)+prod(1-.)} -> pe
-  kappa = (p0-pe)/(1-pe)
+  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+  # Binary Cohen's kappa: Yes/PY vs. not-Yes/PY.                      #
+  # Computed on pairwise complete cells (both raters provided a       #
+  # valid rating in {Yes/PY, No/PN, NI}). p0 and pe are derived from  #
+  # the same binarised ratings and the same denominator.              #
+  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+  rating.cols = setdiff(colnames(data.1), "study")
+  data.1[, rating.cols] %>% as.matrix() %>% as.vector() -> r1
+  data.2[, rating.cols] %>% as.matrix() %>% as.vector() -> r2
   
-  if (nrow(discrepancies)==0) {
+  keep = !is.na(r1) & !is.na(r2)
+  (r1[keep] == "Yes/PY") -> r1.bin
+  (r2[keep] == "Yes/PY") -> r2.bin
+  
+  mean(r1.bin == r2.bin) -> p0
+  mean(r1.bin) -> p1.yes
+  mean(r2.bin) -> p2.yes
+  (p1.yes * p2.yes + (1 - p1.yes) * (1 - p2.yes)) -> pe
+  kappa = (p0 - pe) / (1 - pe)
+  
+  # Report
+  if (nrow(discrepancies) == 0) {
     message("- ", crayon::green("[OK] "), 
             "No discrepancies detected!")
     message("- ", crayon::green("[OK] "), 
-            "Inter-rater agreement (Cohen's kappa): ", round(kappa,2))
-    if (length(diff.studies)>0) {
+            "Inter-rater agreement (Cohen's kappa, binary Yes/PY vs. not): ", 
+            round(kappa, 2))
+    if (length(diff.studies) > 0) {
       return(list(diff.studies = diff.studies,
                   kappa = kappa))
     }
@@ -574,8 +626,9 @@ checkRobDiscrepancies = function(data.1, data.2) {
     message("- ", crayon::yellow("[!] "), 
             "Discrepancies detected (", nrow(discrepancies), ").")
     message("- ", crayon::green("[OK] "), 
-            "Inter-rater agreement (Cohen's kappa): ", round(kappa,2))
-    if (length(diff.studies)>0) {
+            "Inter-rater agreement (Cohen's kappa, binary Yes/PY vs. not): ", 
+            round(kappa, 2))
+    if (length(diff.studies) > 0) {
       return(list(discrepancies = discrepancies,
                   diff.studies = diff.studies,
                   kappa = kappa))
