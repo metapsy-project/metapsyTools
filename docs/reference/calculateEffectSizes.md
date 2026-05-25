@@ -20,6 +20,7 @@ calculateEffectSizes(data,
                      include.switched.arms = FALSE,
                      change.sign = NULL,
                      impute.response = FALSE,
+                     sd.reference = c("none", "fill", "override"),
                      vars.for.id = c("study", "outcome_type",
                                      "instrument", "time",
                                      "time_weeks",
@@ -28,6 +29,7 @@ calculateEffectSizes(data,
                      .condition.specification = "multi",
                      .groups.column.indicator = c("_arm1", "_arm2"),
                      .trt.indicator = "arm",
+                     .instrument.indicator = "instrument",
                      .impute.response.vars = c(m.trt.pre = "baseline_m_arm1", 
                                                m.trt.post = "mean_arm1", 
                                                sd.trt.post = "sd_arm1", 
@@ -84,6 +86,36 @@ calculateEffectSizes(data,
   function? `FALSE` by default. If defined, the column specified in
   `change.sign` will also be considered when calculating the response.
 
+- sd.reference:
+
+  `character`. Allows to use "reference standardizers"
+  (instrument-specific pooled SDs of post-test scores derived from the
+  Metapsy databases) when calculating the effect sizes from `mean_arm1`
+  and `mean_arm2`. SD values, if available, are derived for each
+  instrument from the Metapsy SD-reference catalogue (see
+  [`listSDReferences`](listSDReferences.md)). Lookup is performed by
+  matching the data's `.instrument.indicator` column against the `instr`
+  shorthand of the catalogue (case-insensitive). This argument must be
+  one of:
+
+  - `"none"` (default): no substitution; no effect sizes calculated when
+    `sd_arm1` and `sd_arm2` are missing.
+
+  - `"fill"`: for rows where the instrument matches the catalogue and
+    `mean_arm1/2`, `n_arm1/2` are non-missing, fill in `sd_arm1` and
+    `sd_arm2` only where they are currently `NA`. User-provided SDs are
+    never overwritten.
+
+  - `"override"`: same as `"fill"`, but replaces `sd_arm1` and `sd_arm2`
+    for every matching row regardless of whether SDs are actually
+    provided in `sd_arm1` and `sd_arm2`. Use when the original SDs are
+    deemed unreliable or when consistent use reference SDs across
+    studies is desired.
+
+  Change-score SDs (`sd_change_arm1/2`) are never modified, since the
+  catalogue refers to cross-sectional SDs of the scale, not SDs of
+  change scores.
+
 - vars.for.id:
 
   `character` vector, containing column names of all variables used to
@@ -111,6 +143,16 @@ calculateEffectSizes(data,
 
   `character`. A character specifying the name used to indicate the
   treatment arm.
+
+- .instrument.indicator:
+
+  `character`. Name of the column in `data` holding instrument
+  identifiers used for the SD-reference lookup (see `sd.reference`).
+  Defaults to `"instrument"`, the variable defined in the Metapsy data
+  standard. Set this to a different column name if you keep a separate
+  variable with standardized Metapsy instrument shorthands (e.g. one
+  column for the free-text instrument name and another with
+  catalogue-compatible codes like `"BDI-II"`).
 
 - .impute.response.vars:
 
@@ -314,6 +356,24 @@ Other functions can be added to the list provided to `funcs.g` and
 
 It is possible to set one or several of these column entries to `NA`;
 but the columns themselves must be included.
+
+**Reference SD standardization.** When `sd.reference = "fill"` or
+`"override"` is passed, `calculateEffectSizes` consults the bundled
+Metapsy SD-reference catalogue
+([`listSDReferences`](listSDReferences.md)) and uses the catalogue's
+pooled random-effects SD as a substitute for the arm-level SDs
+(`sd_arm1`, `sd_arm2`). Lookup is performed by matching the data's
+`.instrument.indicator` column (`instrument` by default) against the
+catalogue's `instr` shorthand (case-insensitive), e.g. `"BDI-II"`,
+`"HDRS-17"`, `"PHQ-9"`. Rows whose `instrument` value is not in the
+catalogue are left untouched. In `"fill"` mode, only `NA` SDs are
+populated (mean and n must be present); in `"override"` mode, every
+matching row's SDs are replaced. The substitution applies only to the
+cross-sectional path; change-score SDs are never modified. A diagnostic
+message reports the number of rows affected and the catalogue version
+used. A more detailed version of the Metapsy SD reference standardizer
+catalogue can be browsed at
+[metapsy.org/tools/standardizers](https://www.metapsy.org/tools/standardizers).
 
 For more details see the [Get
 Started](https://tools.metapsy.org/articles/metapsytools) vignette.

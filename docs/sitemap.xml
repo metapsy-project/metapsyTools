@@ -88,6 +88,7 @@
 <url><loc>/reference/index.html</loc></url>
 <url><loc>/reference/inpatients.html</loc></url>
 <url><loc>/reference/isNAorNaN.html</loc></url>
+<url><loc>/reference/listSDReferences.html</loc></url>
 <url><loc>/reference/meanSD.html</loc></url>
 <url><loc>/reference/metaRegression.html</loc></url>
 <url><loc>/reference/metaRegression.meta.html</loc></url>
@@ -129,6 +130,7 @@
 <url><loc>/reference/rr.binary.html</loc></url>
 <url><loc>/reference/rr.precalc.html</loc></url>
 <url><loc>/reference/runMetaAnalysis.html</loc></url>
+<url><loc>/reference/sdReference.html</loc></url>
 <url><loc>/reference/selectArguments.html</loc></url>
 <url><loc>/reference/selectOutlierModel.html</loc></url>
 <url><loc>/reference/selmodel.html</loc></url>

@@ -84,8 +84,10 @@ reference:
   - starts_with("metapsy")
   - profile.runMetaAnalysis
   - proportionMID
+  - sdReference
   - simulateTreatmentCycles
   - addTrialArmInfo
+  - listSDReferences
   - starts_with("plot")
   - starts_with("print")
   - starts_with("summary")

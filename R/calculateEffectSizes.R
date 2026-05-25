@@ -62,8 +62,8 @@
 #'   \item \code{"none"} (default): no substitution; no effect sizes calculated when `sd_arm1` and `sd_arm2` are missing.
 #'   \item \code{"fill"}: for rows where the instrument matches the catalogue
 #'     and \code{mean_arm1/2}, \code{n_arm1/2} are non-missing, fill in
-#'     \code{sd_arm1} and \code{sd_arm2} \emph{only where they are
-#'     currently \code{NA}}. User-provided SDs are never overwritten.
+#'     \code{sd_arm1} and \code{sd_arm2} only where they are
+#'     currently \code{NA}. User-provided SDs are never overwritten.
 #'   \item \code{"override"}: same as \code{"fill"}, but replaces \code{sd_arm1}
 #'     and \code{sd_arm2} for every matching row regardless of whether SDs are actually provided in `sd_arm1` and `sd_arm2`. 
 #'     Use when the original SDs are deemed unreliable

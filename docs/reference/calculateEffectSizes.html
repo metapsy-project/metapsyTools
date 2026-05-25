@@ -60,6 +60,7 @@ prepared in the <a href="https://docs.metapsy.org/data-preparation/format/" clas
 <span>                     include.switched.arms <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>                     change.sign <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>                     impute.response <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>                     sd.reference <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"fill"</span>, <span class="st">"override"</span><span class="op">)</span>,</span>
 <span>                     vars.for.id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"study"</span>, <span class="st">"outcome_type"</span>,</span>
 <span>                                     <span class="st">"instrument"</span>, <span class="st">"time"</span>,</span>
 <span>                                     <span class="st">"time_weeks"</span>,</span>
@@ -68,6 +69,7 @@ prepared in the <a href="https://docs.metapsy.org/data-preparation/format/" clas
 <span>                     .condition.specification <span class="op">=</span> <span class="st">"multi"</span>,</span>
 <span>                     .groups.column.indicator <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"_arm1"</span>, <span class="st">"_arm2"</span><span class="op">)</span>,</span>
 <span>                     .trt.indicator <span class="op">=</span> <span class="st">"arm"</span>,</span>
+<span>                     .instrument.indicator <span class="op">=</span> <span class="st">"instrument"</span>,</span>
 <span>                     .impute.response.vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>m.trt.pre <span class="op">=</span> <span class="st">"baseline_m_arm1"</span>, </span>
 <span>                                               m.trt.post <span class="op">=</span> <span class="st">"mean_arm1"</span>, </span>
 <span>                                               sd.trt.post <span class="op">=</span> <span class="st">"sd_arm1"</span>, </span>
@@ -123,6 +125,24 @@ using the <code><a href="imputeResponse.html">imputeResponse</a></code> function
 will also be considered when calculating the response.</p></dd>
 
 
+<dt id="arg-sd-reference">sd.reference<a class="anchor" aria-label="anchor" href="#arg-sd-reference"></a></dt>
+<dd><p><code>character</code>. Allows to use "reference standardizers" (instrument-specific pooled SDs of post-test scores derived from the Metapsy databases)
+when calculating the effect sizes from <code>mean_arm1</code> and <code>mean_arm2</code>. SD values, if available, are derived for each instrument from the Metapsy SD-reference
+catalogue (see <code><a href="listSDReferences.html">listSDReferences</a></code>). Lookup is performed by
+matching the data's <code>.instrument.indicator</code> column against the <code>instr</code>
+shorthand of the catalogue (case-insensitive). This argument must be one of:</p><ul><li><p><code>"none"</code> (default): no substitution; no effect sizes calculated when <code>sd_arm1</code> and <code>sd_arm2</code> are missing.</p></li>
+<li><p><code>"fill"</code>: for rows where the instrument matches the catalogue
+and <code>mean_arm1/2</code>, <code>n_arm1/2</code> are non-missing, fill in
+<code>sd_arm1</code> and <code>sd_arm2</code> only where they are
+currently <code>NA</code>. User-provided SDs are never overwritten.</p></li>
+<li><p><code>"override"</code>: same as <code>"fill"</code>, but replaces <code>sd_arm1</code>
+and <code>sd_arm2</code> for every matching row regardless of whether SDs are actually provided in <code>sd_arm1</code> and <code>sd_arm2</code>.
+Use when the original SDs are deemed unreliable
+or when consistent use reference SDs across studies is desired.</p></li>
+</ul><p>Change-score SDs (<code>sd_change_arm1/2</code>) are never modified, since the
+catalogue refers to cross-sectional SDs of the scale, not SDs of change scores.</p></dd>
+
+
 <dt id="arg-vars-for-id">vars.for.id<a class="anchor" aria-label="anchor" href="#arg-vars-for-id"></a></dt>
 <dd><p><code>character</code> vector, containing column names of all variables
 used to construct unique comparison IDs.</p></dd>
@@ -145,6 +165,16 @@ representing the suffix used to differentiate between the first and second arm i
 
 <dt id="arg--trt-indicator">.trt.indicator<a class="anchor" aria-label="anchor" href="#arg--trt-indicator"></a></dt>
 <dd><p><code>character</code>. A character specifying the name used to indicate the treatment arm.</p></dd>
+
+
+<dt id="arg--instrument-indicator">.instrument.indicator<a class="anchor" aria-label="anchor" href="#arg--instrument-indicator"></a></dt>
+<dd><p><code>character</code>. Name of the column in <code>data</code>
+holding instrument identifiers used for the SD-reference lookup (see
+<code>sd.reference</code>). Defaults to <code>"instrument"</code>, the variable defined
+in the Metapsy data standard. Set this to a different column name if you
+keep a separate variable with standardized Metapsy instrument shorthands
+(e.g. one column for the free-text instrument name and another with
+catalogue-compatible codes like <code>"BDI-II"</code>).</p></dd>
 
 
 <dt id="arg--impute-response-vars">.impute.response.vars<a class="anchor" aria-label="anchor" href="#arg--impute-response-vars"></a></dt>
@@ -239,6 +269,23 @@ the following columns:</p><ul><li><p><code>.id</code>: Unique identifier for a t
 <li><p><code>.totaln_arm2</code>: Total sample size in the second trial arm.</p></li>
 </ul><p>It is possible to set one or several of these column entries to <code>NA</code>; but the columns
 themselves must be included.</p>
+<p><strong>Reference SD standardization.</strong> When <code>sd.reference = "fill"</code> or
+<code>"override"</code> is passed, <code>calculateEffectSizes</code> consults the bundled
+Metapsy SD-reference catalogue (<code><a href="listSDReferences.html">listSDReferences</a></code>) and uses
+the catalogue's pooled random-effects SD as a substitute for the
+arm-level SDs (<code>sd_arm1</code>, <code>sd_arm2</code>). Lookup is performed by
+matching the data's <code>.instrument.indicator</code> column (<code>instrument</code> by default)
+against the catalogue's
+<code>instr</code> shorthand (case-insensitive), e.g. <code>"BDI-II"</code>,
+<code>"HDRS-17"</code>, <code>"PHQ-9"</code>. Rows whose <code>instrument</code> value is
+not in the catalogue are left untouched. In <code>"fill"</code> mode, only
+<code>NA</code> SDs are populated (mean and n must be present); in
+<code>"override"</code> mode, every matching row's SDs are replaced. The
+substitution applies only to the cross-sectional path; change-score SDs
+are never modified. A diagnostic message reports the number of rows
+affected and the catalogue version used. A more detailed version of the
+Metapsy SD reference standardizer catalogue can be browsed at
+<a href="https://www.metapsy.org/tools/standardizers" class="external-link">metapsy.org/tools/standardizers</a>.</p>
 <p>For more details see the <a href="https://tools.metapsy.org/articles/metapsytools" class="external-link">Get Started</a> vignette.</p>
     </div>
     <div class="section level2">

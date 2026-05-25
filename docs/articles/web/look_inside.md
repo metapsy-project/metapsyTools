@@ -12,10 +12,10 @@ The presentation below provides more technical details on the
 
 Laden…
 
-![](https://drive.google.com/drive-viewer/AKGpihbv32eb6YmK1AQCtV_uyeUyD_Cr8kL67hsi_uvw93KWJHQTDBCKc6XO7xZc5D7WlK4gZZFWqoGb1wPljnpqePVm27ZOlTacHE0=s1600-rw-v1)
+![](https://drive.google.com/drive-viewer/AKGpihZ5e_tAAojKBrGN4ZyEDLI-XwpD2X-4hrbHtFsTLIOLePTmb9yl2Su711rqdoKeYdTzbxeqtALlZCEdfcLkCll_BgpxhueZX_4=s1600-rw-v1)
 
   
 
 Laden…
 
-![](https://drive.google.com/drive-viewer/AKGpihbv32eb6YmK1AQCtV_uyeUyD_Cr8kL67hsi_uvw93KWJHQTDBCKc6XO7xZc5D7WlK4gZZFWqoGb1wPljnpqePVm27ZOlTacHE0=s1600-rw-v1)
+![](https://drive.google.com/drive-viewer/AKGpihZ5e_tAAojKBrGN4ZyEDLI-XwpD2X-4hrbHtFsTLIOLePTmb9yl2Su711rqdoKeYdTzbxeqtALlZCEdfcLkCll_BgpxhueZX_4=s1600-rw-v1)
