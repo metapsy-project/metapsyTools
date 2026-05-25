@@ -16,6 +16,7 @@
 #'                      include.switched.arms = FALSE,
 #'                      change.sign = NULL,
 #'                      impute.response = FALSE,
+#'                      sd.reference = c("none", "fill", "override"),
 #'                      vars.for.id = c("study", "outcome_type",
 #'                                      "instrument", "time",
 #'                                      "time_weeks",
@@ -24,6 +25,7 @@
 #'                      .condition.specification = "multi",
 #'                      .groups.column.indicator = c("_arm1", "_arm2"),
 #'                      .trt.indicator = "arm",
+#'                      .instrument.indicator = "instrument",
 #'                      .impute.response.vars = c(m.trt.pre = "baseline_m_arm1", 
 #'                                                m.trt.post = "mean_arm1", 
 #'                                                sd.trt.post = "sd_arm1", 
@@ -51,6 +53,24 @@
 #' @param impute.response `logical`. When calculating the (log)-risk ratios, should response rates be computed
 #' using the \code{\link[metapsyTools]{imputeResponse}} function? `FALSE` by default. If defined, the column specified in `change.sign`
 #' will also be considered when calculating the response.
+#' @param sd.reference \code{character}. Allows to use "reference standardizers" (instrument-specific pooled SDs of post-test scores derived from the Metapsy databases)
+#' when calculating the effect sizes from \code{mean_arm1} and \code{mean_arm2}. SD values, if available, are derived for each instrument from the Metapsy SD-reference
+#' catalogue (see \code{\link{listSDReferences}}). Lookup is performed by
+#' matching the data's \code{.instrument.indicator} column against the \code{instr}
+#' shorthand of the catalogue (case-insensitive). This argument must be one of:
+#' \itemize{
+#'   \item \code{"none"} (default): no substitution; no effect sizes calculated when `sd_arm1` and `sd_arm2` are missing.
+#'   \item \code{"fill"}: for rows where the instrument matches the catalogue
+#'     and \code{mean_arm1/2}, \code{n_arm1/2} are non-missing, fill in
+#'     \code{sd_arm1} and \code{sd_arm2} \emph{only where they are
+#'     currently \code{NA}}. User-provided SDs are never overwritten.
+#'   \item \code{"override"}: same as \code{"fill"}, but replaces \code{sd_arm1}
+#'     and \code{sd_arm2} for every matching row regardless of whether SDs are actually provided in `sd_arm1` and `sd_arm2`. 
+#'     Use when the original SDs are deemed unreliable
+#'     or when consistent use reference SDs across studies is desired.
+#' }
+#' Change-score SDs (\code{sd_change_arm1/2}) are never modified, since the
+#' catalogue refers to cross-sectional SDs of the scale, not SDs of change scores.
 #' @param vars.for.id \code{character} vector, containing column names of all variables 
 #' used to construct unique comparison IDs.
 #' @param .condition \code{character}. The prefix of the two variables in \code{data} in 
@@ -60,6 +80,13 @@
 #' @param .groups.column.indicator \code{character}. A character vector with two elements, 
 #' representing the suffix used to differentiate between the first and second arm in a comparison.
 #' @param .trt.indicator \code{character}. A character specifying the name used to indicate the treatment arm.
+#' @param .instrument.indicator \code{character}. Name of the column in \code{data}
+#' holding instrument identifiers used for the SD-reference lookup (see
+#' \code{sd.reference}). Defaults to \code{"instrument"}, the variable defined
+#' in the Metapsy data standard. Set this to a different column name if you
+#' keep a separate variable with standardized Metapsy instrument shorthands
+#' (e.g. one column for the free-text instrument name and another with
+#' catalogue-compatible codes like \code{"BDI-II"}).
 #' @param .impute.response.vars `list`. Named list with the names of columns in `data` and the specific argument in
 #' \code{\link[metapsyTools]{imputeResponse}} they should be used for.
 #' 
@@ -178,6 +205,24 @@
 #' It is possible to set one or several of these column entries to `NA`; but the columns
 #' themselves must be included.
 #' 
+#' **Reference SD standardization.** When \code{sd.reference = "fill"} or
+#' \code{"override"} is passed, `calculateEffectSizes` consults the bundled
+#' Metapsy SD-reference catalogue (\code{\link{listSDReferences}}) and uses
+#' the catalogue's pooled random-effects SD as a substitute for the
+#' arm-level SDs (\code{sd_arm1}, \code{sd_arm2}). Lookup is performed by
+#' matching the data's \code{.instrument.indicator} column (`instrument` by default) 
+#' against the catalogue's
+#' \code{instr} shorthand (case-insensitive), e.g. \code{"BDI-II"},
+#' \code{"HDRS-17"}, \code{"PHQ-9"}. Rows whose \code{instrument} value is
+#' not in the catalogue are left untouched. In \code{"fill"} mode, only
+#' \code{NA} SDs are populated (mean and n must be present); in
+#' \code{"override"} mode, every matching row's SDs are replaced. The
+#' substitution applies only to the cross-sectional path; change-score SDs
+#' are never modified. A diagnostic message reports the number of rows
+#' affected and the catalogue version used. A more detailed version of the
+#' Metapsy SD reference standardizer catalogue can be browsed at 
+#' [metapsy.org/tools/standardizers](https://www.metapsy.org/tools/standardizers).
+#' 
 #' For more details see the [Get Started](https://tools.metapsy.org/articles/metapsytools) vignette.
 #'
 #' @importFrom tidyr pivot_longer pivot_wider
@@ -204,6 +249,7 @@ calculateEffectSizes = function(data,
                                 include.switched.arms = FALSE,
                                 change.sign = NULL,
                                 impute.response = FALSE,
+                                sd.reference = c("none", "fill", "override"),
                                 vars.for.id = c("study", "outcome_type",
                                                 "instrument", "time",
                                                 "time_weeks",
@@ -212,6 +258,7 @@ calculateEffectSizes = function(data,
                                 .condition.specification = "multi",
                                 .groups.column.indicator = c("_arm1", "_arm2"),
                                 .trt.indicator = "arm",
+                                .instrument.indicator = "instrument",
                                 .impute.response.vars = c(m.trt.pre = "baseline_m_arm1", 
                                                           m.trt.post = "mean_arm1", 
                                                           sd.trt.post = "sd_arm1", 
@@ -243,6 +290,13 @@ calculateEffectSizes = function(data,
   
   # Convert to data.frame (conventional)
   data = data.frame(data)
+
+  # Apply reference-SD standardization, if requested. Done here, BEFORE the
+  # conflict check on ES-data groups, so that "fill"-mode substitutions are
+  # visible to the conflict logic and to the downstream Hedges' g
+  # calculation functions.
+  data = applySDReference(data, mode = sd.reference[1],
+                          instr.col = .instrument.indicator)
 
   # Check that each row only provides one effect size data group
   es.groups = list(

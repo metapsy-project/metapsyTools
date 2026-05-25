@@ -91,6 +91,19 @@
 #' @keywords internal
 "database2021Subset"
 
-
+#' The 'sdReference' dataset
+#'
+#' Catalogue of patient or clinician-rated outcome 
+#' measurement instruments for which a
+#' reference standard deviation is available within `metapsyTools`. The
+#' shorthand in the `instr` column is the lookup key used by
+#' \code{\link{calculateEffectSizes}} when \code{sd.reference = "fill"}
+#' or \code{"override"}: by default, this code is matched (case-insensitively)
+#' against the `instrument` column of the data.
+#'
+#' @format A \code{data.frame}.
+#' @author Mathias Harrer, Bernát Fábián
+#' @usage data("sdReference")
+"sdReference"
 
 
