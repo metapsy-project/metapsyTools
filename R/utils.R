@@ -741,10 +741,10 @@ collapseDomainRatings = function(x, var){
 domain1Algorithm = function(d1_1, d1_2, d1_3, d1_4) {
   if (identical(d1_2, "No/PN")) {"high risk"}
   else if (identical(d1_2, "NI") & (identical(d1_3, "No/PN")|identical(d1_4, "No/PN"))) {"high risk"}
-  else if (identical(d1_2, "NI") & ((identical(d1_3, "Yes/PY")|identical(d1_3, "NI"))|(identical(d1_4, "Yes/PY")|identical(d1_4, "NI")))) {"some concerns"}
+  else if (identical(d1_2, "NI") & ((identical(d1_3, "Yes/PY")|identical(d1_3, "NI"))&(identical(d1_4, "Yes/PY")|identical(d1_4, "NI")))) {"some concerns"}
   else if (identical(d1_2, "Yes/PY") & identical(d1_1, "No/PN")) {"some concerns"}
   else if (identical(d1_2, "Yes/PY") & (identical(d1_1, "Yes/PY")|identical(d1_1, "NI")) & (identical(d1_3, "No/PN")|identical(d1_4, "No/PN"))) {"some concerns"}
-  else if (identical(d1_2, "Yes/PY") & (identical(d1_1, "Yes/PY")|identical(d1_1, "NI")) & ((identical(d1_3, "Yes/PY")|identical(d1_3, "NI"))|(identical(d1_4, "Yes/PY")|identical(d1_4, "NI")))) {"low risk"}
+  else if (identical(d1_2, "Yes/PY") & (identical(d1_1, "Yes/PY")|identical(d1_1, "NI")) & ((identical(d1_3, "Yes/PY")|identical(d1_3, "NI"))&(identical(d1_4, "Yes/PY")|identical(d1_4, "NI")))) {"low risk"}
   else NA
 }
 
