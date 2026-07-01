@@ -10,12 +10,12 @@ Please note that this presentation refers to an older version (0.2.0) of
 The presentation below provides more technical details on the
 `metapsyTools` package and its functions.
 
-Wird geladen…
+Laden…
 
-![](https://drive.google.com/drive-viewer/AKGpihYCnl--Hl0cSh4feNOK1UZvgXwcD5rrqJCiC7Kv1IGi_LNktIF0rnNqlBPhGrSxyY44xBTwOTA6N619NnlabXG55NOT7Gq6tLo=s1600-rw-v1)
+![](https://drive.google.com/drive-viewer/AKGpihbP7qa8srprHCA4DPH0M4jwxdXL2j3Fwg7TT5ThDA9vS4l9AEt8SHsG1LL6DyrdQd98fqGAl2P6vAM3Rn6lCcFjedQAw6JGqek=s1600-rw-v1)
 
   
 
-Wird geladen…
+Laden…
 
-![](https://drive.google.com/drive-viewer/AKGpihYCnl--Hl0cSh4feNOK1UZvgXwcD5rrqJCiC7Kv1IGi_LNktIF0rnNqlBPhGrSxyY44xBTwOTA6N619NnlabXG55NOT7Gq6tLo=s1600-rw-v1)
+![](https://drive.google.com/drive-viewer/AKGpihbP7qa8srprHCA4DPH0M4jwxdXL2j3Fwg7TT5ThDA9vS4l9AEt8SHsG1LL6DyrdQd98fqGAl2P6vAM3Rn6lCcFjedQAw6JGqek=s1600-rw-v1)
