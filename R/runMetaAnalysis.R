@@ -640,6 +640,7 @@ runMetaAnalysis = function(data,
   dots = list(...)
   error.model.list = list()
   warn.end = FALSE
+  no.low.rob.studies = FALSE
   data.original = data
   method.tau = method.tau
   
@@ -836,6 +837,9 @@ runMetaAnalysis = function(data,
                        mGeneral, mComb, low.rob.filter, method.tau,
                        .raw.bin.es, .type.es, round.digits, nntCer,
                        rob.data) %>% suppressWarnings()
+    if (isTRUE(mRob$no.low.rob)) {
+      no.low.rob.studies = TRUE
+    }
     sendMessage(mRob, "rob", which.run)
     # If model failed, add to error model list
     if (mRob$has.error){
@@ -1113,7 +1117,7 @@ runMetaAnalysis = function(data,
   mHighest$m$.type.es = .type.es
   mOutliers$m$.type.es = .type.es
   mInfluence$m$.type.es = .type.es
-  mRob$m$.type.es = .type.es
+  if (!is.null(mRob$m)) mRob$m$.type.es = .type.es
   mThreeLevel$m$.type.es = .type.es
   mCHE$m$.type.es = .type.es
   mCcrem$m$.type.es = .type.es
@@ -1163,7 +1167,17 @@ runMetaAnalysis = function(data,
             "calculations. Please check the report above.", 
             call. = FALSE)
   }
-  if (!"overall" %in% which.run && nrow(returnlist$summary)==1) {
+  if (no.low.rob.studies) {
+    warning("No low risk of bias studies were found; the 'rob' model was not fitted.",
+            call. = FALSE)
+    if (identical(which.run, "rob") || 
+        (length(which.run) == 1L && identical(which.run[1], "rob"))) {
+      returnlist$summary = returnlist$summary[
+        rownames(returnlist$summary) != "Overall", , drop = FALSE]
+    }
+  }
+  if (!"overall" %in% which.run && nrow(returnlist$summary)==1 &&
+      !no.low.rob.studies) {
     returnlist$which.run = "overall"
     warning("The specified model '", which.run, "' in 'which.run' does not exist. ", 
             "Defaulting to 'overall'.", 

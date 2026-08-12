@@ -2242,23 +2242,19 @@ fitRobModel = function(which.run, which.rob, which.outliers,
     robMask = eval(parse(text = robFilter))
     if (sum(robMask) == 0){
       message("\n- ", crayon::yellow("[!] "), 
-              "No low risk of bias studies detected! Switching to 'general'... ",
+              "No low risk of bias studies detected! ",
+              "The 'rob' model was not fitted. ",
               appendLF = FALSE)
-      if (mGeneral$has.error){
-        robMask = NA
-      } else {
-        robMask = rep(TRUE, nrow(mGeneral$m$data))
-      }
-      mRob = tryCatch2(
-        updateMeta(
-          mGeneral$m, exclude = !robMask, cluster = NULL))
-      which.run[!which.run == "rob"] -> which.run
-      warn.end = TRUE
-    } else {
-      mRob = tryCatch2(
-        updateMeta(
-          m.for.rob, exclude = !robMask, cluster = NULL))
+      return(list(m = NULL,
+                  res = NULL,
+                  has.error = TRUE,
+                  no.low.rob = TRUE,
+                  message = "No low risk of bias studies detected."))
     }
+    
+    mRob = tryCatch2(
+      updateMeta(
+        m.for.rob, exclude = !robMask, cluster = NULL))
   } else {
     robMask = rep(TRUE, nrow(mGeneral$m$data))
     mRob = tryCatch2(
@@ -2356,6 +2352,7 @@ fitRobModel = function(which.run, which.rob, which.outliers,
   return(list(m = mRob$value, 
               res = mRobRes,
               has.error = mRob$has.error,
+              no.low.rob = FALSE,
               message = mRob$error$message))
 }
 
