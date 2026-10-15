@@ -215,6 +215,12 @@ checkDataFormat = function(data,
     group.active = sapply(es.groups.present, function(cols) {
       apply(data[, cols, drop = FALSE], 1, function(x) any(!is.na(x)))
     })
+    # sapply collapses to a named vector when nrow(data) == 1; keep a matrix
+    if (!is.matrix(group.active)) {
+      group.active = matrix(
+        group.active, nrow = nrow(data),
+        dimnames = list(NULL, names(es.groups.present)))
+    }
     n.active = rowSums(group.active)
     if (any(n.active > 1)) {
       conflict.rows = which(n.active > 1)

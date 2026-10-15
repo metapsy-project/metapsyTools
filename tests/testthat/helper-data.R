@@ -27,6 +27,41 @@ create_test_data <- function() {
   )
 }
 
+# Create test data with change-score outcomes.
+# Includes empty continuous columns so Metapsy-style datasets (both column
+# groups present) are covered; this used to crash for nrow == 1.
+create_test_data_change <- function(n = 2) {
+  data.frame(
+    study = paste0("Study", seq_len(n)),
+    condition_arm1 = rep("Treatment", n),
+    condition_arm2 = rep("Control", n),
+    multi_arm1 = rep("A", n),
+    multi_arm2 = rep("B", n),
+    outcome_type = rep("continuous", n),
+    instrument = rep("PHQ-9", n),
+    time = rep("post", n),
+    time_weeks = rep(8, n),
+    rating = rep("self", n),
+    mean_arm1 = rep(NA_real_, n),
+    mean_arm2 = rep(NA_real_, n),
+    sd_arm1 = rep(NA_real_, n),
+    sd_arm2 = rep(NA_real_, n),
+    n_arm1 = rep(NA_real_, n),
+    n_arm2 = rep(NA_real_, n),
+    mean_change_arm1 = rep(-8, n),
+    mean_change_arm2 = rep(-2, n),
+    sd_change_arm1 = rep(5, n),
+    sd_change_arm2 = rep(4, n),
+    n_change_arm1 = rep(30, n),
+    n_change_arm2 = rep(28, n),
+    event_arm1 = rep(NA_real_, n),
+    event_arm2 = rep(NA_real_, n),
+    totaln_arm1 = rep(NA_real_, n),
+    totaln_arm2 = rep(NA_real_, n),
+    stringsAsFactors = FALSE
+  )
+}
+
 # Create test data with binary outcomes
 create_test_data_binary <- function() {
   data.frame(
