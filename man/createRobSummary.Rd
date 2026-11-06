@@ -20,10 +20,10 @@ studies with a low risk of bias.}
 studies with a high risk of bias.}
 
 \item{name.unclear}{A \code{character} vector, specifying which code(s) have been used in the original data for
-studies with unclear risk of bias.}
+studies with unclear risk of bias. Can be set to \code{NULL} if there are no such codes.}
 
 \item{which.run}{The model in \code{model} that should be used for the summary risk of bias plot.
-Uses the default analysis in \code{model} if no value is specified by the user. Possible values are
+Uses the first model in \code{model} if no value is specified by the user. Possible values are
 \code{"overall"}, \code{"combined"}, \code{"lowest"}, \code{"highest"}, \code{"outliers"},
 \code{"influence"} and \code{"rob"}.}
 }
@@ -78,7 +78,7 @@ createRobSummary(res,
 
 }
 \seealso{
-\link[dmetar:rob.summary]{dmetar::rob.summary}, \link[robvis:rob_summary]{robvis::rob_summary}, \link[meta:rob]{meta::rob}
+\link[meta:rob]{meta::rob}
 }
 \author{
 Mathias Harrer \email{mathias.h.harrer@gmail.com},

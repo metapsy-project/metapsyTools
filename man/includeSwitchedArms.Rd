@@ -8,9 +8,10 @@ includeSwitchedArms(dat, ...)
 }
 \arguments{
 \item{dat}{Data set created by \code{calculateEffectSizes} in the wider format, which includes
-calculated effect sizes and standard errors in columns \code{es} and \code{se}, respectively. Only
-data sets created by \code{calculateEffectSizes} with \code{trt.indicator} set to \code{"trt"}
-can be used.}
+calculated effect sizes and standard errors in columns such as \code{.g} and \code{.g_se}. Only
+data sets created by \code{calculateEffectSizes} with \code{.trt.indicator} set to \code{"arm"}
+can be used. Signs of \code{.g}, \code{.log_rr} and (if available) \code{.log_rom} are reversed in
+the added rows.}
 
 \item{...}{Further arguments (not used).}
 }

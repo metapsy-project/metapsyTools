@@ -16,8 +16,8 @@ comparison. Must contain the columns listed under \code{...}.}
 \item{\code{mean_change_arm2}}{Mean change from baseline in arm 2 (control/comparator).}
 \item{\code{sd_change_arm1}}{Standard deviation of the change score in arm 1.}
 \item{\code{sd_change_arm2}}{Standard deviation of the change score in arm 2.}
-\item{\code{n_arm1}}{Sample size of arm 1. Must be > 0.}
-\item{\code{n_arm2}}{Sample size of arm 2. Must be > 0.}
+\item{\code{n_change_arm1}}{Sample size of arm 1. Must be > 0.}
+\item{\code{n_change_arm2}}{Sample size of arm 2. Must be > 0.}
 }
 Additional columns in \code{x} are silently ignored.}
 }
@@ -30,9 +30,10 @@ two numeric columns:
 \item{\code{se}}{Standard error of \code{es}, derived via the delta method.}
 }
 Rows are set to \code{NA} for both columns when any required input is
-\code{NA}, when either change-score mean equals zero (log ROM is
-undefined), when either sample size is non-positive, or when the
-computed variance is non-finite or not strictly positive.
+\code{NA}, when either change-score mean equals zero or the two means have
+opposite signs (log ROM is undefined), when either sample size is
+non-positive, or when the computed variance is non-finite or not strictly
+positive.
 }
 \description{
 Computes the natural log-transformed ratio of means (log ROM) and its
@@ -52,9 +53,10 @@ Its sampling variance is approximated via the delta method (Hedges et al., 1999)
 The standard error returned in \code{se} is \eqn{\sqrt{v}}.
 
 A positive log ROM indicates a larger mean change in arm 1 than in arm 2.
-The measure is undefined when either change-score mean equals zero, so
-such rows are returned as \code{NA}. Note that a zero mean change score is
-substantively meaningful (no average change from baseline) and relatively
+The measure is undefined when either change-score mean equals zero, or when
+the two change-score means have opposite signs (e.g. improvement in one arm,
+deterioration in the other), so such rows are returned as \code{NA}. Note that
+zero or opposite mean change scores are substantively meaningful and relatively
 common, so this limitation should be considered when choosing between
 effect size metrics.
 }

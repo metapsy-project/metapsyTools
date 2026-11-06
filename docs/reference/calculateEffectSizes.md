@@ -77,7 +77,9 @@ calculateEffectSizes(data,
 
   `character`. Name of a `logical` column in `data`, encoding if the
   sign of a calculated effect size should be reversed (`TRUE`) or not
-  (`FALSE`). Set to `NULL` (default) if no changes should be made.
+  (`FALSE`). Missing values are treated as `FALSE`. Set to `NULL`
+  (default) if no changes should be made. This only applies to `.g`;
+  risk ratios and ratios of means are not affected.
 
 - impute.response:
 
@@ -164,7 +166,7 @@ calculateEffectSizes(data,
 
 `calculateEffectSizes` returns the meta-analysis data set as class
 `data.frame` in wide format (if results are saved to a variable). It
-also generates the following columns, wich are added to the data:
+also generates the following columns, which are added to the data:
 
 - `.id`: Unique identifier for a trial arm comparison/row.
 
@@ -197,6 +199,27 @@ By default, `calculateEffectSizes` calculates the small-sample bias
 corrected standardized mean difference (Hedges' *g*) and log-risk
 ratios, as well their respective standard errors, if adequate raw effect
 size data is available for a comparison.
+
+**Effect size direction.** Effects are calculated as `arm1` versus
+`arm2`. A negative `.g` means that the mean in the first arm is lower
+than in the second arm, or that *more* events occurred in the first arm
+(e.g. when the event is treatment response). A log-risk ratio greater
+than zero means that more events occurred in the first arm. Thus, if
+lower scores indicate better outcomes and events are beneficial,
+negative values of `.g` and positive values of `.log_rr` both favor the
+first arm. Use `change.sign` for outcomes where higher values are
+better.
+
+**Standard errors of *g*.** The bias correction is applied to the effect
+size, while the standard error is based on the variance of the
+uncorrected standardized mean difference, as implemented in
+[`esc::esc_mean_sd()`](https://strengejacke.github.io/esc/reference/esc_mean_sd.html).
+In small samples, this makes the standard error slightly more
+conservative than when also multiplying it by the correction factor.
+
+Existing `.g`, `.g_se`, `.log_rr`, `.log_rr_se`, `.log_rom` and
+`.log_rom_se` columns in `data` are replaced. Pre-calculated values
+should be provided in the `precalc_` columns described below.
 
 It is essential that the data set in `data` contains a few required
 columns for this to work. An overview of the required data format is

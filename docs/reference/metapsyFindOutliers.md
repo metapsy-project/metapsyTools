@@ -43,7 +43,7 @@ object:
 
 - `out.study.random`: A numeric vector containing the names of the
   outlying studies when assuming a random-effects model. The
-  \\\tau^{2}\\ estimator `method.tau` is inherited from `x`.
+  \\(\tau^{2}\\) estimator `method.tau` is inherited from `x`.
 
 - `m.fixed`: An object of class `meta` containing the results of the
   meta-analysis with outliers removed (assuming a fixed-effect model).

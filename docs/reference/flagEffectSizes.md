@@ -57,7 +57,7 @@ flagEffectSizes(data,
 - power:
 
   Reference value for defining a "strongly" underpowered study
-  (\\1-\beta\\). Defaults to `"reference"`, which corresponds to the
+  (\\(1-\beta\\)). Defaults to `"reference"`, which corresponds to the
   first quartile of a reference power distribution derived from a
   large-scale meta-analytic database of psychological treatments (see
   Details). Also accepts user-defined power threshold in the (0,1) range
@@ -65,8 +65,8 @@ flagEffectSizes(data,
 
 - alpha:
 
-  The \\\alpha\\ level used to determine "incompatibility" of an effect
-  size (0.05 by default). See Details.
+  The \\(\alpha\\) level used to determine "incompatibility" of an
+  effect size (0.05 by default). See Details.
 
 ## Value
 
@@ -118,7 +118,7 @@ trials:
   distribution was then selected. Effect sizes are flagged if they
   exceeded a critical threshold corresponding to a Shannon information
   value (S-value) of 4.32, roughly equating to the improbability of four
-  heads in a row, or \\p\\ = 0.05.
+  heads in a row, or \\(p\\) = 0.05.
 
 - **Strong lack of power**: Each study's achieved statistical power is
   computed relative to a bias-corrected reference effect size estimated

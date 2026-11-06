@@ -18,8 +18,8 @@ important difference; \mjeqn{MID}{MID}; Cuijpers et al., \href{https://onlinelib
 that should be used to estimate the
 proportion of true effect sizes that exceed this cut-off. If the outcome measure used in \code{model} is
 Hedges' \mjeqn{g}{g}, the provided value should also be a standardized mean difference.
-If the outcome measure of \code{model} is a risk ratio, the treshold should also be provided
-as an (untransformed) risk ratio.}
+If the outcome measure of \code{model} is a risk ratio or ratio of means, the threshold should also be provided
+as an (untransformed) risk ratio or ratio of means, respectively.}
 
 \item{which}{The model in \code{model} that should be used to estimate the proportions.
 Defaults to \code{"all"}, which means that proportions are calculated for all models.
@@ -28,7 +28,9 @@ Alternatively, possible values are \code{"overall"}, \code{"combined"}, \code{"l
 models are available in the \code{model} object. If
 \code{\link[metapsyTools]{correctPublicationBias}} has been run, \code{"trimfill"}, \code{limitmeta} and \code{selection}
 are also possible options. It is also possible to concatenate model names, meaning
-that proportions are calculated for all the supplied models.}
+that proportions are calculated for all the supplied models. The \code{"waap.wls"} model is not included,
+since it does not provide an estimate of the between-study heterogeneity. For multilevel models, the total
+heterogeneity variance across all random effects levels is used. Not available for event rates (\code{"EER"}, \code{"CER"}).}
 
 \item{test}{By default, the function estimates the proportion of true effects \emph{below}
 the provided threshold in \code{mid} (\code{test="smaller"}). Alternatively, one can specify
@@ -73,7 +75,7 @@ relevant negative effects.
 
 When the \code{plot} method is used, or when \code{plot} is set to \code{TRUE} in the function,
 a plot showing the assumed distribution of true effects based on the estimated
-meta-analytic model is created. Notably, is is assumed that the random-effects
+meta-analytic model is created. Notably, it is assumed that the random-effects
 distribution of true effect sizes is approximately normal. This simplifying assumption
 is required for this (and many other meta-analytic methods;
 Jackson & White, \href{https://onlinelibrary.wiley.com/doi/full/10.1002/bimj.201800071}{2018})

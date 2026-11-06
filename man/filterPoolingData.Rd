@@ -6,7 +6,7 @@
 \usage{
 filterPoolingData(.data, ...,
                   .filter.missing.rows = FALSE,
-                  .es.column = es)
+                  .es.column = .g)
 }
 \arguments{
 \item{.data}{A \code{data.frame} containing the calculated effect sizes, as created by the \code{\link{calculateEffectSizes}} function.}
@@ -17,7 +17,7 @@ provided using the \code{|} operator. Multiple filter statements separated using
 
 \item{.filter.missing.rows}{\code{logical}. Should rows with no effect sizes be filtered out? Default is \code{FALSE}.}
 
-\item{.es.column}{Name of the column in \code{.data} to be used for filtering out rows with no effect sizes. Default is \code{es}.}
+\item{.es.column}{Name of the column in \code{.data} to be used for filtering out rows with no effect sizes. Default is \code{.g}.}
 }
 \value{
 \code{filterPoolingData} returns the filtered data set as class \code{data.frame}.

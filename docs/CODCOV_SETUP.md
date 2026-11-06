@@ -28,7 +28,6 @@ Make sure you have `covr` installed (it’s used to generate coverage
 reports):
 
 ``` r
-
 install.packages("covr")
 ```
 
@@ -62,7 +61,6 @@ The badge format is:
 You can test coverage locally before pushing:
 
 ``` r
-
 # Install covr if not already installed
 install.packages("covr")
 

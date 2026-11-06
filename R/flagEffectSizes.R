@@ -155,17 +155,12 @@ flagEffectSizes = function(data, reference = c("all", "dep", "psy", "ptsd"),
     stop("'reference' muste be one of 'all', 'dep', 'psy', or 'ptsd'.")
   }
   
-  robVar = strsplit(high.rob.filter, " ")[[1]][1]
-  if (!robVar %in% colnames(x)){
-    stop("'", robVar, "' variable not found in 'data'.", call. = FALSE)
-  }
   
   if (identical(power[1], "reference")) {
     power = "q1"
   }
   
-  robFilter = paste0("x$", high.rob.filter, " & !is.na(x$", robVar, ")")
-  robMask = eval(parse(text = robFilter))
+  robMask = evalRobFilter(high.rob.filter, x, "'data'")
   
   if (sum(robMask)==0) {
     warning("No studies with risk of bias detected.",

@@ -15,26 +15,24 @@ using the
 function will not work.
 
 To install the package, you have to download the latest version of the
-package from the `metapsyTools` [Github
+package from the `metapsyTools` [GitHub
 repository](https://github.com/MathiasHarrer/metapsyTools). This is
 fairly easy to achieve using the `pkg_install` function in the
 [`pak`](https://pak.r-lib.org/index.html) package. If you run the
 following code in R:
 
 ``` r
-
 if (!require("pak")) install.packages("pak")
 pak::pkg_install("metapsy-project/metapsyTools")
 ```
 
 R will automatically check if `devtools` is installed on your computer,
 and install it for you if necessary; download the `metapsyTools` package
-from Github; and install the package. Following a succesfull
+from GitHub; and install the package. Following a successful
 installation, the package can be loaded from your library and is then
 ready to be used.
 
 ``` r
-
 library(metapsyTools)
 ```
 
@@ -76,10 +74,9 @@ but update all packages this time.
 
 The `metapsyTools` package is under active development and after some
 time, a new version may be available. You can check the current version
-of of `metapsyTools` installed on your computer using this code:
+of `metapsyTools` installed on your computer using this code:
 
 ``` r
-
 packageVersion("metapsyTools")
 ```
 
@@ -92,7 +89,6 @@ To update the package, you first have to **de-install** the current
 version on your computer. You can do this using the following code:
 
 ``` r
-
 # Note: this code assumes you are working with RStudio
 remove.packages("metapsyTools")
 .rs.restartR()

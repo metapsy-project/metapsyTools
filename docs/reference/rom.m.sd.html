@@ -12,7 +12,7 @@ not intended to be used directly."><meta property="og:image" content="/logo.png"
 
     <a class="navbar-brand me-2" href="../index.html">metapsyTools</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.14</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.15</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -28,6 +28,7 @@ not intended to be used directly."><meta property="og:image" content="/logo.png"
     <li><a class="dropdown-item" href="../articles/web/installation.html">Installation Guide</a></li>
     <li><a class="dropdown-item" href="../articles/web/look_inside.html">A Look Inside</a></li>
     <li><a class="dropdown-item" href="../data-validator.html">Data Validator</a></li>
+    <li><a class="external-link dropdown-item" href="https://www.metapsy.org/tools/run-meta-analysis">Online App</a></li>
   </ul></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -99,9 +100,9 @@ two numeric columns:</p><dl><dt><code>es</code></dt>
 
 
 </dl><p>Rows are set to <code>NA</code> for both columns when any required input is
-<code>NA</code>, when either mean equals zero (log ROM is undefined), when
-either sample size is non-positive, or when the computed variance is
-non-finite or not strictly positive.</p>
+<code>NA</code>, when either mean equals zero or the means have opposite signs
+(log ROM is undefined), when either sample size is non-positive, or when
+the computed variance is non-finite or not strictly positive.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -111,8 +112,8 @@ $$\ln(\text{ROM}) = \ln\!\left(\frac{\bar{x}_1}{\bar{x}_2}\right)$$</p>
 $$v = \frac{s_1^2}{n_1 \bar{x}_1^2} + \frac{s_2^2}{n_2 \bar{x}_2^2}$$</p>
 <p>The standard error returned in <code>se</code> is \(\sqrt{v}\).</p>
 <p>A positive log ROM indicates that arm 1 has a higher mean than arm 2.
-The measure is undefined when either group mean equals zero, which is why
-such rows are returned as <code>NA</code>.</p>
+The measure is undefined when either group mean equals zero, or when the two
+means have opposite signs, which is why such rows are returned as <code>NA</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>

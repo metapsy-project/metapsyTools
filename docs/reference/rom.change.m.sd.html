@@ -14,7 +14,7 @@ used directly."><meta property="og:image" content="/logo.png"><link rel="preconn
 
     <a class="navbar-brand me-2" href="../index.html">metapsyTools</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.14</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.15</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -30,6 +30,7 @@ used directly."><meta property="og:image" content="/logo.png"><link rel="preconn
     <li><a class="dropdown-item" href="../articles/web/installation.html">Installation Guide</a></li>
     <li><a class="dropdown-item" href="../articles/web/look_inside.html">A Look Inside</a></li>
     <li><a class="dropdown-item" href="../data-validator.html">Data Validator</a></li>
+    <li><a class="external-link dropdown-item" href="https://www.metapsy.org/tools/run-meta-analysis">Online App</a></li>
   </ul></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -81,10 +82,10 @@ comparison. Must contain the columns listed under <code>...</code>.</p></dd>
 <dt><code>sd_change_arm2</code></dt>
 <dd><p>Standard deviation of the change score in arm 2.</p></dd>
 
-<dt><code>n_arm1</code></dt>
+<dt><code>n_change_arm1</code></dt>
 <dd><p>Sample size of arm 1. Must be &gt; 0.</p></dd>
 
-<dt><code>n_arm2</code></dt>
+<dt><code>n_change_arm2</code></dt>
 <dd><p>Sample size of arm 2. Must be &gt; 0.</p></dd>
 
 
@@ -103,9 +104,10 @@ two numeric columns:</p><dl><dt><code>es</code></dt>
 
 
 </dl><p>Rows are set to <code>NA</code> for both columns when any required input is
-<code>NA</code>, when either change-score mean equals zero (log ROM is
-undefined), when either sample size is non-positive, or when the
-computed variance is non-finite or not strictly positive.</p>
+<code>NA</code>, when either change-score mean equals zero or the two means have
+opposite signs (log ROM is undefined), when either sample size is
+non-positive, or when the computed variance is non-finite or not strictly
+positive.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -116,9 +118,10 @@ $$\ln(\text{ROM}) = \ln\!\left(\frac{\bar{x}_{\Delta,1}}{\bar{x}_{\Delta,2}}\rig
 $$v = \frac{s_{\Delta,1}^2}{n_1 \,\bar{x}_{\Delta,1}^2} + \frac{s_{\Delta,2}^2}{n_2\, \bar{x}_{\Delta,2}^2}$$</p>
 <p>The standard error returned in <code>se</code> is \(\sqrt{v}\).</p>
 <p>A positive log ROM indicates a larger mean change in arm 1 than in arm 2.
-The measure is undefined when either change-score mean equals zero, so
-such rows are returned as <code>NA</code>. Note that a zero mean change score is
-substantively meaningful (no average change from baseline) and relatively
+The measure is undefined when either change-score mean equals zero, or when
+the two change-score means have opposite signs (e.g. improvement in one arm,
+deterioration in the other), so such rows are returned as <code>NA</code>. Note that
+zero or opposite mean change scores are substantively meaningful and relatively
 common, so this limitation should be considered when choosing between
 effect size metrics.</p>
     </div>

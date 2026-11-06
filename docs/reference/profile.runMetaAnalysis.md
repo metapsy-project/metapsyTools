@@ -4,8 +4,8 @@ Profiles the restricted log-likelihood of `threelevel`,
 `threelevel.che`, `ccrem`, or `ccrem.che` models, using the
 [`metafor::profile.rma()`](https://wviechtb.github.io/metafor/reference/profile.rma.html)
 function. This functionality can be used to check if the heterogeneity
-variances (\\\tau^2\\ within and between studies) were identifiable and
-correctly estimated.
+variances (\\(\tau^2\\) within and between studies) were identifiable
+and correctly estimated.
 
 ## Usage
 

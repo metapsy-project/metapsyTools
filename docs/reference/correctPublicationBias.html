@@ -8,7 +8,7 @@ small-study effects to results of the runMetaAnalysis function."><meta property=
 
     <a class="navbar-brand me-2" href="../index.html">metapsyTools</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.14</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.15</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -24,6 +24,7 @@ small-study effects to results of the runMetaAnalysis function."><meta property=
     <li><a class="dropdown-item" href="../articles/web/installation.html">Installation Guide</a></li>
     <li><a class="dropdown-item" href="../articles/web/look_inside.html">A Look Inside</a></li>
     <li><a class="dropdown-item" href="../data-validator.html">Data Validator</a></li>
+    <li><a class="external-link dropdown-item" href="https://www.metapsy.org/tools/run-meta-analysis">Online App</a></li>
   </ul></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -49,7 +50,7 @@ small-study effects to results of the <code>runMetaAnalysis</code> function.</p>
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">correctPublicationBias</span><span class="op">(</span><span class="va">model</span>, </span>
 <span>                       which.run <span class="op">=</span> <span class="va">model</span><span class="op">$</span><span class="va">which.run</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>,</span>
-<span>                       lower.is.better <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>                       lower.is.better <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>                       selmodelSteps <span class="op">=</span> <span class="fl">0.05</span>,</span>
 <span>                       <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -64,13 +65,17 @@ small-study effects to results of the <code>runMetaAnalysis</code> function.</p>
 
 <dt id="arg-which-run">which.run<a class="anchor" aria-label="anchor" href="#arg-which-run"></a></dt>
 <dd><p>The model in <code>model</code> that should be used for the publication bias analyses.
-Uses the default analysis in <code>model</code> if no value is specified by the user. Possible values are
+Uses the first model in <code>model</code> if no value is specified by the user. Possible values are
 <code>"overall"</code>, <code>"combined"</code>, <code>"lowest"</code>, <code>"highest"</code>, <code>"outliers"</code>,
 <code>"influence"</code> and <code>"rob"</code>.</p></dd>
 
 
 <dt id="arg-lower-is-better">lower.is.better<a class="anchor" aria-label="anchor" href="#arg-lower-is-better"></a></dt>
-<dd><p>Do lower values indicate better outcomes (i.e. higher effects)? Default is <code>TRUE</code>.</p></dd>
+<dd><p>Only used for the selection model. Should significant <em>negative</em> (<code>TRUE</code>) or
+significant <em>positive</em> (<code>FALSE</code>) effects be assumed to be favored for publication? This refers to the sign of
+the effect size in the data, not to the scale of the outcome measure. If set to <code>NULL</code> (default), the direction
+is determined by the sign of the pooled effect in the selected model. A warning is issued if the
+provided value contradicts the sign of the pooled effect.</p></dd>
 
 
 <dt id="arg-selmodelsteps">selmodelSteps<a class="anchor" aria-label="anchor" href="#arg-selmodelsteps"></a></dt>
@@ -99,10 +104,16 @@ methods to control the pooled effect size for publication bias and/or small-stud
 <ul><li><p><code>"trimfill"</code>. Applies Duval and Tweedie's (2000a, 2000b) trim-and-fill algorithm, using the
 <a href="https://wviechtb.github.io/metafor/reference/trimfill.html" class="external-link">trimfill</a> method in the <code>meta</code> package.</p></li>
 <li><p><code>"limitmeta"</code>. Runs a limit meta-analysis as described in Rücker et al. (2011),
-using the implementation in the <code>limitmeta</code> package.</p></li>
+using the <a href="https://rdrr.io/pkg/metasens/man/limitmeta.html" class="external-link">limitmeta</a> function in the <code>metasens</code> package.</p></li>
 <li><p><code>"selection"</code>. Runs a step function selection model using the <a href="https://wviechtb.github.io/metafor/reference/selmodel.html" class="external-link">selmodel</a>
-function in <code>metafor</code>. For details see e.g. Vevea and Hedges (1995).</p></li>
-</ul></div>
+function in <code>metafor</code>. For details see e.g. Vevea and Hedges (1995). The cut-points in
+<code>selmodelSteps</code> refer to one-sided <em>p</em>-values. Selection models are not estimated for
+event rates (<code>es.measure = "EER"</code> or <code>"CER"</code>), for which selection on
+significance is not a meaningful assumption.</p></li>
+</ul><p>If the selected model is a fixed-effect ("common effect") model (<code>method.tau = "FE"</code>), the trim-and-fill and
+selection model are also fitted assuming a fixed effect. The limit meta-analysis is
+based on a random-effects model by definition.</p>
+    </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
     <p>Duval S &amp; Tweedie R (2000a): A nonparametric "Trim and Fill" method of accounting for

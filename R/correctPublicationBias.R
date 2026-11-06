@@ -5,16 +5,20 @@
 #'
 #' @usage correctPublicationBias(model, 
 #'                        which.run = model$which.run[1],
-#'                        lower.is.better = TRUE,
+#'                        lower.is.better = NULL,
 #'                        selmodelSteps = 0.05,
 #'                        ...)
 #'
 #' @param model An object of class \code{runMetaAnalysis}, created by the \code{runMetaAnalysis} function.
 #' @param which.run The model in \code{model} that should be used for the publication bias analyses. 
-#' Uses the default analysis in \code{model} if no value is specified by the user. Possible values are
+#' Uses the first model in \code{model} if no value is specified by the user. Possible values are
 #' \code{"overall"}, \code{"combined"}, \code{"lowest"}, \code{"highest"}, \code{"outliers"},
 #' \code{"influence"} and \code{"rob"}.
-#' @param lower.is.better Do lower values indicate better outcomes (i.e. higher effects)? Default is \code{TRUE}.
+#' @param lower.is.better Only used for the selection model. Should significant \emph{negative} (\code{TRUE}) or
+#' significant \emph{positive} (\code{FALSE}) effects be assumed to be favored for publication? This refers to the sign of 
+#' the effect size in the data, not to the scale of the outcome measure. If set to \code{NULL} (default), the direction 
+#' is determined by the sign of the pooled effect in the selected model. A warning is issued if the 
+#' provided value contradicts the sign of the pooled effect.
 #' @param selmodelSteps Thresholds to be assumed for the step function in the selection model. Must be a vector
 #' of numbers referring to the cut-points in the selection models. If two-sided testing is assumed for the
 #' included studies, the cut-point must be doubled to obtain the assumed \emph{p}-value 
@@ -71,10 +75,17 @@
 #'   \item \code{"trimfill"}. Applies Duval and Tweedie's (2000a, 2000b) trim-and-fill algorithm, using the 
 #'   \link[meta]{trimfill} method in the \code{meta} package.
 #'   \item \code{"limitmeta"}. Runs a limit meta-analysis as described in Rücker et al. (2011),
-#'   using the implementation in the \code{limitmeta} package.
+#'   using the \link[metasens]{limitmeta} function in the \code{metasens} package.
 #'   \item \code{"selection"}. Runs a step function selection model using the \link[metafor]{selmodel}
-#'   function in \code{metafor}. For details see e.g. Vevea and Hedges (1995).
+#'   function in \code{metafor}. For details see e.g. Vevea and Hedges (1995). The cut-points in 
+#'   \code{selmodelSteps} refer to one-sided \emph{p}-values. Selection models are not estimated for 
+#'   event rates (\code{es.measure = "EER"} or \code{"CER"}), for which selection on
+#'   significance is not a meaningful assumption.
 #' }
+#' 
+#' If the selected model is a fixed-effect ("common effect") model (\code{method.tau = "FE"}), the trim-and-fill and
+#' selection model are also fitted assuming a fixed effect. The limit meta-analysis is 
+#' based on a random-effects model by definition.
 #' 
 #' @references 
 #' Duval S & Tweedie R (2000a): A nonparametric "Trim and Fill" method of accounting for 
@@ -95,14 +106,14 @@
 #' @importFrom meta trimfill
 #' @importFrom metasens limitmeta
 #' @importFrom metafor selmodel rma.uni confint.rma.uni.selmodel predict.rma
-#' @importFrom stats dffits model.matrix rnorm rstudent quantile
+#' @importFrom stats dffits model.matrix rnorm rstudent quantile plogis qt sd
 #' @importFrom utils combn argsAnywhere
 #' @export correctPublicationBias
 
 
 correctPublicationBias = function(model, 
                                   which.run = model$which.run[1],
-                                  lower.is.better = TRUE,
+                                  lower.is.better = NULL,
                                   selmodelSteps = 0.05,
                                   ...){
   
@@ -111,59 +122,47 @@ correctPublicationBias = function(model,
     stop("Input must be of class 'runMetaAnalysis'. Did you apply 'runMetaAnalysis' first?")
   }
   
+  which.run = which.run[1]
+  
+  # 'lowest.highest' are two models; one of them must be selected
+  if (identical(which.run, "lowest.highest")){
+    stop("'which.run' is 'lowest.highest', which includes two models.",
+         " Please set 'which.run' to 'lowest' or 'highest'.")
+  }
+  
   # Throw an error if which.run does not contain required model
-  if (!(which.run[1] %in% c("overall", "combined",
-                            "outliers", "rob", "highest",
-                            "lowest", "influence"))){
+  if (!(which.run %in% c("overall", "combined",
+                         "outliers", "rob", "highest",
+                         "lowest", "influence"))){
     stop("'which.run' must be 'overall', 'combined', 'outliers', 'rob',",
          " 'highest', 'lowest' or 'influence'.")
   }
   
-  if (!(which.run[1] %in% model$which.run)){
-    stop("'", which.run[1], "' model has not been fitted using runMetaAnalysis.")
+  models.fitted = model$which.run
+  if ("lowest.highest" %in% models.fitted){
+    models.fitted = c(models.fitted, "lowest", "highest")
+  }
+  if (!(which.run %in% models.fitted)){
+    stop("'", which.run, "' model has not been fitted using runMetaAnalysis.")
   }
   
-  if (which.run[1] %in% unlist(model$error.model.list)){
-    stop("There was an error fitting the '", which.run[1], "' model using runMetaAnalysis;",
+  if (which.run %in% unlist(model$error.model.list)){
+    stop("There was an error fitting the '", which.run, "' model using runMetaAnalysis;",
          " the correctPublicationBias function cannot be applied.")
-  }
-  
-  # Throw error if which.run is not included
-  if (which.run[1] == "combined"){
-    if (model$model.combined$k == 1){
-      stop("'which.run' is set to 'combined', but there is only k=1 study/ES.")
-    }
-  }
-  if (which.run[1] == "lowest"){
-    if (model$model.lowest$k == 1){
-      stop("'which.run' is set to 'lowest', but there is only k=1 study/ES.") 
-    }
-  }
-  if (which.run[1] == "highest"){
-    if (model$model.highest$k == 1){
-      stop("'which.run' is set to 'highest', but there is only k=1 study/ES.")
-    }
-  }
-  if (which.run[1] == "influence" ){
-    if (model$model.influence$k == 1){
-      stop("'which.run' is set to 'influence', but there is only k=1 study/ES.")
-    }
-  }
-  if (which.run[1] == "rob" ){
-    if (model$model.rob$k == 1){
-      stop("'which.run' is set to 'rob', but there is only k=1 study/ES.")
-    }
-  }
-  
-  # Throw error if multilevel model is used
-  if (which.run %in% c("threelevel", "threelevel.che")){
-    stop("Adjustment cannot be performed for three-level models. ",
-         "Change the model provided in 'which.run'")
   }
   
   # Get model type
   model.type = paste0("model.", which.run)
   M = model[[model.type]]
+  if (is.null(M)){
+    stop("The '", which.run, "' model is not available in 'model'.")
+  }
+  
+  # Throw error if which.run only includes one study
+  if (M$k == 1){
+    stop("'which.run' is set to '", which.run, "', but there is only k=1 study/ES.")
+  }
+  
   message("- ", crayon::green("[OK] "), "'", model.type, 
           "' adjusted for small-study effects/publication bias.")
   
@@ -176,6 +175,44 @@ correctPublicationBias = function(model,
   nntCer = model[["nntCer"]]
   round.digits = model[["round.digits"]]
   M.orig = M
+  is.common = isTRUE(M$common) && !isTRUE(M$random)
+  is.ratio = identical(.type.es, "RR") || identical(.type.es, "ROM")
+  is.event.rate = identical(.type.es, "EER") || identical(.type.es, "CER")
+  
+  # Functions to back-transform and present the estimates
+  back.transform = function(x){
+    if (is.ratio) { exp(x) } else if (is.event.rate) { plogis(x) } else { x }
+  }
+  format.es = function(x){
+    if (is.null(x)) return(NA)
+    round(back.transform(as.numeric(x)), round.digits)
+  }
+  format.ci = function(lower, upper){
+    paste0("[", format.es(lower), "; ", format.es(upper), "]")
+  }
+  format.p = function(p){
+    if (is.event.rate) { "-" } else { scales::pvalue(p) }
+  }
+  # NNTs are based on the same effect metric as in the original model
+  calc.nnt = function(te){
+    if (is.event.rate || identical(.type.es, "ROM")) return(NA)
+    if (identical(.type.es, "RR")){
+      return(metapsyNNT(RR = exp(as.numeric(te)), CER = nntCer))
+    }
+    metapsyNNT(abs(as.numeric(te)), nntCer)
+  }
+  failed.row = function(note){
+    data.frame(k = "-", g = "-", g.ci = "[-; -]", p = "-", i2 = "-", i2.ci = "-",
+               prediction.ci = "[-; -]", nnt = "-", excluded = note)
+  }
+  
+  # Risk difference model; used to calculate NNTs from raw event data
+  if (isTRUE(.raw.bin.es)) {
+    M.rd = updateMeta(M, sm = "RD")
+    if (sum(M.rd$exclude) == 0){
+      M.rd$exclude = NULL
+    }
+  }
   
   
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -184,41 +221,27 @@ correctPublicationBias = function(model,
   #                                                                           #
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
   
-  if (sum(M$exclude) == 0){
-    M$exclude = NULL
+  M.tf = M
+  if (sum(M.tf$exclude) == 0){
+    M.tf$exclude = NULL
   }
   tf.args = dots[names(dots) %in% 
                    names(as.list(argsAnywhere("trimfill.default")))]
+  # Pool using the same type of model as in 'model'
+  if (!"common" %in% names(tf.args)) tf.args$common = is.common
+  if (!"random" %in% names(tf.args)) tf.args$random = !is.common
   
   mTrimFill = tryCatch2(
-    do.call(meta::trimfill, c(x = list(M), tf.args)))
+    do.call(meta::trimfill, c(x = list(M.tf), tf.args)))
   
-  if (is.null(mTrimFill$value) & 
-      is.null(mTrimFill$warning)){
+  if (mTrimFill$has.error){
     message("- ", crayon::yellow("[!] "),
             "Trim-and-fill: ", mTrimFill$error$message)
-    
-    mTrimFillRes = data.frame(
-      k = "-",
-      g = "-",
-      g.ci = paste0("[", "-","; ", "-", "]"),
-      p = "-",
-      i2 = "-",
-      i2.ci = "-",
-      prediction.ci = paste0(
-        "[", "-", "; ", "-", "]"),
-      nnt = "-",
-      excluded = "Trim-and-fill method could not be applied.")
-    rownames(mTrimFillRes) = "Trim-and-fill method"
+    mTrimFillRes = failed.row("Trim-and-fill method could not be applied.")
     
   } else {
     
     if (isTRUE(.raw.bin.es)) {
-      M.rd = updateMeta(M, sm="RD")
-      M.orig.rd = updateMeta(M.orig, sm="RD")
-      if (sum(M.rd$exclude) == 0){
-        M.rd$exclude = NULL
-      }
       with(do.call(meta::trimfill, 
                    c(x = list(M.rd), tf.args)), {
                      ifelse(isTRUE(common) & !isTRUE(random),
@@ -227,43 +250,19 @@ correctPublicationBias = function(model,
     }
     
     mTrimFillRes = with(mTrimFill$value,{
+      use.common = isTRUE(common) & !isTRUE(random)
       data.frame(
         k = k,
-        g = ifelse(
-          isTRUE(common) & !isTRUE(random), 
-          TE.common, TE.random) %>% 
-          ifelse(identical(.type.es, "RR") || identical(.type.es, "ROM"), exp(.), .) %>% 
-          round(round.digits),
-        g.ci = paste0("[", 
-                      ifelse(isTRUE(common) & !isTRUE(random),
-                             lower.common, lower.random) %>% 
-                        ifelse(identical(.type.es, "RR") || identical(.type.es, "ROM"), exp(.), .) %>% 
-                        round(round.digits), "; ",
-                      ifelse(isTRUE(common) & !isTRUE(random),
-                             upper.common, upper.random) %>% 
-                        ifelse(identical(.type.es, "RR") || identical(.type.es, "ROM"), exp(.), .) %>% 
-                        round(round.digits), "]"),
-        p = ifelse(isTRUE(common) & !isTRUE(random), 
-                   pval.common, pval.random) %>% 
-          scales::pvalue(),
+        g = format.es(ifelse(use.common, TE.common, TE.random)),
+        g.ci = format.ci(ifelse(use.common, lower.common, lower.random),
+                         ifelse(use.common, upper.common, upper.random)),
+        p = format.p(ifelse(use.common, pval.common, pval.random)),
         i2 = round(I2*100, 2),
         i2.ci = paste0("[", round(lower.I2*100, 2), "; ", 
                        round(upper.I2*100, 2), "]"),
-        prediction.ci = paste0("[", 
-                               round(
-                                 ifelse(identical(.type.es, "RR") || identical(.type.es, "ROM"), 
-                                        exp(lower.predict), lower.predict), 
-                                 round.digits), "; ",
-                               round(
-                                 ifelse(identical(.type.es, "RR") || identical(.type.es, "ROM"), 
-                                        exp(upper.predict), upper.predict), 
-                                 round.digits), "]"),
-        nnt = metapsyNNT(
-          ifelse(isTRUE(common) & !isTRUE(random), 
-                 abs(TE.common), abs(TE.random)), nntCer) %>%
-          ifelse(identical(.type.es, "RR") || identical(.type.es, "ROM"), NA, .) %>% 
-          ifelse(isTRUE(.raw.bin.es), 
-                 nnt.raw.bin.es, .) %>% 
+        prediction.ci = format.ci(lower.predict, upper.predict),
+        nnt = calc.nnt(ifelse(use.common, TE.common, TE.random)) %>% 
+          ifelse(isTRUE(.raw.bin.es), nnt.raw.bin.es, .) %>% 
           round(round.digits) %>% abs(),
         excluded = "none")
     })
@@ -271,50 +270,16 @@ correctPublicationBias = function(model,
     mTrimFillRes$excluded = paste(sum(mTrimFill$value[["trimfill"]]), 
                                   "studies added.")
     
-    rownames(mTrimFillRes) = "Trim-and-fill method"
-    
     message("- ", crayon::green("[OK] "),
             "Trim-and-fill method applied using the '", 
             mTrimFill$value["type"], "' estimator.")
     
-    if (isTRUE(.raw.bin.es)){
-      M.rd = M.orig.rd
-    }
-    
-    if (identical(.type.es, "RR")){
-      if (mTrimFillRes$g == 1 & isTRUE(.raw.bin.es)){
-        mTrimFillRes$nnt = Inf
-      }
-    }
-    
-    if (identical(.type.es, "EER")||identical(.type.es, "CER")) {
-      mTrimFill$value %>% {
-        mTrimFillRes$g = ifelse(
-            isTRUE(.$common) & !isTRUE(.$random), 
-            .$TE.common, .$TE.random) %>% 
-            plogis() %>% round(round.digits)
-        mTrimFillRes$g.ci = paste0("[", 
-                        ifelse(isTRUE(.$common) & !isTRUE(.$random),
-                               .$lower.common, .$lower.random) %>% 
-                          plogis() %>% round(round.digits), "; ",
-                        ifelse(isTRUE(.$common) & !isTRUE(.$random),
-                               .$upper.common, .$upper.random) %>% 
-                          plogis() %>% round(round.digits), "]")
-        mTrimFillRes$p = "-"
-        mTrimFillRes$prediction.ci = paste0("[", 
-                                 round(
-                                   plogis(.$lower.predict),
-                                   round.digits), "; ",
-                                 round(
-                                   plogis(.$upper.predict), 
-                                   round.digits), "]")
-        mTrimFillRes$nnt = "-"
-        mTrimFillRes$excluded = "none"; mTrimFillRes
-      } -> mTrimFillRes
+    if (identical(.type.es, "RR") && isTRUE(.raw.bin.es) && mTrimFillRes$g == 1){
+      mTrimFillRes$nnt = Inf
     }
   }
+  rownames(mTrimFillRes) = "Trim-and-fill method"
   
-  M = M.orig
   
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
   #                                                                           #
@@ -327,81 +292,53 @@ correctPublicationBias = function(model,
   mLimit = tryCatch2(
     do.call(metasens::limitmeta, c(x = list(M), lm.args)))
   
-  # Use bootstrapping if selected
-  if (model$i2.ci.boot){
-    message(
-      crayon::cyan(
-        crayon::bold(
-          "- Parametric bootstrap for g2 confidence intervals (limit meta-analysis) ...")))
+  if (mLimit$has.error){
+    message("- ", crayon::yellow("[!] "),
+            "Limit meta-analysis: ", mLimit$error$message)
+    mLimitRes = failed.row("Limit meta-analysis method could not be applied.")
     
-    dat = list(dat = M$data, lm.args = lm.args, call = M$call)
-    # Bootstrap worker
-    boot.func = function(data.boot) {
-      data.bt = data.boot$data
-      lm.args = data.boot$lm.args
-      call = data.boot$call
-      call$TE = data.bt$.g
-      M.update = eval(call)
-      res = do.call(metasens::limitmeta, c(x = list(M.update), lm.args))
-      return(c("G.squared" = res$G.squared, "tau2" = res$tau^2))
-    }
-    # Generate data
-    data.gen = function(dat, mle=list(mu=M$TE.random, tau2=M$tau2)) {
-      dat.bt = dat$dat
-      dat.bt$.g = rnorm(nrow(dat.bt), mle$mu, sqrt(mle$tau2 + dat.bt$.g_se^2))
-      dat.bt$.g_se = dat$.g_se
-      dat.ret = list(data = dat.bt, lm.args = dat$lm.args, call = dat$call)
-      return(dat.ret)
-    }
-    # Sample
-    g2.vec = numeric(model$nsim.boot)
-    tau2.vec = numeric(model$nsim.boot)
-    counter = 0
-    for (i in 1:model$nsim.boot){
-      tmp = try({boot.func(data.gen(dat))}, silent=TRUE)
-      if (inherits(tmp, "try-error")) {
-        g2.vec[i] = NA
-        tau2.vec[i] = NA
+  } else {
+    
+    # Use bootstrapping if selected
+    if (isTRUE(model$i2.ci.boot)){
+      message(
+        crayon::cyan(
+          crayon::bold(
+            "- Parametric bootstrap for g2 confidence intervals (limit meta-analysis) ...")))
+      
+      keep = if (is.null(M$exclude)) rep(TRUE, length(M$TE)) else !M$exclude
+      boot.se = M$seTE[keep]
+      boot.mu = ifelse(is.common, M$TE.common, M$TE.random)
+      boot.tau2 = ifelse(is.common, 0, M$tau2)
+      boot.method.tau = M$method.tau
+      
+      # Sample
+      g2.vec = rep(NA_real_, model$nsim.boot)
+      tau2.vec = rep(NA_real_, model$nsim.boot)
+      counter = 0
+      for (i in seq_len(model$nsim.boot)){
+        tmp = try({
+          sim.te = rnorm(length(boot.se), boot.mu, sqrt(boot.tau2 + boot.se^2))
+          M.boot = meta::metagen(TE = sim.te, seTE = boot.se, 
+                                 method.tau = boot.method.tau)
+          res.boot = do.call(metasens::limitmeta, c(x = list(M.boot), lm.args))
+          c("G.squared" = res.boot$G.squared, "tau2" = res.boot$tau^2)
+        }, silent = TRUE)
         counter = counter + 1
-      } else {
-        g2.vec[i] = tmp[["G.squared"]]
-        tau2.vec[i] = tmp[["tau2"]]
-        counter = counter + 1
+        if (!inherits(tmp, "try-error")) {
+          g2.vec[i] = tmp[["G.squared"]]
+          tau2.vec[i] = tmp[["tau2"]]
+        }
         if (counter %in% seq(0, model$nsim.boot, model$nsim.boot/100)){
           cat(crayon::green(
             paste0((counter/model$nsim.boot)*100, "% completed | ")))
         }
-        if (identical(counter, model$nsim.boot)){
-          cat(crayon::green("DONE \n"))
-        }
       }
+      cat(crayon::green("DONE \n"))
+      
+      mLimit$value$G.squared.ci = quantile(g2.vec, c(.025, .975), na.rm = TRUE)
+      mLimit$value$se.tau2 = sd(tau2.vec, na.rm = TRUE)
     }
-    
-    sav.g2 = g2.vec[!is.na(g2.vec)]
-    sav.tau2 = tau2.vec[!is.na(tau2.vec)]
-    mLimit$value$G.squared.ci = quantile(sav.g2, c(.025, .975))
-    mLimit$value$se.tau2 = sd(sav.tau2)
-  }
-  
-  if (is.null(mLimit$value) & 
-      is.null(mLimit$warning)){
-    message("- ", crayon::yellow("[!] "),
-            "Limit meta-analysis: ", mLimit$error$message)
-    
-    mLimitRes = data.frame(
-      k = "-",
-      g = "-",
-      g.ci = paste0("[", "-","; ", "-", "]"),
-      p = "-",
-      i2 = "-",
-      i2.ci = "-",
-      prediction.ci = paste0(
-        "[", "-", "; ", "-", "]"),
-      nnt = "-",
-      excluded = "Limit meta-analysis method could not be applied.")
-    rownames(mLimitRes) = "Limit meta-analysis"
-    
-  } else {
     
     if (isTRUE(.raw.bin.es)) {
       with(do.call(metasens::limitmeta, 
@@ -410,48 +347,21 @@ correctPublicationBias = function(model,
     }
     
     mLimitRes = with(mLimit$value,{
-      
       sd.pi = (qt(0.975, k-1) * sqrt(seTE.adjust^2 + tau^2))
-      lower.predict = TE.adjust - sd.pi
-      upper.predict = TE.adjust + sd.pi
-      
       data.frame(
         k = k,
-        g = TE.adjust %>% 
-          ifelse(identical(.type.es, "RR") || identical(.type.es, "ROM"), 
-                 exp(.), .) %>% 
-          round(round.digits),
-        g.ci = paste0("[", 
-                      lower.adjust %>% 
-                        ifelse(identical(.type.es, "RR") || identical(.type.es, "ROM"), 
-                               exp(.), .) %>% 
-                        round(round.digits),"; ",
-                      upper.adjust %>% 
-                        ifelse(identical(.type.es, "RR") || identical(.type.es, "ROM"), 
-                               exp(.), .) %>% 
-                        round(round.digits), "]"),
-        p = pval.adjust %>% scales::pvalue(),
+        g = format.es(TE.adjust),
+        g.ci = format.ci(lower.adjust, upper.adjust),
+        p = format.p(pval.adjust),
         i2 = round(G.squared*100, 2),
-        i2.ci = ifelse(model$i2.ci.boot,
+        i2.ci = ifelse(isTRUE(model$i2.ci.boot),
                        paste0(
                          "[", 
                          round(G.squared.ci[1]*100, round.digits), "; ",
                          round(G.squared.ci[2]*100, round.digits), "]"), "-"),
-        prediction.ci = paste0(
-          "[", 
-          round(lower.predict %>% 
-                  ifelse(identical(.type.es, "RR") || identical(.type.es, "ROM"), 
-                         exp(.), .), 
-                round.digits), "; ",
-          round(upper.predict %>% 
-                  ifelse(identical(.type.es, "RR") || identical(.type.es, "ROM"), 
-                         exp(.), .), 
-                round.digits), "]"),
-        nnt = metapsyNNT(
-          abs(TE.adjust), nntCer) %>%
-          ifelse(identical(.type.es, "RR") || identical(.type.es, "ROM"), NA, .) %>% 
-          ifelse(isTRUE(.raw.bin.es), 
-                 nnt.raw.bin.es, .) %>% 
+        prediction.ci = format.ci(TE.adjust - sd.pi, TE.adjust + sd.pi),
+        nnt = calc.nnt(TE.adjust) %>% 
+          ifelse(isTRUE(.raw.bin.es), nnt.raw.bin.es, .) %>% 
           round(round.digits) %>% abs(),
         excluded = paste(
           "For the limit meta-analysis, the value under I-squared refers",
@@ -459,49 +369,15 @@ correctPublicationBias = function(model,
       )
     })
     
-    if (identical(.type.es, "RR")){
-        if (mLimitRes$g == 1 & isTRUE(.raw.bin.es)){
-          mLimitRes$nnt = Inf
-        }
-      }
+    if (identical(.type.es, "RR") && isTRUE(.raw.bin.es) && mLimitRes$g == 1){
+      mLimitRes$nnt = Inf
     }
     
-    if (identical(.type.es, "EER")||identical(.type.es, "CER")) {
-      mLimit$value %>% {
-        sd.pi = (qt(0.975, .$k-1) * sqrt(.$seTE.adjust^2 + .$tau^2))
-        lower.predict = .$TE.adjust - sd.pi
-        upper.predict = .$TE.adjust + sd.pi
-        mLimitRes$g = ifelse(
-          isTRUE(.$common) & !isTRUE(.$random), 
-          .$TE.common, .$TE.random) %>% 
-          plogis() %>% round(round.digits)
-        mLimitRes$g.ci = paste0("[", 
-                                ifelse(isTRUE(.$common) & !isTRUE(.$random),
-                                       .$lower.common, .$lower.random) %>% 
-                                  plogis() %>% round(round.digits), "; ",
-                                ifelse(isTRUE(.$common) & !isTRUE(.$random),
-                                       .$upper.common, .$upper.random) %>% 
-                                  plogis() %>% round(round.digits), "]")
-        mLimitRes$p = "-"
-        mLimitRes$prediction.ci = paste0("[", 
-                                         round(
-                                           plogis(lower.predict),
-                                           round.digits), "; ",
-                                         round(
-                                           plogis(upper.predict), 
-                                           round.digits), "]")
-        mLimitRes$nnt = "-"
-        mLimitRes$excluded = "none"; mLimitRes
-      } -> mLimitRes
-    }  
-  
-    rownames(mLimitRes) = "Limit meta-analysis"
     message("- ", crayon::green("[OK] "),
             "Shrunken estimate of the limit meta-analysis based on the '", 
             mLimit$value["method.adjust"], "' estimator.")
-    
-  
-  
+  }
+  rownames(mLimitRes) = "Limit meta-analysis"
   
   
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -510,188 +386,138 @@ correctPublicationBias = function(model,
   #                                                                           #
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
   
-  # Turn into rma.uni object
-  M.metafor = with(M, {
-    test = ifelse(hakn, "t", "z")
-    if (is.null(exclude)){
-      metafor::rma.uni(yi = TE, sei = seTE, slab = studlab,
-                       method = method.tau, test = test)
-    } else {
-      metafor::rma.uni(yi = TE, sei = seTE, slab = studlab,
-                       method = method.tau, test = test, 
-                       subset = !exclude)
-    }
-  }) 
-  
-  mSelmodel = try({metafor::selmodel(M.metafor,
-                   type = "stepfun",
-                   alternative = 
-                     ifelse(lower.is.better, "less", "greater"),
-                   steps = selmodelSteps)}, silent = TRUE)
-  .selmodel.error = FALSE
-  
-  if (inherits(mSelmodel, "try-error")){
-    message("- ", crayon::yellow("[!] "),
-            "Selection model: problems detected!")
-    mSelmodel = try(metafor::selmodel(M.metafor,
-                  type = "stepfun",
-                  alternative = 
-                    ifelse(lower.is.better, "less", "greater"),
-                  steps = selmodelSteps, 
-                  verbose = TRUE))
-    .selmodel.error = TRUE
-  }
-  
-  # Extract information from overall model
+  mSelmodel = NULL
   r.digits = model$round.digits
   m.nntCer = model$nntCer
   
-  if (isTRUE(.selmodel.error)){
-    mSelmodelRes = data.frame(
-                    k = "-",
-                    g = "-",
-                    g.ci = paste0("[", "-","; ", "-", "]"),
-                    p = "-",
-                    i2 = "-",
-                    i2.ci = "-",
-                    prediction.ci = paste0(
-                      "[", "-", "; ", "-", "]"),
-                    nnt = "-",
-                    excluded = "Selection model could not be calculated.")
+  # A selection model assumes selection on the significance of an effect relative
+  # to the null value. Event rates have no meaningful null value (a logit of 0 would 
+  # imply an event rate of 50%), so the model is not estimated for them.
+  if (is.event.rate){
+    
+    message("- ", crayon::yellow("[!] "),
+            "Selection model not applicable to event rates; it was not estimated.")
+    mSelmodelRes = failed.row(
+      paste("Selection models assume selection on significance;",
+            "this is not meaningful for pooled event rates."))
+    
   } else {
-    # Re-run using Hedges g and calculate CER for raw binary ES
-    if (isTRUE(.raw.bin.es)){
-      with(M, {
-        meta::metaprop(
-          event = round(data$.event.c),
-          n = round(data$.n.c),
-          common = ifelse(method.tau == "FE", 
-                         TRUE, FALSE),
-          random = ifelse(method.tau == "FE", 
-                          FALSE, TRUE)) %>%
-          {ifelse(isTRUE(common) & !isTRUE(random), 
-                  .$TE.common, .$TE.random)} %>% 
-          {exp(.)/(1+exp(.))}
-      }) -> cer    
-      
-      with(M$data, {
-        data.frame(.event.e, .event.c, .n.e, .n.c)
-      }) %>% 
-        apply(., 1, function(x){
-          esc::esc_2x2(grp1yes = as.numeric(x[".event.e"]), 
-                       grp1no = as.numeric(x[".n.e"]) - as.numeric(x[".event.e"]),
-                       grp2yes = as.numeric(x[".event.c"]),
-                       grp2no = as.numeric(x[".n.c"]) - as.numeric(x[".event.c"]),
-                       es.type = "g") %>% 
-            {data.frame(es = .$es, se = .$se)}
-        }) %>% 
-        do.call(rbind, .) -> data.g
-      
-      test = ifelse(M$hakn, "t", "z")
-      exclude = M$exclude
-      
-      if (is.null(exclude)){
-        metafor::rma.uni(yi = es, sei = se, data = data.g,
-                         method = M$method.tau, test = test) %>% 
-          metafor::selmodel(type = "stepfun",
-                            alternative = 
-                              ifelse(lower.is.better, "less", "greater"),
-                            steps = selmodelSteps) %>% 
-          {metapsyNNT(abs(as.numeric(.$b)), 
-                      CER = cer)} -> nnt.g
-      } else {
-        metafor::rma.uni(yi = es, sei = se, 
-                         data = data.g,
-                         method = M$method.tau, test = test, 
-                         subset = !exclude) %>% 
-          metafor::selmodel(type = "stepfun",
-                            alternative = 
-                              ifelse(lower.is.better, "less", "greater"),
-                            steps = selmodelSteps) %>% 
-          {metapsyNNT(abs(as.numeric(.$b)), 
-                      CER = cer)} -> nnt.g
+    
+    # Turn into rma.uni object
+    test = ifelse(identical(M$method.random.ci[1], "HK"), "t", "z")
+    method.sm = ifelse(is.common, "FE", M$method.tau)
+    has.exclude = !is.null(M$exclude) && sum(M$exclude) > 0
+    keep = if (has.exclude) !M$exclude else rep(TRUE, length(M$TE))
+    M.metafor = metafor::rma.uni(yi = M$TE[keep], sei = M$seTE[keep], 
+                                 slab = M$studlab[keep],
+                                 method = method.sm, test = test)
+    
+    # Direction of the favored effects: by default, significant effects with the 
+    # same sign as the pooled effect are assumed to be more likely to be published.
+    pooled.es = ifelse(is.common, M$TE.common, M$TE.random)
+    if (is.null(lower.is.better[1])){
+      alternative = ifelse(pooled.es < 0, "less", "greater")
+      message("- ", crayon::green("[OK] "),
+              "Selection model: effects ", 
+              ifelse(pooled.es < 0, "below", "above"), " the null value",
+              " assumed to be favored (based on the sign of the pooled effect).")
+    } else {
+      alternative = ifelse(isTRUE(lower.is.better[1]), "less", "greater")
+      if ((pooled.es > 0 && alternative == "less") || 
+          (pooled.es < 0 && alternative == "greater")){
+        warning("Selection model: 'lower.is.better = ", isTRUE(lower.is.better[1]), 
+                "' assumes that ", ifelse(alternative == "less", "negative", "positive"), 
+                " effects are favored, but the pooled effect is ",
+                ifelse(alternative == "less", "positive", "negative"), 
+                ". If effects in your data are coded differently, the selection model",
+                " is estimated in the wrong direction and can be severely biased.",
+                " Check the coding of your effect sizes, or use the default",
+                " 'lower.is.better = NULL'.", call. = FALSE)
       }
     }
-
-    # Calculate profile-likelihood CIs
-    tau2.sm = metafor::confint.rma.uni.selmodel(mSelmodel)[[1]]$random["tau^2",1:3]
-    mSelmodel$i2 = i2.gen(tau2.sm, mSelmodel$k, mSelmodel$vi)[1]
-    mSelmodel$i2.lower = i2.gen(tau2.sm, mSelmodel$k, mSelmodel$vi)[2]
-    mSelmodel$i2.upper = i2.gen(tau2.sm, mSelmodel$k, mSelmodel$vi)[3]
     
-    mSelmodelRes = with(mSelmodel,{
-      data.frame(
-        k = k,
-        g = b %>% 
-          ifelse(identical(.type.es, "RR") || identical(.type.es, "ROM"), exp(.), .) %>% 
-          round(r.digits),
-        g.ci = paste0(
-          "[", 
-          ci.lb %>% 
-            ifelse(identical(.type.es, "RR") || identical(.type.es, "ROM"), exp(.), .) %>% 
-            round(r.digits),"; ",
-          ci.ub %>% 
-            ifelse(identical(.type.es, "RR") || identical(.type.es, "ROM"), exp(.), .) %>% 
-            round(r.digits), "]"),
-        p = pval %>% scales::pvalue(),
-        i2 = round(i2, 2),
-        i2.ci = paste0(
-          "[", 
-          round(i2.lower, r.digits), "; ",
-          round(i2.upper, r.digits), "]"),
-        prediction.ci = paste0(
-          "[", 
-          round(predict.rma(mSelmodel)[["pi.lb"]] %>% 
-                  ifelse(identical(.type.es, "RR") || identical(.type.es, "ROM"), exp(.), .), 
-                r.digits), "; ",
-          round(predict.rma(mSelmodel)[["pi.ub"]] %>% 
-                  ifelse(identical(.type.es, "RR") || identical(.type.es, "ROM"), exp(.), .), 
-                r.digits), "]"),
-        nnt = ifelse(identical(.type.es, "RR") || identical(.type.es, "ROM"), 
-                     NA, metapsyNNT(abs(as.numeric(b[,1])), m.nntCer)) %>% 
-                     ifelse(isTRUE(.raw.bin.es), nnt.g, .) %>% 
-                     round(round.digits) %>% abs(),
-        excluded = paste0(
-          "Step-function selection model with cutpoints p=",
-          paste(selmodelSteps*2, collapse = ", "), ". ",
-          "The selection model parameter test was ",
-          ifelse(LRTp < 0.05, "significant: ", "not significant: "),
-          "\u03C7\u00B2","=", round(LRT, 3), 
-          " (p=", scales::pvalue(LRTp), "). ",
-          "The model was fitted using maximum likelihood estimation."
+    mSelmodel = try({
+      metafor::selmodel(M.metafor, type = "stepfun", alternative = alternative,
+                        steps = selmodelSteps)}, silent = TRUE)
+    
+    if (inherits(mSelmodel, "try-error")){
+      message("- ", crayon::yellow("[!] "),
+              "Selection model: problems detected! ",
+              as.character(attr(mSelmodel, "condition")$message))
+      mSelmodelRes = failed.row("Selection model could not be calculated.")
+      
+    } else {
+      
+      # Re-run using Hedges g and calculate CER for raw binary ES
+      if (isTRUE(.raw.bin.es)){
+        meta::metaprop(
+          event = round(M$data$.event.c[keep]),
+          n = round(M$data$.n.c[keep]),
+          common = is.common,
+          random = !is.common) %>%
+          {ifelse(is.common, .$TE.common, .$TE.random)} %>% 
+          plogis() -> cer
+        
+        with(M$data[keep,], {
+          data.frame(.event.e, .event.c, .n.e, .n.c)
+        }) %>% 
+          apply(., 1, function(x){
+            esc::esc_2x2(grp1yes = as.numeric(x[".event.e"]), 
+                         grp1no = as.numeric(x[".n.e"]) - as.numeric(x[".event.e"]),
+                         grp2yes = as.numeric(x[".event.c"]),
+                         grp2no = as.numeric(x[".n.c"]) - as.numeric(x[".event.c"]),
+                         es.type = "g") %>% 
+              {data.frame(es = .$es, se = .$se)}
+          }) %>% 
+          do.call(rbind, .) -> data.g
+        
+        metafor::rma.uni(yi = es, sei = se, data = data.g,
+                         method = method.sm, test = test) %>% 
+          metafor::selmodel(type = "stepfun", alternative = alternative,
+                            steps = selmodelSteps) %>% 
+          {metapsyNNT(abs(as.numeric(.$b)), CER = cer)} -> nnt.g
+      }
+      
+      # Calculate profile-likelihood CIs (not available for fixed-effect models)
+      tau2.sm = tryCatch(
+        metafor::confint.rma.uni.selmodel(mSelmodel)[[1]]$random["tau^2", 1:3],
+        error = function(e) c(mSelmodel$tau2, NA, NA))
+      i2.sm = i2.gen(tau2.sm, mSelmodel$k, mSelmodel$vi)
+      pred.sm = predict.rma(mSelmodel)
+      
+      mSelmodelRes = with(mSelmodel,{
+        data.frame(
+          k = k,
+          g = format.es(as.numeric(b)),
+          g.ci = format.ci(ci.lb, ci.ub),
+          p = format.p(pval),
+          i2 = round(i2.sm[1], 2),
+          i2.ci = paste0("[", round(i2.sm[2], r.digits), "; ",
+                         round(i2.sm[3], r.digits), "]"),
+          prediction.ci = format.ci(pred.sm[["pi.lb"]], pred.sm[["pi.ub"]]),
+          nnt = calc.nnt(as.numeric(b)) %>% 
+            ifelse(isTRUE(.raw.bin.es), nnt.g, .) %>% 
+            round(round.digits) %>% abs(),
+          excluded = paste0(
+            "Step-function selection model with cutpoints p=",
+            paste(selmodelSteps*2, collapse = ", "), 
+            " (two-sided; ", alternative, " than the null value favored). ",
+            "The selection model parameter test was ",
+            ifelse(LRTp < 0.05, "significant: ", "not significant: "),
+            "\u03C7\u00B2","=", round(LRT, 3), 
+            " (p=", scales::pvalue(LRTp), "). ",
+            "The model was fitted using maximum likelihood estimation."
+          )
         )
-      )
-    })
-  }
-  
-  if (identical(.type.es, "EER")||identical(.type.es, "CER")) {
-    
-    mSelmodel %>% {
-      mSelmodelRes$g = .$b %>% plogis() %>% round(r.digits)
-      mSelmodelRes$g.ci = paste0("[", 
-        .$ci.lb %>% plogis() %>% round(r.digits),"; ",
-        .$ci.ub %>% plogis() %>% round(r.digits), "]")
-      mSelmodelRes$p = "-"
-      mSelmodelRes$prediction.ci = 
-        paste0(
-          "[", 
-          round(predict.rma(.)[["pi.lb"]] %>% plogis(), r.digits), "; ",
-          round(predict.rma(.)[["pi.ub"]] %>% plogis(), r.digits), "]")
-      mSelmodelRes$nnt = "-"
-      mSelmodelRes$excluded = "none"; mSelmodelRes
-    } -> mSelmodelRes
-    
+      })
+      
+      message("- ", crayon::green("[OK] "),
+              "Estimated effect using step function selection model (p=",
+              paste(selmodelSteps*2, collapse = ", "), ").")
+    }
   }
   
   rownames(mSelmodelRes) = "Selection model"
-  
-  
-  if (!isTRUE(.selmodel.error)){
-    message("- ", crayon::green("[OK] "),
-            "Estimated effect using step function selection model (p=",
-            paste(selmodelSteps*2, collapse = ", "), ").")
-    } 
-  
   
   
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -733,8 +559,3 @@ correctPublicationBias = function(model,
   return(returnlist)
   
 }
-
-
-
-
-

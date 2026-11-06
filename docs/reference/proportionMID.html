@@ -10,7 +10,7 @@ meaningful (e.g. clinically relevant) threshold."><meta property="og:image" cont
 
     <a class="navbar-brand me-2" href="../index.html">metapsyTools</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.14</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.15</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -26,6 +26,7 @@ meaningful (e.g. clinically relevant) threshold."><meta property="og:image" cont
     <li><a class="dropdown-item" href="../articles/web/installation.html">Installation Guide</a></li>
     <li><a class="dropdown-item" href="../articles/web/look_inside.html">A Look Inside</a></li>
     <li><a class="dropdown-item" href="../data-validator.html">Data Validator</a></li>
+    <li><a class="external-link dropdown-item" href="https://www.metapsy.org/tools/run-meta-analysis">Online App</a></li>
   </ul></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -71,8 +72,8 @@ important difference; <em></em>\(MID\); Cuijpers et al., <a href="https://online
 that should be used to estimate the
 proportion of true effect sizes that exceed this cut-off. If the outcome measure used in <code>model</code> is
 Hedges' <em></em>\(g\), the provided value should also be a standardized mean difference.
-If the outcome measure of <code>model</code> is a risk ratio, the treshold should also be provided
-as an (untransformed) risk ratio.</p></dd>
+If the outcome measure of <code>model</code> is a risk ratio or ratio of means, the threshold should also be provided
+as an (untransformed) risk ratio or ratio of means, respectively.</p></dd>
 
 
 <dt id="arg-which">which<a class="anchor" aria-label="anchor" href="#arg-which"></a></dt>
@@ -83,7 +84,9 @@ Alternatively, possible values are <code>"overall"</code>, <code>"combined"</cod
 models are available in the <code>model</code> object. If
 <code><a href="correctPublicationBias.html">correctPublicationBias</a></code> has been run, <code>"trimfill"</code>, <code>limitmeta</code> and <code>selection</code>
 are also possible options. It is also possible to concatenate model names, meaning
-that proportions are calculated for all the supplied models.</p></dd>
+that proportions are calculated for all the supplied models. The <code>"waap.wls"</code> model is not included,
+since it does not provide an estimate of the between-study heterogeneity. For multilevel models, the total
+heterogeneity variance across all random effects levels is used. Not available for event rates (<code>"EER"</code>, <code>"CER"</code>).</p></dd>
 
 
 <dt id="arg-test">test<a class="anchor" aria-label="anchor" href="#arg-test"></a></dt>
@@ -127,7 +130,7 @@ than <em></em>\(g\)=0.24; note the changed sign). This can be used to check for 
 relevant negative effects.</p>
 <p>When the <code>plot</code> method is used, or when <code>plot</code> is set to <code>TRUE</code> in the function,
 a plot showing the assumed distribution of true effects based on the estimated
-meta-analytic model is created. Notably, is is assumed that the random-effects
+meta-analytic model is created. Notably, it is assumed that the random-effects
 distribution of true effect sizes is approximately normal. This simplifying assumption
 is required for this (and many other meta-analytic methods;
 Jackson &amp; White, <a href="https://onlinelibrary.wiley.com/doi/full/10.1002/bimj.201800071" class="external-link">2018</a>)

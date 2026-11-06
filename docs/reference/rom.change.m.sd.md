@@ -39,11 +39,11 @@ rom.change.m.sd(x, ...)
 
   :   Standard deviation of the change score in arm 2.
 
-  `n_arm1`
+  `n_change_arm1`
 
   :   Sample size of arm 1. Must be \> 0.
 
-  `n_arm2`
+  `n_change_arm2`
 
   :   Sample size of arm 2. Must be \> 0.
 
@@ -56,38 +56,39 @@ columns:
 
 - `es`:
 
-  Log ratio of change-score means, \\\ln(\bar{x}\_{\Delta,1} /
-  \bar{x}\_{\Delta,2})\\.
+  Log ratio of change-score means, \\(\ln(\bar{x}\_{\Delta,1} /
+  \bar{x}\_{\Delta,2})\\).
 
 - `se`:
 
   Standard error of `es`, derived via the delta method.
 
 Rows are set to `NA` for both columns when any required input is `NA`,
-when either change-score mean equals zero (log ROM is undefined), when
-either sample size is non-positive, or when the computed variance is
-non-finite or not strictly positive.
+when either change-score mean equals zero or the two means have opposite
+signs (log ROM is undefined), when either sample size is non-positive,
+or when the computed variance is non-finite or not strictly positive.
 
 ## Details
 
 The estimator is identical in form to that used in
 [`rom.m.sd`](rom.m.sd.md), but the inputs are mean change scores and
 their standard deviations: \$\$\ln(\text{ROM}) =
-\ln\\\left(\frac{\bar{x}\_{\Delta,1}}{\bar{x}\_{\Delta,2}}\right)\$\$
+\ln\\!\left(\frac{\bar{x}\_{\Delta,1}}{\bar{x}\_{\Delta,2}}\right)\$\$
 
 Its sampling variance is approximated via the delta method (Hedges et
 al., 1999): \$\$v = \frac{s\_{\Delta,1}^2}{n_1
-\\\bar{x}\_{\Delta,1}^2} + \frac{s\_{\Delta,2}^2}{n_2\\
+\\,\bar{x}\_{\Delta,1}^2} + \frac{s\_{\Delta,2}^2}{n_2\\,
 \bar{x}\_{\Delta,2}^2}\$\$
 
-The standard error returned in `se` is \\\sqrt{v}\\.
+The standard error returned in `se` is \\(\sqrt{v}\\).
 
 A positive log ROM indicates a larger mean change in arm 1 than in arm
 2. The measure is undefined when either change-score mean equals zero,
-so such rows are returned as `NA`. Note that a zero mean change score is
-substantively meaningful (no average change from baseline) and
-relatively common, so this limitation should be considered when choosing
-between effect size metrics.
+or when the two change-score means have opposite signs (e.g. improvement
+in one arm, deterioration in the other), so such rows are returned as
+`NA`. Note that zero or opposite mean change scores are substantively
+meaningful and relatively common, so this limitation should be
+considered when choosing between effect size metrics.
 
 ## References
 

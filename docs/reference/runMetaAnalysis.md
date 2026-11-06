@@ -92,16 +92,20 @@ runMetaAnalysis(data,
 
   `character`. Should pre-calculated or raw event data (i.e. the
   Mantel-Haenszel method) be used for meta-analyses of risk ratios? Can
-  be set to `"precalculated"` (default) or `"raw"`.
+  be set to `"precalculated"` (default) or `"raw"`. Ignored for all
+  other values of `es.measure`.
 
 - es.var:
 
   `character`. Specifies the name of the variable containing the (pre-
-  calculated) effect size data in `data`. When `es.measure = "g"`,
-  `"EER"`, or `"CER"`, this is set to `.g` by default; `".log_rr"` is
-  used when `es.measure = "RR"`. For `es.measure = "ROM"`, this defaults
-  to `.log_rom` (log ratio of means) and can be set to any column name
-  if the user stores the data elsewhere.
+  calculated) effect size data in `data`. When `es.measure = "g"`, this
+  is set to `.g` by default; `".log_rr"` is used when
+  `es.measure = "RR"`. When `es.measure = "EER"` or `"CER"`,
+  logit-transformed event rates are calculated from `es.binary.raw.vars`
+  and saved under this name for internal use (the returned `data` is not
+  altered). For `es.measure = "ROM"`, this defaults to `.log_rom` (log
+  ratio of means) and can be set to any column name if the user stores
+  the data elsewhere.
 
 - se.var:
 
@@ -135,9 +139,9 @@ runMetaAnalysis(data,
 
   `character`. A character string indicating which method is used to
   estimate the confidence interval of the between-study heterogeneity
-  variance \\\tau^2\\. Either `"Q-Profile"` (default and recommended;
+  variance \\(\tau^2\\). Either `"Q-Profile"` (default and recommended;
   [Viechtbauer,
-  2017](http://www.wvbauer.com/lib/exe/fetch.php/articles:viechtbauer2007b.pdf)),
+  2007](http://www.wvbauer.com/lib/exe/fetch.php/articles:viechtbauer2007b.pdf)),
   `"BJ"`, `"J"`, or `"PL"` can be abbreviated. See
   [`metagen`](https://rdrr.io/pkg/meta/man/metagen.html) and
   [`rma.uni`](https://wviechtb.github.io/metafor/reference/rma.uni.html)
@@ -145,22 +149,22 @@ runMetaAnalysis(data,
 
 - i2.ci.boot:
 
-  `logical`. Confidence intervals for \\\tau^2\\ as calculated by the
+  `logical`. Confidence intervals for \\(\tau^2\\) as calculated by the
   Q-Profile method are not directly applicable for three-level models,
   in which two heterogeneity variance components are estimated. By
   default, this argument is therefore set to `FALSE`, and no confidence
-  intervals around \\\tau^2\\ and \\I^2\\ are provided for the
+  intervals around \\(\tau^2\\) and \\(I^2\\) are provided for the
   `"threelevel"` and `"threelevel.che"` model. If this argument is set
   to `TRUE`, parametric bootstrapping is used to calculate confidence
   intervals around the between- and within-study heterogeneity estimates
-  (\\\tau\\ and \\I^2\\). Please note that this can take several
+  (\\(\tau\\) and \\(I^2\\)). Please note that this can take several
   minutes, depending on the number of effect sizes. If
   [`correctPublicationBias`](correctPublicationBias.md) is used and
   `i2.ci.boot` is `TRUE`, bootstrapping will also be used to calculate
-  confidence intervals around the \\G^2\\ statistic ([Rücker et al.,
+  confidence intervals around the \\(G^2\\) statistic ([Rücker et al.,
   2011](https://academic.oup.com/biostatistics/article/12/1/122/391113))
-  used in the limit meta-analysis (note that \\G^2\\ is printed as
-  \\I^2\\ in this package).
+  used in the limit meta-analysis (note that \\(G^2\\) is printed as
+  \\(I^2\\) in this package).
 
 - nsim.boot:
 
@@ -170,7 +174,11 @@ runMetaAnalysis(data,
 - hakn:
 
   `logical`. Should the Knapp-Hartung adjustment for effect size
-  significance tests be used? Default is `TRUE`.
+  significance tests be used? Default is `TRUE`. For multilevel models,
+  `TRUE` means that tests are based on a *t*-distribution instead of the
+  standard normal distribution; this has no effect on confidence
+  intervals and tests when `use.rve = TRUE`, but is still used for the
+  prediction interval.
 
 - study.var:
 
@@ -196,8 +204,10 @@ runMetaAnalysis(data,
 - low.rob.filter:
 
   `character`. A filtering statement by which to include studies for the
-  "low RoB only" analysis. Please note that the name of the variable
-  must be included as a column in `data`.
+  "low RoB only" analysis (e.g. `"rob > 2"`, or `"rob %in% c(3,4)"`).
+  The statement is evaluated within `data`, so all variable names must
+  be included as columns in `data`. Rows for which the statement
+  evaluates to `NA` are not included.
 
 - round.digits:
 
@@ -227,15 +237,19 @@ runMetaAnalysis(data,
   for the `"combined"` analysis when `which.combine = "arms"`. If the
   specified variable differs within one study (as defined by
   `study.var`), effects will be aggregated separately for each unique
-  value in `which.combine.var`. Defaults to `"multi_arm1"`, the variable
-  which encodes multi-arm intervention conditions in the [Metapsy data
+  value in `which.combine.var`. If this variable is not included in
+  `data`, effects are aggregated within studies. Defaults to
+  `"multi_arm1"`, the variable which encodes multi-arm intervention
+  conditions in the [Metapsy data
   standard](https://docs.metapsy.org/data-preparation/format/#standard-variables).
 
 - which.outliers:
 
   `character`. Which model should be used to conduct outlier analyses?
   Must be `"overall"` or `"combined"`, with `"overall"` being the
-  default.
+  default. If `"overall"` is not included in `which.run`, but
+  `"combined"` is, the `"combined"` model is used. The same applies to
+  `which.influence`, `which.rob` and `which.waap.wls`.
 
 - which.influence:
 
@@ -259,14 +273,18 @@ runMetaAnalysis(data,
 
   `numeric`. Value between 0 and 1, indicating the assumed control group
   event rate to be used for calculating NNTs via the Furukawa-Leucht
-  method.
+  method. Pre-calculated risk ratios use the same event rate (\\(NNT =
+  1/\|CER(RR-1)\|\\)). When `es.type = "raw"`, NNTs are based on the
+  pooled risk difference, and this value is not used. NNTs are always
+  shown as positive numbers, based on the absolute effect size, and thus
+  do not show if an effect favors the first or second trial arm.
 
 - rho.within.study:
 
   `numeric`. Value between 0 and 1, indicating the assumed correlation
   of effect sizes within studies. This is relevant to combine effect
   sizes for the `"combined"` analysis type, and used to estimate the
-  variance-covariance matrices needed for the conditional and
+  variance-covariance matrices needed for the correlated and
   hierarchical effects three-level model. Default is `0.6`.
 
 - phi.within.study:
@@ -280,7 +298,7 @@ runMetaAnalysis(data,
 - power.within.study:
 
   `numeric`. Value between 0 and 1, indicating the minimum power
-  (\\1-\beta\\) required for a study to be considered sufficiently
+  (\\(1-\beta\\)) required for a study to be considered sufficiently
   powered. This value is used to identify adequately powered studies in
   the WAAP-WLS analysis. See "Details".
 
@@ -321,7 +339,10 @@ runMetaAnalysis(data,
 
   `logical`. Should robust variance estimation be used to calculate
   confidence intervals and tests of three-level models? `TRUE` by
-  default.
+  default. The CR2 estimator with Satterthwaite degrees of freedom is
+  used for the `"threelevel"` and `"threelevel.che"` models, and the CR1
+  estimator (clustered on `study.var`) for the `"ccrem"` and
+  `"ccrem.che"` models.
 
 - html:
 
@@ -358,19 +379,21 @@ By *default*, the following models are calculated:
   `es.measure = "RR"` and `es.type = "raw"`, the Mantel-Haenszel method
   is used for pooling instead.
 
-- `"combined"`. Pools all effect sizes within one study (defined by
-  `study.var`) before pooling. This ensures that all effect sizes are
-  independent (i.e., unit-of-analysis error & double-counting is
-  avoided). To combine the effects, one has to assume a correlation of
-  effect sizes within studies, empirical estimates of which are
-  typically not available.
+- `"combined"`. Aggregates the effect sizes within studies (defined by
+  `study.var`) before pooling. To combine the effects, one has to assume
+  a correlation of effect sizes within studies, empirical estimates of
+  which are typically not available. By default
+  (`which.combine = "arms"`), the different arms of a multi-arm trial
+  are aggregated separately, as defined by `which.combine.var`. All
+  effect sizes are only independent (i.e., unit-of-analysis error &
+  double-counting is avoided) when `which.combine = "studies"`.
 
 - `"lowest.highest"`. Runs a meta-analysis, but with only (i) the lowest
   and (ii) highest effect size within each study included.
 
-- `"outlier"`. Runs a meta-analysis without statistical outliers (i.e.
+- `"outliers"`. Runs a meta-analysis without statistical outliers (i.e.
   effect sizes for which the confidence interval does not overlap with
-  the confidence intervall of the overall effect).
+  the confidence interval of the overall effect).
 
 - `"influence"`. Runs a meta-analysis without influential cases (see
   [`influence.rma.uni`](https://wviechtb.github.io/metafor/reference/influence.rma.uni.html)
@@ -385,7 +408,8 @@ By *default*, the following models are calculated:
   model, with effect sizes nested in studies. Variance-covariance
   matrices of each study with two or more effect sizes are estimated
   using `rho.within.study` as the assumed overall within-study
-  correlation. This imputation allows to run a "correlated and
+  correlation, and the average sampling variance within a study for all
+  of its effect sizes. This imputation allows to run a "correlated and
   hierarchical effects" (CHE) model, which is typically a good
   approximation for data sets with unknown and/or complex dependence
   structures.
@@ -424,7 +448,7 @@ The following *non-default* models can also be specified:
   et al.,
   [2019](https://journals.sagepub.com/doi/full/10.1177/2515245919847196))
 
-Internally, the `overall`, `combined`, `lowest.highest`, `outlier`,
+Internally, the `overall`, `combined`, `lowest.highest`, `outliers`,
 `influence` and `rob` models are fitted by calling the
 [`meta::metagen()`](https://rdrr.io/pkg/meta/man/metagen.html) or
 [`meta::metabin()`](https://rdrr.io/pkg/meta/man/metabin.html) function,
@@ -433,14 +457,20 @@ respectively, in **{meta}** (Balduzzi, Rücker & Schwarzer,
 `threelevel.che`, `ccrem`, and `ccrem.che` models are implemented using
 [`metafor::rma.mv()`](https://wviechtb.github.io/metafor/reference/rma.mv.html)
 in **{metafor}** (Viechtbauer,
-[2005](https://www.jstatsoft.org/article/view/v036i03)).
+[2010](https://www.jstatsoft.org/article/view/v036i03)).
 
-Outlier selection is implemented using the
-[`dmetar::find.outliers()`](http://dmetar.protectlab.org/reference/find.outliers.md)
-function, and influence analyses using the
-[`dmetar::InfluenceAnalysis()`](http://dmetar.protectlab.org/reference/InfluenceAnalysis.md)
-function. The latter function is a wrapper for
+Influence analyses are based on
 [`metafor::influence.rma.uni()`](https://wviechtb.github.io/metafor/reference/influence.rma.uni.html).
+
+Note that the \\(I^2\\) values of models fitted with {meta} are based on
+Cochran's \\(Q\\), while the three-level models and selection models use
+the "generalized" definition based on the estimated heterogeneity
+variance and a "typical" sampling variance. The values can therefore
+differ somewhat, even when based on the same data.
+
+For event rates (`es.measure = "EER"` or `"CER"`), a continuity
+correction of 0.5 is added to the number of events and non-events in
+studies with an event rate of 0 or 1.
 
 For ratio of means (`es.measure = "ROM"`), `data` must contain the
 columns specified by `es.var` and `se.var` (default `.log_rom` and
@@ -450,7 +480,7 @@ columns specified by `es.var` and `se.var` (default `.log_rom` and
 log-ROM and SE are stored in other columns. Values are used internally
 and results are back-transformed (exponentiated) for display.
 
-\\~\\
+\\(\~\\)
 
 ### Simple or complex variance-covariance approximation
 
@@ -459,56 +489,57 @@ data should be approximated using a `"simple"` (default) or more
 `"complex"` (but potentially more accurate) method. This argument is
 only relevant for the `"combined"`, `"threelevel.che"`, and
 `"ccrem.che"` models. The default "simple" method constructs
-variance-covariance matrices \\\Sigma_k\\ for each study using a
-constant sampling correlation \\\rho\\ (defined by `rho.within.study`),
-which is identical across all studies, outcomes, and time points. This
-simplifying assumption is part of the formulation of the CHE model
-originally provided by Pustejovsky and Tipton
+variance-covariance matrices \\(\Sigma_k\\) for each study using a
+constant sampling correlation \\(\rho\\) (defined by
+`rho.within.study`), which is identical across all studies, outcomes,
+and time points. This simplifying assumption is part of the formulation
+of the CHE model originally provided by Pustejovsky and Tipton
 ([2022](https://link.springer.com/article/10.1007/s11121-021-01246-3)).
 
-Naturally, employing a common value of \\\rho\\ across all studies may
+Naturally, employing a common value of \\(\rho\\) across all studies may
 not be reasonable in some analyses, and other information may be
 available to better approximate the effect size dependencies in the
 collected data. Setting `vcov` to `"complex"` allows to assume that
 correlations between effect sizes may differ conditional on the type of
-dependency. This means that the variance-covariance matrix \\\Sigma_k\\
-of some study \\k\\ is approximated by an unstructured matrix with
-varying \\\rho\_{ij}\\ (instead of a heterogeneous compound symmetry
-matrix with fixed \\\rho\\, as is used when `vcov="simple"`).
+dependency. This means that the variance-covariance matrix
+\\(\Sigma_k\\) of some study \\(k\\) is approximated by an unstructured
+matrix with varying \\(\rho\_{ij}\\) (instead of a heterogeneous
+compound symmetry matrix with fixed \\(\rho\\), as is used when
+`vcov="simple"`).
 
-\\\begin{array}{ccc}\texttt{vcov="simple"} & \texttt{vcov="complex"} &
-\\ \Sigma_k = \begin{bmatrix} \sigma^2_1 \\ \rho \sigma_2 \sigma_1 &
-\sigma^2_2 & & \\ \rho \sigma_3 \sigma_1 & \rho \sigma_3 \sigma_2 &
-\sigma^2_3 & \\ \rho \sigma_4 \sigma_1 & \rho \sigma_4 \sigma_2 & \rho
+\\\[\begin{array}{ccc}\texttt{vcov="simple"} & \texttt{vcov="complex"} &
+\\\\ \Sigma_k = \begin{bmatrix} \sigma^2_1 \\\\ \rho \sigma_2 \sigma_1 &
+\sigma^2_2 & & \\\\ \rho \sigma_3 \sigma_1 & \rho \sigma_3 \sigma_2 &
+\sigma^2_3 & \\\\ \rho \sigma_4 \sigma_1 & \rho \sigma_4 \sigma_2 & \rho
 \sigma_4 \sigma_3 & \sigma^2_4 \end{bmatrix} & \Sigma_k =
-\begin{bmatrix} \sigma^2_1 & & & \\ \rho\_{21} \sigma_2 \sigma_1 &
-\sigma^2_2 & & \\ \rho\_{31} \sigma_3 \sigma_1 & \rho\_{32} \sigma_3
-\sigma_2 & \sigma^2_3 & \\ \rho\_{41} \sigma_4 \sigma_1 & \rho\_{42}
+\begin{bmatrix} \sigma^2_1 & & & \\\\ \rho\_{21} \sigma_2 \sigma_1 &
+\sigma^2_2 & & \\\\ \rho\_{31} \sigma_3 \sigma_1 & \rho\_{32} \sigma_3
+\sigma_2 & \sigma^2_3 & \\\\ \rho\_{41} \sigma_4 \sigma_1 & \rho\_{42}
 \sigma_4 \sigma_2 & \rho\_{43} \sigma_4 \sigma_3 & \sigma^2_4
-\end{bmatrix} & \end{array}\\
+\end{bmatrix} & \end{array}\\\]
 
 For example, setting `vcov = "complex"` allows to additionally
 incorporate assumed correlations specific to multiple testing over time
 (e.g. correlations between effects at post-test and long-term
 follow-up). The value provided in `phi.within.study` represents the
-(auto-)correlation coefficient \\\phi\\, which serves as a rough
+(auto-)correlation coefficient \\(\phi\\), which serves as a rough
 estimate of the re-test correlation after 1 week. When a vector of
 follow-up lengths is provided in `time.var`, this allows to model the
 gradual decrease in correlation between measurements over time.
 Furthermore, it is possible to calculate a correlation coefficient
-\\\rho_w\\ for multi-arm trials, which is directly proportional to the
+\\(\rho_w\\) for multi-arm trials, which is directly proportional to the
 size of each individual trial arm. When all trial arms have the same
-size, meaning that each arm's weight \\w\\ is identical, \\\rho_w\\ is
-known to be 0.5. Multiarm weights \\w\\ (and thus \\\rho_w\\) can be
-derived if the `w1.var` and `w2.var` variables, containing the sample
+size, meaning that each arm's weight \\(w\\) is identical, \\(\rho_w\\)
+is known to be 0.5. Multiarm weights \\(w\\) (and thus \\(\rho_w\\)) can
+be derived if the `w1.var` and `w2.var` variables, containing the sample
 size of each study arm, are provided.
 
 Using the complex approximation method increases the risk that at least
-one studies' \\\Sigma_k\\ matrix is not positive definite. In this case,
-the function automatically switches back to the constant sampling
+one study's \\(\Sigma_k\\) matrix is not positive definite. In this
+case, the function automatically switches back to the constant sampling
 correlation approximation.
 
-\\~\\
+\\(\~\\)
 
 ### Replacement functions
 
@@ -517,14 +548,14 @@ functions** are defined for each function argument. This allows to
 quickly tweak one or more analysis settings, which are implemented once
 the `rerun` function is called. Say that we saved the results of
 `runMetaAnalysis` in an object `m`. If, for example, we want to check
-the results using a different estimator of \\\tau^2\\, leaving all other
-settings the same, we could run e.g. `method.tau(m) <- "PM"`, followed
-by `rerun(m)`. This would provide results using the Paule-Mandel
-estimator. A list of all available setting replacement functions is
-provided
+the results using a different estimator of \\(\tau^2\\), leaving all
+other settings the same, we could run e.g. `method.tau(m) <- "PM"`,
+followed by `rerun(m)`. This would provide results using the
+Paule-Mandel estimator. A list of all available setting replacement
+functions is provided
 [here](https://tools.metapsy.org/reference/replacement-functions).
 
-\\~\\
+\\(\~\\)
 
 ### Risk of Bias data
 
@@ -571,11 +602,10 @@ Started](https://tools.metapsy.org/articles/metapsytools) vignette.
 [`summary.runMetaAnalysis`](summary.runMetaAnalysis.md),
 [`eb.runMetaAnalysis`](eb.runMetaAnalysis.md),
 [`profile.runMetaAnalysis`](profile.runMetaAnalysis.md),
-[`subgroupAnalysis`](subgroupAnalysis.md).
+[`subgroupAnalysis`](subgroupAnalysis.md),
 [`correctPublicationBias`](correctPublicationBias.md),
 [`metaRegression`](metaRegression.md),
-[`metaRegression`](metaRegression.md),
-[`calculateEffectSizes`](calculateEffectSizes.md),
+[`calculateEffectSizes`](calculateEffectSizes.md)
 
 ## Author
 
@@ -639,7 +669,7 @@ rerun(res)
 # Show forest plot (by default, "overall" is used)
 plot(res)
 
-# Comapare effects across models
+# Compare effects across models
 plot(res, "summary")
 
 # Show forest plot of specific analysis

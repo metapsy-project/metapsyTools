@@ -8,7 +8,7 @@ prepared in the Metapsy data format."><meta property="og:image" content="/logo.p
 
     <a class="navbar-brand me-2" href="../index.html">metapsyTools</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.14</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.15</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -24,6 +24,7 @@ prepared in the Metapsy data format."><meta property="og:image" content="/logo.p
     <li><a class="dropdown-item" href="../articles/web/installation.html">Installation Guide</a></li>
     <li><a class="dropdown-item" href="../articles/web/look_inside.html">A Look Inside</a></li>
     <li><a class="dropdown-item" href="../data-validator.html">Data Validator</a></li>
+    <li><a class="external-link dropdown-item" href="https://www.metapsy.org/tools/run-meta-analysis">Online App</a></li>
   </ul></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -115,8 +116,9 @@ calculated? Default is <code>FALSE</code>.</p></dd>
 
 <dt id="arg-change-sign">change.sign<a class="anchor" aria-label="anchor" href="#arg-change-sign"></a></dt>
 <dd><p><code>character</code>. Name of a <code>logical</code> column in <code>data</code>, encoding if the
-sign of a calculated effect size should be reversed (<code>TRUE</code>) or not (<code>FALSE</code>). Set to <code>NULL</code> (default) if
-no changes should be made.</p></dd>
+sign of a calculated effect size should be reversed (<code>TRUE</code>) or not (<code>FALSE</code>). Missing values are treated as
+<code>FALSE</code>. Set to <code>NULL</code> (default) if no changes should be made. This only applies to <code>.g</code>;
+risk ratios and ratios of means are not affected.</p></dd>
 
 
 <dt id="arg-impute-response">impute.response<a class="anchor" aria-label="anchor" href="#arg-impute-response"></a></dt>
@@ -186,7 +188,7 @@ catalogue-compatible codes like <code>"BDI-II"</code>).</p></dd>
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p><code>calculateEffectSizes</code> returns the meta-analysis data set as
 class <code>data.frame</code> in wide format (if results are saved to a variable).
-It also generates the following columns, wich are added to the data:</p><ul><li><p><code>.id</code>: Unique identifier for a trial arm comparison/row.</p></li>
+It also generates the following columns, which are added to the data:</p><ul><li><p><code>.id</code>: Unique identifier for a trial arm comparison/row.</p></li>
 <li><p><code>.g</code>: Calculated effect size (Hedges' <em>g</em>).</p></li>
 <li><p><code>.g_se</code>: Standard error of Hedges' <em>g</em>.</p></li>
 <li><p><code>.log_rr</code>: Calculated effect size (<em>logRR</em>).</p></li>
@@ -204,6 +206,18 @@ It also generates the following columns, wich are added to the data:</p><ul><li>
 small-sample bias corrected standardized mean difference  (Hedges' <em>g</em>)
 and log-risk ratios, as well their respective standard errors, if
 adequate raw effect size data is available for a comparison.</p>
+<p><strong>Effect size direction.</strong> Effects are calculated as <code>arm1</code> versus <code>arm2</code>. A negative <code>.g</code> means that
+the mean in the first arm is lower than in the second arm, or that <em>more</em> events occurred in the first
+arm (e.g. when the event is treatment response). A log-risk ratio greater than zero means that more events occurred
+in the first arm. Thus, if lower scores indicate better outcomes and events are
+beneficial, negative values of <code>.g</code> and positive values of <code>.log_rr</code> both favor the first arm.
+Use <code>change.sign</code> for outcomes where higher values are better.</p>
+<p><strong>Standard errors of <em>g</em>.</strong> The bias correction is applied to the effect size, while the standard error is
+based on the variance of the uncorrected standardized mean difference, as implemented in
+<code><a href="https://strengejacke.github.io/esc/reference/esc_mean_sd.html" class="external-link">esc::esc_mean_sd()</a></code>. In small samples, this makes the standard error slightly more conservative than
+when also multiplying it by the correction factor.</p>
+<p>Existing <code>.g</code>, <code>.g_se</code>, <code>.log_rr</code>, <code>.log_rr_se</code>, <code>.log_rom</code> and <code>.log_rom_se</code> columns in <code>data</code> are replaced.
+Pre-calculated values should be provided in the <code>precalc_</code> columns described below.</p>
 <p>It is essential that the data set in <code>data</code> contains a few required columns
 for this to work. An overview of the required data format is provided
 on the <a href="https://tools.metapsy.org/articles/metapsytools" class="external-link">"Get Started"</a>

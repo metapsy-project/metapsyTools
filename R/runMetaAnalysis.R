@@ -75,10 +75,11 @@
 #' or ratio of means (`"ROM"`)? Meta-analyses will only be conducted using comparisons that contain non-missing values in the `es.var` and `se.var` columns.
 #' @param es.type `character`. Should pre-calculated or raw event data (i.e.
 #' the Mantel-Haenszel method) be used for meta-analyses of risk ratios?
-#' Can be set to `"precalculated"` (default) or `"raw"`.
+#' Can be set to `"precalculated"` (default) or `"raw"`. Ignored for all other values of `es.measure`.
 #' @param es.var `character`. Specifies the name of the variable containing the (pre-
-#' calculated) effect size data in `data`. When `es.measure = "g"`, `"EER"`, or `"CER"`, this is set to
-#' `.g` by default; `".log_rr"` is used when `es.measure = "RR"`. For `es.measure = "ROM"`, this defaults to
+#' calculated) effect size data in `data`. When `es.measure = "g"`, this is set to
+#' `.g` by default; `".log_rr"` is used when `es.measure = "RR"`. When `es.measure = "EER"` or `"CER"`, logit-transformed
+#' event rates are calculated from `es.binary.raw.vars` and saved under this name for internal use (the returned `data` is not altered). For `es.measure = "ROM"`, this defaults to
 #' `.log_rom` (log ratio of means) and can be set to any column name if the user stores the data elsewhere.
 #' @param se.var `character`. Specifies the name of the variable containing the (pre-calculated)
 #' standard errors (square root of the variance) of the effect size metric defined
@@ -96,7 +97,7 @@
 #' \code{"PM"}, \code{"ML"}, \code{"HS"}, \code{"SJ"}, \code{"HE"}, or \code{"EB"}, can be abbreviated (see
 #' \code{\link[meta]{metagen}}). Use \code{"FE"} to use a fixed-effect/"common effect" model.
 #' @param method.tau.ci \code{character}. A character string indicating which method is used to estimate the
-#' confidence interval of the between-study heterogeneity variance \mjeqn{\tau^2}{\tau^2}. Either \code{"Q-Profile"} (default and recommended; [Viechtbauer, 2017](http://www.wvbauer.com/lib/exe/fetch.php/articles:viechtbauer2007b.pdf)),
+#' confidence interval of the between-study heterogeneity variance \mjeqn{\tau^2}{\tau^2}. Either \code{"Q-Profile"} (default and recommended; [Viechtbauer, 2007](http://www.wvbauer.com/lib/exe/fetch.php/articles:viechtbauer2007b.pdf)),
 #' \code{"BJ"}, \code{"J"}, or \code{"PL"} can be abbreviated. See \code{\link[meta]{metagen}} and \code{\link[metafor]{rma.uni}} for details.
 #' @param i2.ci.boot `logical`. Confidence intervals for \mjeqn{\tau^2}{\tau^2} as calculated by the Q-Profile method are not 
 #' directly applicable for three-level models, in which two heterogeneity variance components are estimated. By default,
@@ -111,6 +112,8 @@
 #' @param nsim.boot `numeric` Number of bootstrap samples to be drawn when `i2.ci.boot` is `TRUE`. Defaults to
 #' 5000.
 #' @param hakn \code{logical}. Should the Knapp-Hartung adjustment for effect size significance tests be used? Default is \code{TRUE}.
+#' For multilevel models, \code{TRUE} means that tests are based on a \emph{t}-distribution instead of the standard normal distribution; 
+#' this has no effect on confidence intervals and tests when \code{use.rve = TRUE}, but is still used for the prediction interval.
 #' @param study.var \code{character}. The name of the variable in \code{data} in which the study IDs are stored.
 #' @param arm.var.1 \code{character}. The name of the variable in \code{data} in which the condition (e.g. "guided iCBT")
 #' of the \emph{first} arm within a comparison are stored.
@@ -119,8 +122,9 @@
 #' @param measure.var \code{character}. The name of the variable in \code{data} 
 #' in which the instrument used for the comparison is stored.
 #' @param low.rob.filter \code{character}. A filtering statement by which to 
-#' include studies for the "low RoB only" analysis. Please note that the name of 
-#' the variable must be included as a column in \code{data}.
+#' include studies for the "low RoB only" analysis (e.g. `"rob > 2"`, or `"rob %in% c(3,4)"`). The statement is 
+#' evaluated within \code{data}, so all variable names must be included as columns in \code{data}. Rows for
+#' which the statement evaluates to `NA` are not included.
 #' @param round.digits \code{numeric}. Number of digits to round the (presented) results by. Default is \code{2}.
 #' @param rob.data `list`. Optional list detailing how risk of bias data should be appended to the model (see Details).
 #' @param which.combine `character`. Should multiple effect sizes within one study be pooled
@@ -132,10 +136,13 @@
 #' @param which.combine.var \code{character}. Additional grouping variable within studies to be used for the \code{"combined"}
 #' analysis when `which.combine = "arms"`. If the specified variable differs within one study (as defined
 #' by `study.var`), effects will be aggregated separately for each unique value in `which.combine.var`.
+#' If this variable is not included in `data`, effects are aggregated within studies.
 #' Defaults to `"multi_arm1"`, the variable which encodes multi-arm intervention conditions in the
 #' [Metapsy data standard](https://docs.metapsy.org/data-preparation/format/#standard-variables).
 #' @param which.outliers \code{character}. Which model should be used to conduct outlier analyses? Must be
-#' \code{"overall"} or \code{"combined"}, with \code{"overall"} being the default.
+#' \code{"overall"} or \code{"combined"}, with \code{"overall"} being the default. If \code{"overall"} is not included
+#' in `which.run`, but \code{"combined"} is, the \code{"combined"} model is used. The same applies to `which.influence`, `which.rob` and
+#' `which.waap.wls`.
 #' @param which.influence \code{character}. Which model should be used to conduct influence analyses? Must be
 #' \code{"overall"} or \code{"combined"}, with \code{"overall"} being the default.
 #' @param which.rob \code{character}. Which model should be used to conduct the "low risk of bias only" analyses? Must be
@@ -143,10 +150,13 @@
 #' @param which.waap.wls \code{character}. Which model should be used to run the (non-default) WAAP-WLS model? Must be
 #' \code{"overall"} or \code{"combined"}, with \code{"overall"} being the default.
 #' @param nntCer \code{numeric}. Value between 0 and 1, indicating the assumed control group event rate to be used
-#' for calculating NNTs via the Furukawa-Leucht method.
+#' for calculating NNTs via the Furukawa-Leucht method. Pre-calculated risk ratios use the same event rate
+#' (\mjeqn{NNT = 1/|CER(RR-1)|}{NNT = 1/|CER(RR-1)|}). When `es.type = "raw"`, NNTs are based on the pooled risk difference, 
+#' and this value is not used. NNTs are always shown as positive numbers, based on the absolute effect size, 
+#' and thus do not show if an effect favors the first or second trial arm.
 #' @param rho.within.study \code{numeric}. Value between 0 and 1, indicating the assumed correlation of effect sizes
 #' within studies. This is relevant to combine effect sizes for the \code{"combined"} analysis type, and used to estimate
-#' the variance-covariance matrices needed for the conditional and hierarchical effects three-level model. Default is \code{0.6}.
+#' the variance-covariance matrices needed for the correlated and hierarchical effects three-level model. Default is \code{0.6}.
 #' @param phi.within.study \code{numeric}. Value between 0 and 1, indicating the assumed one-week autocorrelation of effect sizes. 
 #' This is only used when `vcov="complex"` to approximate the variance-covariance matrices needed for the `"combined"` and 
 #' `"threelevel.che"` model. Default is 0.9. See "Details".
@@ -166,7 +176,8 @@
 #' when `vcov="complex"` is not positive definite/invertible, should the \code{\link[Matrix]{nearPD}} function
 #' be used to compute the nearest positive definite matrix? Default is \code{FALSE}.
 #' @param use.rve \code{logical}. Should robust variance estimation be used to calculate confidence intervals and tests of three-level models?
-#' \code{TRUE} by default.
+#' \code{TRUE} by default. The CR2 estimator with Satterthwaite degrees of freedom is used for the \code{"threelevel"} and \code{"threelevel.che"} models, and the 
+#' CR1 estimator (clustered on `study.var`) for the \code{"ccrem"} and \code{"ccrem.che"} models.
 #' @param html \code{logical}. Should an HTML table be created for the results? Default is \code{TRUE}.
 #' @param ... Additional arguments.
 #'
@@ -233,7 +244,7 @@
 #' # Show forest plot (by default, "overall" is used)
 #' plot(res)
 #' 
-#' # Comapare effects across models
+#' # Compare effects across models
 #' plot(res, "summary")
 #' 
 #' # Show forest plot of specific analysis
@@ -300,9 +311,8 @@
 #'
 #' @seealso \code{\link[metapsyTools]{plot.runMetaAnalysis}}, \code{\link[metapsyTools]{summary.runMetaAnalysis}},
 #' \code{\link[metapsyTools]{eb.runMetaAnalysis}}, \code{\link[metapsyTools]{profile.runMetaAnalysis}},
-#' \code{\link[metapsyTools]{subgroupAnalysis}}. \code{\link[metapsyTools]{correctPublicationBias}},
-#' \code{\link[metapsyTools]{metaRegression}}, \code{\link[metapsyTools]{metaRegression}}, 
-#' \code{\link[metapsyTools]{calculateEffectSizes}}, 
+#' \code{\link[metapsyTools]{subgroupAnalysis}}, \code{\link[metapsyTools]{correctPublicationBias}},
+#' \code{\link[metapsyTools]{metaRegression}}, \code{\link[metapsyTools]{calculateEffectSizes}}
 #'
 #' @details The \code{runMetaAnalysis} function is a wrapper for several types of meta-analytic models
 #' that are typically used. It allows to run all of these models in one step in order to generate results
@@ -316,14 +326,15 @@
 #'   \item \code{"overall"}. Runs a generic inverse-variance (random-effects) model. All included
 #'   effect sizes are treated as independent. When `es.measure = "RR"` and `es.type = "raw"`,
 #'   the Mantel-Haenszel method is used for pooling instead.
-#'   \item \code{"combined"}. Pools all effect sizes within one study (defined by \code{study.var}) before
-#'   pooling. This ensures that all effect sizes are independent (i.e., unit-of-analysis error &
-#'   double-counting is avoided). To combine the effects, one has to assume a correlation of effect sizes
-#'   within studies, empirical estimates of which are typically not available.
+#'   \item \code{"combined"}. Aggregates the effect sizes within studies (defined by \code{study.var}) before
+#'   pooling. To combine the effects, one has to assume a correlation of effect sizes
+#'   within studies, empirical estimates of which are typically not available. By default (`which.combine = "arms"`), 
+#'   the different arms of a multi-arm trial are aggregated separately, as defined by `which.combine.var`. All 
+#'   effect sizes are only independent (i.e., unit-of-analysis error & double-counting is avoided) when `which.combine = "studies"`.
 #'   \item \code{"lowest.highest"}. Runs a meta-analysis, but with only (i) the lowest and (ii) highest
 #'   effect size within each study included.
-#'   \item \code{"outlier"}. Runs a meta-analysis without statistical outliers (i.e. effect sizes for which
-#'   the confidence interval does not overlap with the confidence intervall of the overall effect).
+#'   \item \code{"outliers"}. Runs a meta-analysis without statistical outliers (i.e. effect sizes for which
+#'   the confidence interval does not overlap with the confidence interval of the overall effect).
 #'   \item \code{"influence"}. Runs a meta-analysis without influential cases (see \code{\link[metafor]{influence.rma.uni}} for
 #'   details).
 #'   \item \code{"rob"}. Runs a meta-analysis with only low-RoB studies included.
@@ -331,7 +342,8 @@
 #'   in studies.
 #'   \item \code{"threelevel.che"}. Runs a multilevel (three-level) meta-analysis model, with effect sizes nested
 #'   in studies. Variance-covariance matrices of each study with two or more effect sizes are estimated using
-#'   \code{rho.within.study} as the assumed overall within-study correlation. This imputation allows to run a "correlated and
+#'   \code{rho.within.study} as the assumed overall within-study correlation, and the average sampling variance within a study for all of its effect sizes. 
+#'   This imputation allows to run a "correlated and
 #'   hierarchical effects" (CHE) model, which is typically a good approximation for data sets with unknown and/or
 #'   complex dependence structures.
 #' }
@@ -358,15 +370,21 @@
 #'   Carter et al., [2019](https://journals.sagepub.com/doi/full/10.1177/2515245919847196))
 #' }
 #' 
-#' Internally, the `overall`, `combined`, `lowest.highest`, `outlier`, `influence` and `rob`
+#' Internally, the `overall`, `combined`, `lowest.highest`, `outliers`, `influence` and `rob`
 #' models are fitted by calling the [meta::metagen()] or [meta::metabin()] function,
 #' respectively, in **\{meta\}** (Balduzzi, Rücker & Schwarzer, [2019](https://pubmed.ncbi.nlm.nih.gov/31563865/)). 
 #' The `threelevel`, `threelevel.che`, `ccrem`, and `ccrem.che` models are implemented using [metafor::rma.mv()]
-#' in **\{metafor\}** (Viechtbauer, [2005](https://www.jstatsoft.org/article/view/v036i03)). 
+#' in **\{metafor\}** (Viechtbauer, [2010](https://www.jstatsoft.org/article/view/v036i03)). 
 #' 
-#' Outlier selection is implemented using the [dmetar::find.outliers()] function,
-#' and influence analyses using the [dmetar::InfluenceAnalysis()] function. The latter function is a wrapper for 
-#' [metafor::influence.rma.uni()].
+#' Influence analyses are based on [metafor::influence.rma.uni()].
+#' 
+#' Note that the \mjeqn{I^2}{I^2} values of models fitted with \{meta\} are based on Cochran's \mjeqn{Q}{Q}, 
+#' while the three-level models and selection models use the "generalized" definition based on the 
+#' estimated heterogeneity variance and a "typical" sampling variance. The values can therefore differ somewhat, 
+#' even when based on the same data.
+#' 
+#' For event rates (\code{es.measure = "EER"} or \code{"CER"}), a continuity correction of 0.5 is added to the number
+#' of events and non-events in studies with an event rate of 0 or 1.
 #' 
 #' For ratio of means (\code{es.measure = "ROM"}), \code{data} must contain the columns specified by \code{es.var}
 #' and \code{se.var} (default \code{.log_rom} and \code{.log_rom_se}, as created by
@@ -408,7 +426,7 @@
 #' \mjeqn{\rho_w}{w}) can be derived if the `w1.var` and `w2.var` variables,
 #' containing the sample size of each study arm, are provided. 
 #' 
-#' Using the complex approximation method increases the risk that at least one studies' \mjeqn{\Sigma_k}{\Sigma_k} matrix
+#' Using the complex approximation method increases the risk that at least one study's \mjeqn{\Sigma_k}{\Sigma_k} matrix
 #' is not positive definite. In this case, the function automatically switches back to the 
 #' constant sampling correlation approximation.
 #' 
@@ -518,8 +536,9 @@ runMetaAnalysis = function(data,
   }
   
   if (inherits(data, "flagEffectSizes")){
-    eff.out = sum(data[["flags"]]==3)
-    data = data[["data"]][!data[["flags"]]==3,]
+    eff.mask = data[["flags"]]==3 & !is.na(data[["flags"]])
+    eff.out = sum(eff.mask)
+    data = data[["data"]][!eff.mask,]
     message(crayon::bold(
       crayon::cyan(paste0("- Extreme/implausible effect sizes removed",
                    " before running models (k=", eff.out, 
@@ -530,12 +549,26 @@ runMetaAnalysis = function(data,
     data = data[["data"]]
   }
   
-  # If es.measure is "g", es.type must be "precalculated"
+  # Save data as provided; the working columns below can be overwritten.
+  data = as.data.frame(data)
+  data.input = data
+  data$.input.row = seq_len(nrow(data))
+  
+  # es.type = "raw" is only available for risk ratios
   if (!(es.measure[1] %in% c("g", "RR", "EER", "CER", "ROM"))){
     stop("'es.measure' must be 'g', 'RR', 'EER', 'CER' or 'ROM'.")
   }
-  if (identical(es.measure[1], "g")){
+  if (!identical(es.measure[1], "RR")){
     es.type = "precalculated"
+  }
+  
+  # NAs in the selected arguments would otherwise only surface deep in the models
+  if (!is.numeric(rho.within.study[1]) || is.na(rho.within.study[1]) ||
+      abs(rho.within.study[1]) > 1){
+    stop("'rho.within.study' must be a value between 0 and 1.")
+  }
+  if (!is.numeric(nntCer[1]) || is.na(nntCer[1]) || nntCer[1] <= 0 || nntCer[1] >= 1){
+    stop("'nntCer' must be a value between 0 and 1.")
   }
   
   # If ROM, use es.var and se.var (default .log_rom / .log_rom_se) and run internally as .g / .g_se
@@ -559,18 +592,14 @@ runMetaAnalysis = function(data,
   
   # If CER or EER, calculate plogits and se, set to ".g"
   if (es.measure[1]=="EER") {
-      p = (data[[es.binary.raw.vars[1]]])/data[[es.binary.raw.vars[3]]]
-      n = data[[es.binary.raw.vars[3]]]
-      p[p < 0 | p > 1] = NA; p[p==0] = 0.5
-      data[[es.var]] <- log(p/(1-p))
-      data[[se.var]] <- sqrt((1/(n*p))+(1/(n*(1-p))))
+      plogit = eventRateLogit(data[[es.binary.raw.vars[1]]], data[[es.binary.raw.vars[3]]])
+      data[[es.var]] = plogit$es
+      data[[se.var]] = plogit$se
       has.plogits = TRUE; which.plogits = "EER"; es.measure = "g"
   } else if (es.measure[1]=="CER") {
-      p = (data[[es.binary.raw.vars[2]]])/data[[es.binary.raw.vars[4]]]
-      n = data[[es.binary.raw.vars[4]]]
-      p[p < 0 | p > 1] = NA; p[p==0] = 0.5
-      data[[es.var]] = log(p/(1-p))
-      data[[se.var]] = sqrt((1/(n*p))+(1/(n*(1-p))))
+      plogit = eventRateLogit(data[[es.binary.raw.vars[2]]], data[[es.binary.raw.vars[4]]])
+      data[[es.var]] = plogit$es
+      data[[se.var]] = plogit$se
       has.plogits = TRUE; which.plogits = "CER"; es.measure = "g"
   } else {
       has.plogits = FALSE; which.plogits = NULL
@@ -580,14 +609,14 @@ runMetaAnalysis = function(data,
   if (identical(es.type[1], "raw")){
     data = data[rowSums(is.na(data[es.binary.raw.vars])) == 0 &
                   rowSums(data[es.binary.raw.vars] == Inf) == 0 &
-                  rowSums(data[es.binary.raw.vars] == -Inf) == 0,]
+                  rowSums(data[es.binary.raw.vars] == -Inf) == 0, , drop = FALSE]
     .type.es = ifelse(identical(es.measure[1], "g"), "g", "RR")
     .raw.bin.es = TRUE
   } else {
     data = data[!is.na(data[[es.var[1]]]) & 
                 !is.na(data[[se.var[1]]]) & 
                 data[[es.var[1]]] != Inf & 
-                data[[es.var[1]]] != -Inf,]
+                data[[es.var[1]]] != -Inf, , drop = FALSE]
     .type.es = ifelse(identical(es.measure[1], "g"), "g", "RR")
     .raw.bin.es = FALSE
   }
@@ -641,7 +670,9 @@ runMetaAnalysis = function(data,
   error.model.list = list()
   warn.end = FALSE
   no.low.rob.studies = FALSE
-  data.original = data
+  # Returned data contains the analyzed rows, but the columns as provided
+  data.original = data.input[data$.input.row,]
+  data$.input.row = NULL
   method.tau = method.tau
   
   # Send message (beginning of analyses)
@@ -656,6 +687,11 @@ runMetaAnalysis = function(data,
   }
   
   
+  
+  # For ROM, models are fitted on the log scale and exponentiated afterwards in
+  # adaptRom. This must not be based on values that are already rounded.
+  round.digits.user = round.digits
+  if (has.rom) round.digits = 12
   
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
   #                                                                           #
@@ -1067,6 +1103,7 @@ runMetaAnalysis = function(data,
   
   # If ROM, adapt the res (exp and rename g -> rom)
   if (has.rom) {
+    round.digits = round.digits.user
     mGeneral = adaptRom(mGeneral, round.digits)
     mLowest = adaptRom(mLowest, round.digits)
     mHighest = adaptRom(mHighest, round.digits)
@@ -1144,7 +1181,8 @@ runMetaAnalysis = function(data,
        model.waap.wls = mWaapWls$m,
        influence.analysis = influenceRes,
        which.run = which.run,
-       which.waap.wls = which.waap.wls[1],
+       which.waap.wls = if (!is.null(mWaapWls$which.waap.wls)) {
+         mWaapWls$which.waap.wls } else { which.waap.wls[1] },
        data = data.original,
        html = html,
        round.digits = round.digits,
@@ -1243,15 +1281,7 @@ print.runMetaAnalysis = function(x, ...){
     cat(crayon::blue$bold(
       "------------------------------------------------ \n"))
     dat = x$summary[run.models, 1:8]
-    tbl = dplyr::as_tibble(cbind(Model = rownames(dat), dat))
-    if (x$round.digits[1]>2) {as.character(tbl[,3][[1]]) -> tbl[,3]}
-    old = options(pillar.bold=TRUE)
-    tbl.format = format(tbl)[-c(1,3)]
-    tbl.format[-1] = lapply(tbl.format[-1], 
-                            function(x) stringr::str_sub(x, 19))
-    tbl.format[1] = stringr::str_sub(tbl.format[1], 3)
-    cat(do.call(c, tbl.format), sep="\n")
-    options(old)
+    printResultTable(cbind(Model = rownames(dat), dat))
     
     # Add publication bias corrected results
     cat("\n")
@@ -1260,33 +1290,19 @@ print.runMetaAnalysis = function(x, ...){
                "' model) ")))
     cat(crayon::blue$bold("----------------------- \n"))
     dat.pb = x$correctPublicationBias$summary[,1:8]
-    tbl.pb = dplyr::as_tibble(cbind(Model = rownames(dat.pb), dat.pb))
-    old = options(pillar.bold=TRUE)
-    tbl.format.pb = format(tbl.pb)[-c(1,3)]
-    tbl.format.pb[-1] = lapply(tbl.format.pb[-1], 
-                            function(x) stringr::str_sub(x, 19))
-    tbl.format.pb[1] = stringr::str_sub(tbl.format.pb[1], 3)
-    cat(do.call(c, tbl.format.pb), sep="\n")
-    options(old)
+    printResultTable(cbind(Model = rownames(dat.pb), dat.pb))
     
     
     if ("threelevel" %in% x$which.run){
       cat("\n")
       cat(crayon::blue$bold("Variance components (three-level model) "))
       cat(crayon::blue$bold("---------------------- \n"))
-      if (is.na(x$model.threelevel.var.comp)[1]){
+      if (!is.data.frame(x$model.threelevel.var.comp)){
         cat("-")
       } else {
         dat = x$model.threelevel.var.comp
         dat = within(dat,{tau2 = round(tau2, x$round.digits+1)})
-        tbl = dplyr::as_tibble(cbind(Source = rownames(dat), dat))
-        old = options(pillar.bold=TRUE)
-        tbl.format = format(tbl)[-c(1,3)]
-        tbl.format[-1] = lapply(tbl.format[-1], 
-                                function(x) stringr::str_sub(x, 19))
-        tbl.format[1] = stringr::str_sub(tbl.format[1], 3)
-        cat(do.call(c, tbl.format), sep="\n")
-        options(old)
+        printResultTable(cbind(Source = rownames(dat), dat))
       }
     }
     
@@ -1294,19 +1310,12 @@ print.runMetaAnalysis = function(x, ...){
       cat("\n")
       cat(crayon::blue$bold("Variance components (three-level CHE model) "))
       cat(crayon::blue$bold("------------------ \n"))
-      if (is.na(x$model.threelevel.che.var.comp)[1]){
+      if (!is.data.frame(x$model.threelevel.che.var.comp)){
         cat("-")
       } else {
         dat = x$model.threelevel.che.var.comp
         dat = within(dat,{tau2 = round(tau2, x$round.digits+1)})
-        tbl = dplyr::as_tibble(cbind(Source = rownames(dat), dat))
-        old = options(pillar.bold=TRUE)
-        tbl.format = format(tbl)[-c(1,3)]
-        tbl.format[-1] = lapply(tbl.format[-1], 
-                                function(x) stringr::str_sub(x, 19))
-        tbl.format[1] = stringr::str_sub(tbl.format[1], 3)
-        cat(do.call(c, tbl.format), sep="\n")
-        options(old)
+        printResultTable(cbind(Source = rownames(dat), dat))
       }
     }
     
@@ -1314,19 +1323,12 @@ print.runMetaAnalysis = function(x, ...){
       cat("\n")
       cat(crayon::blue$bold("Variance components (three-level CCREM model) "))
       cat(crayon::blue$bold("---------------- \n"))
-      if (is.na(x$model.ccrem.var.comp)[1]){
+      if (!is.data.frame(x$model.ccrem.var.comp)){
         cat("-")
       } else {
         dat = x$model.ccrem.var.comp
         dat = within(dat,{tau2 = round(tau2, x$round.digits+1)})
-        tbl = dplyr::as_tibble(cbind(Source = rownames(dat), dat))
-        old = options(pillar.bold=TRUE)
-        tbl.format = format(tbl)[-c(1,3)]
-        tbl.format[-1] = lapply(tbl.format[-1], 
-                                function(x) stringr::str_sub(x, 19))
-        tbl.format[1] = stringr::str_sub(tbl.format[1], 3)
-        cat(do.call(c, tbl.format), sep="\n")
-        options(old)
+        printResultTable(cbind(Source = rownames(dat), dat))
       }
     }
     
@@ -1334,19 +1336,12 @@ print.runMetaAnalysis = function(x, ...){
       cat("\n")
       cat(crayon::blue$bold("Variance components (three-level CCREM-CHE model) "))
       cat(crayon::blue$bold("------------ \n"))
-      if (is.na(x$model.ccrem.che.var.comp)[1]){
+      if (!is.data.frame(x$model.ccrem.che.var.comp)){
         cat("-")
       } else {
         dat = x$model.ccrem.che.var.comp
         dat = within(dat,{tau2 = round(tau2, x$round.digits+1)})
-        tbl = dplyr::as_tibble(cbind(Source = rownames(dat), dat))
-        old = options(pillar.bold=TRUE)
-        tbl.format = format(tbl)[-c(1,3)]
-        tbl.format[-1] = lapply(tbl.format[-1], 
-                                function(x) stringr::str_sub(x, 19))
-        tbl.format[1] = stringr::str_sub(tbl.format[1], 3)
-        cat(do.call(c, tbl.format), sep="\n")
-        options(old)
+        printResultTable(cbind(Source = rownames(dat), dat))
       }
     }
     
@@ -1427,32 +1422,18 @@ print.runMetaAnalysis = function(x, ...){
     cat(crayon::blue$bold(
       "------------------------------------------------ \n"))
     dat = x$summary[run.models, 1:8]
-    tbl = dplyr::as_tibble(cbind(Model = rownames(dat), dat))
-    if (x$round.digits[1]>2) {as.character(tbl[,3][[1]]) -> tbl[,3]}
-    old = options(pillar.bold=TRUE)
-    tbl.format = format(tbl)[-c(1,3)]
-    tbl.format[-1] = lapply(tbl.format[-1], 
-                            function(x) stringr::str_sub(x, 19))
-    tbl.format[1] = stringr::str_sub(tbl.format[1], 3)
-    cat(do.call(c, tbl.format), sep="\n")
-    options(old)
+    printResultTable(cbind(Model = rownames(dat), dat))
     
     if ("threelevel" %in% x$which.run){
       cat("\n")
       cat(crayon::blue$bold("Variance components (three-level model) "))
       cat(crayon::blue$bold("---------------------- \n"))
-      if (is.na(x$model.threelevel.var.comp)[1]){
+      if (!is.data.frame(x$model.threelevel.var.comp)){
         cat("-")
       } else {
         dat = x$model.threelevel.var.comp
         dat = within(dat,{tau2 = round(tau2, x$round.digits+1)})
-        tbl = dplyr::as_tibble(cbind(Source = rownames(dat), dat))
-        tbl.format = format(tbl)[-c(1,3)]
-        tbl.format[-1] = lapply(tbl.format[-1], 
-                                function(x) stringr::str_sub(x, 19))
-        tbl.format[1] = stringr::str_sub(tbl.format[1], 3)
-        cat(do.call(c, tbl.format), sep="\n")
-        options(old)
+        printResultTable(cbind(Source = rownames(dat), dat))
       }
     }
     
@@ -1460,19 +1441,12 @@ print.runMetaAnalysis = function(x, ...){
       cat("\n")
       cat(crayon::blue$bold("Variance components (three-level CHE model) "))
       cat(crayon::blue$bold("------------------ \n"))
-      if (is.na(x$model.threelevel.che.var.comp)[1]){
+      if (!is.data.frame(x$model.threelevel.che.var.comp)){
         cat("-")
       } else {
         dat = x$model.threelevel.che.var.comp
         dat = within(dat,{tau2 = round(tau2, x$round.digits+1)})
-        tbl = dplyr::as_tibble(cbind(Source = rownames(dat), dat))
-        old = options(pillar.bold=TRUE)
-        tbl.format = format(tbl)[-c(1,3)]
-        tbl.format[-1] = lapply(tbl.format[-1], 
-                                function(x) stringr::str_sub(x, 19))
-        tbl.format[1] = stringr::str_sub(tbl.format[1], 3)
-        cat(do.call(c, tbl.format), sep="\n")
-        options(old)
+        printResultTable(cbind(Source = rownames(dat), dat))
       }
     }
     
@@ -1480,19 +1454,12 @@ print.runMetaAnalysis = function(x, ...){
       cat("\n")
       cat(crayon::blue$bold("Variance components (three-level CCREM model) "))
       cat(crayon::blue$bold("---------------- \n"))
-      if (is.na(x$model.ccrem.var.comp)[1]){
+      if (!is.data.frame(x$model.ccrem.var.comp)){
         cat("-")
       } else {
         dat = x$model.ccrem.var.comp
         dat = within(dat,{tau2 = round(tau2, x$round.digits+1)})
-        tbl = dplyr::as_tibble(cbind(Source = rownames(dat), dat))
-        old = options(pillar.bold=TRUE)
-        tbl.format = format(tbl)[-c(1,3)]
-        tbl.format[-1] = lapply(tbl.format[-1], 
-                                function(x) stringr::str_sub(x, 19))
-        tbl.format[1] = stringr::str_sub(tbl.format[1], 3)
-        cat(do.call(c, tbl.format), sep="\n")
-        options(old)
+        printResultTable(cbind(Source = rownames(dat), dat))
       }
     }
     
@@ -1500,19 +1467,12 @@ print.runMetaAnalysis = function(x, ...){
       cat("\n")
       cat(crayon::blue$bold("Variance components (three-level CCREM-CHE model) "))
       cat(crayon::blue$bold("------------ \n"))
-      if (is.na(x$model.ccrem.che.var.comp)[1]){
+      if (!is.data.frame(x$model.ccrem.che.var.comp)){
         cat("-")
       } else {
         dat = x$model.ccrem.che.var.comp
         dat = within(dat,{tau2 = round(tau2, x$round.digits+1)})
-        tbl = dplyr::as_tibble(cbind(Source = rownames(dat), dat))
-        old = options(pillar.bold=TRUE)
-        tbl.format = format(tbl)[-c(1,3)]
-        tbl.format[-1] = lapply(tbl.format[-1], 
-                                function(x) stringr::str_sub(x, 19))
-        tbl.format[1] = stringr::str_sub(tbl.format[1], 3)
-        cat(do.call(c, tbl.format), sep="\n")
-        options(old)
+        printResultTable(cbind(Source = rownames(dat), dat))
       }
     }
     
@@ -1640,9 +1600,9 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
         "influence" = "influence",
         "rob" = "rob",
         "combined" = "combined",
-        "threelevel" = c("threelevel", "threelevel.che"),
-        "che" = c("threelevel", "threelevel.che"),
-        "threelevel.che" = c("threelevel", "threelevel.che"),
+        "threelevel" = "threelevel",
+        "che" = "threelevel.che",
+        "threelevel.che" = "threelevel.che",
         "ccrem" = "ccrem",
         "ccrem.che" = "ccrem.che",
         "waap.wls" = "waap.wls",
@@ -1697,254 +1657,10 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
       do.call(meta::forest, c(list(x = m), list(...), forest.dots))
     }
     
-    # print forest plot by default
-    if (is.null(which)){
-      if (models[[x$which.run[1]]][1] != "model.threelevel" &&
-          models[[x$which.run[1]]][1] != "model.threelevel.che" &&
-          models[[x$which.run[1]]][1] != "model.ccrem" &&
-          models[[x$which.run[1]]][1] != "model.ccrem.che" &&
-          models[[x$which.run[1]]][1] != "waap.wls"){
-        message("- ", crayon::green("[OK] "), 
-                "Generating forest plot ('", x$which.run[1], "' model).")
-        forest_call(x[[models[[x$which.run[1]]][1]]], leftcols = "study")
-      }
-      if (models[[x$which.run[1]]][1] == "lowest.highest"){
-        message("- ", crayon::green("[OK] "), "Generating forest plot ('", 
-                "highest", "' model).")
-        forest_call(x$model.highest, leftcols = "study")
-      }
-      if (models[[x$which.run[1]]][1] == "model.threelevel"){
-        message("- ", crayon::green("[OK] "), 
-                "Generating forest plot ('threelevel' model).")
-        if (identical(x$.type.es, "RR")){
-          x$model.overall %>% 
-            {.$TE.random = x$model.threelevel$b[,1]
-            .$lower.random = 
-              ifelse(x$use.rve, clubSandwich::conf_int(x$model.threelevel, "CR2")[,5], 
-                     x$model.threelevel$ci.lb)
-            .$upper.random = 
-              ifelse(x$use.rve, clubSandwich::conf_int(x$model.threelevel, "CR2")[,6], 
-                     x$model.threelevel$ci.ub)
-            .$lower.predict = metafor::predict.rma(x$model.threelevel)[[5]];
-            .$upper.predict = metafor::predict.rma(x$model.threelevel)[[6]];
-            .$tau = sqrt(x$model.threelevel$sigma2[1])
-            .$tau2 = x$model.threelevel$sigma2[1];
-            .$I2 = x$model.threelevel.var.comp[1,"i2"]/100;
-            .$common = FALSE; .$random = TRUE; .} %>% 
-            forest_call(rightcols = if (identical(x$.type.es, "ROM")) c("effect", "ci", "w.random") else c("effect", "ci"),
-                         print.I2 = FALSE, print.pval.Q = FALSE,
-                         hetlab = "Heterogeneity (Between): ",
-                         digits.tau2 = 3, 
-                         text.random = 
-                           ifelse(x$use.rve, "3-Level Model (RVE)",
-                                 "3-Level Hierarchical Model")
-                        )
-        } else {
-          x$model.overall %>% 
-            {.$TE.random = x$model.threelevel$b[,1]
-             .$lower.random = 
-               ifelse(x$use.rve, clubSandwich::conf_int(x$model.threelevel, "CR2")[,5], 
-                      x$model.threelevel$ci.lb)
-             .$upper.random = 
-               ifelse(x$use.rve, clubSandwich::conf_int(x$model.threelevel, "CR2")[,6], 
-                      x$model.threelevel$ci.ub)
-             .$lower.predict = metafor::predict.rma(x$model.threelevel)[[5]];
-             .$upper.predict = metafor::predict.rma(x$model.threelevel)[[6]];
-             .$tau = sqrt(x$model.threelevel$sigma2[1])
-             .$tau2 = x$model.threelevel$sigma2[1];
-             .$I2 = x$model.threelevel.var.comp[1,"i2"]/100;
-             .$common = FALSE; .$random = TRUE; .} %>% 
-           forest_call(rightcols = if (identical(x$.type.es, "ROM")) c("effect", "ci", "w.random") else c("effect", "ci"),
-                         print.I2 = FALSE, print.pval.Q = FALSE,
-                         hetlab = "Heterogeneity (Between): ",
-                         digits.tau2 = 3, 
-                         text.random = 
-                           ifelse(x$use.rve, "3-Level Hierarchical Model (RVE)",
-                                 "3-Level Hierarchical Model")
-                        )
-        }
-      }
-      if (models[[x$which.run[1]]][1] == "model.threelevel.che"){
-        message("- ", crayon::green("[OK] "), 
-                "Generating forest plot ('threelevel.che' model).")
-        if (identical(x$.type.es, "RR")){
-          x$model.overall %>% 
-            {.$TE.random = x$model.threelevel.che$b[,1]
-            .$lower.random = 
-              ifelse(x$use.rve, clubSandwich::conf_int(x$model.threelevel.che, "CR2")[,5], 
-                     x$model.threelevel.che$ci.lb)
-            .$upper.random = 
-              ifelse(x$use.rve, clubSandwich::conf_int(x$model.threelevel.che, "CR2")[,6], 
-                     x$model.threelevel.che$ci.ub)
-            .$lower.predict = metafor::predict.rma(x$model.threelevel.che)[[5]];
-            .$upper.predict = metafor::predict.rma(x$model.threelevel.che)[[6]];
-            .$tau = sqrt(x$model.threelevel.che$sigma2[1])
-            .$tau2 = x$model.threelevel.che$sigma2[1];
-            .$I2 = x$model.threelevel.che.var.comp[1,"i2"]/100;
-            .$common = FALSE; .$random = TRUE; .} %>% 
-            forest_call(rightcols = if (identical(x$.type.es, "ROM")) c("effect", "ci", "w.random") else c("effect", "ci"),
-                         print.I2 = FALSE, print.pval.Q = FALSE,
-                         hetlab = "Heterogeneity (Between): ",
-                         digits.tau2 = 3, 
-                         text.random = 
-                           ifelse(x$use.rve, "3-Level CHE Model (RVE)",
-                                 "3-Level CHE Model")
-                        )
-        } else {
-          x$model.overall %>% 
-            {.$TE.random = x$model.threelevel.che$b[,1]
-            .$lower.random = 
-              ifelse(x$use.rve, clubSandwich::conf_int(x$model.threelevel.che, "CR2")[,5], 
-                     x$model.threelevel.che$ci.lb)
-            .$upper.random = 
-              ifelse(x$use.rve, clubSandwich::conf_int(x$model.threelevel.che, "CR2")[,6], 
-                     x$model.threelevel.che$ci.ub)
-            .$lower.predict = metafor::predict.rma(x$model.threelevel.che)[[5]];
-            .$upper.predict = metafor::predict.rma(x$model.threelevel.che)[[6]];
-            .$tau = sqrt(x$model.threelevel.che$sigma2[1])
-            .$tau2 = x$model.threelevel.che$sigma2[1];
-            .$I2 = x$model.threelevel.che.var.comp[1,"i2"]/100;
-            .$common = FALSE; .$random = TRUE; .} %>% 
-            forest_call(rightcols = if (identical(x$.type.es, "ROM")) c("effect", "ci", "w.random") else c("effect", "ci"),
-                         print.I2 = FALSE, print.pval.Q = FALSE,
-                         hetlab = "Heterogeneity (Between): ",
-                         digits.tau2 = 3, 
-                         text.random = 
-                           ifelse(x$use.rve, "3-Level CHE Model (RVE)",
-                                 "3-Level CHE Model")
-                        )
-        }
-      }
-      if (models[[x$which.run[1]]][1] == "model.ccrem"){
-        message("- ", crayon::green("[OK] "), 
-                "Generating forest plot ('ccrem' model).")
-        if (identical(x$.type.es, "RR")){
-          cluster.var = x$model.ccrem$data[[metafor::ranef(x$model.ccrem)[1] %>% names()]]
-          x$model.overall %>% 
-            {.$TE.random = x$model.ccrem$b[,1]
-            .$lower.random = 
-              ifelse(x$use.rve, metafor::robust(x$model.ccrem, cluster=cluster.var)[["ci.lb"]], 
-                     x$model.ccrem$ci.lb)
-            .$upper.random = 
-              ifelse(x$use.rve, metafor::robust(x$model.ccrem, cluster=cluster.var)[["ci.ub"]], 
-                     x$model.ccrem$ci.ub)
-            .$lower.predict = metafor::predict.rma(x$model.ccrem)[[5]];
-            .$upper.predict = metafor::predict.rma(x$model.ccrem)[[6]];
-            .$tau = sqrt(x$model.ccrem$sigma2[1])
-            .$tau2 = x$model.ccrem$sigma2[1];
-            .$I2 = x$model.ccrem.var.comp[1,"i2"]/100;
-            .$common = FALSE; .$random = TRUE; .} %>% 
-            forest_call(rightcols = if (identical(x$.type.es, "ROM")) c("effect", "ci", "w.random") else c("effect", "ci"),
-                         print.I2 = FALSE, print.pval.Q = FALSE,
-                         hetlab = "Heterogeneity (Between): ",
-                         digits.tau2 = 3, 
-                         text.random = 
-                           ifelse(x$use.rve, "3-Level CCREM Model (RVE)",
-                                 "3-Level CCREM Model")
-                         )
-        } else {
-          cluster.var = x$model.ccrem$data[[metafor::ranef(x$model.ccrem)[1] %>% names()]]
-          x$model.overall %>% 
-            {.$TE.random = x$model.ccrem$b[,1]
-            .$lower.random = 
-              ifelse(x$use.rve, metafor::robust(x$model.ccrem, cluster=cluster.var)[["ci.lb"]], 
-                     x$model.ccrem$ci.lb)
-            .$upper.random = 
-              ifelse(x$use.rve, metafor::robust(x$model.ccrem, cluster=cluster.var)[["ci.ub"]], 
-                     x$model.ccrem$ci.ub)
-            .$lower.predict = metafor::predict.rma(x$model.ccrem)[[5]];
-            .$upper.predict = metafor::predict.rma(x$model.ccrem)[[6]];
-            .$tau = sqrt(x$model.ccrem$sigma2[1])
-            .$tau2 = x$model.ccrem$sigma2[1];
-            .$I2 = x$model.ccrem.var.comp[1,"i2"]/100;
-            .$common = FALSE; .$random = TRUE; .} %>% 
-            forest_call(rightcols = if (identical(x$.type.es, "ROM")) c("effect", "ci", "w.random") else c("effect", "ci"),
-                         print.I2 = FALSE, print.pval.Q = FALSE,
-                         hetlab = "Heterogeneity (Between): ",
-                         digits.tau2 = 3, 
-                         text.random = 
-                           ifelse(x$use.rve, "3-Level CCREM Model (RVE)",
-                                 "3-Level CCREM Model")
-                         )
-        }
-      }
-      if (models[[x$which.run[1]]][1] == "model.ccrem.che"){
-        message("- ", crayon::green("[OK] "), 
-                "Generating forest plot ('ccrem.che' model).")
-        if (identical(x$.type.es, "RR")){
-          cluster.var = x$model.ccrem.che$data[[metafor::ranef(x$model.ccrem.che)[1] %>% names()]]
-          x$model.overall %>% 
-            {.$TE.random = x$model.ccrem.che$b[,1]
-            .$lower.random = 
-              ifelse(x$use.rve, metafor::robust(x$model.ccrem.che, cluster=cluster.var)[["ci.lb"]], 
-                     x$model.ccrem.che$ci.lb)
-            .$upper.random = 
-              ifelse(x$use.rve, metafor::robust(x$model.ccrem.che, cluster=cluster.var)[["ci.ub"]], 
-                     x$model.ccrem.che$ci.ub)
-            .$lower.predict = metafor::predict.rma(x$model.ccrem.che)[[5]];
-            .$upper.predict = metafor::predict.rma(x$model.ccrem.che)[[6]];
-            .$tau = sqrt(x$model.ccrem.che$sigma2[1])
-            .$tau2 = x$model.ccrem.che$sigma2[1];
-            .$I2 = x$model.ccrem.che.var.comp[1,"i2"]/100;
-            .$common = FALSE; .$random = TRUE; .} %>% 
-            forest_call(rightcols = if (identical(x$.type.es, "ROM")) c("effect", "ci", "w.random") else c("effect", "ci"),
-                         print.I2 = FALSE, print.pval.Q = FALSE,
-                         hetlab = "Heterogeneity (Between): ",
-                         digits.tau2 = 3, 
-                         text.random = 
-                           ifelse(x$use.rve, "CCREM-CHE Model (RVE)",
-                                 "CCREM-CHE Model")
-                         )
-        } else {
-          cluster.var = x$model.ccrem.che$data[[metafor::ranef(x$model.ccrem.che)[1] %>% names()]]
-          x$model.overall %>% 
-            {.$TE.random = x$model.ccrem.che$b[,1]
-            .$lower.random = 
-              ifelse(x$use.rve, metafor::robust(x$model.ccrem.che, cluster=cluster.var)[["ci.lb"]], 
-                     x$model.ccrem.che$ci.lb)
-            .$upper.random = 
-              ifelse(x$use.rve, metafor::robust(x$model.ccrem.che, cluster=cluster.var)[["ci.ub"]], 
-                     x$model.ccrem.che$ci.ub)
-            .$lower.predict = metafor::predict.rma(x$model.ccrem.che)[[5]];
-            .$upper.predict = metafor::predict.rma(x$model.ccrem.che)[[6]];
-            .$tau = sqrt(x$model.ccrem.che$sigma2[1])
-            .$tau2 = x$model.ccrem.che$sigma2[1];
-            .$I2 = x$model.ccrem.che.var.comp[1,"i2"]/100;
-            .$common = FALSE; .$random = TRUE; .} %>% 
-            forest_call(rightcols = if (identical(x$.type.es, "ROM")) c("effect", "ci", "w.random") else c("effect", "ci"),
-                         print.I2 = FALSE, print.pval.Q = FALSE,
-                         hetlab = "Heterogeneity (Between): ",
-                         digits.tau2 = 3, 
-                         text.random = 
-                           ifelse(x$use.rve, "CCREM-CHE Model (RVE)",
-                                 "CCREM-CHE Model")
-                         )
-        }
-      }
-      if (models[[x$which.run[1]]][1] == "model.waap.wls") {
-        message("- ", crayon::green("[OK] "), 
-                "Generating forest plot ('waap.wls' model).")
-        m.plot = if(x$which.waap.wls=="combined") {x$model.combined} else {x$model.overall}
-        m.plot$TE.random = x$model.waap.wls$coefficients[[1]]
-        m.plot$lower.random = x$model.waap.wls$ci[,1]
-        m.plot$upper.random = x$model.waap.wls$ci[,2]
-        m.plot$lower.predict = x$model.waap.wls$lower.predict
-        m.plot$upper.predict = x$model.waap.wls$upper.predict
-        m.plot$I2 = x$model.waap.wls$i2
-        m.plot$lower.I2 = x$model.waap.wls$lower.i2
-        m.plot$upper.I2 = x$model.waap.wls$upper.i2
-        m.plot$text.random = paste0("WAAP-WLS (", toupper(x$model.waap.wls$type), " used)")
-        if (x$model.waap.wls$type == "waap") {
-          forest_call(m.plot, print.tau2 = FALSE, leftcols = "study",
-                      col.square = ifelse(x$model.waap.wls$powered, "lightblue", "gray"),
-                      rightcols = c("effect", "ci"))
-        } else {
-          forest_call(m.plot, print.tau2 = FALSE, leftcols = "study",
-                      rightcols = c("effect", "ci"))
-        }
-      }
-      
-    } else {
+    # Use the first model in which.run if no plot type was requested
+    if (is.null(which)) which = x$which.run[1]
+    
+    {
       
       if (which[1] == "overall"){
         message("- ", crayon::green("[OK] "), 
@@ -1974,6 +1690,10 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
       }
       
       if (which[1] == "rob"){
+        if (is.null(x$model.rob)) {
+          stop("The 'rob' model was not fitted, since no low risk of bias",
+               " studies were found.", call. = FALSE)
+        }
         message("- ", crayon::green("[OK] "), 
                 "Generating forest plot ('rob' model).")
         forest_call(x$model.rob, leftcols = "study")
@@ -1985,268 +1705,33 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
         forest_call(x$model.combined, leftcols = "study")
       }
       
-      if (which[1] == "threelevel"){
+      if (which[1] %in% c("threelevel", "che", "threelevel.che", 
+                          "ccrem", "ccrem.che")){
+        ml.key = ifelse(which[1] == "che", "threelevel.che", which[1])
+        ml.label = c("threelevel" = "3-Level Hierarchical Model",
+                     "threelevel.che" = "3-Level CHE Model",
+                     "ccrem" = "3-Level CCREM Model",
+                     "ccrem.che" = "CCREM-CHE Model")[[ml.key]]
         message("- ", crayon::green("[OK] "), 
-                "Generating forest plot ('threelevel' model).")
-        if (identical(x$.type.es, "RR")){
-          x$model.overall %>% 
-            {.$TE.random = x$model.threelevel$b[,1]
-            .$lower.random = 
-              ifelse(x$use.rve, clubSandwich::conf_int(x$model.threelevel, "CR2")[,5], 
-                     x$model.threelevel$ci.lb)
-            .$upper.random = 
-              ifelse(x$use.rve, clubSandwich::conf_int(x$model.threelevel, "CR2")[,6], 
-                     x$model.threelevel$ci.ub)
-            .$lower.predict = metafor::predict.rma(x$model.threelevel)[[5]];
-            .$upper.predict = metafor::predict.rma(x$model.threelevel)[[6]];
-            .$tau = sqrt(x$model.threelevel$sigma2[1])
-            .$tau2 = x$model.threelevel$sigma2[1];
-            .$I2 = x$model.threelevel.var.comp[1,"i2"]/100;
-            .$common = FALSE; .$random = TRUE; .} %>% 
-            forest_call(rightcols = if (identical(x$.type.es, "ROM")) c("effect", "ci", "w.random") else c("effect", "ci"),
-                         print.I2 = FALSE, print.pval.Q = FALSE,
-                         hetlab = "Heterogeneity (Between): ",
-                         digits.tau2 = 3, 
-                         text.random = 
-                           ifelse(x$use.rve, "3-Level Hierarchical Model (RVE)",
-                                  "3-Level Hierarchical Model")
-                         )
-        } else {
-          x$model.overall %>% 
-            {.$TE.random = x$model.threelevel$b[,1]
-            .$lower.random = 
-              ifelse(x$use.rve, clubSandwich::conf_int(x$model.threelevel, "CR2")[,5], 
-                     x$model.threelevel$ci.lb)
-            .$upper.random = 
-              ifelse(x$use.rve, clubSandwich::conf_int(x$model.threelevel, "CR2")[,6], 
-                     x$model.threelevel$ci.ub)
-            .$lower.predict = metafor::predict.rma(x$model.threelevel)[[5]];
-            .$upper.predict = metafor::predict.rma(x$model.threelevel)[[6]];
-            .$tau = sqrt(x$model.threelevel$sigma2[1])
-            .$tau2 = x$model.threelevel$sigma2[1];
-            .$I2 = x$model.threelevel.var.comp[1,"i2"]/100;
-            .$common = FALSE; .$random = TRUE; .} %>% 
-            forest_call(rightcols = if (identical(x$.type.es, "ROM")) c("effect", "ci", "w.random") else c("effect", "ci"),
-                         print.I2 = FALSE, print.pval.Q = FALSE,
-                         hetlab = "Heterogeneity (Between): ",
-                         digits.tau2 = 3, 
-                         text.random = 
-                           ifelse(x$use.rve, "3-Level Hierarchical Model (RVE)",
-                                  "3-Level Hierarchical Model")
-                         )
-        }
-      }
-      
-      if (which[1] == "che"){
-        message("- ", crayon::green("[OK] "), 
-                "Generating forest plot ('threelevel.che' model).")
-        if (identical(x$.type.es, "RR")){
-          x$model.overall %>% 
-            {.$TE.random = x$model.threelevel.che$b[,1]
-            .$lower.random = 
-              ifelse(x$use.rve, clubSandwich::conf_int(x$model.threelevel.che, "CR2")[,5], 
-                     x$model.threelevel.che$ci.lb)
-            .$upper.random = 
-              ifelse(x$use.rve, clubSandwich::conf_int(x$model.threelevel.che, "CR2")[,6], 
-                     x$model.threelevel.che$ci.ub)
-            .$lower.predict = metafor::predict.rma(x$model.threelevel.che)[[5]];
-            .$upper.predict = metafor::predict.rma(x$model.threelevel.che)[[6]];
-            .$tau = sqrt(x$model.threelevel.che$sigma2[1])
-            .$tau2 = x$model.threelevel.che$sigma2[1];
-            .$I2 = x$model.threelevel.che.var.comp[1,"i2"]/100;
-            .$common = FALSE; .$random = TRUE; .} %>% 
-            forest_call(rightcols = if (identical(x$.type.es, "ROM")) c("effect", "ci", "w.random") else c("effect", "ci"),
-                         print.I2 = FALSE, print.pval.Q = FALSE,
-                         hetlab = "Heterogeneity (Between): ",
-                         digits.tau2 = 3, 
-                         text.random = 
-                           ifelse(x$use.rve, "3-Level CHE Model (RVE)",
-                                  "3-Level CHE Model")
-                         )
-        } else {
-          x$model.overall %>% 
-            {.$TE.random = x$model.threelevel.che$b[,1]
-            .$lower.random = 
-              ifelse(x$use.rve, clubSandwich::conf_int(x$model.threelevel.che, "CR2")[,5], 
-                     x$model.threelevel.che$ci.lb)
-            .$upper.random = 
-              ifelse(x$use.rve, clubSandwich::conf_int(x$model.threelevel.che, "CR2")[,6], 
-                     x$model.threelevel.che$ci.ub)
-            .$lower.predict = metafor::predict.rma(x$model.threelevel.che)[[5]];
-            .$upper.predict = metafor::predict.rma(x$model.threelevel.che)[[6]];
-            .$tau = sqrt(x$model.threelevel.che$sigma2[1])
-            .$tau2 = x$model.threelevel.che$sigma2[1];
-            .$I2 = x$model.threelevel.che.var.comp[1,"i2"]/100;
-            .$common = FALSE; .$random = TRUE; .} %>% 
-            forest_call(rightcols = if (identical(x$.type.es, "ROM")) c("effect", "ci", "w.random") else c("effect", "ci"),
-                         print.I2 = FALSE, print.pval.Q = FALSE,
-                         hetlab = "Heterogeneity (Between): ",
-                         digits.tau2 = 3, 
-                         text.random = 
-                           ifelse(x$use.rve, "3-Level CHE Model (RVE)",
-                                  "3-Level CHE Model")
-                         )
-        }
-      }
-      
-      if (which[1] == "threelevel.che"){
-        message("- ", crayon::green("[OK] "), 
-                "Generating forest plot ('threelevel.che' model).")
-        if (identical(x$.type.es, "RR")){
-          x$model.overall %>% 
-            {.$TE.random = x$model.threelevel.che$b[,1]
-            .$lower.random = 
-              ifelse(x$use.rve, clubSandwich::conf_int(x$model.threelevel.che, "CR2")[,5], 
-                     x$model.threelevel.che$ci.lb)
-            .$upper.random = 
-              ifelse(x$use.rve, clubSandwich::conf_int(x$model.threelevel.che, "CR2")[,6], 
-                     x$model.threelevel.che$ci.ub)
-            .$lower.predict = metafor::predict.rma(x$model.threelevel.che)[[5]];
-            .$upper.predict = metafor::predict.rma(x$model.threelevel.che)[[6]];
-            .$tau = sqrt(x$model.threelevel.che$sigma2[1])
-            .$tau2 = x$model.threelevel.che$sigma2[1];
-            .$I2 = x$model.threelevel.che.var.comp[1,"i2"]/100;
-            .$common = FALSE; .$random = TRUE; .} %>% 
-            meta::forest(rightcols = c("effect", "ci"),
-                         print.I2 = FALSE, print.pval.Q = FALSE,
-                         hetlab = "Heterogeneity (Between): ",
-                         digits.tau2 = 3, 
-                         text.random = 
-                           ifelse(x$use.rve, "3-Level CHE Model (RVE)",
-                                  "3-Level CHE Model"),
-                         ...)
-        } else {
-          x$model.overall %>% 
-            {.$TE.random = x$model.threelevel.che$b[,1]
-            .$lower.random = 
-              ifelse(x$use.rve, clubSandwich::conf_int(x$model.threelevel.che, "CR2")[,5], 
-                     x$model.threelevel.che$ci.lb)
-            .$upper.random = 
-              ifelse(x$use.rve, clubSandwich::conf_int(x$model.threelevel.che, "CR2")[,6], 
-                     x$model.threelevel.che$ci.ub)
-            .$lower.predict = metafor::predict.rma(x$model.threelevel.che)[[5]];
-            .$upper.predict = metafor::predict.rma(x$model.threelevel.che)[[6]];
-            .$tau = sqrt(x$model.threelevel.che$sigma2[1])
-            .$tau2 = x$model.threelevel.che$sigma2[1];
-            .$I2 = x$model.threelevel.che.var.comp[1,"i2"]/100;
-            .$common = FALSE; .$random = TRUE; .} %>% 
-            meta::forest(rightcols = c("effect", "ci"),
-                         print.I2 = FALSE, print.pval.Q = FALSE,
-                         hetlab = "Heterogeneity (Between): ",
-                         digits.tau2 = 3, 
-                         text.random = 
-                           ifelse(x$use.rve, "3-Level CHE Model (RVE)",
-                                  "3-Level CHE Model"),
-                         ...)
-        }
-      }
-      
-      if (which[1] == "ccrem"){
-        message("- ", crayon::green("[OK] "), 
-                "Generating forest plot ('ccrem' model).")
-        if (identical(x$.type.es, "RR")){
-          cluster.var = x$model.ccrem$data[[metafor::ranef(x$model.ccrem)[1] %>% names()]]
-          x$model.overall %>% 
-            {.$TE.random = x$model.ccrem$b[,1]
-            .$lower.random = 
-              ifelse(x$use.rve, metafor::robust(x$model.ccrem, cluster=cluster.var)[["ci.lb"]], 
-                     x$model.ccrem$ci.lb)
-            .$upper.random = 
-              ifelse(x$use.rve, metafor::robust(x$model.ccrem, cluster=cluster.var)[["ci.ub"]], 
-                     x$model.ccrem$ci.ub)
-            .$lower.predict = metafor::predict.rma(x$model.ccrem)[[5]];
-            .$upper.predict = metafor::predict.rma(x$model.ccrem)[[6]];
-            .$tau = sqrt(x$model.ccrem$sigma2[1])
-            .$tau2 = x$model.ccrem$sigma2[1];
-            .$I2 = x$model.ccrem.var.comp[1,"i2"]/100;
-            .$common = FALSE; .$random = TRUE; .} %>% 
-            meta::forest(rightcols = c("effect", "ci"),
-                         print.I2 = FALSE, print.pval.Q = FALSE,
-                         hetlab = "Heterogeneity (Between): ",
-                         digits.tau2 = 3, 
-                         text.random = 
-                           ifelse(x$use.rve, "3-Level CCREM Model (RVE)",
-                                  "3-Level CCREM Model"),
-                         ...)
-        } else {
-          cluster.var = x$model.ccrem$data[[metafor::ranef(x$model.ccrem)[1] %>% names()]]
-          x$model.overall %>% 
-            {.$TE.random = x$model.ccrem$b[,1]
-            .$lower.random = 
-              ifelse(x$use.rve, metafor::robust(x$model.ccrem, cluster=cluster.var)[["ci.lb"]], 
-                     x$model.ccrem$ci.lb)
-            .$upper.random = 
-              ifelse(x$use.rve, metafor::robust(x$model.ccrem, cluster=cluster.var)[["ci.ub"]], 
-                     x$model.ccrem$ci.ub)
-            .$lower.predict = metafor::predict.rma(x$model.ccrem)[[5]];
-            .$upper.predict = metafor::predict.rma(x$model.ccrem)[[6]];
-            .$tau = sqrt(x$model.ccrem$sigma2[1])
-            .$tau2 = x$model.ccrem$sigma2[1];
-            .$I2 = x$model.ccrem.var.comp[1,"i2"]/100;
-            .$common = FALSE; .$random = TRUE; .} %>% 
-            meta::forest(rightcols = c("effect", "ci"),
-                         print.I2 = FALSE, print.pval.Q = FALSE,
-                         hetlab = "Heterogeneity (Between): ",
-                         digits.tau2 = 3, 
-                         text.random = 
-                           ifelse(x$use.rve, "3-Level CCREM Model (RVE)",
-                                  "3-Level CCREM Model"),
-                         ...)
-        }
-      }
-      
-      if (which[1] == "ccrem.che"){
-        message("- ", crayon::green("[OK] "), 
-                "Generating forest plot ('ccrem.che' model).")
-        if (identical(x$.type.es, "RR")){
-          cluster.var = x$model.ccrem.che$data[[metafor::ranef(x$model.ccrem.che)[1] %>% names()]]
-          x$model.overall %>% 
-            {.$TE.random = x$model.ccrem.che$b[,1]
-            .$lower.random = 
-              ifelse(x$use.rve, metafor::robust(x$model.ccrem.che, cluster=cluster.var)[["ci.lb"]], 
-                     x$model.ccrem.che$ci.lb)
-            .$upper.random = 
-              ifelse(x$use.rve, metafor::robust(x$model.ccrem.che, cluster=cluster.var)[["ci.ub"]], 
-                     x$model.ccrem.che$ci.ub)
-            .$lower.predict = metafor::predict.rma(x$model.ccrem.che)[[5]];
-            .$upper.predict = metafor::predict.rma(x$model.ccrem.che)[[6]];
-            .$tau = sqrt(x$model.ccrem.che$sigma2[1])
-            .$tau2 = x$model.ccrem.che$sigma2[1];
-            .$I2 = x$model.ccrem.che.var.comp[1,"i2"]/100;
-            .$common = FALSE; .$random = TRUE; .} %>% 
-            meta::forest(rightcols = c("effect", "ci"),
-                         print.I2 = FALSE, print.pval.Q = FALSE,
-                         hetlab = "Heterogeneity (Between): ",
-                         digits.tau2 = 3, 
-                         text.random = 
-                           ifelse(x$use.rve, "CCREM-CHE Model (RVE)",
-                                  "CCREM-CHE Model"),
-                         ...)
-        } else {
-          cluster.var = x$model.ccrem.che$data[[metafor::ranef(x$model.ccrem.che)[1] %>% names()]]
-          x$model.overall %>% 
-            {.$TE.random = x$model.ccrem.che$b[,1]
-            .$lower.random = 
-              ifelse(x$use.rve, metafor::robust(x$model.ccrem.che, cluster=cluster.var)[["ci.lb"]], 
-                     x$model.ccrem.che$ci.lb)
-            .$upper.random = 
-              ifelse(x$use.rve, metafor::robust(x$model.ccrem.che, cluster=cluster.var)[["ci.ub"]], 
-                     x$model.ccrem.che$ci.ub)
-            .$lower.predict = metafor::predict.rma(x$model.ccrem.che)[[5]];
-            .$upper.predict = metafor::predict.rma(x$model.ccrem.che)[[6]];
-            .$tau = sqrt(x$model.ccrem.che$sigma2[1])
-            .$tau2 = x$model.ccrem.che$sigma2[1];
-            .$I2 = x$model.ccrem.che.var.comp[1,"i2"]/100;
-            .$common = FALSE; .$random = TRUE; .} %>% 
-            meta::forest(rightcols = c("effect", "ci"),
-                         print.I2 = FALSE, print.pval.Q = FALSE,
-                         hetlab = "Heterogeneity (Between): ",
-                         digits.tau2 = 3, 
-                         text.random = 
-                           ifelse(x$use.rve, "CCREM-CHE Model (RVE)",
-                                  "CCREM-CHE Model"),
-                         ...)
-        }
+                "Generating forest plot ('", ml.key, "' model).")
+        m.ml = x[[paste0("model.", ml.key)]]
+        inf = multilevelInference(m.ml, x$use.rve)
+        x$model.overall %>% 
+          {.$TE.random = inf$est
+           .$lower.random = inf$ci.lb
+           .$upper.random = inf$ci.ub
+           .$lower.predict = inf$pi.lb
+           .$upper.predict = inf$pi.ub
+           .$tau = sqrt(m.ml$sigma2[1])
+           .$tau2 = m.ml$sigma2[1]
+           .$I2 = x[[paste0("model.", ml.key, ".var.comp")]][1,"i2"]/100
+           .$common = FALSE; .$random = TRUE; .} %>% 
+          forest_call(rightcols = if (identical(x$.type.es, "ROM")) c("effect", "ci", "w.random") else c("effect", "ci"),
+                      print.I2 = FALSE, print.pval.Q = FALSE,
+                      hetlab = "Heterogeneity (Between): ",
+                      digits.tau2 = 3, 
+                      text.random = 
+                        ifelse(x$use.rve, paste0(ml.label, " (RVE)"), ml.label))
       }
       
       if (which[1] == "waap.wls") {
@@ -2335,7 +1820,8 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
           stop("No publication bias analysis results found.",
                " Have you called correctPublicationBias()?")
         }
-        if (inherits(x$correctPublicationBias$model.selection, "try-error")){
+        if (is.null(x$correctPublicationBias$model.selection) ||
+            inherits(x$correctPublicationBias$model.selection, "try-error")){
           stop("Selection model could not be calculated.", 
                " Plot cannot be generated.")
         } else {
@@ -2352,9 +1838,11 @@ plot.runMetaAnalysis = function(x, which = NULL, eb = FALSE,
         if (!"overall" %in% x$which.run && nrow(x$summary) > 1L) {
           x$summary = x$summary[rownames(x$summary) != "Overall", , drop = FALSE]
         }
+        x$summary = x$summary[!x$summary$k %in% c("-", NA), , drop = FALSE]
         if (nrow(x$summary) < 1L){
           stop("No models available for summary plot. Run at least one model (e.g. which.run = \"overall\").")
         }
+        x$summary$i2 = suppressWarnings(as.numeric(x$summary$i2))
         
         if (x$.type.es == "RR"){
           ci.mat = stringr::str_replace_all(x$summary$rr.ci, ";|\\]|\\[", "") %>%
@@ -2526,13 +2014,14 @@ summary.runMetaAnalysis = function(object, forest = TRUE, ...){
     if ("combined" %in% x$which.run){
       cat(crayon::green("\u2713"), crayon::bold(crayon::magenta("[Combined]")),
           "'Combined' analysis: ES combined on", x$model.combined$which.combine,
-          "level assuming a correlation of rho =", paste0(x$model.combined$rho, ". \n"))}
+          "level assuming a correlation of rho =", paste0(x$model.combined$rho.within.study, ". \n"))}
 
     if ("threelevel" %in% x$which.run || "threelevel.che" %in% x$which.run){
       cat(crayon::green("\u2713"), crayon::bold(crayon::magenta("[Three-Level Model]")),
           "Three-level model estimated via restricted maximum likelihood, using the 'rma.mv'
   function in {metafor}. \n")
-      if (x$model.threelevel$test == "t" | x$model.threelevel.che$test[1] == "t"){
+      if (any(isTRUE(x$model.threelevel$test[1] == "t"),
+              isTRUE(x$model.threelevel.che$test[1] == "t"))){
         cat(crayon::green("\u2713"), crayon::bold(crayon::magenta("[Three-Level Model]")),
             "Test statistics and CIs of the three-level model calculated based on
   a t-distribution. \n")
@@ -2691,7 +2180,7 @@ summary.runMetaAnalysis = function(object, forest = TRUE, ...){
     if ("combined" %in% x$which.run){
       cat(crayon::green("\u2713"), crayon::bold(crayon::magenta("[Combined]")),
           "'Combined' analysis: ES combined on", x$model.combined$which.combine,
-          "level assuming a correlation of rho =", paste0(x$model.combined$rho, ". \n"))}
+          "level assuming a correlation of rho =", paste0(x$model.combined$rho.within.study, ". \n"))}
 
     if ("threelevel" %in% x$which.run || "threelevel.che" %in% x$which.run){
       cat(crayon::green("\u2713"), crayon::bold(crayon::magenta("[Three-Level Model]")),
@@ -2795,7 +2284,9 @@ summary.runMetaAnalysis = function(object, forest = TRUE, ...){
                   "combined" = "Combined", 
                   "threelevel" = "Three-Level Model",
                   "threelevel.che" = "Three-Level Model (CHE)",
-                  "ccrem" = "Three-Level CCREM")
+                  "ccrem" = "Three-Level CCREM",
+                  "ccrem.che" = "Three-Level CCREM (CHE)",
+                  "waap.wls" = "WAAP-WLS Model")
     
     run.models = unlist(models[x$which.run])
     if ("rob" %in% run.models){
@@ -2807,6 +2298,9 @@ summary.runMetaAnalysis = function(object, forest = TRUE, ...){
     if (!is.null(x$correctPublicationBias)) {
       x$summary = rbind(x$summary, x$correctPublicationBias$summary)
     }
+    # Failed models have no estimates, and turn i2 into character values
+    x$summary = x$summary[!x$summary$k %in% c("-", NA), , drop = FALSE]
+    x$summary$i2 = suppressWarnings(as.numeric(x$summary$i2))
 
     .parse_ci_mat <- function(ci_vec) {
       # Returns an n x 2 numeric matrix (lower, upper) even for n == 1 or malformed entries
@@ -2895,9 +2389,10 @@ summary.runMetaAnalysis = function(object, forest = TRUE, ...){
         {.[unique(names(.))]} -> forest.args
       do.call(meta::forest, forest.args) %>% suppressWarnings()
     } else {
-      ci.mat <- .parse_ci_mat(x$summary$g.ci)
+      # Second and third column: g (or eer/cer) and its confidence interval
+      ci.mat <- .parse_ci_mat(x$summary[[3]])
       ci.mat %>%
-        cbind(model = rownames(x$summary), g = x$summary$g,
+        cbind(model = rownames(x$summary), g = x$summary[[2]],
               i2 = round(x$summary$i2,1) %>% format(1), .) %>%
         data.frame() %>%
         dplyr::mutate(g = as.numeric(g),
@@ -2919,7 +2414,8 @@ summary.runMetaAnalysis = function(object, forest = TRUE, ...){
            overall.hetstat = FALSE, weight.study = "same",
            test.overall = FALSE, overall = FALSE, 
            leftcols = c("studlab", "g", "ci", "i2"),
-           leftlabs = c(expression(bold(Model)), expression(bold(g)),
+           leftlabs = c(expression(bold(Model)), if (identical(x$.type.es, "g")) expression(bold(g)) else 
+                       as.expression(bquote(bold(.(x$.type.es)))),
                         expression(bold(CI)),
                         expression(bold(italic(I)^2)))) -> forest.args
       append(forest.args[!names(forest.args) %in% names(dots)], dots) %>% 
@@ -3008,9 +2504,7 @@ eb.runMetaAnalysis = function(x, which = NULL, ...){
     
     # Generate "lowest" plot
     M = model[models[[which.run[1]]]][[1]]
-    if (!is.null(M$exclude)){
-      M$data = M$data[!M$exclude,]
-    }
+    M$data = blupData(M)
     dat = escalc(yi=.TE, sei=.seTE, data = M$data)
     res = metafor::rma(yi = .TE, sei = .seTE, dat = dat, slab = .studlab,
                        method = M$method.tau, test = ifelse(M$hakn, "knha", "z"))
@@ -3018,9 +2512,7 @@ eb.runMetaAnalysis = function(x, which = NULL, ...){
     
     # Generate "highest" plot
     M = model[models[[which.run[1]]]][[2]]
-    if (!is.null(M$exclude)){
-      M$data = M$data[!M$exclude,]
-    }
+    M$data = blupData(M)
     dat = escalc(yi=.TE, sei=.seTE, data = M$data)
     res = metafor::rma(yi = .TE, sei = .seTE, dat = dat, slab = .studlab,
                        method = M$method.tau, test = ifelse(M$hakn, "knha", "z"))
@@ -3036,9 +2528,7 @@ eb.runMetaAnalysis = function(x, which = NULL, ...){
   } else {
     
     M = model[models[[which.run[1]]]][[1]]
-    if (!is.null(M$exclude)){
-      M$data = M$data[!M$exclude,]
-    }
+    M$data = blupData(M)
     if (threeLevel) {
       warning("Empirical Bayes estimates are not available for three-level models.",
               " Values were calculated for the 'combined' model.")
@@ -3133,9 +2623,7 @@ blup.runMetaAnalysis = function(x, which = NULL, ...){
     
     # Generate "lowest" plot
     M = model[models[[which.run[1]]]][[1]]
-    if (!is.null(M$exclude)){
-      M$data = M$data[!M$exclude,]
-    }
+    M$data = blupData(M)
     dat = escalc(yi=.TE, sei=.seTE, data = M$data)
     res = metafor::rma(yi = .TE, sei = .seTE, dat = dat, slab = .studlab,
                        method = M$method.tau, test = ifelse(M$hakn, "knha", "z"))
@@ -3143,9 +2631,7 @@ blup.runMetaAnalysis = function(x, which = NULL, ...){
     
     # Generate "highest" plot
     M = model[models[[which.run[1]]]][[2]]
-    if (!is.null(M$exclude)){
-      M$data = M$data[!M$exclude,]
-    }
+    M$data = blupData(M)
     dat = escalc(yi=.TE, sei=.seTE, data = M$data)
     res = metafor::rma(yi = .TE, sei = .seTE, dat = dat, slab = .studlab,
                        method = M$method.tau, test = ifelse(M$hakn, "knha", "z"))
@@ -3161,9 +2647,7 @@ blup.runMetaAnalysis = function(x, which = NULL, ...){
   } else {
     
     M = model[models[[which.run[1]]]][[1]]
-    if (!is.null(M$exclude)){
-      M$data = M$data[!M$exclude,]
-    }
+    M$data = blupData(M)
     if (threeLevel) {
       warning("Empirical Bayes estimates are not available for three-level models.",
               " Values were calculated for the 'combined' model.")

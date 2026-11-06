@@ -174,10 +174,11 @@ createStudyTable = function(.data, ...,
 
   # Replace NA values
   apply(data.d, 2, function(x){
+    x = trimws(x)
     x[x == "NA"] = NA
     tidyr::replace_na(x, .na.replace) -> x
     return(x)}) %>%
-    data.frame() -> data.d
+    {data.frame(., check.names = FALSE)} -> data.d
 
   # Rename columns
   if (!is.null(.column.names)){
@@ -192,10 +193,7 @@ createStudyTable = function(.data, ...,
   
   # Replace redundant study names
   if ("study" %in% colnames(data.d)[1]){
-    unique(with(data.d, 
-                unlist(lapply(study, 
-                              function(i) grep(i, study)[1])))
-    ) -> first.var.mask
+    first.var.mask = match(unique(data.d$study), data.d$study)
     data.d$study[!1:nrow(data.d) %in% first.var.mask] = "."
   }
 

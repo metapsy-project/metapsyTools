@@ -79,11 +79,12 @@ or ratio of means (\code{"ROM"})? Meta-analyses will only be conducted using com
 
 \item{es.type}{\code{character}. Should pre-calculated or raw event data (i.e.
 the Mantel-Haenszel method) be used for meta-analyses of risk ratios?
-Can be set to \code{"precalculated"} (default) or \code{"raw"}.}
+Can be set to \code{"precalculated"} (default) or \code{"raw"}. Ignored for all other values of \code{es.measure}.}
 
 \item{es.var}{\code{character}. Specifies the name of the variable containing the (pre-
-calculated) effect size data in \code{data}. When \code{es.measure = "g"}, \code{"EER"}, or \code{"CER"}, this is set to
-\code{.g} by default; \code{".log_rr"} is used when \code{es.measure = "RR"}. For \code{es.measure = "ROM"}, this defaults to
+calculated) effect size data in \code{data}. When \code{es.measure = "g"}, this is set to
+\code{.g} by default; \code{".log_rr"} is used when \code{es.measure = "RR"}. When \code{es.measure = "EER"} or \code{"CER"}, logit-transformed
+event rates are calculated from \code{es.binary.raw.vars} and saved under this name for internal use (the returned \code{data} is not altered). For \code{es.measure = "ROM"}, this defaults to
 \code{.log_rom} (log ratio of means) and can be set to any column name if the user stores the data elsewhere.}
 
 \item{se.var}{\code{character}. Specifies the name of the variable containing the (pre-calculated)
@@ -105,7 +106,7 @@ and its square root (tau). Either \code{"REML"} (default), \code{"DL"},
 \code{\link[meta]{metagen}}). Use \code{"FE"} to use a fixed-effect/"common effect" model.}
 
 \item{method.tau.ci}{\code{character}. A character string indicating which method is used to estimate the
-confidence interval of the between-study heterogeneity variance \mjeqn{\tau^2}{\tau^2}. Either \code{"Q-Profile"} (default and recommended; \href{http://www.wvbauer.com/lib/exe/fetch.php/articles:viechtbauer2007b.pdf}{Viechtbauer, 2017}),
+confidence interval of the between-study heterogeneity variance \mjeqn{\tau^2}{\tau^2}. Either \code{"Q-Profile"} (default and recommended; \href{http://www.wvbauer.com/lib/exe/fetch.php/articles:viechtbauer2007b.pdf}{Viechtbauer, 2007}),
 \code{"BJ"}, \code{"J"}, or \code{"PL"} can be abbreviated. See \code{\link[meta]{metagen}} and \code{\link[metafor]{rma.uni}} for details.}
 
 \item{i2.ci.boot}{\code{logical}. Confidence intervals for \mjeqn{\tau^2}{\tau^2} as calculated by the Q-Profile method are not
@@ -122,7 +123,9 @@ used in the limit meta-analysis (note that \mjeqn{G^2}{G^2} is printed as \mjeqn
 \item{nsim.boot}{\code{numeric} Number of bootstrap samples to be drawn when \code{i2.ci.boot} is \code{TRUE}. Defaults to
 5000.}
 
-\item{hakn}{\code{logical}. Should the Knapp-Hartung adjustment for effect size significance tests be used? Default is \code{TRUE}.}
+\item{hakn}{\code{logical}. Should the Knapp-Hartung adjustment for effect size significance tests be used? Default is \code{TRUE}.
+For multilevel models, \code{TRUE} means that tests are based on a \emph{t}-distribution instead of the standard normal distribution;
+this has no effect on confidence intervals and tests when \code{use.rve = TRUE}, but is still used for the prediction interval.}
 
 \item{study.var}{\code{character}. The name of the variable in \code{data} in which the study IDs are stored.}
 
@@ -136,8 +139,9 @@ of the \emph{second} arm within a comparison are stored.}
 in which the instrument used for the comparison is stored.}
 
 \item{low.rob.filter}{\code{character}. A filtering statement by which to
-include studies for the "low RoB only" analysis. Please note that the name of
-the variable must be included as a column in \code{data}.}
+include studies for the "low RoB only" analysis (e.g. \code{"rob > 2"}, or \code{"rob \%in\% c(3,4)"}). The statement is
+evaluated within \code{data}, so all variable names must be included as columns in \code{data}. Rows for
+which the statement evaluates to \code{NA} are not included.}
 
 \item{round.digits}{\code{numeric}. Number of digits to round the (presented) results by. Default is \code{2}.}
 
@@ -153,11 +157,14 @@ from a statistical perspective, since it ensures that all pooled effects can be 
 \item{which.combine.var}{\code{character}. Additional grouping variable within studies to be used for the \code{"combined"}
 analysis when \code{which.combine = "arms"}. If the specified variable differs within one study (as defined
 by \code{study.var}), effects will be aggregated separately for each unique value in \code{which.combine.var}.
+If this variable is not included in \code{data}, effects are aggregated within studies.
 Defaults to \code{"multi_arm1"}, the variable which encodes multi-arm intervention conditions in the
 \href{https://docs.metapsy.org/data-preparation/format/#standard-variables}{Metapsy data standard}.}
 
 \item{which.outliers}{\code{character}. Which model should be used to conduct outlier analyses? Must be
-\code{"overall"} or \code{"combined"}, with \code{"overall"} being the default.}
+\code{"overall"} or \code{"combined"}, with \code{"overall"} being the default. If \code{"overall"} is not included
+in \code{which.run}, but \code{"combined"} is, the \code{"combined"} model is used. The same applies to \code{which.influence}, \code{which.rob} and
+\code{which.waap.wls}.}
 
 \item{which.influence}{\code{character}. Which model should be used to conduct influence analyses? Must be
 \code{"overall"} or \code{"combined"}, with \code{"overall"} being the default.}
@@ -169,11 +176,14 @@ Defaults to \code{"multi_arm1"}, the variable which encodes multi-arm interventi
 \code{"overall"} or \code{"combined"}, with \code{"overall"} being the default.}
 
 \item{nntCer}{\code{numeric}. Value between 0 and 1, indicating the assumed control group event rate to be used
-for calculating NNTs via the Furukawa-Leucht method.}
+for calculating NNTs via the Furukawa-Leucht method. Pre-calculated risk ratios use the same event rate
+(\mjeqn{NNT = 1/|CER(RR-1)|}{NNT = 1/|CER(RR-1)|}). When \code{es.type = "raw"}, NNTs are based on the pooled risk difference,
+and this value is not used. NNTs are always shown as positive numbers, based on the absolute effect size,
+and thus do not show if an effect favors the first or second trial arm.}
 
 \item{rho.within.study}{\code{numeric}. Value between 0 and 1, indicating the assumed correlation of effect sizes
 within studies. This is relevant to combine effect sizes for the \code{"combined"} analysis type, and used to estimate
-the variance-covariance matrices needed for the conditional and hierarchical effects three-level model. Default is \code{0.6}.}
+the variance-covariance matrices needed for the correlated and hierarchical effects three-level model. Default is \code{0.6}.}
 
 \item{phi.within.study}{\code{numeric}. Value between 0 and 1, indicating the assumed one-week autocorrelation of effect sizes.
 This is only used when \code{vcov="complex"} to approximate the variance-covariance matrices needed for the \code{"combined"} and
@@ -201,7 +211,8 @@ when \code{vcov="complex"} is not positive definite/invertible, should the \code
 be used to compute the nearest positive definite matrix? Default is \code{FALSE}.}
 
 \item{use.rve}{\code{logical}. Should robust variance estimation be used to calculate confidence intervals and tests of three-level models?
-\code{TRUE} by default.}
+\code{TRUE} by default. The CR2 estimator with Satterthwaite degrees of freedom is used for the \code{"threelevel"} and \code{"threelevel.che"} models, and the
+CR1 estimator (clustered on \code{study.var}) for the \code{"ccrem"} and \code{"ccrem.che"} models.}
 
 \item{html}{\code{logical}. Should an HTML table be created for the results? Default is \code{TRUE}.}
 
@@ -231,14 +242,15 @@ By \emph{default}, the following models are calculated:
 \item \code{"overall"}. Runs a generic inverse-variance (random-effects) model. All included
 effect sizes are treated as independent. When \code{es.measure = "RR"} and \code{es.type = "raw"},
 the Mantel-Haenszel method is used for pooling instead.
-\item \code{"combined"}. Pools all effect sizes within one study (defined by \code{study.var}) before
-pooling. This ensures that all effect sizes are independent (i.e., unit-of-analysis error &
-double-counting is avoided). To combine the effects, one has to assume a correlation of effect sizes
-within studies, empirical estimates of which are typically not available.
+\item \code{"combined"}. Aggregates the effect sizes within studies (defined by \code{study.var}) before
+pooling. To combine the effects, one has to assume a correlation of effect sizes
+within studies, empirical estimates of which are typically not available. By default (\code{which.combine = "arms"}),
+the different arms of a multi-arm trial are aggregated separately, as defined by \code{which.combine.var}. All
+effect sizes are only independent (i.e., unit-of-analysis error & double-counting is avoided) when \code{which.combine = "studies"}.
 \item \code{"lowest.highest"}. Runs a meta-analysis, but with only (i) the lowest and (ii) highest
 effect size within each study included.
-\item \code{"outlier"}. Runs a meta-analysis without statistical outliers (i.e. effect sizes for which
-the confidence interval does not overlap with the confidence intervall of the overall effect).
+\item \code{"outliers"}. Runs a meta-analysis without statistical outliers (i.e. effect sizes for which
+the confidence interval does not overlap with the confidence interval of the overall effect).
 \item \code{"influence"}. Runs a meta-analysis without influential cases (see \code{\link[metafor]{influence.rma.uni}} for
 details).
 \item \code{"rob"}. Runs a meta-analysis with only low-RoB studies included.
@@ -246,7 +258,8 @@ details).
 in studies.
 \item \code{"threelevel.che"}. Runs a multilevel (three-level) meta-analysis model, with effect sizes nested
 in studies. Variance-covariance matrices of each study with two or more effect sizes are estimated using
-\code{rho.within.study} as the assumed overall within-study correlation. This imputation allows to run a "correlated and
+\code{rho.within.study} as the assumed overall within-study correlation, and the average sampling variance within a study for all of its effect sizes.
+This imputation allows to run a "correlated and
 hierarchical effects" (CHE) model, which is typically a good approximation for data sets with unknown and/or
 complex dependence structures.
 }
@@ -273,15 +286,21 @@ Stanley & Doucouliagos, \href{https://onlinelibrary.wiley.com/doi/10.1002/jrsm.1
 Carter et al., \href{https://journals.sagepub.com/doi/full/10.1177/2515245919847196}{2019})
 }
 
-Internally, the \code{overall}, \code{combined}, \code{lowest.highest}, \code{outlier}, \code{influence} and \code{rob}
+Internally, the \code{overall}, \code{combined}, \code{lowest.highest}, \code{outliers}, \code{influence} and \code{rob}
 models are fitted by calling the \code{\link[meta:metagen]{meta::metagen()}} or \code{\link[meta:metabin]{meta::metabin()}} function,
 respectively, in \strong{\{meta\}} (Balduzzi, Rücker & Schwarzer, \href{https://pubmed.ncbi.nlm.nih.gov/31563865/}{2019}).
 The \code{threelevel}, \code{threelevel.che}, \code{ccrem}, and \code{ccrem.che} models are implemented using \code{\link[metafor:rma.mv]{metafor::rma.mv()}}
-in \strong{\{metafor\}} (Viechtbauer, \href{https://www.jstatsoft.org/article/view/v036i03}{2005}).
+in \strong{\{metafor\}} (Viechtbauer, \href{https://www.jstatsoft.org/article/view/v036i03}{2010}).
 
-Outlier selection is implemented using the \code{\link[dmetar:find.outliers]{dmetar::find.outliers()}} function,
-and influence analyses using the \code{\link[dmetar:InfluenceAnalysis]{dmetar::InfluenceAnalysis()}} function. The latter function is a wrapper for
-\code{\link[metafor:influence.rma.uni]{metafor::influence.rma.uni()}}.
+Influence analyses are based on \code{\link[metafor:influence.rma.uni]{metafor::influence.rma.uni()}}.
+
+Note that the \mjeqn{I^2}{I^2} values of models fitted with \{meta\} are based on Cochran's \mjeqn{Q}{Q},
+while the three-level models and selection models use the "generalized" definition based on the
+estimated heterogeneity variance and a "typical" sampling variance. The values can therefore differ somewhat,
+even when based on the same data.
+
+For event rates (\code{es.measure = "EER"} or \code{"CER"}), a continuity correction of 0.5 is added to the number
+of events and non-events in studies with an event rate of 0 or 1.
 
 For ratio of means (\code{es.measure = "ROM"}), \code{data} must contain the columns specified by \code{es.var}
 and \code{se.var} (default \code{.log_rom} and \code{.log_rom_se}, as created by
@@ -321,7 +340,7 @@ arms have the same size, meaning that each arm's weight \mjeqn{w}{w} is identica
 \mjeqn{\rho_w}{w}) can be derived if the \code{w1.var} and \code{w2.var} variables,
 containing the sample size of each study arm, are provided.
 
-Using the complex approximation method increases the risk that at least one studies' \mjeqn{\Sigma_k}{\Sigma_k} matrix
+Using the complex approximation method increases the risk that at least one study's \mjeqn{\Sigma_k}{\Sigma_k} matrix
 is not positive definite. In this case, the function automatically switches back to the
 constant sampling correlation approximation.
 
@@ -419,7 +438,7 @@ rerun(res)
 # Show forest plot (by default, "overall" is used)
 plot(res)
 
-# Comapare effects across models
+# Compare effects across models
 plot(res, "summary")
 
 # Show forest plot of specific analysis
@@ -485,9 +504,8 @@ createRobSummary(res,
 \seealso{
 \code{\link[metapsyTools]{plot.runMetaAnalysis}}, \code{\link[metapsyTools]{summary.runMetaAnalysis}},
 \code{\link[metapsyTools]{eb.runMetaAnalysis}}, \code{\link[metapsyTools]{profile.runMetaAnalysis}},
-\code{\link[metapsyTools]{subgroupAnalysis}}. \code{\link[metapsyTools]{correctPublicationBias}},
-\code{\link[metapsyTools]{metaRegression}}, \code{\link[metapsyTools]{metaRegression}},
-\code{\link[metapsyTools]{calculateEffectSizes}},
+\code{\link[metapsyTools]{subgroupAnalysis}}, \code{\link[metapsyTools]{correctPublicationBias}},
+\code{\link[metapsyTools]{metaRegression}}, \code{\link[metapsyTools]{calculateEffectSizes}}
 }
 \author{
 Mathias Harrer \email{mathias.h.harrer@gmail.com},

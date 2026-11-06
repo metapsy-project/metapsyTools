@@ -15,9 +15,9 @@
 #' @param name.high A `character` vector, specifying which code(s) have been used in the original data for 
 #' studies with a high risk of bias.
 #' @param name.unclear A `character` vector, specifying which code(s) have been used in the original data for 
-#' studies with unclear risk of bias.
+#' studies with unclear risk of bias. Can be set to `NULL` if there are no such codes.
 #' @param which.run The model in \code{model} that should be used for the summary risk of bias plot. 
-#' Uses the default analysis in \code{model} if no value is specified by the user. Possible values are
+#' Uses the first model in \code{model} if no value is specified by the user. Possible values are
 #' \code{"overall"}, \code{"combined"}, \code{"lowest"}, \code{"highest"}, \code{"outliers"},
 #' \code{"influence"} and \code{"rob"}.
 #'
@@ -69,7 +69,7 @@
 #' @author Mathias Harrer \email{mathias.h.harrer@@gmail.com},
 #' Paula Kuper \email{paula.r.kuper@@gmail.com}, Pim Cuijpers \email{p.cuijpers@@vu.nl}
 #'
-#' @seealso [dmetar::rob.summary], [robvis::rob_summary], [meta::rob]
+#' @seealso [meta::rob]
 #' 
 #' @importFrom dplyr recode
 #' @importFrom stringr str_remove_all
@@ -90,16 +90,20 @@ createRobSummary = function(model, name.low, name.high, name.unclear,
     stop("'which.run' must be 'overall', 'combined', 'outliers', 'rob',",
          " 'highest', 'lowest' or 'influence'.")
   }
-  if (!(which.run[1] %in% model$which.run)){
+  models.fitted = model$which.run
+  if ("lowest.highest" %in% models.fitted){
+    models.fitted = c(models.fitted, "lowest", "highest")
+  }
+  if (!(which.run[1] %in% models.fitted)){
     stop("'", which.run[1], "' model has not been fitted using runMetaAnalysis.")
   }
   if (which.run[1] %in% unlist(model$error.model.list)){
     stop("There was an error fitting the '", which.run[1], "' model using runMetaAnalysis;",
-         " the correctPublicationBias function cannot be applied.")
+         " the createRobSummary function cannot be applied.")
   }
   
   # Get model type
-  model.type = paste0("model.", which.run)
+  model.type = paste0("model.", which.run[1])
   M = model[[model.type]]
   
   # Create recoder for ROB plot
@@ -109,7 +113,7 @@ createRobSummary = function(model, name.low, name.high, name.unclear,
     {names(.) = recoder;.} -> recoder
   
   # Extract rob element
-  if (!class(M$rob)[1] == "rob") {
+  if (!inherits(M$rob, "rob")) {
     stop("Model does not contain ROB data.",
          " Specify 'rob.data' argument when running 'runMetaAnalysis'.")
   }
@@ -125,7 +129,7 @@ createRobSummary = function(model, name.low, name.high, name.unclear,
     as.data.frame() -> rob.df
   
   # Create plot
-  p = try(robSummary(rob.df), silent=TRUE)
+  p = robSummary(rob.df)
   invisible(p)
   
 }

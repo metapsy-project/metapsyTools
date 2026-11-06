@@ -8,7 +8,7 @@ then ready to be used for meta-analytic pooling.
 ``` r
 filterPoolingData(.data, ...,
                   .filter.missing.rows = FALSE,
-                  .es.column = es)
+                  .es.column = .g)
 ```
 
 ## Arguments
@@ -35,7 +35,7 @@ filterPoolingData(.data, ...,
 - .es.column:
 
   Name of the column in `.data` to be used for filtering out rows with
-  no effect sizes. Default is `es`.
+  no effect sizes. Default is `.g`.
 
 ## Value
 

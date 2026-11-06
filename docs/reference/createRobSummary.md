@@ -34,13 +34,14 @@ createRobSummary(model,
 - name.unclear:
 
   A `character` vector, specifying which code(s) have been used in the
-  original data for studies with unclear risk of bias.
+  original data for studies with unclear risk of bias. Can be set to
+  `NULL` if there are no such codes.
 
 - which.run:
 
   The model in `model` that should be used for the summary risk of bias
-  plot. Uses the default analysis in `model` if no value is specified by
-  the user. Possible values are `"overall"`, `"combined"`, `"lowest"`,
+  plot. Uses the first model in `model` if no value is specified by the
+  user. Possible values are `"overall"`, `"combined"`, `"lowest"`,
   `"highest"`, `"outliers"`, `"influence"` and `"rob"`.
 
 ## Value
@@ -49,8 +50,6 @@ Creates a RevMan-type risk of bias summary plot.
 
 ## See also
 
-[dmetar::rob.summary](http://dmetar.protectlab.org/reference/rob.summary.md),
-[robvis::rob_summary](https://rdrr.io/pkg/robvis/man/rob_summary.html),
 [meta::rob](https://rdrr.io/pkg/meta/man/rob.html)
 
 ## Author

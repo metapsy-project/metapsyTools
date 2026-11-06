@@ -4,7 +4,7 @@ Based on prepared extraction sheets by two independent raters, this
 function automatically checks for differing studies and/or
 inconsistencies in the ratings. Discrepancies are reported at the
 original 3-category level (`"Yes/PY"`, `"No/PN"`, `"NI"`). Inter-rater
-agreement is quantified using Cohen's \\\kappa\\, computed on a
+agreement is quantified using Cohen's \\(\kappa\\), computed on a
 binarised version of the ratings (`"Yes/PY"` vs. not-`"Yes/PY"`) over
 pairwise complete cells.
 
@@ -44,7 +44,7 @@ A list containing (depending on what is found):
 - `diff.studies`: studies included in only one of the two sheets
   (returned only if such studies exist);
 
-- `kappa`: Cohen's \\\kappa\\ on the binarised ratings (`"Yes/PY"` vs.
+- `kappa`: Cohen's \\(\kappa\\) on the binarised ratings (`"Yes/PY"` vs.
   not) over pairwise complete cells.
 
 ## Details
@@ -54,19 +54,19 @@ original 3-category level. A discrepancy is flagged whenever the two
 raters assigned different categories, or one rater provided a valid
 rating and the other did not.
 
-**Inter-rater agreement.** Cohen's \\\kappa\\ is computed after
+**Inter-rater agreement.** Cohen's \\(\kappa\\) is computed after
 binarising the ratings into `"Yes/PY"` vs. not-`"Yes/PY"` (the latter
 combining `"No/PN"` and `"NI"`). Only cells in which both raters
 provided a valid rating in {`"Yes/PY"`, `"No/PN"`, `"NI"`} are included
-(pairwise complete cases). Let \\n\\ denote the number of such cells and
-\\y_k^{(r)} = 1\\ if rater \\r\\ rated cell \\k\\ as `"Yes/PY"`, 0
-otherwise. The observed agreement is \$\$p_0 = \frac{1}{n}
-\sum\_{k=1}^{n} \mathbb{I}\\\left\[y_k^{(1)} = y_k^{(2)}\right\],\$\$
+(pairwise complete cases). Let \\(n\\) denote the number of such cells
+and \\(y_k^{(r)} = 1\\) if rater \\(r\\) rated cell \\(k\\) as
+`"Yes/PY"`, 0 otherwise. The observed agreement is \$\$p_0 = \frac{1}{n}
+\sum\_{k=1}^{n} \mathbb{I}\\!\left\[y_k^{(1)} = y_k^{(2)}\right\],\$\$
 the marginal proportions of `"Yes/PY"` ratings are \$\$\pi_r =
-\frac{1}{n} \sum\_{k=1}^{n} y_k^{(r)}, \quad r \in \\1, 2\\,\$\$ and the
-chance-expected agreement is \$\$p_e = \pi_1 \pi_2 + (1 - \pi_1)(1 -
-\pi_2).\$\$ Cohen's \\\kappa\\ is then \$\$\kappa = \frac{p_0 - p_e}{1 -
-p_e}.\$\$
+\frac{1}{n} \sum\_{k=1}^{n} y_k^{(r)}, \quad r \in \\{1, 2\\},\$\$ and
+the chance-expected agreement is \$\$p_e = \pi_1 \pi_2 + (1 - \pi_1)(1 -
+\pi_2).\$\$ Cohen's \\(\kappa\\) is then \$\$\kappa = \frac{p_0 -
+p_e}{1 - p_e}.\$\$
 
 ## See also
 

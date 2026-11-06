@@ -20,7 +20,7 @@ the box” using R.
 
 The package also contains a set of tools that can be used to prepare
 meta-analytic data sets based on the Metapsy data standard, and to
-calculate effect sizes (Hedges’ $`g`$ and risk ratios, $`RR`$).
+calculate effect sizes (Hedges’ $g$ and risk ratios, $RR$).
 
 The package consists of **two modules**:
 

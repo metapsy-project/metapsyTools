@@ -9,7 +9,7 @@ publication bias/ small-study effects to results of the
 ``` r
 correctPublicationBias(model, 
                        which.run = model$which.run[1],
-                       lower.is.better = TRUE,
+                       lower.is.better = NULL,
                        selmodelSteps = 0.05,
                        ...)
 ```
@@ -24,14 +24,19 @@ correctPublicationBias(model,
 - which.run:
 
   The model in `model` that should be used for the publication bias
-  analyses. Uses the default analysis in `model` if no value is
-  specified by the user. Possible values are `"overall"`, `"combined"`,
-  `"lowest"`, `"highest"`, `"outliers"`, `"influence"` and `"rob"`.
+  analyses. Uses the first model in `model` if no value is specified by
+  the user. Possible values are `"overall"`, `"combined"`, `"lowest"`,
+  `"highest"`, `"outliers"`, `"influence"` and `"rob"`.
 
 - lower.is.better:
 
-  Do lower values indicate better outcomes (i.e. higher effects)?
-  Default is `TRUE`.
+  Only used for the selection model. Should significant *negative*
+  (`TRUE`) or significant *positive* (`FALSE`) effects be assumed to be
+  favored for publication? This refers to the sign of the effect size in
+  the data, not to the scale of the outcome measure. If set to `NULL`
+  (default), the direction is determined by the sign of the pooled
+  effect in the selected model. A warning is issued if the provided
+  value contradicts the sign of the pooled effect.
 
 - selmodelSteps:
 
@@ -68,11 +73,22 @@ bias and/or small-study effects:
   method in the `meta` package.
 
 - `"limitmeta"`. Runs a limit meta-analysis as described in Rücker et
-  al. (2011), using the implementation in the `limitmeta` package.
+  al. (2011), using the
+  [limitmeta](https://rdrr.io/pkg/metasens/man/limitmeta.html) function
+  in the `metasens` package.
 
 - `"selection"`. Runs a step function selection model using the
   [selmodel](https://wviechtb.github.io/metafor/reference/selmodel.html)
   function in `metafor`. For details see e.g. Vevea and Hedges (1995).
+  The cut-points in `selmodelSteps` refer to one-sided *p*-values.
+  Selection models are not estimated for event rates
+  (`es.measure = "EER"` or `"CER"`), for which selection on significance
+  is not a meaningful assumption.
+
+If the selected model is a fixed-effect ("common effect") model
+(`method.tau = "FE"`), the trim-and-fill and selection model are also
+fitted assuming a fixed effect. The limit meta-analysis is based on a
+random-effects model by definition.
 
 ## References
 

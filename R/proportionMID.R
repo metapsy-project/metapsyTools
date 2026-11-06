@@ -16,8 +16,8 @@
 #' that should be used to estimate the
 #' proportion of true effect sizes that exceed this cut-off. If the outcome measure used in `model` is 
 #' Hedges' \mjeqn{g}{g}, the provided value should also be a standardized mean difference.
-#' If the outcome measure of `model` is a risk ratio, the treshold should also be provided
-#' as an (untransformed) risk ratio.
+#' If the outcome measure of `model` is a risk ratio or ratio of means, the threshold should also be provided
+#' as an (untransformed) risk ratio or ratio of means, respectively.
 #' @param which The model in \code{model} that should be used to estimate the proportions.
 #' Defaults to `"all"`, which means that proportions are calculated for all models.
 #' Alternatively, possible values are \code{"overall"}, \code{"combined"}, \code{"lowest"}, 
@@ -25,7 +25,9 @@
 #' models are available in the `model` object. If 
 #' \code{\link[metapsyTools]{correctPublicationBias}} has been run, `"trimfill"`, `limitmeta` and `selection`
 #' are also possible options. It is also possible to concatenate model names, meaning
-#' that proportions are calculated for all the supplied models.  
+#' that proportions are calculated for all the supplied models. The `"waap.wls"` model is not included,
+#' since it does not provide an estimate of the between-study heterogeneity. For multilevel models, the total
+#' heterogeneity variance across all random effects levels is used. Not available for event rates (`"EER"`, `"CER"`).  
 #' @param test By default, the function estimates the proportion of true effects _below_
 #' the provided threshold in `mid` (`test="smaller"`). Alternatively, one can specify
 #' `test="bigger"`. This will calculate the proportion of true effects _above_ the treshold.
@@ -99,7 +101,7 @@
 #' 
 #' When the `plot` method is used, or when `plot` is set to `TRUE` in the function,
 #' a plot showing the assumed distribution of true effects based on the estimated
-#' meta-analytic model is created. Notably, is is assumed that the random-effects
+#' meta-analytic model is created. Notably, it is assumed that the random-effects
 #' distribution of true effect sizes is approximately normal. This simplifying assumption
 #' is required for this (and many other meta-analytic methods; 
 #' Jackson & White, [2018](https://onlinelibrary.wiley.com/doi/full/10.1002/bimj.201800071)) 
@@ -145,15 +147,20 @@ proportionMID = function(model, mid = NULL, which = "all",
   
   if (!(which[1] == "all" | 
       any(which %in% c("overall", "combined",
-                   "lowest.highest", "outliers",
+                   "lowest.highest", "lowest", "highest", "outliers",
                    "influence", "rob", "threelevel",
-                   "threelevel.che", "trimfill", 
+                   "threelevel.che", "ccrem", "ccrem.che", "trimfill", 
                    "limitmeta", "selection")))){
     stop("'which' must be either 'all' or one of",
-         " 'overall', 'combined', 'lowest.highest',",
+         " 'overall', 'combined', 'lowest.highest', 'lowest', 'highest',",
          " 'outliers', 'influence', 'rob',",
-         " 'threelevel', 'threelevel.che', 'trimfill',",
+         " 'threelevel', 'threelevel.che', 'ccrem', 'ccrem.che', 'trimfill',",
          " 'limitmeta', 'selection'.")}
+  
+  if (x$.type.es[1] %in% c("EER", "CER")){
+    stop("'proportionMID' is not available for models of event rates ('EER', 'CER').")
+  }
+  is.ratio = x$.type.es[1] %in% c("RR", "ROM")
   
   # Extract relevant information
   if (identical(which[1],"all")){
@@ -177,12 +184,19 @@ proportionMID = function(model, mid = NULL, which = "all",
             "model.lowest", "model.highest")
   }
   
+  # Only keep models that are available; WAAP-WLS has no estimate of tau2
+  run = run[!run %in% "model.waap.wls"]
+  run = run[!vapply(x[run], function(z) is.null(z) || inherits(z, "try-error"), logical(1))]
+  if (length(run) == 0){
+    stop("None of the models specified in 'which' are available in 'model'.")
+  }
+  
   lapply(x[run], function(z){
     if (identical(class(z)[1], "metagen") | 
         identical(class(z)[1], "metabin")){
       with(z, {
-        c(es = ifelse(method.tau=="FE", TE.common, TE.random),
-          se = ifelse(method.tau=="FE", seTE.common, seTE.random),
+        c(es = ifelse(isTRUE(common) & !isTRUE(random), TE.common, TE.random),
+          se = ifelse(isTRUE(common) & !isTRUE(random), seTE.common, seTE.random),
           tau2 = tau2, se.tau2 = se.tau2)
       }) -> ret
     }
@@ -190,10 +204,12 @@ proportionMID = function(model, mid = NULL, which = "all",
       if (!is.numeric(z$se.sigma2)){
         z$se.sigma2 = NA
       }
+      # True effects vary on all random effects levels; last row of 
+      # se.sigma2 is the bootstrap SE of the total heterogeneity variance.
       with(z, {
         c(es = b[[1,1]], se = se[1],
-          tau2 = sigma2[1], 
-          se.tau2 = ifelse(is.na(se.sigma2[1]), NA, se.sigma2[1,1]))
+          tau2 = sum(sigma2), 
+          se.tau2 = ifelse(is.na(se.sigma2[1]), NA, se.sigma2[nrow(se.sigma2),1]))
       }) -> ret
     }
     if (identical(class(z)[1], "limitmeta")){
@@ -219,8 +235,8 @@ proportionMID = function(model, mid = NULL, which = "all",
     return(ret)
   }) %>% do.call(rbind, .) -> dat.calc
   
-  # If es.measure is "RR", log-transform MID
-  if (identical(x$.type.es[1], "RR")){
+  # If es.measure is "RR" or "ROM", log-transform MID
+  if (is.ratio){
     mid = log(mid)
   }
   
@@ -274,12 +290,12 @@ proportionMID = function(model, mid = NULL, which = "all",
           "p.above.rev", "p.above.rev.ci")]
     } -> Qhat
   
-  # Convert if es.measure was RR
-  if (identical(x$.type.es[1], "RR")){
+  # Convert if es.measure was RR or ROM
+  if (is.ratio){
     Qhat$es = round(exp(Qhat$es), x$round.digits)
     mid = exp(mid)
     mid.neg = round(exp(-log(mid)),2)
-    es.name = "rr"
+    es.name = tolower(x$.type.es[1])
   } else {
     Qhat$es = round(Qhat$es, x$round.digits)
     es.name = "g"
@@ -290,9 +306,9 @@ proportionMID = function(model, mid = NULL, which = "all",
   Qhat %>% 
     {colnames(.) = 
       c(es.name, "tau",
-        paste0("p(", ifelse(x$.type.es=="RR", "rr", "g"), 
+        paste0("p(", es.name, 
                ifelse(test=="smaller", "<", ">"), mid, ")"),
-        "95% ci", paste0("p(", ifelse(x$.type.es=="RR", "rr", "g"), 
+        "95% ci", paste0("p(", es.name, 
                ifelse(test=="smaller", ">", "<"), mid.neg, ")"), "95% ci");
     .} -> Qhat
   
@@ -309,6 +325,8 @@ proportionMID = function(model, mid = NULL, which = "all",
                          "model.rob", x$model.rob$title2),
     "model.threelevel" = "Three-Level Model",
     "model.threelevel.che" = "Three-Level Model (CHE)",
+    "model.ccrem" = "Three-Level CCREM",
+    "model.ccrem.che" = "Three-Level CCREM (CHE)",
     "model.trimfill" = "Trim-and-fill method",
     "model.limitmeta" = "Limit meta-analysis",
     "model.selection" = "Selection model")
@@ -318,15 +336,15 @@ proportionMID = function(model, mid = NULL, which = "all",
     {rownames(.) = model.list[rownames(.)];.} -> Qhat
   
   # Remove NA fields
-  Qhat[Qhat=="[NA; NA]"] = "-"
+  Qhat[Qhat=="[NA; NA]" | Qhat=="[NaN; NaN]"] = "-"
   
   # Generate plot data
   res.unrounded %>% 
     with({
       data.frame(es = es, tau = sqrt(tau2),
                  lo=es-(sqrt(tau2)*3), hi=es+(sqrt(tau2)*3),
-                 mid = ifelse(x$.type.es=="g", mid, log(mid)), 
-                 mid.neg = ifelse(x$.type.es=="g", mid.neg, log(mid.neg)))
+                 mid = ifelse(is.ratio, log(mid), mid), 
+                 mid.neg = ifelse(is.ratio, log(mid.neg), mid.neg))
     }) %>% 
     {rownames(.) = rownames(res.unrounded);.} -> plot.dat
   
@@ -335,7 +353,7 @@ proportionMID = function(model, mid = NULL, which = "all",
     {rownames(.) = model.list[rownames(.)];.} -> plot.dat
   
   # Generate bell curve
-  if (identical(x$.type.es[1], "RR")){xlab = "log(RR)"
+  if (is.ratio){xlab = paste0("log(", x$.type.es[1], ")")
   } else { xlab = "Hedges' g" }
   
   if (plot){
@@ -424,25 +442,15 @@ print.proportionMID = function(x, ...){
   cat(crayon::blue$bold(
     "------------------------------------------------ \n"))
   cat(crayon::green$bold(paste0("\u2192 Assuming an effect of ",
-                                ifelse(res$xlab=="Hedges' g", "g", "rr"), "=", 
+                                ifelse(res$xlab=="Hedges' g", "g", 
+                                       tolower(gsub("log\\(|\\)", "", res$xlab))), "=", 
                                 ifelse(res$xlab=="Hedges' g", 
                                        res$plot.dat$mid[1], 
                                        round(exp(res$plot.dat$mid[1]), 3)),
                                 " as threshold \n")))
   dat = res$qhat
   colnames(dat)[ncol(dat)] = " 95% ci"
-  tbl = dplyr::as_tibble(cbind(Model = rownames(dat), dat))
-  old = options(pillar.bold=TRUE)
-  tbl.format = format(tbl)[-c(1,3)]
-  tbl.format[-1] = lapply(tbl.format[-1], 
-                          function(x) stringr::str_sub(x, 19))
-  tbl.format[1] = stringr::str_sub(tbl.format[1], 3)
-  tbl.format = lapply(tbl.format, function(x){
-    stringr::str_replace_all(x, "`", " ")})
-  tbl.format = lapply(tbl.format, function(x){
-    stringr::str_replace_all(x, "-", "\U2013")})
-  cat(do.call(c, tbl.format), sep="\n")
-  options(old)
+  printResultTable(cbind(Model = rownames(dat), dat))
   
   if (min(as.numeric(res$qhat[,3]))<15 | max(as.numeric(res$qhat[,3]))>85 |
       min(as.numeric(res$qhat[,5]))<15 | max(as.numeric(res$qhat[,5]))>85){

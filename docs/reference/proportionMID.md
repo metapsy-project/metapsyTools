@@ -25,13 +25,14 @@ proportionMID(model,
 - mid:
 
   A `numeric` value, indicating a clinically relevant effect threshold
-  (e.g. a minimally important difference; \\MID\\; Cuijpers et al.,
+  (e.g. a minimally important difference; \\(MID\\); Cuijpers et al.,
   [2014](https://onlinelibrary.wiley.com/doi/full/10.1002/da.22249))
   that should be used to estimate the proportion of true effect sizes
   that exceed this cut-off. If the outcome measure used in `model` is
-  Hedges' \\g\\, the provided value should also be a standardized mean
-  difference. If the outcome measure of `model` is a risk ratio, the
-  treshold should also be provided as an (untransformed) risk ratio.
+  Hedges' \\(g\\), the provided value should also be a standardized mean
+  difference. If the outcome measure of `model` is a risk ratio or ratio
+  of means, the threshold should also be provided as an (untransformed)
+  risk ratio or ratio of means, respectively.
 
 - which:
 
@@ -43,7 +44,11 @@ proportionMID(model,
   [`correctPublicationBias`](correctPublicationBias.md) has been run,
   `"trimfill"`, `limitmeta` and `selection` are also possible options.
   It is also possible to concatenate model names, meaning that
-  proportions are calculated for all the supplied models.
+  proportions are calculated for all the supplied models. The
+  `"waap.wls"` model is not included, since it does not provide an
+  estimate of the between-study heterogeneity. For multilevel models,
+  the total heterogeneity variance across all random effects levels is
+  used. Not available for event rates (`"EER"`, `"CER"`).
 
 - test:
 
@@ -63,7 +68,7 @@ proportionMID(model,
 Returns an object of class `"proportionMID"`. An S3 `plot` method is
 defined for this object class, which allows to create a density plot
 illustrating the estimated proportions, using the model-based estimate
-of the pooled effect size and between-study heterogeneity \\\tau^2\\.
+of the pooled effect size and between-study heterogeneity \\(\tau^2\\).
 
 ## Details
 
@@ -87,12 +92,13 @@ As recommended by Mathur & VanderWeele
 `proportionMID` function also automatically calculates the proportion of
 true effects exceeding the *"inverse"* of the user-defined effect (e.g.,
 if `mid=-0.24`, by default, the function also estimates the proportion
-of true effects that is larger than \\g\\=0.24; note the changed sign).
-This can be used to check for e.g. clinically relevant negative effects.
+of true effects that is larger than \\(g\\)=0.24; note the changed
+sign). This can be used to check for e.g. clinically relevant negative
+effects.
 
 When the `plot` method is used, or when `plot` is set to `TRUE` in the
 function, a plot showing the assumed distribution of true effects based
-on the estimated meta-analytic model is created. Notably, is is assumed
+on the estimated meta-analytic model is created. Notably, it is assumed
 that the random-effects distribution of true effect sizes is
 approximately normal. This simplifying assumption is required for this
 (and many other meta-analytic methods; Jackson & White,
@@ -103,8 +109,8 @@ Confidence intervals provided by the functions are calculated using the
 asymptotic closed-form solution derived using the Delta method in Mathur
 & VanderWeele
 ([2019](https://onlinelibrary.wiley.com/doi/full/10.1002/sim.8057)).
-Following their recommendations, a warning is printed when \\p\\\<0.15
-or \\p\\\>0.85, since in this case the asymptotic CIs should be
+Following their recommendations, a warning is printed when \\(p\\)\<0.15
+or \\(p\\)\>0.85, since in this case the asymptotic CIs should be
 interpreted cautiously; CIs based on boostrapping would be preferable in
 this scenario and can be calculated using the
 [`MetaUtility::prop_stronger()`](https://rdrr.io/pkg/MetaUtility/man/prop_stronger.html)

@@ -14,8 +14,11 @@
 #' @param .model An object of class \code{"runMetaAnalysis"}, created by \code{\link{runMetaAnalysis}}.
 #' @param ... <\link[dplyr]{dplyr_data_masking}>. A number of subgroup variables included in the original dataset
 #' provided to \code{\link{runMetaAnalysis}}, separated by commas.
-#' @param .which.run The model in \code{.model} that should be used for the subgroup analyses. Uses the default
-#' analysis in \code{.model} if no value is specified by the user.
+#' @param .which.run The model in \code{.model} that should be used for the subgroup analyses. Uses the first
+#' model in \code{.model} if no value is specified by the user. Studies or effects excluded in a model (e.g. 
+#' \code{"outliers"}, \code{"rob"}) are also excluded in the subgroup analysis. Must be one of \code{"overall"}, 
+#' \code{"combined"}, \code{"lowest"}, \code{"highest"}, \code{"outliers"}, \code{"influence"}, \code{"rob"},
+#' \code{"threelevel"}, \code{"threelevel.che"}, \code{"ccrem"} or \code{"ccrem.che"}.
 #' @param .round.digits \code{numeric}. Number of digits to round the (presented) results by. Default is \code{2}.
 #' @param .nntCer \code{numeric}. Value between 0 and 1, indicating the assumed control group event rate to be used
 #' for calculating NNTs via the Furukawa-Leucht method. If set to \code{NULL} (default),
@@ -58,7 +61,15 @@
 #'
 #' @seealso \code{\link{runMetaAnalysis}}
 #'
-#' @details For more details see the [Get Started](https://tools.metapsy.org/articles/metapsytools) vignette.
+#' @details When a multilevel model is selected in \code{.which.run}, subgroup effects are estimated in a
+#' meta-regression with the same random effects structure and sampling (co-)variances as in the original model. 
+#' The _p_-value tests the null hypothesis that the effects are equal across subgroups. Confidence intervals 
+#' and tests in this meta-regression are model-based, even if robust variance estimation was used in the original model.
+#' 
+#' In the \code{"metabin"} models created when \code{es.type = "raw"}, subgroup effects are pooled using the
+#' inverse-variance method, not the Mantel-Haenszel method used in the main analysis.
+#' 
+#' For more details see the [Get Started](https://tools.metapsy.org/articles/metapsytools) vignette.
 #'
 #' @import dplyr
 #' @importFrom crayon green yellow cyan bold
@@ -86,8 +97,21 @@ subgroupAnalysis = function(.model, ...,
   .has.event.rate = (.model$.type.es=="CER"||.model$.type.es=="EER")[1]
 
   # Get model type
+  .which.run = .which.run[1]
+  if (identical(.which.run, "lowest.highest")){
+    stop("'.which.run' is 'lowest.highest', which includes two models.",
+         " Please set '.which.run' to 'lowest' or 'highest'.", call. = FALSE)
+  }
+  if (identical(.which.run, "waap.wls")){
+    stop("Subgroup analyses are not available for the 'waap.wls' model.", call. = FALSE)
+  }
   model.type = paste0("model.", .which.run)
   M = .model[[model.type]]
+  if (is.null(M)){
+    stop("The '", .which.run, "' model is not available in '.model'. ",
+         "Make sure that it is included in 'which.run' when calling runMetaAnalysis, ",
+         "and that it could be fitted.", call. = FALSE)
+  }
   message("- ", crayon::green("[OK] "), "'", 
           model.type, "' used for subgroup analyses.")
 
@@ -128,13 +152,15 @@ subgroupAnalysis = function(.model, ...,
     
     purrr::map(as.list(variables), function(x){
       
+      # Omit missing subgroup values and effects excluded in the selected model
       na.mask = !is.na(M$data[[x]])
+      if (!is.null(M$exclude)) na.mask = na.mask & !M$exclude
       meta::metagen(TE = M$TE[na.mask],
                     seTE = M$seTE[na.mask],
                     studlab = M$studlab[na.mask],
                     method.tau = M$method.tau,
                     method.tau.ci = M$method.tau.ci,
-                    method.random.ci = ifelse(M$hakn, "HK", "classic"),
+                    method.random.ci = M$method.random.ci[1],
                     data = M$data[na.mask,],
                     subgroup = M$data[[x]][na.mask],
                     common = M$common,
@@ -151,7 +177,8 @@ subgroupAnalysis = function(.model, ...,
 
 
     if (sum(is.na(M$data[variables])) > 0){
-      warning("Some subgroup variables contained NA. These entries were omitted from model fitting.")
+      warning("Some subgroup variables contained NA. These entries were omitted from model fitting.",
+              call. = FALSE)
     }
 
     # Extract information
@@ -271,30 +298,41 @@ subgroupAnalysis = function(.model, ...,
 
   if (class(M)[1] == "rma.mv"){
 
-    stringr::str_replace_all(as.character(M$random[[1]]), "1 \\| ", "")[2] %>%
-      strsplit("/") %>% {.[[1]]} %>% {.[1]} -> study.id
+    # Use the model data; this also keeps the study and instrument variables
+    # (with their original names) needed for the random effects structure.
+    dat.mv = as.data.frame(M$data)
+    dat.mv$.yi.sg = as.numeric(M$yi)
+    for (v in variables) dat.mv[[v]] = droplevels(as.factor(dat.mv[[v]]))
 
-    dat.mv = data.frame(yi = M$yi,
-                        vi = M$vi,
-                        slab = M$slab,
-                        study = M$data[[study.id]],
-                        es.id = 1:length(M$yi))
-    dat.mv = cbind(dat.mv, .model$data[!is.na(M$yi),] %>%
-                     dplyr::select(dplyr::all_of(variables)) %>%
-                     purrr::map_dfr(~as.factor(.)))
+    # Fit meta-regression, keeping the V matrix and random effects of the model
+    fit.sg = function(form){
+      tryCatch2({
+        suppressWarnings(
+          metafor::rma.mv(yi = dat.mv$.yi.sg,
+                          V = M$V,
+                          data = dat.mv,
+                          random = M$random,
+                          test = M$test,
+                          method = "REML",
+                          mods = form,
+                          sparse = isTRUE(M$sparse)))
+      })
+    }
 
     purrr::map(as.list(variables), function(x){
-      form = as.formula(paste0("~ 0 +", x))
-      tryCatch2({
-        metafor::rma.mv(yi = yi,
-                        V = vi,
-                        data = dat.mv,
-                        random = M$random[[1]],
-                        test = M$test,
-                        method = "REML",
-                        mods = form)}) %>% 
-        {.$value} -> res.mv
-      }) -> subgroup.analysis.list
+      # Cell means parameterization: one coefficient (with CI) for each subgroup
+      res.mv = fit.sg(as.formula(paste0("~ 0 + `", x, "`")))
+      if (res.mv$has.error) {
+        stop("Subgroup analysis of '", x, "' could not be fitted: ", 
+             res.mv$error$message, call. = FALSE)
+      }
+      res.mv = res.mv$value
+      # Omnibus test of subgroup differences: the test of all coefficients in the 
+      # model above would only test if all subgroup means are zero.
+      res.diff = fit.sg(as.formula(paste0("~ 1 + `", x, "`")))
+      res.mv$QMp.diff = if (res.diff$has.error) NA else res.diff$value$QMp
+      res.mv
+    }) -> subgroup.analysis.list
     names(subgroup.analysis.list) = variables
 
 
@@ -337,7 +375,7 @@ subgroupAnalysis = function(.model, ...,
                  group = levels(dat.mv[[y]]),
                  n.comp = table(dat.mv[[y]]) %>% as.numeric(),
                  g = g, g.ci = g.ci, i2 = "-", i2.ci = "-",
-                 nnt = nnt, p = x$QMp %>% scales::pvalue())
+                 nnt = nnt, p = x$QMp.diff %>% scales::pvalue())
     }) %>% do.call(rbind, .) %>% {rownames(.) = NULL;.} -> summary
     
     if (identical(.model$.type.es, "RR")){
@@ -403,10 +441,7 @@ subgroupAnalysis = function(.model, ...,
 
 print.subgroupAnalysis = function(x, ...){
 
-  unique(with(x$summary, 
-         unlist(lapply(variable, 
-                       function(i) grep(i, variable)[1])))
-    ) -> first.var.mask
+  first.var.mask = match(unique(x$summary$variable), x$summary$variable)
   x$summary$variable[!1:nrow(x$summary) %in% first.var.mask] = "."
   x$summary$p[!1:nrow(x$summary) %in% first.var.mask] = "."
   
@@ -414,14 +449,7 @@ print.subgroupAnalysis = function(x, ...){
   cat(crayon::blue$bold(
     "---------------------- \n"))
   dat = x$summary
-  tbl = dplyr::as_tibble(dat)
-  old = options(pillar.bold=TRUE)
-  tbl.format = format(tbl)[-c(1,3)]
-  tbl.format[-1] = lapply(tbl.format[-1], 
-                          function(x) stringr::str_sub(x, 19))
-  tbl.format[1] = stringr::str_sub(tbl.format[1], 3)
-  cat(do.call(c, tbl.format), sep="\n")
-  options(old)
+  printResultTable(dat)
   
   if (x$html == TRUE){
     

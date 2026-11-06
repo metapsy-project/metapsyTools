@@ -37,6 +37,8 @@ navbar:
         href: articles/web/look_inside.html
       - text: Data Validator
         href: data-validator.html
+      - text: "Online App ↗"
+        href: https://www.metapsy.org/tools/run-meta-analysis
 footer:
   structure:
     left: developed_by

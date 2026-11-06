@@ -10,7 +10,7 @@ MathJax = {output: {font: "mathjax-newcm", fontPath: "../../mathjaxr/doc/mathjax
 
     <a class="navbar-brand me-2" href="../index.html">metapsyTools</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.14</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.15</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -26,6 +26,7 @@ MathJax = {output: {font: "mathjax-newcm", fontPath: "../../mathjaxr/doc/mathjax
     <li><a class="dropdown-item" href="../articles/web/installation.html">Installation Guide</a></li>
     <li><a class="dropdown-item" href="../articles/web/look_inside.html">A Look Inside</a></li>
     <li><a class="dropdown-item" href="../data-validator.html">Data Validator</a></li>
+    <li><a class="external-link dropdown-item" href="https://www.metapsy.org/tools/run-meta-analysis">Online App</a></li>
   </ul></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -136,13 +137,14 @@ or ratio of means (<code>"ROM"</code>)? Meta-analyses will only be conducted usi
 <dt id="arg-es-type">es.type<a class="anchor" aria-label="anchor" href="#arg-es-type"></a></dt>
 <dd><p><code>character</code>. Should pre-calculated or raw event data (i.e.
 the Mantel-Haenszel method) be used for meta-analyses of risk ratios?
-Can be set to <code>"precalculated"</code> (default) or <code>"raw"</code>.</p></dd>
+Can be set to <code>"precalculated"</code> (default) or <code>"raw"</code>. Ignored for all other values of <code>es.measure</code>.</p></dd>
 
 
 <dt id="arg-es-var">es.var<a class="anchor" aria-label="anchor" href="#arg-es-var"></a></dt>
 <dd><p><code>character</code>. Specifies the name of the variable containing the (pre-
-calculated) effect size data in <code>data</code>. When <code>es.measure = "g"</code>, <code>"EER"</code>, or <code>"CER"</code>, this is set to
-<code>.g</code> by default; <code>".log_rr"</code> is used when <code>es.measure = "RR"</code>. For <code>es.measure = "ROM"</code>, this defaults to
+calculated) effect size data in <code>data</code>. When <code>es.measure = "g"</code>, this is set to
+<code>.g</code> by default; <code>".log_rr"</code> is used when <code>es.measure = "RR"</code>. When <code>es.measure = "EER"</code> or <code>"CER"</code>, logit-transformed
+event rates are calculated from <code>es.binary.raw.vars</code> and saved under this name for internal use (the returned <code>data</code> is not altered). For <code>es.measure = "ROM"</code>, this defaults to
 <code>.log_rom</code> (log ratio of means) and can be set to any column name if the user stores the data elsewhere.</p></dd>
 
 
@@ -172,7 +174,7 @@ and its square root (tau). Either <code>"REML"</code> (default), <code>"DL"</cod
 
 <dt id="arg-method-tau-ci">method.tau.ci<a class="anchor" aria-label="anchor" href="#arg-method-tau-ci"></a></dt>
 <dd><p><code>character</code>. A character string indicating which method is used to estimate the
-confidence interval of the between-study heterogeneity variance <em></em>\(\tau^2\). Either <code>"Q-Profile"</code> (default and recommended; <a href="http://www.wvbauer.com/lib/exe/fetch.php/articles:viechtbauer2007b.pdf" class="external-link">Viechtbauer, 2017</a>),
+confidence interval of the between-study heterogeneity variance <em></em>\(\tau^2\). Either <code>"Q-Profile"</code> (default and recommended; <a href="http://www.wvbauer.com/lib/exe/fetch.php/articles:viechtbauer2007b.pdf" class="external-link">Viechtbauer, 2007</a>),
 <code>"BJ"</code>, <code>"J"</code>, or <code>"PL"</code> can be abbreviated. See <code><a href="https://rdrr.io/pkg/meta/man/metagen.html" class="external-link">metagen</a></code> and <code><a href="https://wviechtb.github.io/metafor/reference/rma.uni.html" class="external-link">rma.uni</a></code> for details.</p></dd>
 
 
@@ -195,7 +197,9 @@ used in the limit meta-analysis (note that <em></em>\(G^2\) is printed as <em></
 
 
 <dt id="arg-hakn">hakn<a class="anchor" aria-label="anchor" href="#arg-hakn"></a></dt>
-<dd><p><code>logical</code>. Should the Knapp-Hartung adjustment for effect size significance tests be used? Default is <code>TRUE</code>.</p></dd>
+<dd><p><code>logical</code>. Should the Knapp-Hartung adjustment for effect size significance tests be used? Default is <code>TRUE</code>.
+For multilevel models, <code>TRUE</code> means that tests are based on a <em>t</em>-distribution instead of the standard normal distribution;
+this has no effect on confidence intervals and tests when <code>use.rve = TRUE</code>, but is still used for the prediction interval.</p></dd>
 
 
 <dt id="arg-study-var">study.var<a class="anchor" aria-label="anchor" href="#arg-study-var"></a></dt>
@@ -219,8 +223,9 @@ in which the instrument used for the comparison is stored.</p></dd>
 
 <dt id="arg-low-rob-filter">low.rob.filter<a class="anchor" aria-label="anchor" href="#arg-low-rob-filter"></a></dt>
 <dd><p><code>character</code>. A filtering statement by which to
-include studies for the "low RoB only" analysis. Please note that the name of
-the variable must be included as a column in <code>data</code>.</p></dd>
+include studies for the "low RoB only" analysis (e.g. <code>"rob &gt; 2"</code>, or <code>"rob %in% c(3,4)"</code>). The statement is
+evaluated within <code>data</code>, so all variable names must be included as columns in <code>data</code>. Rows for
+which the statement evaluates to <code>NA</code> are not included.</p></dd>
 
 
 <dt id="arg-round-digits">round.digits<a class="anchor" aria-label="anchor" href="#arg-round-digits"></a></dt>
@@ -244,13 +249,16 @@ from a statistical perspective, since it ensures that all pooled effects can be 
 <dd><p><code>character</code>. Additional grouping variable within studies to be used for the <code>"combined"</code>
 analysis when <code>which.combine = "arms"</code>. If the specified variable differs within one study (as defined
 by <code>study.var</code>), effects will be aggregated separately for each unique value in <code>which.combine.var</code>.
+If this variable is not included in <code>data</code>, effects are aggregated within studies.
 Defaults to <code>"multi_arm1"</code>, the variable which encodes multi-arm intervention conditions in the
 <a href="https://docs.metapsy.org/data-preparation/format/#standard-variables" class="external-link">Metapsy data standard</a>.</p></dd>
 
 
 <dt id="arg-which-outliers">which.outliers<a class="anchor" aria-label="anchor" href="#arg-which-outliers"></a></dt>
 <dd><p><code>character</code>. Which model should be used to conduct outlier analyses? Must be
-<code>"overall"</code> or <code>"combined"</code>, with <code>"overall"</code> being the default.</p></dd>
+<code>"overall"</code> or <code>"combined"</code>, with <code>"overall"</code> being the default. If <code>"overall"</code> is not included
+in <code>which.run</code>, but <code>"combined"</code> is, the <code>"combined"</code> model is used. The same applies to <code>which.influence</code>, <code>which.rob</code> and
+<code>which.waap.wls</code>.</p></dd>
 
 
 <dt id="arg-which-influence">which.influence<a class="anchor" aria-label="anchor" href="#arg-which-influence"></a></dt>
@@ -270,13 +278,16 @@ Defaults to <code>"multi_arm1"</code>, the variable which encodes multi-arm inte
 
 <dt id="arg-nntcer">nntCer<a class="anchor" aria-label="anchor" href="#arg-nntcer"></a></dt>
 <dd><p><code>numeric</code>. Value between 0 and 1, indicating the assumed control group event rate to be used
-for calculating NNTs via the Furukawa-Leucht method.</p></dd>
+for calculating NNTs via the Furukawa-Leucht method. Pre-calculated risk ratios use the same event rate
+(<em></em>\(NNT = 1/|CER(RR-1)|\)). When <code>es.type = "raw"</code>, NNTs are based on the pooled risk difference,
+and this value is not used. NNTs are always shown as positive numbers, based on the absolute effect size,
+and thus do not show if an effect favors the first or second trial arm.</p></dd>
 
 
 <dt id="arg-rho-within-study">rho.within.study<a class="anchor" aria-label="anchor" href="#arg-rho-within-study"></a></dt>
 <dd><p><code>numeric</code>. Value between 0 and 1, indicating the assumed correlation of effect sizes
 within studies. This is relevant to combine effect sizes for the <code>"combined"</code> analysis type, and used to estimate
-the variance-covariance matrices needed for the conditional and hierarchical effects three-level model. Default is <code>0.6</code>.</p></dd>
+the variance-covariance matrices needed for the correlated and hierarchical effects three-level model. Default is <code>0.6</code>.</p></dd>
 
 
 <dt id="arg-phi-within-study">phi.within.study<a class="anchor" aria-label="anchor" href="#arg-phi-within-study"></a></dt>
@@ -320,7 +331,8 @@ be used to compute the nearest positive definite matrix? Default is <code>FALSE<
 
 <dt id="arg-use-rve">use.rve<a class="anchor" aria-label="anchor" href="#arg-use-rve"></a></dt>
 <dd><p><code>logical</code>. Should robust variance estimation be used to calculate confidence intervals and tests of three-level models?
-<code>TRUE</code> by default.</p></dd>
+<code>TRUE</code> by default. The CR2 estimator with Satterthwaite degrees of freedom is used for the <code>"threelevel"</code> and <code>"threelevel.che"</code> models, and the
+CR1 estimator (clustered on <code>study.var</code>) for the <code>"ccrem"</code> and <code>"ccrem.che"</code> models.</p></dd>
 
 
 <dt id="arg-html">html<a class="anchor" aria-label="anchor" href="#arg-html"></a></dt>
@@ -349,14 +361,15 @@ and <code><a href="createRobSummary.html">createRobSummary</a></code> for additi
 <ul><li><p><code>"overall"</code>. Runs a generic inverse-variance (random-effects) model. All included
 effect sizes are treated as independent. When <code>es.measure = "RR"</code> and <code>es.type = "raw"</code>,
 the Mantel-Haenszel method is used for pooling instead.</p></li>
-<li><p><code>"combined"</code>. Pools all effect sizes within one study (defined by <code>study.var</code>) before
-pooling. This ensures that all effect sizes are independent (i.e., unit-of-analysis error &amp;
-double-counting is avoided). To combine the effects, one has to assume a correlation of effect sizes
-within studies, empirical estimates of which are typically not available.</p></li>
+<li><p><code>"combined"</code>. Aggregates the effect sizes within studies (defined by <code>study.var</code>) before
+pooling. To combine the effects, one has to assume a correlation of effect sizes
+within studies, empirical estimates of which are typically not available. By default (<code>which.combine = "arms"</code>),
+the different arms of a multi-arm trial are aggregated separately, as defined by <code>which.combine.var</code>. All
+effect sizes are only independent (i.e., unit-of-analysis error &amp; double-counting is avoided) when <code>which.combine = "studies"</code>.</p></li>
 <li><p><code>"lowest.highest"</code>. Runs a meta-analysis, but with only (i) the lowest and (ii) highest
 effect size within each study included.</p></li>
-<li><p><code>"outlier"</code>. Runs a meta-analysis without statistical outliers (i.e. effect sizes for which
-the confidence interval does not overlap with the confidence intervall of the overall effect).</p></li>
+<li><p><code>"outliers"</code>. Runs a meta-analysis without statistical outliers (i.e. effect sizes for which
+the confidence interval does not overlap with the confidence interval of the overall effect).</p></li>
 <li><p><code>"influence"</code>. Runs a meta-analysis without influential cases (see <code><a href="https://wviechtb.github.io/metafor/reference/influence.rma.uni.html" class="external-link">influence.rma.uni</a></code> for
 details).</p></li>
 <li><p><code>"rob"</code>. Runs a meta-analysis with only low-RoB studies included.</p></li>
@@ -364,7 +377,8 @@ details).</p></li>
 in studies.</p></li>
 <li><p><code>"threelevel.che"</code>. Runs a multilevel (three-level) meta-analysis model, with effect sizes nested
 in studies. Variance-covariance matrices of each study with two or more effect sizes are estimated using
-<code>rho.within.study</code> as the assumed overall within-study correlation. This imputation allows to run a "correlated and
+<code>rho.within.study</code> as the assumed overall within-study correlation, and the average sampling variance within a study for all of its effect sizes.
+This imputation allows to run a "correlated and
 hierarchical effects" (CHE) model, which is typically a good approximation for data sets with unknown and/or
 complex dependence structures.</p></li>
 </ul><p>The following <em>non-default</em> models can also be specified:</p>
@@ -385,14 +399,18 @@ obtain more robust effect estimates that guard against common biases introduced 
 (Stanley, Doucouliagos &amp; Ioannidis, <a href="https://onlinelibrary.wiley.com/doi/10.1002/sim.7228" class="external-link">2017</a>;
 Stanley &amp; Doucouliagos, <a href="https://onlinelibrary.wiley.com/doi/10.1002/jrsm.1211" class="external-link">2017</a>;
 Carter et al., <a href="https://journals.sagepub.com/doi/full/10.1177/2515245919847196" class="external-link">2019</a>)</p></li>
-</ul><p>Internally, the <code>overall</code>, <code>combined</code>, <code>lowest.highest</code>, <code>outlier</code>, <code>influence</code> and <code>rob</code>
+</ul><p>Internally, the <code>overall</code>, <code>combined</code>, <code>lowest.highest</code>, <code>outliers</code>, <code>influence</code> and <code>rob</code>
 models are fitted by calling the <code><a href="https://rdrr.io/pkg/meta/man/metagen.html" class="external-link">meta::metagen()</a></code> or <code><a href="https://rdrr.io/pkg/meta/man/metabin.html" class="external-link">meta::metabin()</a></code> function,
 respectively, in <strong>{meta}</strong> (Balduzzi, Rücker &amp; Schwarzer, <a href="https://pubmed.ncbi.nlm.nih.gov/31563865/" class="external-link">2019</a>).
 The <code>threelevel</code>, <code>threelevel.che</code>, <code>ccrem</code>, and <code>ccrem.che</code> models are implemented using <code><a href="https://wviechtb.github.io/metafor/reference/rma.mv.html" class="external-link">metafor::rma.mv()</a></code>
-in <strong>{metafor}</strong> (Viechtbauer, <a href="https://www.jstatsoft.org/article/view/v036i03" class="external-link">2005</a>).</p>
-<p>Outlier selection is implemented using the <code><a href="http://dmetar.protectlab.org/reference/find.outliers.html" class="external-link">dmetar::find.outliers()</a></code> function,
-and influence analyses using the <code><a href="http://dmetar.protectlab.org/reference/InfluenceAnalysis.html" class="external-link">dmetar::InfluenceAnalysis()</a></code> function. The latter function is a wrapper for
-<code><a href="https://wviechtb.github.io/metafor/reference/influence.rma.uni.html" class="external-link">metafor::influence.rma.uni()</a></code>.</p>
+in <strong>{metafor}</strong> (Viechtbauer, <a href="https://www.jstatsoft.org/article/view/v036i03" class="external-link">2010</a>).</p>
+<p>Influence analyses are based on <code><a href="https://wviechtb.github.io/metafor/reference/influence.rma.uni.html" class="external-link">metafor::influence.rma.uni()</a></code>.</p>
+<p>Note that the <em></em>\(I^2\) values of models fitted with {meta} are based on Cochran's <em></em>\(Q\),
+while the three-level models and selection models use the "generalized" definition based on the
+estimated heterogeneity variance and a "typical" sampling variance. The values can therefore differ somewhat,
+even when based on the same data.</p>
+<p>For event rates (<code>es.measure = "EER"</code> or <code>"CER"</code>), a continuity correction of 0.5 is added to the number
+of events and non-events in studies with an event rate of 0 or 1.</p>
 <p>For ratio of means (<code>es.measure = "ROM"</code>), <code>data</code> must contain the columns specified by <code>es.var</code>
 and <code>se.var</code> (default <code>.log_rom</code> and <code>.log_rom_se</code>, as created by
 <code><a href="calculateEffectSizes.html">calculateEffectSizes</a></code> when <code>calculate.rom = TRUE</code>). Custom <code>es.var</code> and
@@ -427,7 +445,7 @@ arms have the same size, meaning that each arm's weight <em></em>\(w\) is identi
 <em></em>\(\rho_w\) is known to be 0.5. Multiarm weights <em></em>\(w\) (and thus
 <em></em>\(\rho_w\)) can be derived if the <code>w1.var</code> and <code>w2.var</code> variables,
 containing the sample size of each study arm, are provided.</p>
-<p>Using the complex approximation method increases the risk that at least one studies' <em></em>\(\Sigma_k\) matrix
+<p>Using the complex approximation method increases the risk that at least one study's <em></em>\(\Sigma_k\) matrix
 is not positive definite. In this case, the function automatically switches back to the
 constant sampling correlation approximation.</p>
 <p><em></em>\(~\)</p>
@@ -471,9 +489,8 @@ way can also be used to create ROB summary plots using <code><a href="createRobS
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p><code><a href="plot.runMetaAnalysis.html">plot.runMetaAnalysis</a></code>, <code><a href="summary.runMetaAnalysis.html">summary.runMetaAnalysis</a></code>,
 <code><a href="eb.runMetaAnalysis.html">eb.runMetaAnalysis</a></code>, <code><a href="profile.runMetaAnalysis.html">profile.runMetaAnalysis</a></code>,
-<code><a href="subgroupAnalysis.html">subgroupAnalysis</a></code>. <code><a href="correctPublicationBias.html">correctPublicationBias</a></code>,
-<code><a href="metaRegression.html">metaRegression</a></code>, <code><a href="metaRegression.html">metaRegression</a></code>,
-<code><a href="calculateEffectSizes.html">calculateEffectSizes</a></code>,</p></div>
+<code><a href="subgroupAnalysis.html">subgroupAnalysis</a></code>, <code><a href="correctPublicationBias.html">correctPublicationBias</a></code>,
+<code><a href="metaRegression.html">metaRegression</a></code>, <code><a href="calculateEffectSizes.html">calculateEffectSizes</a></code></p></div>
     </div>
     <div class="section level2">
     <h2 id="author">Author<a class="anchor" aria-label="anchor" href="#author"></a></h2>
@@ -537,7 +554,7 @@ Paula Kuper <a href="mailto:paula.r.kuper@gmail.com">paula.r.kuper@gmail.com</a>
 <span class="r-in"><span><span class="co"># Show forest plot (by default, "overall" is used)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Comapare effects across models</span></span></span>
+<span class="r-in"><span><span class="co"># Compare effects across models</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span>, <span class="st">"summary"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Show forest plot of specific analysis</span></span></span>

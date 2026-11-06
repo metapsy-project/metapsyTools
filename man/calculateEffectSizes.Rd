@@ -55,8 +55,9 @@ calculated via the functions in \code{funcs.rom} and appended as \code{.log_rom}
 calculated? Default is \code{FALSE}.}
 
 \item{change.sign}{\code{character}. Name of a \code{logical} column in \code{data}, encoding if the
-sign of a calculated effect size should be reversed (\code{TRUE}) or not (\code{FALSE}). Set to \code{NULL} (default) if
-no changes should be made.}
+sign of a calculated effect size should be reversed (\code{TRUE}) or not (\code{FALSE}). Missing values are treated as
+\code{FALSE}. Set to \code{NULL} (default) if no changes should be made. This only applies to \code{.g};
+risk ratios and ratios of means are not affected.}
 
 \item{impute.response}{\code{logical}. When calculating the (log)-risk ratios, should response rates be computed
 using the \code{\link[metapsyTools]{imputeResponse}} function? \code{FALSE} by default. If defined, the column specified in \code{change.sign}
@@ -109,7 +110,7 @@ catalogue-compatible codes like \code{"BDI-II"}).}
 \value{
 \code{calculateEffectSizes} returns the meta-analysis data set as
 class \code{data.frame} in wide format (if results are saved to a variable).
-It also generates the following columns, wich are added to the data:
+It also generates the following columns, which are added to the data:
 \itemize{
 \item \code{.id}: Unique identifier for a trial arm comparison/row.
 \item \code{.g}: Calculated effect size (Hedges' \emph{g}).
@@ -133,6 +134,21 @@ By default, \code{calculateEffectSizes} calculates the
 small-sample bias corrected standardized mean difference  (Hedges' \emph{g})
 and log-risk ratios, as well their respective standard errors, if
 adequate raw effect size data is available for a comparison.
+
+\strong{Effect size direction.} Effects are calculated as \code{arm1} versus \code{arm2}. A negative \code{.g} means that
+the mean in the first arm is lower than in the second arm, or that \emph{more} events occurred in the first
+arm (e.g. when the event is treatment response). A log-risk ratio greater than zero means that more events occurred
+in the first arm. Thus, if lower scores indicate better outcomes and events are
+beneficial, negative values of \code{.g} and positive values of \code{.log_rr} both favor the first arm.
+Use \code{change.sign} for outcomes where higher values are better.
+
+\strong{Standard errors of \emph{g}.} The bias correction is applied to the effect size, while the standard error is
+based on the variance of the uncorrected standardized mean difference, as implemented in
+\code{\link[esc:esc_mean_sd]{esc::esc_mean_sd()}}. In small samples, this makes the standard error slightly more conservative than
+when also multiplying it by the correction factor.
+
+Existing \code{.g}, \code{.g_se}, \code{.log_rr}, \code{.log_rr_se}, \code{.log_rom} and \code{.log_rom_se} columns in \code{data} are replaced.
+Pre-calculated values should be provided in the \code{precalc_} columns described below.
 
 It is essential that the data set in \code{data} contains a few required columns
 for this to work. An overview of the required data format is provided

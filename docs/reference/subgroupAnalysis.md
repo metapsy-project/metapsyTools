@@ -32,8 +32,12 @@ subgroupAnalysis(.model,
 - .which.run:
 
   The model in `.model` that should be used for the subgroup analyses.
-  Uses the default analysis in `.model` if no value is specified by the
-  user.
+  Uses the first model in `.model` if no value is specified by the user.
+  Studies or effects excluded in a model (e.g. `"outliers"`, `"rob"`)
+  are also excluded in the subgroup analysis. Must be one of
+  `"overall"`, `"combined"`, `"lowest"`, `"highest"`, `"outliers"`,
+  `"influence"`, `"rob"`, `"threelevel"`, `"threelevel.che"`, `"ccrem"`
+  or `"ccrem.che"`.
 
 - .round.digits:
 
@@ -69,6 +73,18 @@ subgroup analysis model objects returned. This allows to conduct further
 operations on some subgroup analysis specifically.
 
 ## Details
+
+When a multilevel model is selected in `.which.run`, subgroup effects
+are estimated in a meta-regression with the same random effects
+structure and sampling (co-)variances as in the original model. The
+*p*-value tests the null hypothesis that the effects are equal across
+subgroups. Confidence intervals and tests in this meta-regression are
+model-based, even if robust variance estimation was used in the original
+model.
+
+In the `"metabin"` models created when `es.type = "raw"`, subgroup
+effects are pooled using the inverse-variance method, not the
+Mantel-Haenszel method used in the main analysis.
 
 For more details see the [Get
 Started](https://tools.metapsy.org/articles/metapsytools) vignette.

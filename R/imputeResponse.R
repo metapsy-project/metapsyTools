@@ -173,7 +173,7 @@ imputeResponse = function(m.trt.pre, m.trt.post, sd.trt.post,
                       sd.trt.post)*n.trt) -> n.resp
         message("- ", crayon::green("[OK] "), "50% symptom decrease assumed as clinically relevant threshold.")
       } else {
-        round(pnorm(((m.trt.pre*2)-m.trt.post)/
+        round(pnorm((m.trt.post-(m.trt.pre*2))/
                       sd.trt.post)*n.trt) -> n.resp
         message("- ", crayon::green("[OK] "), "50% increase in values assumed as clinically relevant threshold.")
       }
@@ -204,9 +204,10 @@ imputeResponse = function(m.trt.pre, m.trt.post, sd.trt.post,
   }
 
   if (method[1] == "rci"){
-    if (missing(m.trt.post) | missing(sd.trt.post) | missing(n.trt)){
-      warning(paste("One of 'm.trt.post', 'sd.trt.post' or 'n.trt'",
+    if (missing(m.trt.pre) | missing(m.trt.post) | missing(sd.trt.post) | missing(n.trt)){
+      warning(paste("One of 'm.trt.pre', 'm.trt.post', 'sd.trt.post' or 'n.trt'",
                     "is missing. Returning NA."))
+      m.trt.pre = NA
       m.trt.post = NA
       sd.trt.post = NA
       n.trt = NA
@@ -217,8 +218,8 @@ imputeResponse = function(m.trt.pre, m.trt.post, sd.trt.post,
               " Calculation using RCI as threshold will return NA.")
       sd.trt.pre = NA
     }
-    if (sum(rho < 0) > 1 | sum(rho > 1) > 1){
-      error("Value of 'reliability' must be between 0 and 1.")
+    if (any(rho < 0, na.rm = TRUE) | any(rho > 1, na.rm = TRUE)){
+      stop("Value of 'rho' must be between 0 and 1.")
     }
     sdiff = sqrt(2*(sd.trt.pre*sqrt(1-rho))^2)
     rcrit = qnorm(0.975)*sdiff
@@ -263,7 +264,7 @@ imputeResponse = function(m.trt.pre, m.trt.post, sd.trt.post,
             round(pnorm(((m.ctr.pre/2)-m.ctr.post)/
                           sd.ctr.post)*n.ctr) -> n.resp.ctr
           } else {
-            round(pnorm(((m.ctr.pre*2)-m.ctr.post)/
+            round(pnorm((m.ctr.post-(m.ctr.pre*2))/
                           sd.ctr.post)*n.ctr) -> n.resp.ctr
           }
         } else {
@@ -281,16 +282,11 @@ imputeResponse = function(m.trt.pre, m.trt.post, sd.trt.post,
     }}
 
 
-  if (method[1] == "rci"){
-
-    if (missing(m.ctr.pre) | missing(m.ctr.post) |
-        missing(sd.ctr.post) | missing(n.ctr)){
-      m.ctr.pre = NA
-      m.ctr.post = NA
-      sd.ctr.post = NA
-      n.ctr = NA
-      esCalc = FALSE
-    }
+  if (method[1] == "rci" && 
+      (missing(m.ctr.pre) | missing(m.ctr.post) |
+       missing(sd.ctr.post) | missing(n.ctr))){
+    esCalc = FALSE
+  } else if (method[1] == "rci"){
 
     if (missing(sd.ctr.pre)){
       message("- ", crayon::green("[OK] "), "Assuming same pre-test SD in control and treatment group.")

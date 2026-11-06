@@ -122,6 +122,7 @@ Additional functionality for core functions.
   [`` `se.var<-`() ``](Replacement-functions.md)
   [`` `es.binary.raw.vars<-`() ``](Replacement-functions.md)
   [`` `method.tau<-`() ``](Replacement-functions.md)
+  [`` `i2.ci.boot<-`() ``](Replacement-functions.md)
   [`` `i2.ci.threelevel<-`() ``](Replacement-functions.md)
   [`` `nsim.boot<-`() ``](Replacement-functions.md)
   [`` `hakn<-`() ``](Replacement-functions.md)

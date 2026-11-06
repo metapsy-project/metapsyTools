@@ -56,31 +56,32 @@ columns:
 
 - `es`:
 
-  Log ratio of means, \\\ln(\bar{x}\_1 / \bar{x}\_2)\\.
+  Log ratio of means, \\(\ln(\bar{x}\_1 / \bar{x}\_2)\\).
 
 - `se`:
 
   Standard error of `es`, derived via the delta method.
 
 Rows are set to `NA` for both columns when any required input is `NA`,
-when either mean equals zero (log ROM is undefined), when either sample
-size is non-positive, or when the computed variance is non-finite or not
-strictly positive.
+when either mean equals zero or the means have opposite signs (log ROM
+is undefined), when either sample size is non-positive, or when the
+computed variance is non-finite or not strictly positive.
 
 ## Details
 
 The log ROM effect size is defined as: \$\$\ln(\text{ROM}) =
-\ln\\\left(\frac{\bar{x}\_1}{\bar{x}\_2}\right)\$\$
+\ln\\!\left(\frac{\bar{x}\_1}{\bar{x}\_2}\right)\$\$
 
 Its sampling variance is approximated via the delta method (Hedges et
 al., 1999): \$\$v = \frac{s_1^2}{n_1 \bar{x}\_1^2} + \frac{s_2^2}{n_2
 \bar{x}\_2^2}\$\$
 
-The standard error returned in `se` is \\\sqrt{v}\\.
+The standard error returned in `se` is \\(\sqrt{v}\\).
 
 A positive log ROM indicates that arm 1 has a higher mean than arm 2.
-The measure is undefined when either group mean equals zero, which is
-why such rows are returned as `NA`.
+The measure is undefined when either group mean equals zero, or when the
+two means have opposite signs, which is why such rows are returned as
+`NA`.
 
 ## References
 

@@ -6,7 +6,7 @@
 \usage{
 correctPublicationBias(model, 
                        which.run = model$which.run[1],
-                       lower.is.better = TRUE,
+                       lower.is.better = NULL,
                        selmodelSteps = 0.05,
                        ...)
 }
@@ -14,11 +14,15 @@ correctPublicationBias(model,
 \item{model}{An object of class \code{runMetaAnalysis}, created by the \code{runMetaAnalysis} function.}
 
 \item{which.run}{The model in \code{model} that should be used for the publication bias analyses.
-Uses the default analysis in \code{model} if no value is specified by the user. Possible values are
+Uses the first model in \code{model} if no value is specified by the user. Possible values are
 \code{"overall"}, \code{"combined"}, \code{"lowest"}, \code{"highest"}, \code{"outliers"},
 \code{"influence"} and \code{"rob"}.}
 
-\item{lower.is.better}{Do lower values indicate better outcomes (i.e. higher effects)? Default is \code{TRUE}.}
+\item{lower.is.better}{Only used for the selection model. Should significant \emph{negative} (\code{TRUE}) or
+significant \emph{positive} (\code{FALSE}) effects be assumed to be favored for publication? This refers to the sign of
+the effect size in the data, not to the scale of the outcome measure. If set to \code{NULL} (default), the direction
+is determined by the sign of the pooled effect in the selected model. A warning is issued if the
+provided value contradicts the sign of the pooled effect.}
 
 \item{selmodelSteps}{Thresholds to be assumed for the step function in the selection model. Must be a vector
 of numbers referring to the cut-points in the selection models. If two-sided testing is assumed for the
@@ -46,10 +50,17 @@ methods to control the pooled effect size for publication bias and/or small-stud
 \item \code{"trimfill"}. Applies Duval and Tweedie's (2000a, 2000b) trim-and-fill algorithm, using the
 \link[meta]{trimfill} method in the \code{meta} package.
 \item \code{"limitmeta"}. Runs a limit meta-analysis as described in Rücker et al. (2011),
-using the implementation in the \code{limitmeta} package.
+using the \link[metasens]{limitmeta} function in the \code{metasens} package.
 \item \code{"selection"}. Runs a step function selection model using the \link[metafor]{selmodel}
-function in \code{metafor}. For details see e.g. Vevea and Hedges (1995).
+function in \code{metafor}. For details see e.g. Vevea and Hedges (1995). The cut-points in
+\code{selmodelSteps} refer to one-sided \emph{p}-values. Selection models are not estimated for
+event rates (\code{es.measure = "EER"} or \code{"CER"}), for which selection on
+significance is not a meaningful assumption.
 }
+
+If the selected model is a fixed-effect ("common effect") model (\code{method.tau = "FE"}), the trim-and-fill and
+selection model are also fitted assuming a fixed effect. The limit meta-analysis is
+based on a random-effects model by definition.
 }
 \examples{
 \dontrun{

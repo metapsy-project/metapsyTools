@@ -52,31 +52,32 @@ object.
 ## Details
 
 In the “simple” scenario, the repeated treatment cycles can be modeled
-as a Markov chain with absorbing state \\S_0\\ (patient responds), as
-well as transition probabilities \\p_k=P(S_0│S_k)\\ and
-\\1-p_k=P(S\_{k+1}\|S_k)\\. Here, \\k\\ is the current treatment cycle,
-and \\p_k\\ is the probability of responding to the \\k\\th treatment,
-which is held constant across all treatment cycles. In this scenario,
-the formula to calculate the cumulative response \\C_n\\ after \\n\\
-treatment cycles reduces to:
+as a Markov chain with absorbing state \\(S_0\\) (patient responds), as
+well as transition probabilities \\(p_k=P(S_0│S_k)\\) and
+\\(1-p_k=P(S\_{k+1}\|S_k)\\). Here, \\(k\\) is the current treatment
+cycle, and \\(p_k\\) is the probability of responding to the \\(k\\)th
+treatment, which is held constant across all treatment cycles. In this
+scenario, the formula to calculate the cumulative response \\(C_n\\)
+after \\(n\\) treatment cycles reduces to:
 
-\\C_n=1-(1-p)^n\\
+\\\[C_n=1-(1-p)^n\\\]
 
-The number of “excess” treatments \\N^E\\ can be obtained using this
+The number of “excess” treatments \\(N^E\\) can be obtained using this
 formula (assuming that 100 patients are treated initially):
 
-\\N^E\approx\frac{100×(1-(1-p)^n)}{p}-100\\
+\\\[N^E\approx\frac{100×(1-(1-p)^n)}{p}-100\\\]
 
 If we additionally consider “decay” of the treatment response (e.g.,
 response rates decrease by 10% with each additional treatment attempt),
 we obtain the following formula for the cumulative response:
 
-\\C_n = \sum\_{i=1}^{n} \left( \prod\_{j=1}^{i-1} \left( 1 -
-p(1-d)^{j-1} \right) \right) p(1-d)^{i-1}\\
+\\\[C_n = \sum\_{i=1}^{n} \left( \prod\_{j=1}^{i-1} \left( 1 -
+p(1-d)^{j-1} \right) \right) p(1-d)^{i-1}\\\]
 
-where \\C_n\\ is the cumulative treatment response, \\p\\ is the
-response rate of treatments, \\d\\ encodes the proportional “decay” with
-each treatment cycle, and \\n\\ is the total number of treatment cycles.
+where \\(C_n\\) is the cumulative treatment response, \\(p\\) is the
+response rate of treatments, \\(d\\) encodes the proportional “decay”
+with each treatment cycle, and \\(n\\) is the total number of treatment
+cycles.
 
 For more details on the metapsyTools package, see the [Get
 Started](https://tools.metapsy.org/articles/metapsytools) vignette.

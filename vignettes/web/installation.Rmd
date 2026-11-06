@@ -20,7 +20,7 @@ which means that an installation using the `install.packages()` function will no
 work.
 
 To install the package, you have to download the latest version of the package from the
-`metapsyTools` [Github repository](https://github.com/MathiasHarrer/metapsyTools). This is fairly
+`metapsyTools` [GitHub repository](https://github.com/MathiasHarrer/metapsyTools). This is fairly
 easy to achieve using the `pkg_install` function in the
 [`pak`](https://pak.r-lib.org/index.html) package. If you run the following code in R:
 
@@ -30,8 +30,8 @@ pak::pkg_install("metapsy-project/metapsyTools")
 ```
 
 R will automatically check if `devtools` is installed on your computer, and install it
-for you if necessary; download the `metapsyTools` package from Github; and install the package.
-Following a succesfull installation, the package can be loaded from your library and is then
+for you if necessary; download the `metapsyTools` package from GitHub; and install the package.
+Following a successful installation, the package can be loaded from your library and is then
 ready to be used.
 
 ```{r, eval=F}
@@ -76,7 +76,7 @@ It is best to choose `n` (no). If the installation fails with this strategy
 ---
 
 The `metapsyTools` package is under active development and after some time, a new
-version may be available. You can check the current version of of `metapsyTools`
+version may be available. You can check the current version of `metapsyTools`
 installed on your computer using this code:
 
 ```{r, eval=F}

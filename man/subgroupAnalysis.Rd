@@ -18,8 +18,11 @@ subgroupAnalysis(.model,
 \item{...}{<\link[dplyr]{dplyr_data_masking}>. A number of subgroup variables included in the original dataset
 provided to \code{\link{runMetaAnalysis}}, separated by commas.}
 
-\item{.which.run}{The model in \code{.model} that should be used for the subgroup analyses. Uses the default
-analysis in \code{.model} if no value is specified by the user.}
+\item{.which.run}{The model in \code{.model} that should be used for the subgroup analyses. Uses the first
+model in \code{.model} if no value is specified by the user. Studies or effects excluded in a model (e.g.
+\code{"outliers"}, \code{"rob"}) are also excluded in the subgroup analysis. Must be one of \code{"overall"},
+\code{"combined"}, \code{"lowest"}, \code{"highest"}, \code{"outliers"}, \code{"influence"}, \code{"rob"},
+\code{"threelevel"}, \code{"threelevel.che"}, \code{"ccrem"} or \code{"ccrem.che"}.}
 
 \item{.round.digits}{\code{numeric}. Number of digits to round the (presented) results by. Default is \code{2}.}
 
@@ -44,6 +47,14 @@ This function allows to simultaneously conduct different subgroup analyses using
 \code{runMetaAnalysis} objects.
 }
 \details{
+When a multilevel model is selected in \code{.which.run}, subgroup effects are estimated in a
+meta-regression with the same random effects structure and sampling (co-)variances as in the original model.
+The \emph{p}-value tests the null hypothesis that the effects are equal across subgroups. Confidence intervals
+and tests in this meta-regression are model-based, even if robust variance estimation was used in the original model.
+
+In the \code{"metabin"} models created when \code{es.type = "raw"}, subgroup effects are pooled using the
+inverse-variance method, not the Mantel-Haenszel method used in the main analysis.
+
 For more details see the \href{https://tools.metapsy.org/articles/metapsytools}{Get Started} vignette.
 }
 \examples{

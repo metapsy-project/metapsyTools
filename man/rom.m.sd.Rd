@@ -29,9 +29,9 @@ two numeric columns:
 \item{\code{se}}{Standard error of \code{es}, derived via the delta method.}
 }
 Rows are set to \code{NA} for both columns when any required input is
-\code{NA}, when either mean equals zero (log ROM is undefined), when
-either sample size is non-positive, or when the computed variance is
-non-finite or not strictly positive.
+\code{NA}, when either mean equals zero or the means have opposite signs
+(log ROM is undefined), when either sample size is non-positive, or when
+the computed variance is non-finite or not strictly positive.
 }
 \description{
 Computes the natural log-transformed ratio of means (log ROM, also called the
@@ -49,8 +49,8 @@ Its sampling variance is approximated via the delta method (Hedges et al., 1999)
 The standard error returned in \code{se} is \eqn{\sqrt{v}}.
 
 A positive log ROM indicates that arm 1 has a higher mean than arm 2.
-The measure is undefined when either group mean equals zero, which is why
-such rows are returned as \code{NA}.
+The measure is undefined when either group mean equals zero, or when the two
+means have opposite signs, which is why such rows are returned as \code{NA}.
 }
 \references{
 Hedges, L. V., Gurevitch, J., & Curtis, P. S. (1999). The meta-analysis

@@ -18,6 +18,7 @@
 <url><loc>/get-started.html</loc></url>
 <url><loc>/in_footer.html</loc></url>
 <url><loc>/index.html</loc></url>
+<url><loc>/news/index.html</loc></url>
 <url><loc>/reference/Detect.html</loc></url>
 <url><loc>/reference/Replacement-functions.html</loc></url>
 <url><loc>/reference/adaptPlogit.html</loc></url>
@@ -30,6 +31,7 @@
 <url><loc>/reference/binaryRR.html</loc></url>
 <url><loc>/reference/blup.html</loc></url>
 <url><loc>/reference/blup.runMetaAnalysis.html</loc></url>
+<url><loc>/reference/blupData.html</loc></url>
 <url><loc>/reference/calculateEffectSizes.html</loc></url>
 <url><loc>/reference/catch.html</loc></url>
 <url><loc>/reference/catchName.html</loc></url>
@@ -45,6 +47,7 @@
 <url><loc>/reference/createRobRatings.html</loc></url>
 <url><loc>/reference/createRobSummary.html</loc></url>
 <url><loc>/reference/createStudyTable.html</loc></url>
+<url><loc>/reference/critPI.html</loc></url>
 <url><loc>/reference/database2021Subset.html</loc></url>
 <url><loc>/reference/depressionPsyCtr.html</loc></url>
 <url><loc>/reference/domain1Algorithm.html</loc></url>
@@ -54,6 +57,8 @@
 <url><loc>/reference/domain5Algorithm.html</loc></url>
 <url><loc>/reference/eb.html</loc></url>
 <url><loc>/reference/eb.runMetaAnalysis.html</loc></url>
+<url><loc>/reference/evalRobFilter.html</loc></url>
+<url><loc>/reference/eventRateLogit.html</loc></url>
 <url><loc>/reference/expandMultiarmTrials.html</loc></url>
 <url><loc>/reference/exploreStudies.html</loc></url>
 <url><loc>/reference/extractG.html</loc></url>
@@ -83,6 +88,7 @@
 <url><loc>/reference/g.m.sd.html</loc></url>
 <url><loc>/reference/g.precalc.html</loc></url>
 <url><loc>/reference/i2.gen.html</loc></url>
+<url><loc>/reference/imputeCheV.html</loc></url>
 <url><loc>/reference/imputeResponse.html</loc></url>
 <url><loc>/reference/includeSwitchedArms.html</loc></url>
 <url><loc>/reference/index.html</loc></url>
@@ -100,6 +106,7 @@
 <url><loc>/reference/metapsyTools.html</loc></url>
 <url><loc>/reference/minimumSNR.html</loc></url>
 <url><loc>/reference/multiarmExpander.html</loc></url>
+<url><loc>/reference/multilevelInference.html</loc></url>
 <url><loc>/reference/nnt.html</loc></url>
 <url><loc>/reference/overallAlgorithm.html</loc></url>
 <url><loc>/reference/pipe.html</loc></url>
@@ -118,12 +125,14 @@
 <url><loc>/reference/print.runMetaAnalysis.html</loc></url>
 <url><loc>/reference/print.simulateTreatmentCycles.html</loc></url>
 <url><loc>/reference/print.subgroupAnalysis.html</loc></url>
+<url><loc>/reference/printResultTable.html</loc></url>
 <url><loc>/reference/profile.runMetaAnalysis.html</loc></url>
 <url><loc>/reference/proportionMID.html</loc></url>
 <url><loc>/reference/psyCtrSubset.html</loc></url>
 <url><loc>/reference/psyCtrSubsetWide.html</loc></url>
 <url><loc>/reference/robSummary.html</loc></url>
 <url><loc>/reference/robustCI.html</loc></url>
+<url><loc>/reference/robustCcrem.html</loc></url>
 <url><loc>/reference/robustPval.html</loc></url>
 <url><loc>/reference/rom.change.m.sd.html</loc></url>
 <url><loc>/reference/rom.m.sd.html</loc></url>

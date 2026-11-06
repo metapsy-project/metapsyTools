@@ -186,11 +186,11 @@ test_that("i2.ci.threelevel replacement function modifies call", {
   # Test setting i2.ci.threelevel - modifies call
   expect_error(i2.ci.threelevel(result) <- TRUE, NA)
   call_args <- as.list(result$call)
-  expect_equal(call_args$i2.ci.threelevel, TRUE)
+  expect_equal(call_args$i2.ci.boot, TRUE)
   
   expect_error(i2.ci.threelevel(result) <- FALSE, NA)
   call_args <- as.list(result$call)
-  expect_equal(call_args$i2.ci.threelevel, FALSE)
+  expect_equal(call_args$i2.ci.boot, FALSE)
 })
 
 test_that("nsim.boot replacement function modifies call", {

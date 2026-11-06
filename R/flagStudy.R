@@ -70,6 +70,7 @@ flagStudy = function(smd, se, rob, power = "q1", pval = 0.05,
 #' Custom print method for flagStudy objects
 #' @keywords internal
 #' @method print flagStudy
+#' @export
 print.flagStudy = function(x, ...) {
   data.frame(smd = x$smd, se = x$se, flag.effect = x$flag.effect, 
              flag.power = x$flag.power, flag.rob = x$flag.rob, flags = x$flags) -> x
@@ -101,6 +102,7 @@ print.flagStudy = function(x, ...) {
 #' Custom plot method for flagStudy objects
 #' @keywords internal
 #' @method plot flagStudy
+#' @export
 plot.flagStudy = function(x, ...) {
   message("Generating reference distribution plot...")
   plotDensityHist(x, ...)

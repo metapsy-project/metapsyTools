@@ -21,7 +21,7 @@ the box” using R.
 
 The package also contains a set of tools that can be used to prepare
 meta-analytic data sets based on the Metapsy data standard, and to
-calculate effect sizes (Hedges’ $`g`$ and risk ratios, $`RR`$).
+calculate effect sizes (Hedges’ $g$ and risk ratios, $RR$).
 
 The package consists of **two modules**:
 
@@ -88,9 +88,9 @@ The preparation module in `metapsyTools` allows to:
   further steps, using the
   [checkConflicts](https://tools.metapsy.org/reference/checkConflicts)
   function.
-- calculate Hedges’ $`g`$ and/or risk ratios ($`RR`$) for each
-  comparison, provided suitable data is available, and generate a data
-  set ready for meta-analyses, using the
+- calculate Hedges’ $g$ and/or risk ratios ($RR$) for each comparison,
+  provided suitable data is available, and generate a data set ready for
+  meta-analyses, using the
   [calculateEffectSizes](https://tools.metapsy.org/reference/calculateeffectsizes)
   function.
 
@@ -215,22 +215,22 @@ should be calculated.
 
   
 
-**(d) Pre-calculated Hedges’** $`g`$
+**(d) Pre-calculated Hedges’** $g$
 
-- **`precalc_g`**: The pre-calculated value of Hedges’ $`g`$
-  (small-sample bias corrected standardized mean difference; [Hedges,
+- **`precalc_g`**: The pre-calculated value of Hedges’ $g$ (small-sample
+  bias corrected standardized mean difference; [Hedges,
   1981](https://journals.sagepub.com/doi/10.3102/10769986006002107)).
-- **`precalc_g_se`**: Standard error of $`g`$, viz. $`\sqrt{V_g}`$.
+- **`precalc_g_se`**: Standard error of $g$, viz. $\sqrt{V_{g}}$.
 
   
 
 **(d) Pre-calculated log-risk ratio**
 
 - **`precalc_log_rr`**: The pre-calculated value of the log-risk ratio
-  $`\log_{e}\text{RR}`$, comparing events in the first arm to events in
+  $\log_{e}\text{RR}$, comparing events in the first arm to events in
   the second arm.
 - **`precalc_log_rr_se`**: The standard error of the log-risk ratio
-  $`\log_{e}\text{RR}`$, comparing events in the first arm to events in
+  $\log_{e}\text{RR}$, comparing events in the first arm to events in
   the second arm.
 
   
@@ -268,7 +268,6 @@ data frame, a pre-installed “toy” data set which is directly available
 after installing `metapsyTools`.
 
 ``` r
-
 # Load metapsyTools & dplyr
 library(metapsyTools)
 library(dplyr)
@@ -306,12 +305,10 @@ We can also check the data for potential formatting issues, using the
 `checkConflicts` function.
 
 ``` r
-
 depressionPsyCtr <- checkConflicts(depressionPsyCtr) 
 ```
 
 ``` r
-
 # - [OK] No data format conflicts detected.
 ```
 
@@ -342,7 +339,6 @@ for our IDs in
 [`checkConflicts`](https://tools.metapsy.org/reference/checkconflicts):
 
 ``` r
-
 # Define extended ID list 
 # "target_group" is now also included
 id.list <- c("study", "outcome_type",
@@ -361,13 +357,13 @@ checkConflicts(depressionPsyCtr,
 If the data set has been pre-formatted correctly, and all ID conflicts
 were resolved, the
 [`calculateEffectSizes`](https://tools.metapsy.org/reference/calculateeffectsizes)
-function can be used to **calculate effect sizes** (Hedges’ $`g`$ or
-risk ratios, $`RR`$) for all comparisons in the database.
+function can be used to **calculate effect sizes** (Hedges’ $g$ or risk
+ratios, $RR$) for all comparisons in the database.
 
 The `calculateEffectSizes` function uses the information stored in the
 [effect size data
 variables](https://tools.metapsy.org/articles/metapsytools#effect-size-data-variables-ii)
-to calculate $`g`$ and/or $`RR`$, depending on what information is
+to calculate $g$ and/or $RR$, depending on what information is
 available. Therefore, it is very important to make sure these variables
 are defined correctly before running `calculateEffectSizes`.
 
@@ -377,10 +373,10 @@ meta-analysis functions in `metapsyTools` can be applied “out of the
 box”.
 
 - **`.id`**: Unique identifier for a trial arm comparison/row.
-- **`.g`**: Calculated effect size (Hedges’ $`g`$).
-- **`.g_se`**: Standard error of Hedges’ $`g`$.
-- **`.log_rr`**: Calculated effect size ($`\log_{e}\text{RR}`$).
-- **`.log_rr_se`**: Standard error of $`\log_{e}\text{RR}`$.
+- **`.g`**: Calculated effect size (Hedges’ $g$).
+- **`.g_se`**: Standard error of Hedges’ $g$.
+- **`.log_rr`**: Calculated effect size ($\log_{e}\text{RR}$).
+- **`.log_rr_se`**: Standard error of $\log_{e}\text{RR}$.
 - **`.event_arm1`**: Number of events (e.g. responders) in the first
   trial arm.
 - **`.event_arm2`**: Number of events (e.g. responders) in the second
@@ -389,15 +385,13 @@ box”.
 - **`.totaln_arm2`**: Total sample size in the second trial arm.
 
 ``` r
-
 data <- calculateEffectSizes(depressionPsyCtr)
 ```
 
-Now, let us have a look at the calculated effect sizes ($`g`$ and
-$`\log_eRR`$) in a random slice of the data:
+Now, let us have a look at the calculated effect sizes ($g$ and
+$\log_{e}RR$) in a random slice of the data:
 
 ``` r
-
 # Show rows 10 to 15, and variables "study", ".g", and ".log_rr"
 data %>% 
   slice(10:15) %>% 
@@ -416,10 +410,10 @@ We see one important detail here. When dichotomous outcome data is
 provided, the
 [`calculateEffectSizes`](https://tools.metapsy.org/reference/calculateeffectsizes)
 function automatically calculates both the log-risk ratio, and an
-estimate of $`g`$. Therefore, effects on remission, response, etc. are
-by default also included in meta-analyses based on Hedges’ $`g`$. Please
-make sure to filter these effect sizes out if you do not want to have
-them included in your meta-analysis. The
+estimate of $g$. Therefore, effects on remission, response, etc. are by
+default also included in meta-analyses based on Hedges’ $g$. Please make
+sure to filter these effect sizes out if you do not want to have them
+included in your meta-analysis. The
 [`filterPoolingData`](https://tools.metapsy.org/reference/filterpoolingdata)
 function, which we will cover later, allows to do this.
 
@@ -429,11 +423,10 @@ function, which we will cover later, allows to do this.
 
 The `change.sign` argument in `calculateEffectSizes` can be used to
 change the sign of one or several calculated effect sizes (e.g. change
-the calculated effect size from $`g`$=0.30 to $`g`$=-0.30, or vice
-versa). This is illustrated below:
+the calculated effect size from $g$=0.30 to $g$=-0.30, or vice versa).
+This is illustrated below:
 
 ``` r
-
 # Take a slice of the data for illustration
 depressionPsyCtrSubset <- depressionPsyCtr %>% slice(10:15)
 
@@ -463,7 +456,7 @@ data.change.sign %>%
 
 We see that `.g` has now changed where ever `sign_change` has been set
 to `TRUE`. We also see that this **does not affect** the estimates of
-$`\log_eRR`$.
+$\log_{e}RR$.
 
   
 
@@ -475,18 +468,18 @@ this difference matters, let us consider a small example.
 
 Imagine that we have data of a four-arm trial. Say that this trial
 included CBT, PST, CAU and a wait-list condition. While this trial
-provides 6 unique trial arm combinations[^1], the number of unique
-*comparisons* is higher: $`\frac{n!}{(n-k)!} = \frac{4!}{2!} = 12`$.
+provides 6 unique trial arm combinations[¹](#fn1), the number of unique
+*comparisons* is higher: $\frac{n!}{(n - k)!} = \frac{4!}{2!} = 12$.
 
 This is because the sign of the calculated effect size depends on which
 treatment serves as the *reference*. The effect of CBT vs. PST, for
 example, depends on which arm serves as the reference group (i.e. CBT
 vs. PST or PST vs. CBT). Depending on which arm is chosen (and assuming
 non-zero mean differences), the calculated effect size (e.g. Hedges’
-$`g`$) value will either be negative (e.g. $`g`$=-0.31) or positive
-($`g`$=0.31). We see this visualized in the graph below. There are now
-two directed arrows for each comparison (12 in total), and each arrow
-reads as “is compared to”:
+$g$) value will either be negative (e.g. $g$=-0.31) or positive
+($g$=0.31). We see this visualized in the graph below. There are now two
+directed arrows for each comparison (12 in total), and each arrow reads
+as “is compared to”:
 
 ![](graph2.png)
 
@@ -495,7 +488,6 @@ To truly calculate all unique *comparisons*, we have to set the
 `calculateEffectSizes`.
 
 ``` r
-
 data.switched.arms <- calculateEffectSizes(
                         depressionPsyCtr,
                         include.switched.arms = TRUE)
@@ -549,7 +541,7 @@ The analysis module allows, among other things, to:
   implementing prioritization rules
   ([`filterPoolingData`](https://tools.metapsy.org/reference/filterpoolingdata)
   and
-  [`filterPriorityRule`](https://tools.metapsy.org/reference/filterpriorityrule))[^2].
+  [`filterPriorityRule`](https://tools.metapsy.org/reference/filterpriorityrule))[²](#fn2).
 - Run conventional random-effects meta-analysis models, as well as
   commonly reported sensitivity analyses
   ([`runMetaAnalysis`](https://tools.metapsy.org/reference/runmetaanalysis)).
@@ -581,7 +573,6 @@ compared to wait-lists, with the BDI-I at post-test being the analyzed
 outcome. We can filter out the relevant comparisons like this:
 
 ``` r
-
 # Load the pre-installed "depressionPsyCtr" dataset
 load("depressionPsyCtr")
 data <- depressionPsyCtr
@@ -597,7 +588,7 @@ data %>%
 
     # [1] 7
 
-We see that $`k`$=7 comparisons fulfill these criteria. Note, however,
+We see that $k$=7 comparisons fulfill these criteria. Note, however,
 that this will only select comparisons for which `condition_arm1` was
 *exactly* defined as `"cbt"`.
 
@@ -609,7 +600,6 @@ function within
 [`filterPoolingData`](https://tools.metapsy.org/reference/filterpoolingdata):
 
 ``` r
-
 data %>% 
   filterPoolingData(
     Detect(condition_arm1, "other")) %>%
@@ -631,7 +621,6 @@ filter types. Again, we use the `Detect` function to allow for fuzzy
 matching:
 
 ``` r
-
 data %>% 
   filterPoolingData(
     Detect(condition_arm1, "cbt|pst|bat"),
@@ -661,7 +650,6 @@ Assume that our priority rule for the employed instrument is `"hdrs"`
 `"bdi-1"` (priority 4). We can implement the rule like this:
 
 ``` r
-
 data %>% 
   
   # First, filter all other relevant characteristics
@@ -702,16 +690,17 @@ approaches, and, by default, applies them all at once to our data:
   (since these effect sizes are assumed to be correlated). In this case,
   results of the `"combined"` and `"threelevel"`/`"threelevel.che"`
   models should be reported instead.
-- `"combined"`. Aggregates all effect sizes within one study before
-  calculating the overall effect. This ensures that all effect sizes are
-  independent (i.e., unit-of-analysis error & double-counting is
-  avoided). To combine the effects, one has to assume a **correlation**
-  of effect sizes within studies, empirical estimates of which are
-  typically not available. By default, `runMetaAnalysis` assumes that
-  $`\rho`$=0.6.
+- `"combined"`. Aggregates effect sizes within studies before
+  calculating the overall effect. By default, the arms of a multi-arm
+  trial are aggregated separately; effects are only fully independent
+  (i.e., unit-of-analysis error & double-counting is avoided) when using
+  `which.combine = "studies"`. To combine the effects, one has to assume
+  a **correlation** of effect sizes within studies, empirical estimates
+  of which are typically not available. By default, `runMetaAnalysis`
+  assumes that $\rho$=0.6.
 - `"lowest.highest"`. Runs a meta-analysis, but with only (i) the lowest
   and (ii) highest effect size within each study included.
-- `"outlier"`. Runs a meta-analysis without statistical outliers
+- `"outliers"`. Runs a meta-analysis without statistical outliers
   (i.e. effect sizes for which the confidence interval does not overlap
   with the confidence interval of the overall effect).
 - `"influence"`. Runs a meta-analysis without influential cases, as
@@ -733,7 +722,7 @@ approaches, and, by default, applies them all at once to our data:
   sizes are nested in studies, and effects within studies are assumed to
   be correlated (Pustejovsky & Tipton,
   [2022](https://link.springer.com/article/10.1007/s11121-021-01246-3);
-  by default, it is assumed that $`\rho`$=0.6). This will typically be a
+  by default, it is assumed that $\rho$=0.6). This will typically be a
   plausible modeling assumption in most real-world use cases. In most
   scenarios, the `"threelevel.che"` model can be seen as a better (and
   therefore preferable) approximation of the data structure at hand,
@@ -743,7 +732,6 @@ To illustrate how the function works, we first select a subset of our
 “toy” `depressionPsyCtr` data.
 
 ``` r
-
 # Only select data comparing CBT to waitlists and CAU
 depressionPsyCtr %>% 
   filterPoolingData(
@@ -756,7 +744,6 @@ Then, we plug the resulting `ma.data` data set into the
 `runMetaAnalysis` function:
 
 ``` r
-
 res <- runMetaAnalysis(ma.data)
 ```
 
@@ -781,7 +768,6 @@ successfully. When there are problems during the calculation, the
 `runMetaAnalysis` function will print a warning.
 
 ``` r
-
 # This tells the function to only consider studies with a rob score 
 # above 4 in the "low risk of bias" sensitivity analysis
 runMetaAnalysis(ma.data, low.rob.filter = "rob > 4")
@@ -795,7 +781,6 @@ We can inspect the results by calling the created `res` object in the
 console.
 
 ``` r
-
 res
 ```
 
@@ -828,28 +813,6 @@ output. These pre-formatted HTML results tables can easily be
 transferred to, for example, MS Word using copy and paste. To disable
 this feature, we have to specify `html=FALSE` inside the function call.
 
-| . | *k* | *g* | CI | *p* | *I*² | CI | PI | NNT |
-|:---|---:|---:|:---|:---|---:|:---|:---|---:|
-| Overall | 26 | -0.57 | \[-0.85; -0.28\] | \<0.001 | 76.39 | \[65.65; 83.76\] | \[-1.57; 0.43\] | 5.22 |
-| Combined^(a) | 17 | -0.54 | \[-0.89; -0.18\] | 0.005 | 77.09 | \[63.64; 85.57\] | \[-1.64; 0.57\] | 5.56 |
-| One ES/study (lowest)^(b) | 14 | -0.57 | \[-1; -0.13\] | 0.015 | 79.76 | \[66.82; 87.65\] | \[-1.78; 0.64\] | 5.22 |
-| One ES/study (highest)^(c) | 14 | -0.47 | \[-0.84; -0.11\] | 0.015 | 73.91 | \[55.75; 84.62\] | \[-1.45; 0.5\] | 6.41 |
-| Outliers removed^(d) | 23 | -0.46 | \[-0.63; -0.29\] | \<0.001 | 61.55 | \[39.55; 75.55\] | \[-1.11; 0.19\] | 6.64 |
-| Influence Analysis^(e) | 24 | -0.43 | \[-0.6; -0.27\] | \<0.001 | 63.91 | \[44.18; 76.66\] | \[-1.08; 0.22\] | 7.08 |
-| Only rob \> 2^(f) | 13 | -0.34 | \[-0.58; -0.11\] | 0.008 | 73.45 | \[53.91; 84.71\] | \[-1.1; 0.41\] | 9.12 |
-| Three-Level Model^(g) | 26 | -0.61 | \[-1.05; -0.17\] | 0.011 | 92.10 | \- | \[-2.17; 0.96\] | 4.81 |
-| Three-Level Model (CHE)^(h) | 26 | -0.55 | \[-0.92; -0.18\] | 0.007 | 88.00 | \- | \[-1.8; 0.7\] | 5.42 |
-| Note: |  |  |  |  |  |  |  |  |
-|  Excluded effect sizes/studies: |  |  |  |  |  |  |  |  |
-| ^(a) combined (arm-level): Ammerman, 2013 ; Ayen, 2004 cbt; Bowman, 1995 cognitive bibliotherapy; Brown, 1984 cbt group; Brown, 1984 cbt individual; Brown, 1984 cbt phone; Burford, 2021 ; Bzdok, 2001 |  |  |  |  |  |  |  |  |
-| ^(b) Ammerman, 2013 (cbt vs. cau; epds); Ammerman, 2013 (cbt vs. cau; hdrs); Ayen, 2004 (cbt vs. wl; bdi-1); Beach, 1992 (cbt vs. wl; bdi-1); Bowman, 1995 (cbt vs. wl; bdi-1); Brown, 1984 (cbt vs. wl; bdi-1); Brown, 1984 (cbt vs. wl; bdi-1); Brown, 1984 (cbt vs. wl; ces-d); Brown, 1984 (cbt vs. wl; bdi-1); Brown, 1984 (cbt vs. wl; ces-d); Buchanan, 2010 (cbt vs. cau; hdrs); Bruckner, 2009 (cbt vs. cau; hdrs) |  |  |  |  |  |  |  |  |
-| ^(c) Ammerman, 2013 (cbt vs. cau; bdi-2); Ammerman, 2013 (cbt vs. cau; epds); Ayen, 2004 (cbt vs. wl; ids); Beach, 1992 (cbt vs. wl; bdi-1); Bowman, 1995 (cbt vs. wl; hdrs); Brown, 1984 (cbt vs. wl; ces-d); Brown, 1984 (cbt vs. wl; bdi-1); Brown, 1984 (cbt vs. wl; ces-d); Brown, 1984 (cbt vs. wl; bdi-1); Brown, 1984 (cbt vs. wl; ces-d); Burroughs, 1999 (cbt vs. cau; hdrs); Bzdok, 2001 (cbt vs. cau; hdrs) |  |  |  |  |  |  |  |  |
-| ^(d) Ayen, 2004 (cbt vs. wl; bdi-1); Ayen, 2004 (cbt vs. wl; ids); Bzdok, 2001 (cbt vs. cau; hdrs) |  |  |  |  |  |  |  |  |
-| ^(e) removed as influential cases: Ayen, 2004 (cbt vs. wl; bdi-1); Ayen, 2004 (cbt vs. wl; ids) |  |  |  |  |  |  |  |  |
-| ^(f) Allart van Dam, 2003 (cbt vs. cau; bdi-1); Ayen, 2004 (cbt vs. wl; bdi-1); Ayen, 2004 (cbt vs. wl; ids); Beach, 1992 (cbt vs. wl; bdi-1); Beach, 1992 (cbt vs. wl; bdi-1); Bowman, 1995 (cbt vs. wl; bdi-1); Bowman, 1995 (cbt vs. wl; hdrs); Brown, 1984 (cbt vs. wl; bdi-1); Brown, 1984 (cbt vs. wl; ces-d); Brown, 1984 (cbt vs. wl; bdi-1); Brown, 1984 (cbt vs. wl; ces-d); Brown, 1984 (cbt vs. wl; bdi-1); Brown, 1984 (cbt vs. wl; ces-d) |  |  |  |  |  |  |  |  |
-| ^(g) Number of clusters/studies: 14; robust variance estimation (RVE) used. |  |  |  |  |  |  |  |  |
-| ^(h) Number of clusters/studies: 14; robust variance estimation (RVE) used. |  |  |  |  |  |  |  |  |
-
   
 
 Using the `summary` method, details of the analysis settings can be
@@ -858,7 +821,6 @@ applied methods and/or packages. Furthermore, it creates a **summary
 forest plot** in which all pooled effects are displayed.
 
 ``` r
-
 summary(res)
 ```
 
@@ -895,7 +857,7 @@ entire documentation). The most important arguments one may want to
 specify are:
 
 - `es.measure`. By default, the function conducts analyses using the
-  Hedges’ $`g`$ values stored in the data set. To conduct analyses using
+  Hedges’ $g$ values stored in the data set. To conduct analyses using
   dichotomous outcome data (i.e. response, remission, etc.), one has to
   set this argument to `"RR"` (for risk ratios), `"EER"` (for
   intervention group response rates), or `"CER"` (for control group
@@ -908,7 +870,7 @@ specify are:
   typically preferable, but may not be possible if this information
   could not be extracted from all primary studies.
 - `method.tau`. This argument controls the method to be used for
-  estimating the between-study heterogeneity variance $`\tau^2`$. The
+  estimating the between-study heterogeneity variance $\tau^{2}$. The
   default is `"REML"` (restricted maximum likelihood), but other options
   such as the DerSimonian-Laird estimator (`"DL"`) are also available
   (see the
@@ -939,7 +901,6 @@ Here is an example of a `runMetaAnalysis` call with non-default
 settings:
 
 ``` r
-
 runMetaAnalysis(ma.data,
                 es.measure = "RR",
                 es.type = "raw",
@@ -956,34 +917,33 @@ effects will be calculated: one for CBT vs. wait-list, and one for
 Internet-based CBT vs. wait-list.
 
 From a statistical perspective, it is typically preferable to aggregate
-on a **study level** instead[^3] (in our example, this would lead to one
-aggregated effect for CBT/Internet-based CBT combined vs. wait-list),
-although the aggregated effect sizes may then be more difficult to
-interpret from a clinical perspective.
+on a **study level** instead[³](#fn3) (in our example, this would lead
+to one aggregated effect for CBT/Internet-based CBT combined
+vs. wait-list), although the aggregated effect sizes may then be more
+difficult to interpret from a clinical perspective.
 
 To combine effect sizes on a study level instead, we can set the
 `which.combine` argument to `"studies"`.
 
 ``` r
-
 runMetaAnalysis(ma.data, which.combine = "studies")
 ```
 
   
 
-#### Confidence Intervals for Three-Level Model $`\tau^2`$ and $`I^2`$ Values
+#### Confidence Intervals for Three-Level Model $\tau^{2}$ and $I^{2}$ Values
 
 Please note that, by default, no confidence intervals are printed for
-the $`I^2`$ value of the `"threelevel"` and `"threelevel.che"` model
-(the same is also the case for the $`G^2`$ value, the equivalent of
-$`I^2`$ in limit meta-analyses; see [Publication
-Bias](#publication-bias) section)[^4]. This is because there are two
-heterogeneity variances in three-level models: the “conventional”
-between-study heterogeneity variance $`\tau^2_{(1)}`$ and the
-heterogeneity variance within studies, $`\tau^2_{(2)}`$. This means that
-there are also two $`I^2`$ values, one within studies, and one for the
+the $I^{2}$ value of the `"threelevel"` and `"threelevel.che"` model
+(the same is also the case for the $G^{2}$ value, the equivalent of
+$I^{2}$ in limit meta-analyses; see [Publication
+Bias](#publication-bias) section)[⁴](#fn4). This is because there are
+two heterogeneity variances in three-level models: the “conventional”
+between-study heterogeneity variance $\tau_{(1)}^{2}$ and the
+heterogeneity variance within studies, $\tau_{(2)}^{2}$. This means that
+there are also two $I^{2}$ values, one within studies, and one for the
 between-study heterogeneity. Established closed-form or iterative
-solutions (such as the $`Q`$-Profile method; Viechtbauer,
+solutions (such as the $Q$-Profile method; Viechtbauer,
 [2007](https://pubmed.ncbi.nlm.nih.gov/16463355/)) are not directly
 applicable here, which means that confidence intervals cannot be
 calculated that easily.
@@ -991,9 +951,9 @@ calculated that easily.
 In `metapsyTools`, one can resort to the **parametric bootstrap** (van
 den Noortgate & Onghena,
 [2005](https://link.springer.com/content/pdf/10.3758/BF03206394.pdf)) to
-obtain approximate confidence intervals around the $`\tau^2`$ and
-$`I^2`$ values. Bootstrapping is performed when the `i2.ci.boot`
-argument is set to `TRUE`. By default, $`n`$=5000 bootstrap samples are
+obtain approximate confidence intervals around the $\tau^{2}$ and
+$I^{2}$ values. Bootstrapping is performed when the `i2.ci.boot`
+argument is set to `TRUE`. By default, $n$=5000 bootstrap samples are
 drawn, which should be seen as the absolute lower limit; more
 replications are preferable and can be specified via the `nsim.boot`
 argument.
@@ -1005,7 +965,6 @@ prints a progress update so that users get an indication of how long the
 function (still) has to run.
 
 ``` r
-
 res.boot <- runMetaAnalysis(ma.data,
                             i2.ci.boot = TRUE,
                             nsim.boot = 500)
@@ -1014,7 +973,7 @@ res.boot
 
     # 1% completed | 2% completed | 3% completed ...
 
-Confidence intervals around $`I^2`$ and the $`\tau^2`$ will then be
+Confidence intervals around $I^{2}$ and the $\tau^{2}$ will then be
 printed out along with the usual results.
 
     # [...]
@@ -1031,7 +990,7 @@ printed out along with the usual results.
     # Total           0.339 [0.079; 0.681]  88   [63.17; 93.67]
 
 When `runMetaAnalysis` was run with `i2.ci.boot` set to `TRUE`, the
-$`I^2`$ (or, more correctly, $`G^2`$) value of the **limit
+$I^{2}$ (or, more correctly, $G^{2}$) value of the **limit
 meta-analysis** will also be calculated using parametric bootstrapping,
 provided that `correctPublicationBias` is called afterwards (see
 [publication
@@ -1047,21 +1006,21 @@ dependencies within the data should be approximated using a `"simple"`
 (default) or more `"complex"` (but potentially more accurate) method.
 This argument is only relevant for the `"combined"` and
 `"threelevel.che"` models. The default “simple” method constructs
-variance-covariance matrices $`\Sigma_k`$ for each study using a
-constant sampling correlation $`\rho`$ (defined by `rho.within.study`),
+variance-covariance matrices $\Sigma_{k}$ for each study using a
+constant sampling correlation $\rho$ (defined by `rho.within.study`),
 which is identical across all studies, outcomes, and time points. This
 simplifying assumption is part of the formulation of the CHE model
 originally provided by Pustejovsky and Tipton
 ([2022](https://link.springer.com/article/10.1007/s11121-021-01246-3)).
 
-Naturally, employing a common value of $`\rho`$ across all studies may
-not be reasonable in some analyses, and other information may be
-available to better approximate the effect size dependencies in the
-collected data. Setting `vcov` to `"complex"` allows to assume that
-correlations between effect sizes may differ conditional on the type of
-dependency. This means that the variance-covariance matrix $`\Sigma_k`$
-of some study $`k`$ is approximated by an unstructured matrix with
-varying $`\rho_{ij}`$.
+Naturally, employing a common value of $\rho$ across all studies may not
+be reasonable in some analyses, and other information may be available
+to better approximate the effect size dependencies in the collected
+data. Setting `vcov` to `"complex"` allows to assume that correlations
+between effect sizes may differ conditional on the type of dependency.
+This means that the variance-covariance matrix $\Sigma_{k}$ of some
+study $k$ is approximated by an unstructured matrix with varying
+$\rho_{ij}$.
 
 Put simply, this method allows to account for the fact that there can be
 **various types of effect size dependencies** (e.g. effect sizes are
@@ -1075,20 +1034,20 @@ Setting `vcov = "complex"` allows to additionally incorporate assumed
 correlations specific to multiple testing over time (e.g. correlations
 between effects at post-test and long-term follow-up). The value
 provided in `phi.within.study` represents the **(auto-)correlation**
-coefficient $`\phi`$, which serves as a rough estimate of the re-test
+coefficient $\phi$, which serves as a rough estimate of the re-test
 correlation after 1 week. This allows to model the gradual decrease in
 correlation between measurements over time.
 
 Furthermore, it is possible to calculate a correlation coefficient
-$`\rho_w`$ for **multi-arm trials**, which is directly proportional to
+$\rho_{w}$ for **multi-arm trials**, which is directly proportional to
 the size of each individual trial arm. When all trial arms have the same
-size, meaning that each arm’s weight $`w`$ is identical, $`\rho_w`$ is
-known to be 0.5. Multiarm weights $`w`$ (and thus $`\rho_w`$) can be
+size, meaning that each arm’s weight $w$ is identical, $\rho_{w}$ is
+known to be 0.5. Multiarm weights $w$ (and thus $\rho_{w}$) can be
 derived if the `w1.var` and `w2.var` variables, containing the sample
 size of each study arm, are available.
 
 Using the complex approximation method increases the risk that at least
-one studies’ $`\Sigma_k`$ matrix is not **positive definite**. In this
+one studies’ $\Sigma_{k}$ matrix is not **positive definite**. In this
 case, the function automatically switches back to the constant sampling
 correlation approximation.
 
@@ -1100,7 +1059,6 @@ variance-covariance approximation was not possible, meaning that the
 function automatically reverted to the standard `"simple"` approach.
 
 ``` r
-
 runMetaAnalysis(ma.data,
                 vcov = "complex")
 ```
@@ -1149,7 +1107,6 @@ or
 directly.
 
 ``` r
-
 res$model.overall         # "overall" model (metagen/metabin)
 res$model.combined        # "combined" model (metagen/metabin)
 res$model.lowest          # lowest effect size/study only model (metagen/metabin)
@@ -1167,7 +1124,6 @@ This means that **any kind of operation** available for `metagen` or
 “overall” model like this:
 
 ``` r
-
 library(meta)
 
 # model.overall is a "meta" model, so we can directly
@@ -1186,7 +1142,6 @@ This feature can also be used to run, for example, **Egger’s regression
 test**, using functions already included in `meta` and `dmetar`:
 
 ``` r
-
 # Egger's regression test applied to the "overall" model:
 library(dmetar)
 eggers.test(res$model.overall)
@@ -1206,7 +1161,7 @@ specific documentation entry for each meta-analysis model type:
 - `"overall"`, `"combined"`, `"lowest"`, `"highest"`, `"outliers"`,
   `"influence"`, `"rob"`: run
   [`?metagen`](https://rdrr.io/pkg/meta/man/metagen.html) in the console
-  (if effect size is $`g`$, or if effect size is $`RR`$ and `es.type` is
+  (if effect size is $g$, or if effect size is $RR$ and `es.type` is
   `"precalculated"`); otherwise, run
   [`?metabin`](https://rdrr.io/pkg/meta/man/metabin.html).
 
@@ -1227,7 +1182,6 @@ models. We only have to plug the results object into `plot`, and specify
 the name of the model for which the forest plot should be retrieved:
 
 ``` r
-
 plot(res, "overall")        # Overall model (ES assumed independent)
 plot(res, "combined")       # ES combined within studies before pooling
 plot(res, "lowest.highest") # Lowest and highest ES removed (creates 2 plots)
@@ -1240,7 +1194,6 @@ plot(res, "threelevel.che") # Three-level CHE model
 This is what the `"overall"` model forest plot looks like, for example:
 
 ``` r
-
 plot(res, "overall")
 ```
 
@@ -1252,7 +1205,6 @@ options](https://bookdown.org/MathiasHarrer/Doing_Meta_Analysis_in_R/forest.html
 are also available using extra arguments.
 
 ``` r
-
 plot(res, "overall", 
      col.predict = "lightgreen", 
      col.square = "gray",
@@ -1268,7 +1220,6 @@ Plots](https://bookdown.org/MathiasHarrer/Doing_Meta_Analysis_in_R/heterogeneity
 (not displayed here).
 
 ``` r
-
 plot(res, "baujat")
 plot(res, "loo-es")
 plot(res, "loo-i2")
@@ -1284,11 +1235,10 @@ quickly tweak one or more analysis settings, which are implemented once
 the `rerun` function is called.
 
 If, for example, we want to check the results using a different
-estimator of $`\tau^2`$, and a different CER to calculate the number
+estimator of $\tau^{2}$, and a different CER to calculate the number
 needed to treat, leaving all other settings the same, we can run:
 
 ``` r
-
 method.tau(res) <- "PM"
 nntCer(res) <- 0.7
 ```
@@ -1296,7 +1246,6 @@ nntCer(res) <- 0.7
 Then, we have to call the `rerun` function:
 
 ``` r
-
 rerun(res)
 ```
 
@@ -1315,10 +1264,10 @@ publication bias and/or small-study effects using the
 function. This will apply three correction methods at the same time,
 providing a range of (more or less) plausible corrected values. Using
 the `which.run` argument, we can apply these methods to a specific model
-we fitted previously.[^5] Here, we select the `"combined"` analysis.
+we fitted previously.[⁵](#fn5) Here, we select the `"combined"`
+analysis.
 
 ``` r
-
 correctPublicationBias(res, which.run = "combined")
 ```
 
@@ -1348,18 +1297,18 @@ between methods:
   manifests itself in so-called small-study effects (i.e., it assumes
   that small studies with high standard errors are more likely to be
   affected by publication bias). It calculates the expected (“shrunken”)
-  pooled effect as the standard error $`\epsilon_k`$ goes to zero, while
+  pooled effect as the standard error $\epsilon_{k}$ goes to zero, while
   accounting for between-study heterogeneity. Importantly, this methods
   controls for small-study effects only, which can be associated with
   publication bias, but does not have to.
 
 - Lastly, a **step function selection model** is calculated, which
   allows to account for the possibility that results are more or less
-  likely to get published depending on their $`P`$ value. By default,
-  the `selmodelSteps` argument is set to 0.05, which means that we
-  assume that results with $`p`$\<0.1 are more likely to get published.
-  It is also possible to define more than one selection threshold,
-  e.g. by setting `selmodelSteps` to `c(0.025, 0.05)`.
+  likely to get published depending on their $P$ value. By default, the
+  `selmodelSteps` argument is set to 0.05, which means that we assume
+  that results with $p$\<0.1 are more likely to get published. It is
+  also possible to define more than one selection threshold, e.g. by
+  setting `selmodelSteps` to `c(0.025, 0.05)`.
 
 For further details, see Harrer, Cuijpers, Furukawa & Ebert (2022,
 chap. [9.3](https://bookdown.org/MathiasHarrer/Doing_Meta_Analysis_in_R/pub-bias.html#pub-bias-which-method)).
@@ -1373,7 +1322,6 @@ functions in `meta` and `metasens` (Schwarzer, Carpenter & Rücker,
 can find an example below:
 
 ``` r
-
 correctPublicationBias(
   
               res, which.run = "combined",
@@ -1398,7 +1346,6 @@ For example, we might want to check if effects differ by country
 (`country`) or intervention type (`condition_arm1`):
 
 ``` r
-
 sg <- subgroupAnalysis(res, country, condition_arm2)
 sg
 ```
@@ -1418,7 +1365,6 @@ It is also possible to conduct subgroup analyses using another model,
 say, the three-level model. We only have to specify `.which.run`:
 
 ``` r
-
 sg <- subgroupAnalysis(res, 
                        country, condition_arm2,
                        .which.run = "threelevel")
@@ -1426,11 +1372,10 @@ sg <- subgroupAnalysis(res,
 
 When the number of studies in subgroups are small, it is sensible to use
 a **common estimate** of the between-study heterogeneity variance
-$`\tau^2`$ (in lieu of subgroup-specific estimates). This can be done by
+$\tau^{2}$ (in lieu of subgroup-specific estimates). This can be done by
 setting the `.tau.common` argument to `TRUE` in the function:
 
 ``` r
-
 sg <- subgroupAnalysis(res, 
                        country, condition_arm2,
                        .which.run = "combined",
@@ -1450,7 +1395,6 @@ achieved by extracting the model to be analyzed using the `$` operator,
 and then using `metaRegression` to fit the model.
 
 ``` r
-
 metaRegression(res$model.threelevel, 
                ~ scale(as.numeric(rob)) + scale(year))
 ```
@@ -1501,7 +1445,6 @@ provided
 [here](https://tools.metapsy.org/reference/runmetaanalysis#risk-of-bias-data).
 
 ``` r
-
 # Define ROB data to be added to the models
 robData = list(
   domains = c("sg", "ac", "ba", "itt"),
@@ -1521,7 +1464,6 @@ Once this is set up, we can use the `runMetaAnalysis` object to easily
 produce forest plots that include risk of bias information.
 
 ``` r
-
 plot(res, "threelevel.che", 
      leftcols = c("study", "instrument"),
      leftlabs = c("Study", "Instrument"),
@@ -1535,7 +1477,6 @@ It is also possible to create a summary risk of bias plot, using the
 `createRobSummary` function.
 
 ``` r
-
 createRobSummary(res, 
                  name.low = "1", 
                  name.high = "0", 
@@ -1560,7 +1501,6 @@ factor labels directly in the function, determine how far values should
 be rounded, and if variable names should be changed:
 
 ``` r
-
 createStudyTable(
   
   # Dataset. Alternatively, a runMetaAnalysis
@@ -1603,26 +1543,6 @@ createStudyTable(
 By default, `createStudyTable` also returns an HTML table that one can
 copy and paste into MS Word.
 
-| study | age group | mean age | % female | Intervention | Specification | Control | N (IG) | N (CG) | country | sg | ac | itt |
-|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|
-| Aagaard, 2017 | 4 | 48 | 0.71 | CBT | nr | Care-As-Usual | 40 | 35 | Europe | 1 | 1 | 0 |
-| Allart van Dam, 2003 | 4 | 46 | 0.62 | CBT | nr | Care-As-Usual | 61 | 41 | Europe | 0 | 0 | 0 |
-| Ammerman, 2013 | 3 | 22 | 1.00 | CBT | nr | Care-As-Usual | 47 | 46 | USA | 0 | 1 | 1 |
-| Ayen, 2004 | 4 | 51 | 1.00 | CBT | cbt | Wait-List | 11 | 10 | Europe | 0 | 0 | 0 |
-| Beach, 1992 | 4 | 39 | 1.00 | CBT | bmt | Wait-List | 15 | 15 | USA | 0 | 0 | 0 |
-| . | 4 | 39 | 1.00 | CBT | cbt | Wait-List | 15 | 15 | USA | 0 | 0 | 0 |
-| Berger, 2011 | 4 | 39 | 0.70 | CBT | guided i-cbt | Wait-List | 25 | 26 | Europe | 1 | 1 | 1 |
-| Bowman, 1995 | 4 | 36 | 0.63 | CBT | cognitive bibliotherapy | Wait-List | 10 | 10 | USA | 0 | 0 | 0 |
-| Brown, 1984 | 4 | 36 | 0.70 | CBT | cbt group | Wait-List | 25 | 11 | USA | 0 | 0 | 0 |
-| . | 4 | 36 | 0.70 | CBT | cbt individual | Wait-List | 13 | 11 | USA | 0 | 0 | 0 |
-| . | 4 | 36 | 0.70 | CBT | cbt phone | Wait-List | 14 | 11 | USA | 0 | 0 | 0 |
-| Buhrman, 2015 | 4 | 51 | 0.85 | CBT | nr | Wait-List | 28 | 24 | Europe | 1 | 1 | 1 |
-| Burford, 2021 | 4 | 42 | 0.80 | CBT | nr | Care-As-Usual | nr | nr | Europe | 1 | 1 | 1 |
-| Burroughs, 1999 | 4 | 36 | 0.79 | CBT | nr | Care-As-Usual | nr | nr | Europe | 1 | 1 | 1 |
-| Buchanan, 2010 | 4 | 36 | 0.91 | CBT | nr | Care-As-Usual | nr | nr | Europe | 1 | 1 | 1 |
-| Bzdok, 2001 | 4 | 42 | 0.77 | CBT | nr | Care-As-Usual | nr | nr | Europe | 1 | 1 | 1 |
-| Bruckner, 2009 | 4 | 24 | 0.81 | CBT | nr | Care-As-Usual | nr | nr | Europe | 1 | 1 | 1 |
-
   
 
 **Still have questions?** This vignette only provides a superficial
@@ -1635,29 +1555,31 @@ ask for help, you can contact **Mathias** (<mathias.harrer@tum.de>).
 
   
 
-[^1]: CBT vs. PST, CBT vs. CAU, CBT vs. Waitlist, PST vs. CAU, PST
+------------------------------------------------------------------------
+
+1.  CBT vs. PST, CBT vs. CAU, CBT vs. Waitlist, PST vs. CAU, PST
     vs. Waitlist, and CAU vs. Waitlist. You can also confirm this by
     running: `combn(c("cbt", "pst", "cau", "wl"), 2)`. Please note that
     not all possible combinations will be included in all Metapsy data
     set (e.g., the CAU-Waitlist combination in our example may typically
     not be included).
 
-[^2]: These functions are technically part of the [preparation
+2.  These functions are technically part of the [preparation
     module](https://tools.metapsy.org/reference/#preparation-module),
     but are listed here for convenience.
 
-[^3]: This is because, if effect sizes are aggregated on an arms level,
+3.  This is because, if effect sizes are aggregated on an arms level,
     the resulting effect size estimates of multi-arm studies are
     correlated, while the meta-analytic model assumes that they are
     independent.
 
-[^4]: The $`G^2`$ statistic ([Rücker et al.,
+4.  The $G^{2}$ statistic ([Rücker et al.,
     2011](https://academic.oup.com/biostatistics/article/12/1/122/391113))
     quantifies the percentage of between-study heterogeneity that
     remains after small-study effects have been accounted for (in
-    `metapsyTools`, $`G^2`$ is printed as $`I^2`$ ).
+    `metapsyTools`, $G^{2}$ is printed as $I^{2}$ ).
 
-[^5]: By default, `correctPublicationBias` uses the first model defined
+5.  By default, `correctPublicationBias` uses the first model defined
     via `which.run` in `runMetaAnalysis` (typically, the `"overall"`
     model). Other possible values are `"overall"`, `"combined"`,
     `"lowest"`, `"highest"`, `"outliers"`, `"influence"` and `"rob"`.

@@ -299,8 +299,8 @@ g.change.m.sd = function(x, ...){
 #' The standard error returned in \code{se} is \eqn{\sqrt{v}}.
 #'
 #' A positive log ROM indicates that arm 1 has a higher mean than arm 2.
-#' The measure is undefined when either group mean equals zero, which is why
-#' such rows are returned as \code{NA}.
+#' The measure is undefined when either group mean equals zero, or when the two
+#' means have opposite signs, which is why such rows are returned as \code{NA}.
 #'
 #' @param x A \code{data.frame} in which each row represents one trial arm
 #'   comparison. Must contain the columns listed under \code{...}.
@@ -322,9 +322,9 @@ g.change.m.sd = function(x, ...){
 #'     \item{\code{se}}{Standard error of \code{es}, derived via the delta method.}
 #'   }
 #'   Rows are set to \code{NA} for both columns when any required input is
-#'   \code{NA}, when either mean equals zero (log ROM is undefined), when
-#'   either sample size is non-positive, or when the computed variance is
-#'   non-finite or not strictly positive.
+#'   \code{NA}, when either mean equals zero or the means have opposite signs
+#'   (log ROM is undefined), when either sample size is non-positive, or when
+#'   the computed variance is non-finite or not strictly positive.
 #'
 #' @references
 #' Hedges, L. V., Gurevitch, J., & Curtis, P. S. (1999). The meta-analysis
@@ -344,7 +344,8 @@ rom.m.sd = function(x, ...){
       m1 = mean_arm1; m2 = mean_arm2
       s1 = sd_arm1; s2 = sd_arm2
       n1 = n_arm1; n2 = n_arm2
-      if (is.na(m1) || is.na(m2) || m1 == 0 || m2 == 0 ||
+      # log(m1/m2) is only defined if both means are non-zero and share a sign
+      if (is.na(m1) || is.na(m2) || m1 * m2 <= 0 ||
           is.na(s1) || is.na(s2) || is.na(n1) || is.na(n2) || n1 <= 0 || n2 <= 0)
         return(data.frame(es = NA_real_, se = NA_real_))
       log_rom = log(m1 / m2)
@@ -372,9 +373,10 @@ rom.m.sd = function(x, ...){
 #' The standard error returned in \code{se} is \eqn{\sqrt{v}}.
 #'
 #' A positive log ROM indicates a larger mean change in arm 1 than in arm 2.
-#' The measure is undefined when either change-score mean equals zero, so
-#' such rows are returned as \code{NA}. Note that a zero mean change score is
-#' substantively meaningful (no average change from baseline) and relatively
+#' The measure is undefined when either change-score mean equals zero, or when
+#' the two change-score means have opposite signs (e.g. improvement in one arm,
+#' deterioration in the other), so such rows are returned as \code{NA}. Note that
+#' zero or opposite mean change scores are substantively meaningful and relatively
 #' common, so this limitation should be considered when choosing between
 #' effect size metrics.
 #'
@@ -386,8 +388,8 @@ rom.m.sd = function(x, ...){
 #'     \item{\code{mean_change_arm2}}{Mean change from baseline in arm 2 (control/comparator).}
 #'     \item{\code{sd_change_arm1}}{Standard deviation of the change score in arm 1.}
 #'     \item{\code{sd_change_arm2}}{Standard deviation of the change score in arm 2.}
-#'     \item{\code{n_arm1}}{Sample size of arm 1. Must be > 0.}
-#'     \item{\code{n_arm2}}{Sample size of arm 2. Must be > 0.}
+#'     \item{\code{n_change_arm1}}{Sample size of arm 1. Must be > 0.}
+#'     \item{\code{n_change_arm2}}{Sample size of arm 2. Must be > 0.}
 #'   }
 #'   Additional columns in \code{x} are silently ignored.
 #'
@@ -399,9 +401,10 @@ rom.m.sd = function(x, ...){
 #'     \item{\code{se}}{Standard error of \code{es}, derived via the delta method.}
 #'   }
 #'   Rows are set to \code{NA} for both columns when any required input is
-#'   \code{NA}, when either change-score mean equals zero (log ROM is
-#'   undefined), when either sample size is non-positive, or when the
-#'   computed variance is non-finite or not strictly positive.
+#'   \code{NA}, when either change-score mean equals zero or the two means have
+#'   opposite signs (log ROM is undefined), when either sample size is
+#'   non-positive, or when the computed variance is non-finite or not strictly
+#'   positive.
 #'
 #' @references
 #' Hedges, L. V., Gurevitch, J., & Curtis, P. S. (1999). The meta-analysis
@@ -423,7 +426,8 @@ rom.change.m.sd = function(x, ...){
       m1 = mean_change_arm1; m2 = mean_change_arm2
       s1 = sd_change_arm1; s2 = sd_change_arm2
       n1 = n_change_arm1; n2 = n_change_arm2
-      if (is.na(m1) || is.na(m2) || m1 == 0 || m2 == 0 ||
+      # log(m1/m2) is only defined if both means are non-zero and share a sign
+      if (is.na(m1) || is.na(m2) || m1 * m2 <= 0 ||
           is.na(s1) || is.na(s2) || is.na(n1) || is.na(n2) || n1 <= 0 || n2 <= 0)
         return(data.frame(es = NA_real_, se = NA_real_))
       log_rom = log(m1 / m2)
@@ -536,7 +540,7 @@ metapsyNNT = function(d, CER = NULL, event.e = NULL, n.e = NULL, event.c = NULL,
         else {
         }
         if (method == "Furukawa") {
-          if (missing(CER) | !inherits(CER, "numeric")) {
+          if (missing(CER) || !is.numeric(CER)) {
             stop("To use Furukawa's method, provide a numeric value for CER. \n")
           }
           else {
@@ -549,7 +553,7 @@ metapsyNNT = function(d, CER = NULL, event.e = NULL, n.e = NULL, event.c = NULL,
       }
     }
   } else {
-    if (inherits(event.e, "numeric") & missing(d)) {
+    if (is.numeric(event.e) & missing(d)) {
       EER = event.e/n.e
       CER = event.c/n.c
       NNT = abs(1/(EER - CER))
@@ -659,9 +663,10 @@ Detect = function(...){
 #' Adds effect size data and study information of rows with switched reference arms.
 #'
 #' @param dat Data set created by \code{calculateEffectSizes} in the wider format, which includes
-#' calculated effect sizes and standard errors in columns \code{es} and \code{se}, respectively. Only
-#' data sets created by \code{calculateEffectSizes} with \code{trt.indicator} set to \code{"trt"}
-#' can be used.
+#' calculated effect sizes and standard errors in columns such as \code{.g} and \code{.g_se}. Only
+#' data sets created by \code{calculateEffectSizes} with \code{.trt.indicator} set to \code{"arm"}
+#' can be used. Signs of \code{.g}, \code{.log_rr} and (if available) \code{.log_rom} are reversed in
+#' the added rows.
 #' @param ... Further arguments (not used).
 #' @usage includeSwitchedArms(dat, ...)
 #' @export includeSwitchedArms
@@ -680,8 +685,11 @@ includeSwitchedArms = function(dat, ...){
   dat %>% dplyr::select(colnames(dat.orig)) %>%
     dplyr::mutate(.g = .g*-1,
                   .log_rr = .log_rr*-1,
-                  .id = paste0(.id, "_arm_switched")) %>%
-    rbind(., dat.orig) -> dat.expand
+                  .id = paste0(.id, "_arm_switched")) -> dat.switched
+  if (".log_rom" %in% colnames(dat.switched)){
+    dat.switched$.log_rom = dat.switched$.log_rom*-1
+  }
+  dat.expand = rbind(dat.switched, dat.orig)
 
   dat.expand = dat.expand[order(dat.expand$.id),]
   rownames(dat.expand) = NULL
@@ -716,7 +724,7 @@ tryCatch2 = function(expr) {
 collapseRatings = function(x, var){
   x[[var]] -> r.rating
   if ((var %in% c("d4_16", "d4_17")) & 
-      length(r.rating > 1) & 
+      length(r.rating) > 1 & 
       ("Yes/PY" %in% r.rating)) { "Yes/PY" } else {
     prio = c("No/PN" = 3, "NI" = 2, "Yes/PY" = 1)
     suppressWarnings(names(
@@ -808,7 +816,7 @@ overallAlgorithm = function(d1, d2, d3, d4, d5) {
     concerns = sum(ratings=="some concerns")
     if (lows==5) {"low risk"}
     else if (highs > 0 | concerns > 2) {"high risk"}
-    else if (concerns > 0 | concerns <= 2) {"some concerns"}
+    else if (concerns > 0) {"some concerns"}
     else NA
   }
 }
@@ -935,6 +943,85 @@ plotDensityHist = function(x, breaks = "FD", xlab = "Effect Size",
   if (rug) rug(x$smd, col = border)
   invisible(list(hist = h, curve_x = xs, 
                  curve_y = ys, ylim = ylim))
+}
+
+
+#' Sampling variance-covariance matrix of the CHE working model
+#' 
+#' Constant sampling correlation `r` within clusters, and the average sampling variance 
+#' of a cluster for all of its effect sizes (Pustejovsky & Tipton, 2022). Replaces 
+#' `clubSandwich::impute_covariance_matrix(..., smooth_vi = TRUE)`, which is deprecated.
+#' Rows must be sorted by cluster.
+#' @keywords internal 
+imputeCheV = function(vi, cluster, r){
+  cluster = as.character(cluster)
+  lapply(split(vi, factor(cluster, levels = unique(cluster))), function(v){
+    V = matrix(r * mean(v), length(v), length(v))
+    diag(V) = mean(v)
+    V
+  })
+}
+
+
+#' Logit-transformed event rates and their standard errors
+#' 
+#' Event rates of 0 and 1 have an undefined logit. In these cases, a continuity correction 
+#' of 0.5 is added to the number of events and non-events (as in `meta::metaprop`
+#' or `metafor::escalc`).
+#' @keywords internal 
+eventRateLogit = function(event, n){
+  event = as.numeric(event); n = as.numeric(n)
+  invalid = is.na(event) | is.na(n) | n <= 0 | event < 0 | event > n
+  event[invalid] = NA; n[invalid] = NA
+  nonevent = n - event
+  cc = !is.na(event) & (event == 0 | nonevent == 0)
+  event[cc] = event[cc] + 0.5
+  nonevent[cc] = nonevent[cc] + 0.5
+  list(es = log(event/nonevent), se = sqrt(1/event + 1/nonevent))
+}
+
+
+#' Critical value for prediction intervals of multilevel models
+#'
+#' Models fitted with `test = "z"` have no degrees of freedom (`ddf` is `NA`), so the
+#' standard normal quantile has to be used in that case.
+#' @keywords internal 
+critPI = function(m, level = 0.95){
+  ddf = m$ddf[[1]]
+  if (is.null(ddf) || is.na(ddf)) {
+    qnorm(1 - (1 - level)/2)
+  } else {
+    qt(1 - (1 - level)/2, ddf)
+  }
+}
+
+
+#' Evaluate a risk of bias filtering statement within a data set
+#'
+#' Evaluates statements such as `"rob > 2"`, `"rob>2"`, `"rob %in% c(3,4)"`, or
+#' `"rob > 2 & ac == 1"` within `data`. Rows for which the statement cannot be
+#' evaluated because a variable is missing are not selected.
+#' @keywords internal 
+evalRobFilter = function(filter, data, purpose = "data"){
+  expr = tryCatch(parse(text = filter), error = function(e) {
+    stop("'", filter, "' is not a valid filtering statement.", call. = FALSE)
+  })
+  vars = all.vars(expr)
+  missing.vars = vars[!vars %in% colnames(data) & 
+                        !vapply(vars, exists, logical(1), envir = baseenv())]
+  if (length(vars) == 0 || !any(vars %in% colnames(data))) {
+    missing.vars = if (length(vars) == 0) filter else vars
+  }
+  if (length(missing.vars) > 0) {
+    stop("'", paste(missing.vars, collapse = "', '"), 
+         "' variable not found in ", purpose, ".", call. = FALSE)
+  }
+  mask = eval(expr, as.list(data), baseenv())
+  if (!is.logical(mask) || length(mask) != nrow(data)) {
+    stop("'", filter, "' must return a logical value for each row in the data.", 
+         call. = FALSE)
+  }
+  mask & !is.na(mask)
 }
 
 
@@ -1161,7 +1248,7 @@ fitLowestModel = function(data, study.var, multi.study,
     mLowest = {
       mLowest = tryCatch2(
         updateMeta(mGeneral$m, exclude = !lowest, cluster = NULL))
-      if (!mLowest$has.error){
+      if (!mLowest$has.error && isTRUE(.raw.bin.es)){
         with(updateMeta(mLowest$value, sm="RD"), {
           ifelse(isTRUE(common) & !isTRUE(random),
                  abs(TE.common)^-1, abs(TE.random)^-1)
@@ -1240,7 +1327,7 @@ fitLowestModel = function(data, study.var, multi.study,
   
   # Add rob data if specified
   if (!is.null(rob.data[1])) {
-    mLowest$value = addRobData(mLowest$m, rob.data)
+    mLowest$m = addRobData(mLowest$m, rob.data)
   }
   
   return(mLowest)
@@ -1282,7 +1369,7 @@ fitHighestModel = function(data, study.var, multi.study,
       mHighest = tryCatch2(
         updateMeta(mGeneral$m, exclude = !highest, cluster = NULL))
       
-      if (!mHighest$has.error){
+      if (!mHighest$has.error && isTRUE(.raw.bin.es)){
         with(updateMeta(mHighest$value, sm="RD"), {
           ifelse(isTRUE(common) & !isTRUE(random),
                  abs(TE.common)^-1, abs(TE.random)^-1)
@@ -1362,7 +1449,7 @@ fitHighestModel = function(data, study.var, multi.study,
   
   # Add rob data if specified
   if (!is.null(rob.data[1])) {
-    mHighest$value = addRobData(mHighest$m, rob.data)
+    mHighest$m = addRobData(mHighest$m, rob.data)
   }
   
   return(mHighest)
@@ -1392,7 +1479,7 @@ fitCombinedModel = function(which.combine, which.combine.var,
   
   # Aggregate arm-wise or trial-wise
   if (identical(which.combine[1], "arms")){
-    if (!is.null(which.combine.var)){
+    if (!is.null(which.combine.var) && which.combine.var[1] %in% colnames(data)){
       data$study.var.comb = 
         paste(data[[study.var]],
               ifelse(is.na(data[[which.combine.var]]), "", 
@@ -1480,9 +1567,8 @@ fitCombinedModel = function(which.combine, which.combine.var,
     mCombArgs = list(
       TE = data.comb$yi,
       seTE = sqrt(data.comb$vi),
-      studlab = with(data.comb,{
-        ifelse(study %in% multi.entries,
-               study.var.comb, study)}),
+      studlab = ifelse(data.comb[[study.var]] %in% multi.entries,
+                       data.comb[["study.var.comb"]], data.comb[[study.var]]),
       data = data.comb,
       sm = .type.es,
       method.random.ci = ifelse(hakn, "HK", "classic"),
@@ -1592,10 +1678,12 @@ fitCombinedModel = function(which.combine, which.combine.var,
                "none"))
     
     # Add rho, which.combine, combine var to mComb model
-    mComb$rho = rho.within.study
-    mComb$which.combine = 
-      ifelse(identical(study.var.comb[1], "study.var.comb"), "arms", "studies")
-    mComb$which.combine.var = which.combine.var
+    if (!mComb$has.error){
+      mComb$value$rho.within.study = rho.within.study
+      mComb$value$which.combine = 
+        ifelse(identical(study.var.comb[1], "study.var.comb"), "arms", "studies")
+      mComb$value$which.combine.var = which.combine.var
+    }
     
     # Add rob data if specified
     if (!is.null(rob.data[1])) {
@@ -1635,7 +1723,7 @@ fitCombinedHACEModel = function(which.combine, which.combine.var, measure.var,
   
   # Aggregate arm-wise or trial-wise
   if (identical(which.combine[1], "arms")){
-    if (!is.null(which.combine.var)){
+    if (!is.null(which.combine.var) && which.combine.var[1] %in% colnames(data)){
       data$study.var.comb = 
         paste(data[[study.var]],
               ifelse(is.na(data[[which.combine.var]]), "", 
@@ -1719,7 +1807,9 @@ fitCombinedHACEModel = function(which.combine, which.combine.var, measure.var,
   data.che$instrument = data.che[[measure.var]]
   data.che$condition_arm1 = data.che[[arm.var.1]]
   data.che$condition_arm2 = data.che[[arm.var.2]]
-  data.che$multi_arm1 = data.che[[which.combine.var]]
+  data.che$multi_arm1 = if (!is.null(which.combine.var) && 
+                            which.combine.var[1] %in% colnames(data.che)) {
+    data.che[[which.combine.var[1]]] } else { NA }
   data.che$n_arm1 = data.che[[w1.var]]
   data.che$n_arm2 = data.che[[w2.var]]
   data.che$time_weeks = data.che[[time.var]]
@@ -1736,13 +1826,21 @@ fitCombinedHACEModel = function(which.combine, which.combine.var, measure.var,
   }) -> dat.che
   
   # Approximate Vcovs
-  metafor::vcalc(vi = V, cluster = svc, 
-                 obs = instrument, time1 = time_weeks,
-                 grp1 = vcalc_arm1, grp2 = vcalc_arm2,
-                 w1 = n_arm1, w2 = n_arm2, 
-                 rho = rho.within.study, 
-                 phi = phi.within.study, data = dat.che, 
-                 nearpd = near.pd) -> Vcov
+  tryCatch2(
+    metafor::vcalc(vi = V, cluster = svc, 
+                   obs = instrument, time1 = time_weeks,
+                   grp1 = vcalc_arm1, grp2 = vcalc_arm2,
+                   w1 = n_arm1, w2 = n_arm2, 
+                   rho = rho.within.study, 
+                   phi = phi.within.study, data = dat.che, 
+                   nearpd = near.pd)) -> Vcov
+  if (Vcov$has.error){
+    return(list(m = NA, 
+                res = NA,
+                has.error = TRUE,
+                message = Vcov$error$message))
+  }
+  Vcov = Vcov$value
   tryCatch2(
     metafor::aggregate.escalc(data, cluster = svc, V = Vcov)) -> data.comb
   
@@ -1750,7 +1848,7 @@ fitCombinedHACEModel = function(which.combine, which.combine.var, measure.var,
     return(list(m = NA, 
                 res = NA,
                 has.error = TRUE,
-                message = data.comb))
+                message = data.comb$error$message))
   } else {
     data.comb = data.comb$value
   }
@@ -1765,9 +1863,8 @@ fitCombinedHACEModel = function(which.combine, which.combine.var, measure.var,
     mCombArgs = list(
       TE = data.comb$yi,
       seTE = sqrt(data.comb$vi),
-      studlab = with(data.comb,{
-        ifelse(study %in% multi.entries,
-               study.var.comb, study)}),
+      studlab = ifelse(data.comb[[study.var]] %in% multi.entries,
+                       data.comb[["study.var.comb"]], data.comb[[study.var]]),
       data = data.comb,
       sm = .type.es,
       method.random.ci = ifelse(hakn, "HK", "classic"),
@@ -1877,10 +1974,12 @@ fitCombinedHACEModel = function(which.combine, which.combine.var, measure.var,
                "none"))
     
     # Add rho, which.combine, combine var to mComb model
-    mComb$rho = rho.within.study
-    mComb$which.combine = 
-      ifelse(identical(study.var.comb[1], "study.var.comb"), "arms", "studies")
-    mComb$which.combine.var = which.combine.var
+    if (!mComb$has.error){
+      mComb$value$rho.within.study = rho.within.study
+      mComb$value$which.combine = 
+        ifelse(identical(study.var.comb[1], "study.var.comb"), "arms", "studies")
+      mComb$value$which.combine.var = which.combine.var
+    }
     
     # Add rob data if specified
     if (!is.null(rob.data[1])) {
@@ -2209,7 +2308,7 @@ fitRobModel = function(which.run, which.rob, which.outliers,
   
   if (which.rob[1] %in% c("general", "overall")){
     if (is.null(mGeneral)) {
-      stop("If which.influence = 'overall', the 'overall' model must be",
+      stop("If which.rob = 'overall', the 'overall' model must be",
            " included in which.run.", call. = FALSE)
     }
     m.for.rob = mGeneral$m
@@ -2218,7 +2317,7 @@ fitRobModel = function(which.run, which.rob, which.outliers,
   
   if (which.rob[1] == "combined"){
     if (is.null(mComb)) {
-      stop("If which.influence = 'overall', the 'overall' model must be",
+      stop("If which.rob = 'combined', the 'combined' model must be",
            " included in which.run.", call. = FALSE)
     }
     m.for.rob = mComb$m
@@ -2226,20 +2325,12 @@ fitRobModel = function(which.run, which.rob, which.outliers,
   }
   
   if (!(which.rob[1] %in% c("general", "combined", "overall"))){
-    stop("'which.rob' must either be 'general' or 'combined'.")
+    stop("'which.rob' must either be 'overall' or 'combined'.")
   }
   
   if ("rob" %in% which.run){
-    robVar = strsplit(low.rob.filter, " ")[[1]][1]
-    if (!robVar %in% colnames(data.for.rob)){
-      stop("'", robVar, 
-           "' variable not found in data to conduct analyses with low RoB only.",
-           call. = FALSE)
-    }
-    
-    robFilter = paste0("data.for.rob$", low.rob.filter, 
-                       " & !is.na(data.for.rob$", robVar, ")")
-    robMask = eval(parse(text = robFilter))
+    robMask = evalRobFilter(low.rob.filter, data.for.rob, 
+                            "data to conduct analyses with low RoB only")
     if (sum(robMask) == 0){
       message("\n- ", crayon::yellow("[!] "), 
               "No low risk of bias studies detected! ",
@@ -2284,7 +2375,7 @@ fitRobModel = function(which.run, which.rob, which.outliers,
       data.frame(
         k = k,
         g = ifelse(
-          isTRUE(common) & isTRUE(common), 
+          isTRUE(common) & !isTRUE(random), 
           TE.common, TE.random) %>% 
           ifelse(identical(.type.es, "RR"), exp(.), .) %>% 
           round(round.digits),
@@ -2666,7 +2757,7 @@ fitThreeLevelModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
                      excluded = "none")})
     } else {
       # Get results: RVE used
-      crit = qt(0.025, mThreeLevel$value$ddf[[1]], lower.tail = FALSE)
+      crit = critPI(mThreeLevel$value)
       tau2 = sum(mThreeLevel$value$sigma2)
       SE = clubSandwich::conf_int(mThreeLevel$value, vcov = "CR2")[["SE"]]
       pi.lb.rve = 
@@ -2808,11 +2899,9 @@ fitThreeLevelCHEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
   data.che = data
   data.che$TE = mGeneral$m[["TE"]]
   
-  Vmat = clubSandwich::impute_covariance_matrix(
-    mGeneral$m[["seTE"]]^2,
-    cluster = data[[study.var]],
-    r = rho.within.study,
-    smooth_vi = TRUE)
+  Vmat = imputeCheV(mGeneral$m[["seTE"]]^2,
+                    cluster = data[[study.var]],
+                    r = rho.within.study)
   
   mCHEArgs = list(
     formula.fixed,
@@ -2870,11 +2959,9 @@ fitThreeLevelCHEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
     }) %>% 
       do.call(rbind, .) -> data.g
     
-    Vmat.g = clubSandwich::impute_covariance_matrix(
-      data.g$se^2,
-      cluster = data.che[[study.var]],
-      r = rho.within.study,
-      smooth_vi = TRUE)
+    Vmat.g = imputeCheV(data.g$se^2,
+                        cluster = data.che[[study.var]],
+                        r = rho.within.study)
     
     data.che$TE = data.g$es
     tryCatch2(
@@ -3117,7 +3204,7 @@ fitThreeLevelCHEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
                    excluded = "none")
     } else {
       # Get results: RVE used
-      crit = qt(0.025, mCHE$value$ddf[[1]], lower.tail = FALSE)
+      crit = critPI(mCHE$value)
       tau2 = sum(mCHE$value$sigma2)
       SE = clubSandwich::conf_int(mCHE$value, vcov = "CR2")[["SE"]]
       pi.lb.rve = clubSandwich::conf_int(mCHE$value, "CR2")[["beta"]] -
@@ -3263,7 +3350,9 @@ fitThreeLevelHACEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
   data.che$instrument = data.che[[measure.var]]
   data.che$condition_arm1 = data.che[[arm.var.1]]
   data.che$condition_arm2 = data.che[[arm.var.2]]
-  data.che$multi_arm1 = data.che[[which.combine.var]]
+  data.che$multi_arm1 = if (!is.null(which.combine.var) && 
+                            which.combine.var[1] %in% colnames(data.che)) {
+    data.che[[which.combine.var[1]]] } else { NA }
   data.che$n_arm1 = data.che[[w1.var]]
   data.che$n_arm2 = data.che[[w2.var]]
   data.che$time_weeks = data.che[[time.var]]
@@ -3610,7 +3699,7 @@ fitThreeLevelHACEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
                    excluded = "none")
     } else {
       # Get results: RVE used
-      crit = qt(0.025, mCHE$value$ddf[[1]], lower.tail = FALSE)
+      crit = critPI(mCHE$value)
       tau2 = sum(mCHE$value$sigma2)
       SE = clubSandwich::conf_int(mCHE$value, vcov = "CR2")[["SE"]]
       pi.lb.rve = clubSandwich::conf_int(mCHE$value, "CR2")[["beta"]] -
@@ -3982,7 +4071,7 @@ fitCcremModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
                                    round(round.digits), "]"),
                    p = pval %>% scales::pvalue(),
                    i2 = round(I2, 1),
-                   i2.ci = ifelse(has.bs, variance.components$i2.ci[3], "-"),
+                   i2.ci = ifelse(has.bs, variance.components$i2.ci[4], "-"),
                    prediction.ci = paste0("[", 
                                           round(predict(mCcrem$value)$pi.lb %>% 
                                                   ifelse(identical(.type.es, "RR"), exp(.), .), 
@@ -4040,7 +4129,7 @@ fitCcremModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
                      excluded = "none")})
     } else {
       # Get results: RVE used
-      crit = qt(0.025, mCcrem$value$ddf[[1]], lower.tail = FALSE)
+      crit = critPI(mCcrem$value)
       tau2 = sum(mCcrem$value$sigma2)
       cluster.var = mCcrem$value$data[[study.var]]
       # Obtain CR1-cluster robust values
@@ -4188,11 +4277,9 @@ fitCcremCHEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
   data.che = data
   data.che$TE = mGeneral$m[["TE"]]
   
-  Vmat = clubSandwich::impute_covariance_matrix(
-    mGeneral$m[["seTE"]]^2,
-    cluster = data[[study.var]],
-    r = rho.within.study,
-    smooth_vi = TRUE)
+  Vmat = imputeCheV(mGeneral$m[["seTE"]]^2,
+                    cluster = data[[study.var]],
+                    r = rho.within.study)
   
   mCHEArgs = list(
     formula.fixed,
@@ -4250,11 +4337,9 @@ fitCcremCHEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
     }) %>% 
       do.call(rbind, .) -> data.g
     
-    Vmat.g = clubSandwich::impute_covariance_matrix(
-      data.g$se^2,
-      cluster = data.che[[study.var]],
-      r = rho.within.study,
-      smooth_vi = TRUE)
+    Vmat.g = imputeCheV(data.g$se^2,
+                        cluster = data.che[[study.var]],
+                        r = rho.within.study)
     
     data.che$TE = data.g$es
     tryCatch2(
@@ -4510,7 +4595,7 @@ fitCcremCHEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
                    excluded = "none")
     } else {
       # Get results: RVE used
-      crit = qt(0.025, mCHE$value$ddf[[1]], lower.tail = FALSE)
+      crit = critPI(mCHE$value)
       tau2 = sum(mCHE$value$sigma2)
       cluster.var = mCHE$value$data[[study.var]]
       SE = metafor::robust(mCHE$value, cluster=cluster.var)[["se"]]
@@ -4519,7 +4604,7 @@ fitCcremCHEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
       pi.ub.rve = as.numeric(mCHE$value[["b"]]) +
         crit * sqrt(tau2 + (SE^2))
       if (isTRUE(.raw.bin.es)){
-        as.numeric(mCHE$value[["b"]]) %>% 
+        as.numeric(mCHE.g$value[["b"]]) %>% 
           {ifelse(.==0, Inf, metapsyNNT(abs(.), cer))} -> nnt.g
       }
       mCHERes.RVE = with(mCHE$value, {
@@ -4660,7 +4745,9 @@ fitCcremHACEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
   data.che$instrument = data.che[[measure.var]]
   data.che$condition_arm1 = data.che[[arm.var.1]]
   data.che$condition_arm2 = data.che[[arm.var.2]]
-  data.che$multi_arm1 = data.che[[which.combine.var]]
+  data.che$multi_arm1 = if (!is.null(which.combine.var) && 
+                            which.combine.var[1] %in% colnames(data.che)) {
+    data.che[[which.combine.var[1]]] } else { NA }
   data.che$n_arm1 = data.che[[w1.var]]
   data.che$n_arm2 = data.che[[w2.var]]
   data.che$time_weeks = data.che[[time.var]]
@@ -4967,7 +5054,7 @@ fitCcremHACEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
                                    round(round.digits), "]"),
                    p = pval %>% scales::pvalue(),
                    i2 = round(I2, 1),
-                   i2.ci = ifelse(has.bs, variance.components$i2.ci[3], "-"),
+                   i2.ci = ifelse(has.bs, variance.components$i2.ci[4], "-"),
                    prediction.ci = paste0(
                      "[", 
                      round(predict(mCHE$value)$pi.lb %>% 
@@ -5020,7 +5107,7 @@ fitCcremHACEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
                    excluded = "none")
     } else {
       # Get results: RVE used
-      crit = qt(0.025, mCHE$value$ddf[[1]], lower.tail = FALSE)
+      crit = critPI(mCHE$value)
       tau2 = sum(mCHE$value$sigma2)
       cluster.var = mCHE$value$data[[study.var]]
       SE = metafor::robust(mCHE$value, cluster=cluster.var)[["se"]]
@@ -5029,7 +5116,7 @@ fitCcremHACEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
       pi.ub.rve = as.numeric(mCHE$value[["b"]]) +
         crit * sqrt(tau2 + (SE^2))
       if (isTRUE(.raw.bin.es)){
-        as.numeric(mCHE$value[["b"]]) %>% 
+        as.numeric(mCHE.g$value[["b"]]) %>% 
           {ifelse(.==0, Inf, metapsyNNT(abs(.), cer))} -> nnt.g
       }
       mCHERes.RVE = with(mCHE$value, {
@@ -5075,7 +5162,7 @@ fitCcremHACEModel = function(data, es.var, se.var, arm.var.1, arm.var.2,
     mCHERes = mCHERes.RVE
     sendMessage(mCHE, "ccrem.che")
     
-    if (length(multi.study) == 0 & "threelevel.che" %in% which.run){
+    if (length(multi.study) == 0 & "ccrem.che" %in% which.run){
       message("\n- ", crayon::yellow("[!] "), 
               "All included ES seem to be independent.",
               " A CCREM CHE model is not adequate and ",
@@ -5142,7 +5229,7 @@ fitWaapWlsModel = function(which.run, which.waap.wls,
   }
   
   if (!(which.waap.wls[1] %in% c("general", "combined", "overall"))){
-    stop("'which.waap.wls' must either be 'general' or 'combined'.")
+    stop("'which.waap.wls' must either be 'overall' or 'combined'.")
   }
   
   if ("waap.wls" %in% which.run){
@@ -5170,7 +5257,8 @@ fitWaapWlsModel = function(which.run, which.waap.wls,
         tryCatch2({
           meta::metagen(te[powered], 
                         se[powered],
-                        method.tau = method.tau)
+                        method.tau = ifelse(identical(method.tau, "FE"), 
+                                            "REML", method.tau))
         }) -> Mi2
         if (!Mi2$has.error) {
           mWaapWls$i2 = Mi2$value$I2
@@ -5195,7 +5283,8 @@ fitWaapWlsModel = function(which.run, which.waap.wls,
         tryCatch2({
           meta::metagen(te, 
                         se,
-                        method.tau = method.tau)
+                        method.tau = ifelse(identical(method.tau, "FE"), 
+                                            "REML", method.tau))
         }) -> Mi2
         if (!Mi2$has.error) {
           mWaapWls$i2 = Mi2$value$I2
@@ -5218,8 +5307,11 @@ fitWaapWlsModel = function(which.run, which.waap.wls,
     
   } 
   if (isTRUE(.raw.bin.es) && !mWaapWls$has.error) {
+    # NNT for the effect sizes that are actually used in the WAAP/WLS model
+    waap.exclude = if (identical(mWaapWls$value$type, "waap")) {
+      !mWaapWls$value$powered } else { rep(FALSE, length(m.for.waap.wls$TE)) }
     with(updateMeta(
-      mGeneral$m, sm="RD",
+      m.for.waap.wls, sm="RD", exclude = waap.exclude,
       cluster = NULL), {
         ifelse(isTRUE(common) & !isTRUE(random),
                abs(TE.common)^-1, abs(TE.random)^-1)
@@ -5281,6 +5373,8 @@ fitWaapWlsModel = function(which.run, which.waap.wls,
   return(list(m = mWaapWls$value, 
               res = mWaapWlsRes,
               has.error = mWaapWls$has.error,
+              which.waap.wls = ifelse(which.waap.wls[1] == "combined", 
+                                      "combined", "overall"),
               message = mWaapWls$error$message))
 }
 
@@ -5379,49 +5473,33 @@ adaptPlogit = function(M, use.rve, round.digits = round.digits,
     return(M)
   } 
   if (class(M$m)[1]=="rma.mv") {
-    if (use.rve) {
-      if (clubsandwich) {
-        crit = qt(0.025, M$m$ddf[[1]], lower.tail = FALSE)
-        tau2 = sum(M$m$sigma2)
-        SE = clubSandwich::conf_int(M$m, vcov = "CR2")[["SE"]]
-        pi.lb.rve = clubSandwich::conf_int(M$m, "CR2")[["beta"]] -
-          crit * sqrt(tau2 + (SE^2))
-        pi.ub.rve = clubSandwich::conf_int(M$m, "CR2")[["beta"]] +
-          crit * sqrt(tau2 + (SE^2))
-        M$res$g = as.numeric(clubSandwich::conf_int(M$m, "CR2")[["beta"]]) %>% plogis() %>% round(round.digits)
-        M$res$g.ci = paste0("[", clubSandwich::conf_int(M$m, "CR2")[["CI_L"]] %>% plogis() %>% round(round.digits), "; ",
-                            clubSandwich::conf_int(M$m, "CR2")[["CI_U"]] %>% plogis() %>% round(round.digits), "]")
-        M$res$nnt = "-"; M$res$p = "-"
-        M$res$prediction.ci = paste0("[", round(pi.lb.rve %>% plogis(), round.digits), "; ", 
-                                     round(pi.ub.rve %>% plogis(), round.digits), "]")
-      } else {
-        crit = qt(0.025, M$m$ddf[[1]], lower.tail = FALSE)
-        tau2 = sum(M$m$sigma2)
-        cluster.var = M$m$data[[study.var]]
-        SE = metafor::robust(M$m, cluster=cluster.var)[["se"]]
-        pi.lb.rve = M$m$b[,1][[1]] - crit * sqrt(tau2 + (SE^2))
-        pi.ub.rve = M$m$b[,1][[1]] + crit * sqrt(tau2 + (SE^2))
-        M$res$g = M$m[["b"]] %>% plogis() %>% round(round.digits)
-        M$res$g.ci = paste0("[", M$m$ci.lb %>% plogis() %>% round(round.digits), "; ",
-                            M$m$ci.ub %>% plogis() %>% round(round.digits), "]")
-        M$res$nnt = "-"; M$res$p = "-"
-        M$res$prediction.ci = paste0("[", round(pi.lb.rve %>% plogis(), round.digits), "; ", 
-                                     round(pi.ub.rve %>% plogis(), round.digits), "]")
-      }
+    tau2 = sum(M$m$sigma2)
+    crit = critPI(M$m)
+    if (use.rve && clubsandwich) {
+      # three-level models: CR2 estimator (as in the fitted summary)
+      ci = clubSandwich::conf_int(M$m, "CR2")
+      est = as.numeric(ci[["beta"]]); ci.lb = ci[["CI_L"]]; ci.ub = ci[["CI_U"]]
+      SE = ci[["SE"]]
+      pi.lb = est - crit * sqrt(tau2 + SE^2)
+      pi.ub = est + crit * sqrt(tau2 + SE^2)
+    } else if (use.rve) {
+      # CCREM models: CR1 estimator, clustered on studies (as in the fitted summary)
+      r = robustCcrem(M$m, study.var)
+      est = as.numeric(M$m$b); ci.lb = r$ci.lb; ci.ub = r$ci.ub
+      pi.lb = est - crit * sqrt(tau2 + r$se^2)
+      pi.ub = est + crit * sqrt(tau2 + r$se^2)
     } else {
-      crit = qt(0.025, M$m$ddf[[1]], lower.tail = FALSE)
-      tau2 = sum(M$m$sigma2)
-      cluster.var = M$m$data[[study.var]]
-      SE = metafor::robust(M$m, cluster=cluster.var)[["se"]]
-      pi.lb.rve = M$m$b[,1][[1]] - crit * sqrt(tau2 + (SE^2))
-      pi.ub.rve = M$m$b[,1][[1]] + crit * sqrt(tau2 + (SE^2))
-      M$res$g = M$m[["b"]] %>% plogis() %>% round(round.digits)
-      M$res$g.ci = paste0("[", M$m$ci.lb %>% plogis() %>% round(round.digits), "; ",
-                          M$m$ci.ub %>% plogis() %>% round(round.digits), "]")
-      M$res$nnt = "-"; M$res$p = "-"
-      M$res$prediction.ci = paste0("[", round(pi.lb.rve %>% plogis(), round.digits), "; ", 
-                                   round(pi.ub.rve %>% plogis(), round.digits), "]")
+      # no RVE: model-based inference
+      pr = predict(M$m)
+      est = as.numeric(M$m$b); ci.lb = M$m$ci.lb; ci.ub = M$m$ci.ub
+      pi.lb = pr$pi.lb; pi.ub = pr$pi.ub
     }
+    M$res$g = plogis(est) %>% round(round.digits)
+    M$res$g.ci = paste0("[", plogis(ci.lb) %>% round(round.digits), "; ",
+                        plogis(ci.ub) %>% round(round.digits), "]")
+    M$res$nnt = "-"; M$res$p = "-"
+    M$res$prediction.ci = paste0("[", plogis(pi.lb) %>% round(round.digits), "; ", 
+                                 plogis(pi.ub) %>% round(round.digits), "]")
     return(M)
   }
   if (class(M$m)[1]=="lm") {
@@ -5457,6 +5535,19 @@ adaptPlogit = function(M, use.rve, round.digits = round.digits,
     rownames(M$res) = rownames
     return(M)
   } 
+  # Failed models carry no model object that could be adapted
+  return(M)
+}
+
+
+#' Cluster-robust inference for CCREM models (CR1 estimator)
+#' 
+#' `metafor::robust` evaluates its `cluster` argument non-standardly; this helper
+#' calls it directly in a frame in which the cluster variable can be found.
+#' @keywords internal
+robustCcrem = function(m, study.var){
+  cluster.var = m$data[[study.var]]
+  metafor::robust(m, cluster = cluster.var)
 }
 
 
@@ -5469,41 +5560,103 @@ adaptRom = function(M, round.digits = 2) {
   M$m$sm = "RR"
   r = M$res
   if (!("g" %in% colnames(r))) return(M)
-  # Exponentiate point estimate
-  rom = round(exp(as.numeric(r$g)), round.digits)
-  # Parse and exponentiate g.ci "[lb; ub]"
-  rom.ci = if ("g.ci" %in% colnames(r)) {
-    vapply(seq_len(nrow(r)), function(i) {
-      s = r$g.ci[i]
-      x = as.numeric(strsplit(stringr::str_replace_all(s, "\\[|\\]|;", " "), "\\s+")[[1]])
+  # Parse "[lb; ub]" strings, transform with `f`, round
+  fmt.ci = function(s, f) {
+    vapply(s, function(z) {
+      x = suppressWarnings(as.numeric(strsplit(
+        stringr::str_replace_all(z, "\\[|\\]|;", " "), "\\s+")[[1]]))
       x = x[!is.na(x) & is.finite(x)]
-      if (length(x) >= 2) paste0("[", round(exp(x[1]), round.digits), "; ", round(exp(x[2]), round.digits), "]") else s
-    }, character(1))
-  } else rep(NA_character_, nrow(r))
-  # Parse and exponentiate prediction.ci
-  prediction.ci = if ("prediction.ci" %in% colnames(r)) {
-    vapply(seq_len(nrow(r)), function(i) {
-      s = r$prediction.ci[i]
-      x = as.numeric(strsplit(stringr::str_replace_all(s, "\\[|\\]|;", " "), "\\s+")[[1]])
-      x = x[!is.na(x) & is.finite(x)]
-      if (length(x) >= 2) paste0("[", round(exp(x[1]), round.digits), "; ", round(exp(x[2]), round.digits), "]") else s
-    }, character(1))
-  } else r$prediction.ci
-  # Build result in standard order so rbind/summary columns align
+      if (length(x) >= 2) {
+        paste0("[", round(f(x[1]), round.digits), "; ", 
+               round(f(x[2]), round.digits), "]")
+      } else { z }
+    }, character(1), USE.NAMES = FALSE)
+  }
+  # The models were fitted with a high number of digits, so that the
+  # back-transformation is not based on rounded values.
   M$res = data.frame(
     k = r$k,
-    rom = rom,
-    rom.ci = rom.ci,
+    rom = round(exp(as.numeric(r$g)), round.digits),
+    rom.ci = if ("g.ci" %in% colnames(r)) fmt.ci(r$g.ci, exp) else rep(NA_character_, nrow(r)),
     p = r$p,
-    i2 = r$i2,
-    i2.ci = r$i2.ci,
-    prediction.ci = prediction.ci,
+    i2 = round(suppressWarnings(as.numeric(r$i2)), 2),
+    i2.ci = if ("i2.ci" %in% colnames(r)) fmt.ci(r$i2.ci, identity) else NA,
+    prediction.ci = if ("prediction.ci" %in% colnames(r)) fmt.ci(r$prediction.ci, exp) else NA,
     nnt = "-",
     excluded = r$excluded,
     stringsAsFactors = FALSE
   )
   rownames(M$res) = rownames(r)
+  # Bootstrap CIs of multilevel models are stored as strings too
+  vc = M$m$variance.components
+  if (is.data.frame(vc)) {
+    if ("tau2.ci" %in% colnames(vc)) vc$tau2.ci = fmt.ci(vc$tau2.ci, identity)
+    if ("i2.ci" %in% colnames(vc)) vc$i2.ci = fmt.ci(vc$i2.ci, identity)
+    M$m$variance.components = vc
+  }
   M
+}
+
+
+#' Print a results table to the console
+#' 
+#' Prints all rows and columns, irrespective of the console width and whether
+#' the console supports colored output.
+#' @keywords internal
+printResultTable = function(x){
+  x = as.data.frame(x, stringsAsFactors = FALSE, optional = TRUE)
+  cols = lapply(seq_along(x), function(i){
+    v = x[[i]]
+    is.num = is.numeric(v)
+    v = as.character(v)
+    v[is.na(v)] = "-"
+    attr(v, "num") = is.num
+    v
+  })
+  header = names(x)
+  width = mapply(function(v, h) max(nchar(c(v, h), type = "width")), cols, header)
+  pad = function(v, w, right) {
+    formatC(v, width = if (right) w else -w, flag = " ")
+  }
+  head.line = paste(mapply(function(h, v, w) pad(h, w, isTRUE(attr(v, "num"))), 
+                           header, cols, width), collapse = "  ")
+  cat(crayon::bold(head.line), "\n", sep = "")
+  for (i in seq_len(nrow(x))){
+    cat(paste(mapply(function(v, w) pad(v[i], w, isTRUE(attr(v, "num"))), 
+                     cols, width), collapse = "  "), "\n", sep = "")
+  }
+  invisible(x)
+}
+
+
+#' Pooled effect, confidence and prediction interval of multilevel models
+#' 
+#' Implements the same inference as shown in the summary table: model-based if 
+#' `use.rve` is `FALSE`, the CR2 estimator for three-level (CHE) models, and the CR1 
+#' estimator, clustered on studies, for CCREMs (for which clubSandwich cannot detect
+#' the clustering structure).
+#' @keywords internal
+#' @importFrom stats predict
+multilevelInference = function(m, use.rve = TRUE){
+  est = as.numeric(m$b)
+  tau2 = sum(m$sigma2)
+  crit = critPI(m)
+  is.ccrem = length(m$sigma2) > 2
+  if (!isTRUE(use.rve[1])) {
+    pr = predict(m)
+    return(list(est = est, ci.lb = m$ci.lb, ci.ub = m$ci.ub, 
+                pi.lb = pr$pi.lb, pi.ub = pr$pi.ub))
+  }
+  if (is.ccrem) {
+    r = robustCcrem(m, m$s.names[1])
+    se = r$se; ci.lb = r$ci.lb; ci.ub = r$ci.ub
+  } else {
+    ci = clubSandwich::conf_int(m, "CR2")
+    se = ci[["SE"]]; ci.lb = ci[["CI_L"]]; ci.ub = ci[["CI_U"]]
+  }
+  list(est = est, ci.lb = ci.lb, ci.ub = ci.ub,
+       pi.lb = est - crit*sqrt(tau2 + se^2),
+       pi.ub = est + crit*sqrt(tau2 + se^2))
 }
 
 
@@ -5708,6 +5861,21 @@ addAllCombinations =
 
 
 
+#' Add effect size columns needed for BLUP calculations to the model data
+#' 
+#' `metabin` models do not store `.TE` and `.seTE` in `$data`, so these are always 
+#' taken from the model itself.
+#' @keywords internal 
+blupData = function(M){
+  d = M$data
+  d$.TE = M$TE
+  d$.seTE = M$seTE
+  d$.studlab = M$studlab
+  if (!is.null(M$exclude)) d = d[!M$exclude,]
+  d
+}
+
+
 #' Function to generate forest plots with EB estimates
 #' @importFrom crayon green yellow
 #' @importFrom dplyr select ends_with filter group_map group_by
@@ -5745,7 +5913,7 @@ forestBlup = function(model, which = NULL, col.line = "#a7a9ac",
   
   
   if (which.run %in% c("trimfill", "limitmeta", "selection")){
-    stop("Forest plots with empirical Bayes estimates or not supported for '",
+    stop("Forest plots with empirical Bayes estimates are not supported for '",
          which.run, "' models.")
   }
   
@@ -5782,9 +5950,7 @@ forestBlup = function(model, which = NULL, col.line = "#a7a9ac",
     
     # Generate "lowest" plot
     M = model[models[[which.run[1]]]][[1]]
-    if (!is.null(M$exclude)){
-      M$data = M$data[!M$exclude,]
-    }
+    M$data = blupData(M)
     dat = escalc(yi=.TE, sei=.seTE, data = M$data)
     res = metafor::rma(yi = .TE, sei = .seTE, dat = dat, slab = .studlab,
                        method = M$method.tau, test = ifelse(M$hakn, "knha", "z"))
@@ -5795,9 +5961,7 @@ forestBlup = function(model, which = NULL, col.line = "#a7a9ac",
     
     # Generate "highest" plot
     M = model[models[[which.run[1]]]][[2]]
-    if (!is.null(M$exclude)){
-      M$data = M$data[!M$exclude,]
-    }
+    M$data = blupData(M)
     dat = escalc(yi=.TE, sei=.seTE, data = M$data)
     res = metafor::rma(yi = .TE, sei = .seTE, dat = dat, slab = .studlab,
                        method = M$method.tau, test = ifelse(M$hakn, "knha", "z"))
@@ -5809,9 +5973,7 @@ forestBlup = function(model, which = NULL, col.line = "#a7a9ac",
   } else {
     
     M = model[models[[which.run[1]]]][[1]]
-    if (!is.null(M$exclude)){
-      M$data = M$data[!M$exclude,]
-    }
+    M$data = blupData(M)
     if (threeLevel) {
       M.3l = model[models[[whichThreeLevel[1]]]][[1]]
     }
@@ -6412,7 +6574,11 @@ robSummary = function (data, name.high = "High", name.unclear = "Unclear",
         }
       }
     }
-    rob = data[, as.logical(colnames.rob)]
+    rob = data[, as.logical(colnames.rob), drop = FALSE]
+    if (ncol(rob) == 0) {
+      stop("None of the risk of bias domains contain the specified ratings (only).",
+           " Check 'name.low', 'name.high' and 'name.unclear'.", call. = FALSE)
+    }
     for (i in 1:ncol(rob)) {
       rob[, i] = as.character(rob[, i])
       rob[rob[, i] == name.high, i] = "High"
@@ -6463,7 +6629,7 @@ robSummary = function (data, name.high = "High", name.unclear = "Unclear",
     rob.long$condition = gsub("\\.", " ", rob.long$condition)
     rob.long$measurement = as.factor(rob.long$measurement)
     rob.long$measurement = factor(rob.long$measurement,
-                                  levels(rob.long$measurement)[c(1, 3, 2)])
+                                  levels = c("High", "Unclear", "Low"))
     rob.plot = ggplot(data = rob.long) +
       geom_bar(mapping = aes(x = condition, fill = measurement),
                width = 0.7, position = "fill", color = "black") +
@@ -6509,7 +6675,11 @@ robSummary = function (data, name.high = "High", name.unclear = "Unclear",
         }
       }
     }
-    rob = data[, as.logical(colnames.rob)]
+    rob = data[, as.logical(colnames.rob), drop = FALSE]
+    if (ncol(rob) == 0) {
+      stop("None of the risk of bias domains contain the specified ratings (only).",
+           " Check 'name.low', 'name.high' and 'name.unclear'.", call. = FALSE)
+    }
     for (i in 1:ncol(rob)) {
       rob[, i] = as.character(rob[, i])
       rob[rob[, i] == name.high, i] = "High"

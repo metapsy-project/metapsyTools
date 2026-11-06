@@ -48,8 +48,9 @@
 #' @param include.switched.arms \code{logical}. Should all unique arm \emph{comparisons} (in lieu of unique arm \emph{combinations}) be
 #' calculated? Default is \code{FALSE}. 
 #' @param change.sign \code{character}. Name of a \code{logical} column in \code{data}, encoding if the
-#' sign of a calculated effect size should be reversed (\code{TRUE}) or not (\code{FALSE}). Set to \code{NULL} (default) if
-#' no changes should be made.
+#' sign of a calculated effect size should be reversed (\code{TRUE}) or not (\code{FALSE}). Missing values are treated as
+#' \code{FALSE}. Set to \code{NULL} (default) if no changes should be made. This only applies to \code{.g}; 
+#' risk ratios and ratios of means are not affected.
 #' @param impute.response `logical`. When calculating the (log)-risk ratios, should response rates be computed
 #' using the \code{\link[metapsyTools]{imputeResponse}} function? `FALSE` by default. If defined, the column specified in `change.sign`
 #' will also be considered when calculating the response.
@@ -92,7 +93,7 @@
 #' 
 #' @return \code{calculateEffectSizes} returns the meta-analysis data set as 
 #' class \code{data.frame} in wide format (if results are saved to a variable). 
-#' It also generates the following columns, wich are added to the data:
+#' It also generates the following columns, which are added to the data:
 #' 
 #' - `.id`: Unique identifier for a trial arm comparison/row.
 #' - `.g`: Calculated effect size (Hedges' _g_).
@@ -125,6 +126,21 @@
 #' small-sample bias corrected standardized mean difference  (Hedges' _g_)
 #' and log-risk ratios, as well their respective standard errors, if 
 #' adequate raw effect size data is available for a comparison.
+#' 
+#' **Effect size direction.** Effects are calculated as `arm1` versus `arm2`. A negative `.g` means that 
+#' the mean in the first arm is lower than in the second arm, or that _more_ events occurred in the first 
+#' arm (e.g. when the event is treatment response). A log-risk ratio greater than zero means that more events occurred 
+#' in the first arm. Thus, if lower scores indicate better outcomes and events are 
+#' beneficial, negative values of `.g` and positive values of `.log_rr` both favor the first arm. 
+#' Use `change.sign` for outcomes where higher values are better.
+#' 
+#' **Standard errors of _g_.** The bias correction is applied to the effect size, while the standard error is 
+#' based on the variance of the uncorrected standardized mean difference, as implemented in 
+#' [esc::esc_mean_sd()]. In small samples, this makes the standard error slightly more conservative than 
+#' when also multiplying it by the correction factor.
+#' 
+#' Existing `.g`, `.g_se`, `.log_rr`, `.log_rr_se`, `.log_rom` and `.log_rom_se` columns in `data` are replaced.
+#' Pre-calculated values should be provided in the `precalc_` columns described below.
 #' 
 #' It is essential that the data set in `data` contains a few required columns
 #' for this to work. An overview of the required data format is provided
@@ -274,7 +290,17 @@ calculateEffectSizes = function(data,
     stop("Data format conflicts were detected. Run 'checkConflicts' to diagnose potential problems.")
   }
   
+  # Old column names are not used for the calculations
+  legacy.change = grep("^change_(m|sd|n)_arm(1|2)$", colnames(data), value = TRUE)
+  if (length(legacy.change) > 0 && !"mean_change_arm1" %in% colnames(data)){
+    message("- ", crayon::yellow("[!] "), 
+            "Column(s) ", paste(legacy.change, collapse = ", "), 
+            " will not be used. Change score data must be provided in 'mean_change_arm1',",
+            " 'mean_change_arm2', 'sd_change_arm1', 'sd_change_arm2', 'n_change_arm1', and 'n_change_arm2'.")
+  }
+  
   # Remove metapsyTools variables, if they exist
+  g.supplied = data[[".g"]]
   within(data, {
     .g = NULL
     .g_se = NULL
@@ -382,8 +408,7 @@ calculateEffectSizes = function(data,
   }
   
   # Check if all functions could be applied
-  es.res %>% purrr::map(~class(.)) %>%
-    unlist() %>% {. == "try-error"} -> error.mask
+  error.mask = vapply(es.res, function(e) inherits(e, "try-error"), logical(1))
   
   es.res = do.call(cbind, es.res[!error.mask])
   
@@ -409,7 +434,8 @@ calculateEffectSizes = function(data,
   
   # Change sign
   if (!is.null(change.sign)){
-    change.mask = ifelse(as.logical(dat.final[[change.sign]]), -1, 1)
+    # Missing values in the column mean that the sign is not reversed
+    change.mask = ifelse(as.logical(dat.final[[change.sign]]) %in% TRUE, -1, 1)
     dat.final$.g = dat.final$.g * change.mask
   }
   
@@ -424,7 +450,7 @@ calculateEffectSizes = function(data,
   if (impute.response[1]) {
     if (is.null(change.sign)) {data$change.sign = FALSE; change.sign = "change.sign"}
     purrr::map2_dfr(split(data, seq(nrow(data))), 
-                    as.list(as.logical(data[[change.sign]])),
+                    as.list(as.logical(data[[change.sign]]) %in% TRUE),
                     function(x,y){
                       imputeResponse(m.trt.pre = x[[.impute.response.vars["m.trt.pre"]]], 
                                      m.trt.post = x[[.impute.response.vars["m.trt.post"]]],
@@ -433,7 +459,7 @@ calculateEffectSizes = function(data,
                                      lower.is.better = ifelse(y,FALSE,TRUE)) %>% 
                         suppressMessages()}) -> imp.response.trt
     purrr::map2_dfr(split(data, seq(nrow(data))), 
-                    as.list(as.logical(data[[change.sign]])),
+                    as.list(as.logical(data[[change.sign]]) %in% TRUE),
                     function(x,y){
                       imputeResponse(m.trt.pre = x[[.impute.response.vars["m.ctr.pre"]]], 
                                      m.trt.post = x[[.impute.response.vars["m.ctr.post"]]],
@@ -458,8 +484,7 @@ calculateEffectSizes = function(data,
   }
   
   # Check if all functions could be applied
-  es.res %>% purrr::map(~class(.)) %>%
-    unlist() %>% {. == "try-error"} -> error.mask
+  error.mask = vapply(es.res, function(e) inherits(e, "try-error"), logical(1))
 
   es.res = do.call(cbind, es.res[!error.mask])
   
@@ -618,16 +643,38 @@ calculateEffectSizes = function(data,
   dat.final[is.na(dat.final[[".g_se"]]), ".g"] = NA
   dat.final[is.na(dat.final[[".g"]]), ".g_se"] = NA
   dat.final[is.na(dat.final[[".log_rr_se"]]), ".log_rr"] = NA
-  dat.final[is.na(dat.final[[".log_rr_se"]]), ".log_rr_se"] = NA
+  dat.final[is.na(dat.final[[".log_rr"]]), ".log_rr_se"] = NA
   if (calculate.rom[1] && ".log_rom_se" %in% colnames(dat.final)) {
     dat.final[is.na(dat.final[[".log_rom_se"]]), ".log_rom"] = NA
     dat.final[is.na(dat.final[[".log_rom"]]), ".log_rom_se"] = NA
   }
   
   
+  # Supplied values are replaced; report if this changes results
+  if (is.numeric(g.supplied)){
+    g.changed = !is.na(g.supplied) & 
+      (is.na(dat.final[[".g"]]) | abs(g.supplied - dat.final[[".g"]]) > 1e-6)
+    if (sum(g.changed) > 0){
+      message("- ", crayon::yellow("[!] "), 
+              "Existing values in '.g' were replaced by different newly calculated values or NA in ",
+              sum(g.changed), " row(s). To keep pre-calculated effects, provide them in",
+              " 'precalc_g' and 'precalc_g_se'.")
+    }
+  }
+  
+  # Report rows for which no effect size could be calculated
+  no.es = is.na(dat.final[[".g"]]) & is.na(dat.final[[".log_rr"]])
+  if (sum(no.es) > 0){
+    message("- ", crayon::yellow("[!] "), 
+            "No effect size could be calculated for ", sum(no.es), " row(s): ",
+            paste(utils::head(which(no.es), 10), collapse = ", "),
+            if (sum(no.es) > 10) paste0(", ... (", sum(no.es) - 10, " more)") else "", ".")
+  }
+  
+  
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
   #                                                                 #
-  #   3. Add switched arms                                          #
+  #   4. Add switched arms                                          #
   #                                                                 #
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
@@ -644,12 +691,11 @@ calculateEffectSizes = function(data,
         stringr::str_replace_all("_arm(1|2)", "") %>%
         table() %>% {names(.[.==1])} -> one.vars
       
-      dat.final %>%
-        dplyr::select(dplyr::starts_with(one.vars)) %>%
-        colnames() -> select.vars
-      
-      colnames(dat.final)[colnames(dat.final) ==
-                            select.vars] = one.vars
+      # Exact match; these variables only exist for one of the arms
+      for (one.var in one.vars){
+        colnames(dat.final)[colnames(dat.final) %in% 
+                              paste0(one.var, c("_arm1", "_arm2"))] = one.var
+      }
       
       dat.final = includeSwitchedArms(dat.final)
     }}

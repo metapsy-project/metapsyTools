@@ -167,7 +167,7 @@ simulateTreatmentCycles = function(response.rate, decay, max.cycles = 1000) {
       prop.treated = prop.treated*res.manual$prop.treated[nrow(res.manual)]
       cum.response = cum.response*res.manual$prop.treated[nrow(res.manual)] + 
         res.manual$cum.response[nrow(res.manual)-1]
-      treated.per.100 = round(treated.per.100*res.manual$prop.treated[nrow(res.manual)])
+      treated.per.100 = round(prop.treated*100)
     }) -> res
     rbind(res.manual, res[-1,]) -> res; res$step = 1:nrow(res)
     which.max(res$cum.response > 0.99) -> prob.filter
@@ -181,7 +181,10 @@ simulateTreatmentCycles = function(response.rate, decay, max.cycles = 1000) {
   total.steps <- max(res$step)
   total.treatments <- sum(res$treated.per.100)
   excess.treatments <- sum(res$treated.per.100)-res$treated.per.100[1]
-  avg.no.treatments <- with(res, sum((step * treated.per.100) / sum(treated.per.100)))
+  # Average number of treatments among patients who respond: weighted by the 
+  # proportion responding in each cycle (which is not constant if decay != 0).
+  resp.step <- diff(c(0, res$cum.response))
+  avg.no.treatments <- sum(res$step * resp.step) / sum(resp.step)
   names(res) = c("cycle", "prop.treated", "prob.response", "cum.response", "treated.per.100")
   
   reslist <- list(

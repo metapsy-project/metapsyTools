@@ -75,6 +75,8 @@
 \alias{lower.is.better<-}
 \alias{selmodelSteps<-}
 \alias{near.pd<-}
+\alias{i2.ci.boot<-}
+\alias{i2.ci.boot}
 \alias{i2.ci.threelevel<-}
 \alias{i2.ci.threelevel}
 \alias{nsim.boot<-}
@@ -89,6 +91,7 @@ es.var(x) <- value
 se.var(x) <- value
 es.binary.raw.vars(x) <- value
 method.tau(x) <- value
+i2.ci.boot(x) <- value
 i2.ci.threelevel(x) <- value
 nsim.boot(x) <- value
 hakn(x) <- value

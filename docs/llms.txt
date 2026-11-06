@@ -19,7 +19,6 @@ of the package.
 ### Usage Example
 
 ``` r
-
 # Load metapsyData
 library(metapsyData)
 
@@ -39,7 +38,6 @@ The `metapsyTools` package lives in a **GitHub repository**. It can be
 downloaded using the code below:
 
 ``` r
-
 if (!require("pak")) 
   install.packages("pak")
 pak::pkg_install("metapsy-project/metapsyTools")
@@ -172,6 +170,7 @@ Additional functionality for core functions.
   [`` `se.var<-`() ``](Replacement-functions.md)
   [`` `es.binary.raw.vars<-`() ``](Replacement-functions.md)
   [`` `method.tau<-`() ``](Replacement-functions.md)
+  [`` `i2.ci.boot<-`() ``](Replacement-functions.md)
   [`` `i2.ci.threelevel<-`() ``](Replacement-functions.md)
   [`` `nsim.boot<-`() ``](Replacement-functions.md)
   [`` `hakn<-`() ``](Replacement-functions.md)
